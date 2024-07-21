@@ -1,4 +1,4 @@
-import { useApp } from "hooks";
+import { useApp } from "src/hooks";
 
 export const ReactView = () => {
 	const app = useApp();

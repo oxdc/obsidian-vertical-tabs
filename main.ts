@@ -1,6 +1,6 @@
 import { Plugin, WorkspaceLeaf, WorkspaceParent } from "obsidian";
-import { VerticalTabsView, VIEW_TYPE } from "view";
-import DefaultMap from "default_map";
+import { VerticalTabsView, VIEW_TYPE } from "src/view";
+import DefaultMap from "src/default_map";
 
 type GroupID = string;
 
@@ -24,7 +24,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 
 	async registerEventsAndViews() {
 		this.app.workspace.on("layout-change", this.refreshLeaves);
-		this.registerView(VIEW_TYPE, (leaf) => new VerticalTabsView(leaf));
+		this.registerView(
+			VIEW_TYPE,
+			(leaf) => new VerticalTabsView(leaf, this)
+		);
 	}
 
 	async setupCommands() {

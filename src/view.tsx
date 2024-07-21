@@ -1,15 +1,16 @@
 import { StrictMode } from "react";
-import { AppContext } from "context";
+import { AppContext } from "./context";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { Root, createRoot } from "react-dom/client";
 import { ReactView } from "./ReactView";
+import ObsidianVerticalTabs from "main";
 
 export const VIEW_TYPE = "vertical-tabs";
 
 export class VerticalTabsView extends ItemView {
 	root: Root | null = null;
 
-	constructor(leaf: WorkspaceLeaf) {
+	constructor(leaf: WorkspaceLeaf, private plugin: ObsidianVerticalTabs) {
 		super(leaf);
 	}
 
