@@ -1,4 +1,5 @@
 import { Plugin, WorkspaceLeaf, WorkspaceParent } from "obsidian";
+import { VerticalTabsView, VIEW_TYPE } from "view";
 import DefaultMap from "default_map";
 
 type GroupID = string;
@@ -14,30 +15,38 @@ export default class ObsidianVerticalTabs extends Plugin {
 
 	async onload() {
 		this.refreshLeaves();
-		this.registerEvents();
-
-		const ribbonIconEl = this.addRibbonIcon(
-			"dice",
-			"Play",
-			(evt: MouseEvent) => {
-				console.log(this.groupedLeaves);
-			}
-		);
-		ribbonIconEl.addClass("my-plugin-ribbon-class");
-	}
-
-	async registerEvents() {
-		this.app.workspace.on("layout-change", this.refreshLeaves);
-	}
-
-	async refreshLeaves() {
-		this.groupedLeaves = new DefaultMap(() => []);
-		this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
-			const parent = leaf.parent as WorkspaceParentWithId;
-			const parentId: GroupID = parent.id || DEFUALT_GROUP_ID;
-			this.groupedLeaves.get(parentId).push(leaf);
+		this.registerEventsAndViews();
+		this.addRibbonIcon("dice", "Play", this.activateView);
+		this.addRibbonIcon("dice", "DEBUG", () => {
+			console.log(this.groupedLeaves);
 		});
 	}
 
-	onunload() {}
+	async registerEventsAndViews() {
+		this.app.workspace.on("layout-change", this.refreshLeaves);
+		this.registerView(VIEW_TYPE, (leaf) => new VerticalTabsView(leaf));
+	}
+
+	async refreshLeaves() {
+		if (this) {
+			this.groupedLeaves = new DefaultMap(() => []);
+			this.app.workspace.iterateRootLeaves((leaf: WorkspaceLeaf) => {
+				const parent = leaf.parent as WorkspaceParentWithId;
+				const parentId: GroupID = parent.id || DEFUALT_GROUP_ID;
+				this.groupedLeaves.get(parentId).push(leaf);
+			});
+		}
+	}
+
+	async activateView() {
+		const leaf: WorkspaceLeaf =
+			this.app.workspace.getLeavesOfType(VIEW_TYPE)[0] ??
+			this.app.workspace.getLeftLeaf(false);
+		leaf.setViewState({ type: VIEW_TYPE, active: true });
+		this.app.workspace.revealLeaf(leaf);
+	}
+
+	onunload() {
+		this.app.workspace.off("layout-change", this.refreshLeaves);
+	}
 }
