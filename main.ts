@@ -16,7 +16,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 	async onload() {
 		this.refreshLeaves();
 		this.registerEventsAndViews();
-		this.addRibbonIcon("dice", "Play", this.activateView);
+		this.setupCommands();
 		this.addRibbonIcon("dice", "DEBUG", () => {
 			console.log(this.groupedLeaves);
 		});
@@ -25,6 +25,20 @@ export default class ObsidianVerticalTabs extends Plugin {
 	async registerEventsAndViews() {
 		this.app.workspace.on("layout-change", this.refreshLeaves);
 		this.registerView(VIEW_TYPE, (leaf) => new VerticalTabsView(leaf));
+	}
+
+	async setupCommands() {
+		this.addCommand({
+			id: "open-vertical-tabs",
+			name: "Open Vertical Tabs",
+			callback: () => {
+				const leaf: WorkspaceLeaf =
+					this.app.workspace.getLeavesOfType(VIEW_TYPE)[0] ??
+					this.app.workspace.getLeftLeaf(false);
+				leaf.setViewState({ type: VIEW_TYPE, active: true });
+				this.app.workspace.revealLeaf(leaf);
+			},
+		});
 	}
 
 	async refreshLeaves() {
@@ -38,15 +52,5 @@ export default class ObsidianVerticalTabs extends Plugin {
 		}
 	}
 
-	async activateView() {
-		const leaf: WorkspaceLeaf =
-			this.app.workspace.getLeavesOfType(VIEW_TYPE)[0] ??
-			this.app.workspace.getLeftLeaf(false);
-		leaf.setViewState({ type: VIEW_TYPE, active: true });
-		this.app.workspace.revealLeaf(leaf);
-	}
-
-	onunload() {
-		this.app.workspace.off("layout-change", this.refreshLeaves);
-	}
+	onunload() {}
 }
