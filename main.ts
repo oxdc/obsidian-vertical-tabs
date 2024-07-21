@@ -1,6 +1,6 @@
 import { Plugin, WorkspaceLeaf, WorkspaceParent } from "obsidian";
 import { VerticalTabsView, VIEW_TYPE } from "src/view";
-import DefaultMap from "src/default_map";
+import DefaultMap from "src/utils/defaultmap";
 
 type GroupID = string;
 

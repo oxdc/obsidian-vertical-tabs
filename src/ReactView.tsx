@@ -1,6 +1,14 @@
-import { useApp } from "src/hooks";
+import { useApp, usePlugin } from "src/hooks";
 
 export const ReactView = () => {
 	const app = useApp();
-	return <h4>Hello, React! {app?.vault.getName()}</h4>;
+	const plugin = usePlugin();
+	return (
+		<div>
+			<h4>Hello, React! {app?.vault.getName()}</h4>
+			<button onClick={() => console.log(plugin.groupedLeaves)}>
+				Refresh
+			</button>
+		</div>
+	);
 };
