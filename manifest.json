@@ -1,9 +1,9 @@
 {
-	"id": "obsidian-vertical-tabs",
-	"name": "Obsidian Vertical Tabs",
+	"id": "vertical-tabs",
+	"name": "Vertical Tabs",
 	"version": "0.1.0",
 	"minAppVersion": "0.15.0",
-	"description": "Yet another vertical tabs plugin for Obsidian.",
+	"description": "Yet another vertical tabs plugin.",
 	"author": "oxdc",
 	"authorUrl": "https://github.com/oxdc",
 	"fundingUrl": null,
