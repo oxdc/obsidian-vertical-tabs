@@ -1,5 +1,5 @@
 import { Plugin, WorkspaceLeaf } from "obsidian";
-import { VerticalTabsView, VIEW_TYPE } from "src/view";
+import { VerticalTabsView, VIEW_TYPE } from "src/ui";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	async onload() {
@@ -8,10 +8,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 	}
 
 	async registerEventsAndViews() {
-		this.registerView(
-			VIEW_TYPE,
-			(leaf) => new VerticalTabsView(leaf, this)
-		);
+		this.registerView(VIEW_TYPE, (leaf) => new VerticalTabsView(leaf));
 	}
 
 	async setupCommands() {
