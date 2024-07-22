@@ -13,13 +13,14 @@ interface LeafWithTabHeaderEl extends WorkspaceLeaf {
 export class VerticalTabsView extends ItemView {
 	groupedTabs: GroupedLeaves;
 	hiddenGroups: HiddenGroups;
-	showAllTabs: boolean;
 	toggleShowAllTabs: HTMLElement;
 
 	constructor(leaf: WorkspaceLeaf) {
 		super(leaf);
 		this.icon = "gallery-vertical";
-		this.showAllTabs = false;
+		if (localStorage.getItem("showAllTabs") === undefined) {
+			localStorage.setItem("showAllTabs", "false");
+		}
 		this.hiddenGroups = new DefaultRecord(() => false);
 		this.groupedTabs = getGroupedLeaves(this.app);
 		this.app.workspace.on("layout-change", () => {
@@ -54,7 +55,11 @@ export class VerticalTabsView extends ItemView {
 			.createDiv();
 		await this.renderHeader(header);
 		await this.renderContent(content);
-		await this.setShowActiveTabs();
+		if (localStorage.getItem("showAllTabs") === "true") {
+			this.setShowAllTabs();
+		} else {
+			this.setShowActiveTabs();
+		}
 	}
 
 	async renderHeader(container: HTMLElement) {
@@ -65,10 +70,10 @@ export class VerticalTabsView extends ItemView {
 			"Show all tabs"
 		);
 		this.toggleShowAllTabs.addEventListener("click", () => {
-			if (this.showAllTabs) {
-				this.setShowAllTabs();
-			} else {
+			if (localStorage.getItem("showAllTabs") === "true") {
 				this.setShowActiveTabs();
+			} else {
+				this.setShowAllTabs();
 			}
 		});
 	}
@@ -76,14 +81,14 @@ export class VerticalTabsView extends ItemView {
 	async setShowAllTabs() {
 		this.containerEl.doc.body.addClass("show-all-tabs");
 		this.containerEl.doc.body.removeClass("show-active-tabs");
-		this.showAllTabs = false;
+		localStorage.setItem("showAllTabs", "true");
 		this.toggleShowAllTabs.addClass("is-active");
 	}
 
 	async setShowActiveTabs() {
 		this.containerEl.doc.body.addClass("show-active-tabs");
 		this.containerEl.doc.body.removeClass("show-all-tabs");
-		this.showAllTabs = true;
+		localStorage.setItem("showAllTabs", "false");
 		this.toggleShowAllTabs.removeClass("is-active");
 	}
 
