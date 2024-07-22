@@ -12,6 +12,12 @@ The tabs are becoming narrower and narrower as more notes are opened, making it 
 
 ## Features
 
+**Vertical Tabs**:
+
+How to enable vertical tabs:
+- Go to `Settings` -> `Community Plugins` -> `Enable vertical tabs`
+- Open the command palette and run `Obsidian Vertical Tabs: Open Vertical Tabs`
+
 **Pin/Unpin Tabs**:
 
 ![Pin/Unpin Tabs](./images/pin.png)
