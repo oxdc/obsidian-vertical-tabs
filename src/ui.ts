@@ -6,13 +6,19 @@ export const VIEW_TYPE = "vertical-tabs";
 
 type HiddenGroups = DefaultRecord<GroupID, boolean>;
 
+interface LeafWithTabHeaderEl extends WorkspaceLeaf {
+	tabHeaderEl: HTMLElement;
+}
+
 export class VerticalTabsView extends ItemView {
 	groupedTabs: GroupedLeaves;
 	hiddenGroups: HiddenGroups;
 	showAllTabs: boolean;
+	toggleShowAllTabs: HTMLElement;
 
 	constructor(leaf: WorkspaceLeaf) {
 		super(leaf);
+		this.icon = "gallery-vertical";
 		this.showAllTabs = false;
 		this.hiddenGroups = new DefaultRecord(() => false);
 		this.groupedTabs = getGroupedLeaves(this.app);
@@ -42,32 +48,43 @@ export class VerticalTabsView extends ItemView {
 		container.empty();
 		const header = container.createDiv({ cls: "nav-header" });
 		const content = container
-			.createDiv({ cls: "vertical-tabs-container tag-container" })
+			.createDiv({
+				cls: "obsidian-vertical-tabs-container tag-container",
+			})
 			.createDiv();
-		this.renderHeader(header);
-		this.renderContent(content);
+		await this.renderHeader(header);
+		await this.renderContent(content);
+		await this.setShowActiveTabs();
 	}
 
 	async renderHeader(container: HTMLElement) {
 		const toolbar = container.createDiv({ cls: "nav-buttons-container" });
-		const toggleShowAllTabs = await this.renderHeaderButton(
+		this.toggleShowAllTabs = await this.renderHeaderButton(
 			toolbar,
 			"app-window",
-      "Show all tabs"
+			"Show all tabs"
 		);
-		toggleShowAllTabs.addEventListener("click", () => {
+		this.toggleShowAllTabs.addEventListener("click", () => {
 			if (this.showAllTabs) {
-				this.containerEl.doc.body.addClass("show-all-tabs");
-				this.containerEl.doc.body.removeClass("show-active-tabs");
-				this.showAllTabs = false;
-				toggleShowAllTabs.addClass("is-active");
+				this.setShowAllTabs();
 			} else {
-				this.containerEl.doc.body.addClass("show-active-tabs");
-				this.containerEl.doc.body.removeClass("show-all-tabs");
-				this.showAllTabs = true;
-				toggleShowAllTabs.removeClass("is-active");
+				this.setShowActiveTabs();
 			}
 		});
+	}
+
+	async setShowAllTabs() {
+		this.containerEl.doc.body.addClass("show-all-tabs");
+		this.containerEl.doc.body.removeClass("show-active-tabs");
+		this.showAllTabs = false;
+		this.toggleShowAllTabs.addClass("is-active");
+	}
+
+	async setShowActiveTabs() {
+		this.containerEl.doc.body.addClass("show-active-tabs");
+		this.containerEl.doc.body.removeClass("show-all-tabs");
+		this.showAllTabs = true;
+		this.toggleShowAllTabs.removeClass("is-active");
 	}
 
 	async renderContent(root: HTMLElement) {
@@ -121,12 +138,16 @@ export class VerticalTabsView extends ItemView {
 				}
 			});
 		} else {
-			const tab = leaf as WorkspaceLeaf;
+			const tab = leaf as LeafWithTabHeaderEl;
 			item.addClass("is-tab");
 			item.addEventListener("click", () => {
 				this.app.workspace.revealLeaf(tab);
+				this.render();
 			});
 			self.addClass("is-clickable");
+			if (tab.tabHeaderEl.classList.contains("is-active")) {
+				self.addClass("is-active");
+			}
 			if (tab.getViewState().pinned) {
 				item.addClass("is-pinned");
 			}

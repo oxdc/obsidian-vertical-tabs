@@ -7,41 +7,41 @@ If your plugin does not need CSS, delete this file.
 
 */
 
-.vertical-tabs-container {
+.obsidian-vertical-tabs-container {
 	font-size: var(--font-ui-small);
 	padding: var(--size-4-3) var(--size-4-3) var(--size-4-8);
 	overflow: auto;
 }
 
-.vertical-tabs-container .tree-item-self {
+.obsidian-vertical-tabs-container .tree-item-self {
 	align-items: center;
 }
 
-.vertical-tabs-container .is-tab {
+.obsidian-vertical-tabs-container .is-tab {
 	margin-left: 0.5em;
 }
 
-.vertical-tabs-container > div {
+.obsidian-vertical-tabs-container > div {
 	width: 100%;
 }
 
-.vertical-tabs-container .tree-item.is-tab .action-button {
+.obsidian-vertical-tabs-container .tree-item.is-tab .action-button {
 	visibility: hidden;
 }
 
-.vertical-tabs-container .tree-item.is-tab:hover .action-button {
+.obsidian-vertical-tabs-container .tree-item.is-tab:hover .action-button {
 	visibility: visible;
 }
 
-.vertical-tabs-container .tree-item.is-tab.is-pinned .action-pin {
+.obsidian-vertical-tabs-container .tree-item.is-tab.is-pinned .action-pin {
 	visibility: visible;
 }
 
-.vertical-tabs-container .tree-item.is-tab.is-pinned .action-x {
+.obsidian-vertical-tabs-container .tree-item.is-tab.is-pinned .action-x {
 	display: none;
 }
 
-.vertical-tabs-container .tree-item-children.is-hidden {
+.obsidian-vertical-tabs-container .tree-item-children.is-hidden {
 	display: none;
 }
 
@@ -49,4 +49,11 @@ body.show-active-tabs
 	.workspace-split.mod-root
 	.workspace-tab-header:not(.is-active) {
 	display: none;
+}
+
+body.show-active-tabs
+	.workspace-split.mod-root
+	.workspace-tab-header.is-active {
+	max-width: unset;
+	width: unset;
 }
