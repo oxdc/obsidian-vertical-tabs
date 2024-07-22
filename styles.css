@@ -14,7 +14,7 @@ If your plugin does not need CSS, delete this file.
 }
 
 .obsidian-vertical-tabs-container .tree-item-self {
-	align-items: center;
+	align-items: stretch;
 }
 
 .obsidian-vertical-tabs-container .is-tab {
