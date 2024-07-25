@@ -27,9 +27,6 @@ export class VerticalTabsView extends ItemView {
 			this.groupedTabs = getGroupedLeaves(this.app);
 			this.render();
 		});
-		this.app.workspace.on("active-leaf-change", () => {
-			this.render();
-		});
 	}
 
 	getViewType() {
