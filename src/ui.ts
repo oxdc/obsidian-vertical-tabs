@@ -34,7 +34,7 @@ export class VerticalTabsView extends ItemView {
 	}
 
 	getDisplayText() {
-		return "Vertical Tabs";
+		return "Navigation View";
 	}
 
 	async onOpen() {
