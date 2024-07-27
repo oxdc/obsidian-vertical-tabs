@@ -1,5 +1,5 @@
 import { Plugin, WorkspaceLeaf } from "obsidian";
-import { VerticalTabsView, VIEW_TYPE } from "src/ui";
+import { NavigationView, VIEW_TYPE } from "src/navigation";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	async onload() {
@@ -8,12 +8,12 @@ export default class ObsidianVerticalTabs extends Plugin {
 	}
 
 	async registerEventsAndViews() {
-		this.registerView(VIEW_TYPE, (leaf) => new VerticalTabsView(leaf));
+		this.registerView(VIEW_TYPE, (leaf) => new NavigationView(leaf));
 	}
 
 	async setupCommands() {
 		this.addCommand({
-			id: "open-nav-view",
+			id: "vertical-tabs:open-nav-view",
 			name: "Open Navigation View",
 			callback: () => {
 				const leaf: WorkspaceLeaf =
