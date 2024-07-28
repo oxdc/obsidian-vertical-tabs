@@ -1,5 +1,6 @@
 import { TabCache } from "src/models/TabCache";
-import { NavigationTabItem } from "./NavigationTreeItem";
+import { Tab } from "./Tab";
+import { Group } from "./Group";
 
 interface NavigationContentProps {
 	tabs: TabCache;
@@ -11,20 +12,12 @@ export const NavigationContent = (props: NavigationContentProps) => {
 	return (
 		<div className="vertical-tabs-container ">
 			<div>
-				{groups.map(([parentID, leaves]) => (
-					<NavigationTabItem
-						key={parentID}
-						title={parentID}
-						icon="folder"
-					>
+				{groups.map(([group, leaves]) => (
+					<Group key={group} id={group}>
 						{leaves.map((leaf) => (
-							<NavigationTabItem
-								key={leaf.id}
-								title={leaf.getDisplayText()}
-								icon={leaf.getIcon()}
-							/>
+							<Tab key={leaf.id} leaf={leaf} />
 						))}
-					</NavigationTabItem>
+					</Group>
 				))}
 			</div>
 		</div>

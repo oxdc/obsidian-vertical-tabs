@@ -11,7 +11,6 @@ export const NavigationContainer = () => {
 	useEffect(() => {
 		refresh(app);
 		app.workspace.on("layout-change", () => {
-			console.log("layout-change");
 			refresh(app);
 		});
 	}, []);

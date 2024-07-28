@@ -20,4 +20,5 @@ export interface WorkspaceLeaf extends Obsidian.WorkspaceLeaf {
 	id: Identifier;
 	parent: WorkspaceParent;
 	parentSplit: WorkspaceParent;
+	tabHeaderEl?: HTMLElement;
 }
