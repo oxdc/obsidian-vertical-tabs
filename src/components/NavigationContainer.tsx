@@ -6,7 +6,7 @@ import { useEffect } from "react";
 
 export const NavigationContainer = () => {
 	const app = useApp();
-	const { refresh } = useTabCache();
+	const { tabs, refresh } = useTabCache();
 
 	useEffect(() => {
 		refresh(app);
@@ -19,7 +19,7 @@ export const NavigationContainer = () => {
 	return (
 		<div className="vertical-tabs">
 			<NavigationHeader />
-			<NavigationContent />
+			<NavigationContent tabs={tabs} />
 		</div>
 	);
 };

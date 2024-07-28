@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 interface NavigationTabItemProps {
 	title: string;
 	icon: string;
+	children?: React.ReactNode;
 }
 
 export const NavigationTabItem = (props: NavigationTabItemProps) => {
@@ -22,7 +23,7 @@ export const NavigationTabItem = (props: NavigationTabItemProps) => {
 				</div>
 				<div className="tree-item-flair-outer tab-toolbar"></div>
 			</div>
-			<div className="tree-item-children"></div>
+			<div className="tree-item-children">{props.children}</div>
 		</div>
 	);
 };
