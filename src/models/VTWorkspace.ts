@@ -1,29 +1,23 @@
-import {
-	Workspace,
-	WorkspaceItem,
-	WorkspaceLeaf,
-	WorkspaceParent,
-} from "obsidian";
+import * as Obsidian from "obsidian";
 
 export type Identifier = string;
 
-export const DEFAULT_ID = "default";
-
-export interface VTWorkspace extends Workspace {
-	onLayoutChange(): void;
+export interface Workspace extends Obsidian.Workspace {
+	iterateLeaves(
+		split: Obsidian.WorkspaceSplit,
+		callback: (leaf: WorkspaceLeaf) => void
+	): void;
+	onLayoutChange: () => void;
 }
 
-export interface VTWorkspaceParent extends WorkspaceParent {
-	id?: Identifier;
-	children: VTWorkspaceLeaf[];
-	selectTab: (leaf: VTWorkspaceLeaf) => void;
+export interface WorkspaceParent extends Obsidian.WorkspaceParent {
+	id: Identifier;
+	children: WorkspaceLeaf[];
+	selectTab: (leaf: WorkspaceLeaf) => void;
 }
 
-export interface VTWorkspaceLeaf extends WorkspaceLeaf {
-	id?: Identifier;
-	parentSplit?: VTWorkspaceParent;
-}
-
-export interface VTWorkspaceGroup extends WorkspaceItem {
-	id?: Identifier;
+export interface WorkspaceLeaf extends Obsidian.WorkspaceLeaf {
+	id: Identifier;
+	parent: WorkspaceParent;
+	parentSplit: WorkspaceParent;
 }
