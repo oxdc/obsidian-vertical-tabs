@@ -1,19 +1,14 @@
-import { useContext } from "react";
+import { usePlugin } from "src/hooks";
 import { NavigationContent } from "./NavigationContent";
 import { NavigationHeader } from "./NavigationHeader";
-import { TabManagerContext } from "src/context";
 
 export const NavigationContainer = () => {
-	const tabManager = useContext(TabManagerContext);
+	const plugin = usePlugin();
 
 	return (
 		<div className="vertical-tabs">
 			<NavigationHeader />
 			<NavigationContent />
-			<button onClick={tabManager?.refreshTabs.bind(tabManager)}>
-				Refresh Tabs
-			</button>
-			<div>{JSON.stringify(tabManager?.cachedTabs)}</div>
 		</div>
 	);
 };

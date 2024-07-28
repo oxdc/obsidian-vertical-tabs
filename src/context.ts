@@ -1,4 +1,4 @@
 import { createContext } from "react";
-import { TabManager } from "./models/TabManager";
+import ObsidianVerticalTabs from "./main";
 
-export const TabManagerContext = createContext<TabManager | null>(null);
+export const PluginContext = createContext<ObsidianVerticalTabs | null>(null);

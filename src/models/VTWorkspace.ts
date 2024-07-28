@@ -5,23 +5,25 @@ import {
 	WorkspaceParent,
 } from "obsidian";
 
-export type VTWorkspaceID = string;
+export type Identifier = string;
+
+export const DEFAULT_ID = "default";
 
 export interface VTWorkspace extends Workspace {
 	onLayoutChange(): void;
 }
 
 export interface VTWorkspaceParent extends WorkspaceParent {
-	id?: VTWorkspaceID;
+	id?: Identifier;
 	children: VTWorkspaceLeaf[];
 	selectTab: (leaf: VTWorkspaceLeaf) => void;
 }
 
 export interface VTWorkspaceLeaf extends WorkspaceLeaf {
-	id?: VTWorkspaceID;
+	id?: Identifier;
 	parentSplit?: VTWorkspaceParent;
 }
 
 export interface VTWorkspaceGroup extends WorkspaceItem {
-	id?: VTWorkspaceID;
+	id?: Identifier;
 }
