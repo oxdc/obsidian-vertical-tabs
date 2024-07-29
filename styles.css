@@ -23,6 +23,10 @@
 	width: 100%;
 }
 
+.obsidian-vertical-tabs-container .tree-item.is-group {
+	transition: all 0.2s ease-in-out;
+}
+
 .obsidian-vertical-tabs-container .tree-item .action-button {
 	padding: var(--size-2-1);
 }

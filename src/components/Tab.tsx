@@ -20,6 +20,7 @@ export const Tab = ({ leaf }: TabProps) => {
 
 	const activeTab = () => {
 		app.workspace.revealLeaf(leaf);
+		(app.workspace as VT.Workspace).onLayoutChange();
 	};
 
 	const toolbar = (

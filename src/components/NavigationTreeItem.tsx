@@ -1,5 +1,5 @@
 import { setIcon } from "obsidian";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
 
 interface NavigationTreeItemProps {
@@ -15,7 +15,9 @@ interface NavigationTreeItemProps {
 }
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
+	const itemEl = useRef<HTMLDivElement>(null);
 	const iconEl = useRef<HTMLDivElement>(null);
+	const [height, setHeight] = useState(0);
 
 	const itemElClasses: CssClasses = {
 		"tree-item": true,
@@ -34,8 +36,18 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		if (iconEl && iconEl.current) setIcon(iconEl.current, props.icon);
 	}, [props.icon]);
 
+	useEffect(() => {
+		if (itemEl && itemEl.current && itemEl.current.offsetHeight > 0) {
+			setHeight(itemEl.current.offsetHeight);
+		}
+	}, [props.isCollapsed]);
+
 	return (
-		<div className={toClassName(itemElClasses)}>
+		<div
+			className={toClassName(itemElClasses)}
+			ref={itemEl}
+			style={{ minHeight: props.isCollapsed ? 0 : height }}
+		>
 			<div className={toClassName(selfElClasses)} onClick={props.onClick}>
 				<div className="tree-item-icon" ref={iconEl}></div>
 				<div className="tree-item-inner">
