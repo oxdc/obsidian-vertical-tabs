@@ -3,14 +3,14 @@ import { NavigationTreeItem } from "./NavigationTreeItem";
 import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useState } from "react";
-import { useApp } from "src/models/AppContext";
+import { usePlugin } from "src/models/PluginContext";
 
 interface TabProps {
 	leaf: VT.WorkspaceLeaf;
 }
 
 export const Tab = ({ leaf }: TabProps) => {
-	const app = useApp();
+	const plugin = usePlugin();
 	const [isPinned, setIsPinned] = useState(leaf.getViewState().pinned);
 
 	const togglePinned = () => {
@@ -19,8 +19,8 @@ export const Tab = ({ leaf }: TabProps) => {
 	};
 
 	const activeTab = () => {
-		app.workspace.revealLeaf(leaf);
-		(app.workspace as VT.Workspace).onLayoutChange();
+		plugin.app.workspace.revealLeaf(leaf);
+		(plugin.app.workspace as VT.Workspace).onLayoutChange();
 	};
 
 	const toolbar = (

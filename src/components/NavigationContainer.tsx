@@ -1,20 +1,20 @@
 import { NavigationContent } from "./NavigationContent";
 import { NavigationHeader } from "./NavigationHeader";
 import { useTabCache } from "src/models/TabCache";
-import { useApp } from "src/models/AppContext";
+import { usePlugin } from "src/models/PluginContext";
 import { useEffect } from "react";
 
 export const NavigationContainer = () => {
-	const app = useApp();
+	const plugin = usePlugin();
 	const { tabs, refresh } = useTabCache();
 
 	useEffect(() => {
-		refresh(app);
-		app.workspace.on("layout-change", () => {
-			refresh(app);
+		refresh(plugin.app);
+		plugin.app.workspace.on("layout-change", () => {
+			refresh(plugin.app);
 		});
-		app.workspace.on("active-leaf-change", () => {
-			refresh(app);
+		plugin.app.workspace.on("active-leaf-change", () => {
+			refresh(plugin.app);
 		});
 	}, []);
 

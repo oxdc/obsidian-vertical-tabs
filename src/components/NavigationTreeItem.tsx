@@ -15,7 +15,6 @@ interface NavigationTreeItemProps {
 }
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
-	const itemEl = useRef<HTMLDivElement>(null);
 	const iconEl = useRef<HTMLDivElement>(null);
 	const [height, setHeight] = useState(0);
 
@@ -37,15 +36,14 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 	}, [props.icon]);
 
 	useEffect(() => {
-		if (itemEl && itemEl.current && itemEl.current.offsetHeight > 0) {
-			setHeight(itemEl.current.offsetHeight);
+		if (props.children && props.children instanceof Array) {
+			setHeight((props.children as Array<HTMLElement>).length * 20);
 		}
 	}, [props.isCollapsed]);
 
 	return (
 		<div
 			className={toClassName(itemElClasses)}
-			ref={itemEl}
 			style={{ minHeight: props.isCollapsed ? 0 : height }}
 		>
 			<div className={toClassName(selfElClasses)} onClick={props.onClick}>

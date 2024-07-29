@@ -8,7 +8,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 	}
 
 	async registerEventsAndViews() {
-		this.registerView(VIEW_TYPE, (leaf) => new NavigationView(leaf));
+		this.registerView(VIEW_TYPE, (leaf) => new NavigationView(leaf, this));
 	}
 
 	async setupCommands() {

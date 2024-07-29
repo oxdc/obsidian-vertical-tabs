@@ -2,15 +2,19 @@ import { StrictMode } from "react";
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { Root, createRoot } from "react-dom/client";
 import { NavigationContainer } from "./components/NavigationContainer";
-import { AppContext } from "./models/AppContext";
+import { PluginContext } from "./models/PluginContext";
+import ObsidianVerticalTabs from "./main";
 
 export const VIEW_TYPE = "vertical-tabs";
 
 export class NavigationView extends ItemView {
 	root: Root | null = null;
+	plugin: ObsidianVerticalTabs;
 
-	constructor(leaf: WorkspaceLeaf) {
+	constructor(leaf: WorkspaceLeaf, plugin: ObsidianVerticalTabs) {
 		super(leaf);
+		this.plugin = plugin;
+		this.icon = "gallery-vertical";
 	}
 
 	getViewType() {
@@ -25,9 +29,9 @@ export class NavigationView extends ItemView {
 		this.root = createRoot(this.containerEl);
 		this.root.render(
 			<StrictMode>
-				<AppContext.Provider value={this.app}>
+				<PluginContext.Provider value={this.plugin}>
 					<NavigationContainer />
-				</AppContext.Provider>
+				</PluginContext.Provider>
 			</StrictMode>
 		);
 	}
