@@ -13,6 +13,9 @@ export const NavigationContainer = () => {
 		app.workspace.on("layout-change", () => {
 			refresh(app);
 		});
+		app.workspace.on("active-leaf-change", () => {
+			refresh(app);
+		});
 	}, []);
 
 	return (

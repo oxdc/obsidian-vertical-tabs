@@ -8,8 +8,10 @@ interface NavigationTreeItemProps {
 	isTab: boolean;
 	isActive?: boolean;
 	isPinned?: boolean;
+	isCollapsed?: boolean;
 	children?: React.ReactNode;
 	toolbar?: React.ReactNode;
+	onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
@@ -20,10 +22,11 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-tab": props.isTab,
 		"is-group": !props.isTab,
 		"is-pinned": props.isPinned,
+		"is-collapsed": props.isCollapsed,
 	};
 	const selfElClasses: CssClasses = {
 		"tree-item-self": true,
-		"is-clickable": props.isTab,
+		"is-clickable": true,
 		"is-active": props.isActive,
 	};
 
@@ -33,14 +36,16 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 
 	return (
 		<div className={toClassName(itemElClasses)}>
-			<div className={toClassName(selfElClasses)}>
+			<div className={toClassName(selfElClasses)} onClick={props.onClick}>
 				<div className="tree-item-icon" ref={iconEl}></div>
 				<div className="tree-item-inner">
 					<div className="tree-item-inner-text">{props.title}</div>
 				</div>
 				<div className="tree-item-flair-outer">{props.toolbar}</div>
 			</div>
-			<div className="tree-item-children">{props.children}</div>
+			{!props.isCollapsed && (
+				<div className="tree-item-children">{props.children}</div>
+			)}
 		</div>
 	);
 };

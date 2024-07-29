@@ -5,6 +5,8 @@ interface IconButtonProps {
 	icon: string;
 	action: string;
 	tooltip: string;
+	disabled?: boolean;
+	onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 }
 
 export const IconButton = (props: IconButtonProps) => {
@@ -21,6 +23,9 @@ export const IconButton = (props: IconButtonProps) => {
 		<div
 			className={`clickable-icon action-button action-${props.icon}`}
 			ref={buttonEl}
+			onClick={(e) =>
+				!props.disabled && props.onClick && props.onClick(e)
+			}
 		/>
 	);
 };

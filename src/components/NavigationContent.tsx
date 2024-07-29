@@ -10,7 +10,7 @@ export const NavigationContent = (props: NavigationContentProps) => {
 	const groups = Array.from(props.tabs.entries());
 
 	return (
-		<div className="vertical-tabs-container ">
+		<div className="obsidian-vertical-tabs-container node-insert-event">
 			<div>
 				{groups.map(([group, leaves]) => (
 					<Group key={group} id={group}>
