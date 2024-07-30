@@ -13,8 +13,8 @@ export default class ObsidianVerticalTabs extends Plugin {
 
 	async setupCommands() {
 		this.addCommand({
-			id: "vertical-tabs:open-nav-view",
-			name: "Open Navigation View",
+			id: "vertical-tabs:open-vertical-tabs",
+			name: "Open Vertical Tabs",
 			callback: () => {
 				const leaf: WorkspaceLeaf =
 					this.app.workspace.getLeavesOfType(VIEW_TYPE)[0] ??
