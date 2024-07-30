@@ -3,6 +3,7 @@ import { getGroupedLeaves, GroupedLeaves, GroupID } from "./leaves";
 import DefaultRecord from "./utils/defaultmap";
 
 export const VIEW_TYPE = "vertical-tabs";
+export const VIEW_TEXT = "Vertical Tabs";
 
 type HiddenGroups = DefaultRecord<GroupID, boolean>;
 
@@ -34,7 +35,7 @@ export class VerticalTabsView extends ItemView {
 	}
 
 	getDisplayText() {
-		return "Navigation View";
+		return VIEW_TEXT;
 	}
 
 	async onOpen() {
