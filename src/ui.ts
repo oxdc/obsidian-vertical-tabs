@@ -1,6 +1,7 @@
 import { ItemView, setIcon, setTooltip, WorkspaceLeaf } from "obsidian";
 import { getGroupedLeaves, GroupedLeaves, GroupID } from "./leaves";
 import DefaultRecord from "./utils/defaultmap";
+import ObsidianVerticalTabs from "main";
 
 export const VIEW_TYPE = "vertical-tabs";
 export const VIEW_TEXT = "Vertical tabs";
@@ -16,7 +17,7 @@ export class VerticalTabsView extends ItemView {
 	hiddenGroups: HiddenGroups;
 	toggleShowAllTabs: HTMLElement;
 
-	constructor(leaf: WorkspaceLeaf) {
+	constructor(leaf: WorkspaceLeaf, plugin: ObsidianVerticalTabs) {
 		super(leaf);
 		this.icon = "gallery-vertical";
 		if (localStorage.getItem("showAllTabs") === undefined) {
@@ -24,10 +25,12 @@ export class VerticalTabsView extends ItemView {
 		}
 		this.hiddenGroups = new DefaultRecord(() => false);
 		this.groupedTabs = getGroupedLeaves(this.app);
-		this.app.workspace.on("layout-change", () => {
-			this.groupedTabs = getGroupedLeaves(this.app);
-			this.render();
-		});
+		plugin.registerEvent(
+			this.app.workspace.on("layout-change", () => {
+				this.groupedTabs = getGroupedLeaves(this.app);
+				this.render();
+			})
+		);
 	}
 
 	getViewType() {
