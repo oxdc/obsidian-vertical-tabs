@@ -3,7 +3,7 @@ import { getGroupedLeaves, GroupedLeaves, GroupID } from "./leaves";
 import DefaultRecord from "./utils/defaultmap";
 
 export const VIEW_TYPE = "vertical-tabs";
-export const VIEW_TEXT = "Vertical Tabs";
+export const VIEW_TEXT = "Vertical tabs";
 
 type HiddenGroups = DefaultRecord<GroupID, boolean>;
 
@@ -122,7 +122,7 @@ export class VerticalTabsView extends ItemView {
 			setIcon(icon, "folder");
 			inner.createDiv({
 				cls: "tree-item-inner-text",
-				text: "Grouped Tabs",
+				text: "Grouped tabs",
 			});
 			const button = await this.renderToolbarButton(
 				inlineToolbar,
