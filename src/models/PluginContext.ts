@@ -1,3 +1,4 @@
+import { App } from "obsidian";
 import { createContext, useContext } from "react";
 import ObsidianVerticalTabs from "src/main";
 
@@ -8,3 +9,8 @@ export const usePlugin = (): ObsidianVerticalTabs => {
 	if (!plugin) throw new Error("PluginContext not found");
 	return plugin;
 };
+
+export const useApp = (): App => {
+	const plugin = usePlugin();
+	return plugin.app;
+}
