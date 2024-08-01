@@ -68,15 +68,21 @@
 	transform: rotate(calc(var(--direction) * -1 * 90deg));
 }
 
-body.show-active-tabs
+body.vt-show-active-tabs
 	.workspace-split.mod-root
 	.workspace-tab-header:not(.is-active) {
 	display: none;
 }
 
-body.show-active-tabs
+body.vt-show-active-tabs
 	.workspace-split.mod-root
 	.workspace-tab-header.is-active {
 	max-width: unset;
 	width: unset;
+}
+
+body.vt-hide-sidebars
+	.obsidian-vertical-tabs-container
+	.tree-item.is-group.is-collapsed.is-sidebar {
+	display: none;
 }

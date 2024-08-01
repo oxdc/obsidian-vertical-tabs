@@ -3,20 +3,21 @@ import { NavigationTreeItem } from "./NavigationTreeItem";
 import { useState } from "react";
 
 interface GroupProps {
-	id: VT.Identifier;
+	type: VT.GroupType;
 	children?: React.ReactNode;
 }
 
-export const Group = ({ id, children }: GroupProps) => {
-	const isSidebar = id === "left-sidedock" || id === "right-sidedock";
+export const Group = ({ type, children }: GroupProps) => {
+	const isSidebar =
+		type === VT.GroupType.LeftSidebar || type === VT.GroupType.RightSidebar;
 	const [isCollapsed, setIsCollapsed] = useState(isSidebar ? true : false);
 	const toggle = () => setIsCollapsed(!isCollapsed);
 
-	const mapToTitle = (id: VT.Identifier) => {
-		switch (id) {
-			case "left-sidedock":
+	const mapToTitle = (type: VT.GroupType) => {
+		switch (type) {
+			case VT.GroupType.LeftSidebar:
 				return "Left Sidebar";
-			case "right-sidedock":
+			case VT.GroupType.RightSidebar:
 				return "Right Sidebar";
 			default:
 				return "Grouped Tabs";
@@ -24,9 +25,10 @@ export const Group = ({ id, children }: GroupProps) => {
 	};
 
 	const props = {
-		title: mapToTitle(id),
+		title: mapToTitle(type),
 		icon: "right-triangle",
 		isCollapsed,
+		isSidebar,
 	};
 
 	return (

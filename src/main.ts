@@ -6,9 +6,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
 
 	async onload() {
-		this.loadSettings();
-		this.registerEventsAndViews();
-		this.setupCommands();
+		await this.loadSettings();
+		await this.registerEventsAndViews();
+		await this.setupCommands();
+		await this.updateViewStates();
 	}
 
 	async registerEventsAndViews() {
@@ -41,5 +42,14 @@ export default class ObsidianVerticalTabs extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	toggle(classes: string | string[], value: boolean) {
+		this.app.workspace.containerEl.doc.body.toggleClass(classes, value);
+	}
+
+	async updateViewStates() {
+		this.toggle("vt-hide-sidebars", this.settings.hideSidebars);
+		this.toggle("vt-show-active-tabs", this.settings.showActiveTabs);
 	}
 }

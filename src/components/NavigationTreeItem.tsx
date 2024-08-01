@@ -9,6 +9,7 @@ interface NavigationTreeItemProps {
 	isActive?: boolean;
 	isPinned?: boolean;
 	isCollapsed?: boolean;
+	isSidebar?: boolean;
 	children?: React.ReactNode;
 	toolbar?: React.ReactNode;
 	onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
@@ -24,6 +25,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-group": !props.isTab,
 		"is-pinned": props.isPinned,
 		"is-collapsed": props.isCollapsed,
+		"is-sidebar": props.isSidebar,
 	};
 	const selfElClasses: CssClasses = {
 		"tree-item-self": true,

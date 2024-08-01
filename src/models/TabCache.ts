@@ -4,8 +4,20 @@ import { create } from "zustand";
 import { DefaultRecord } from "src/utils/DefaultRecord";
 import { getTabs } from "src/services/GetTabs";
 
-export type TabCache = DefaultRecord<VT.Identifier, VT.WorkspaceLeaf[]>;
-export const createNewTabCache = () => new DefaultRecord(() => []) as TabCache;
+export type TabCacheEntry = {
+	groupType: VT.GroupType;
+	leaves: VT.WorkspaceLeaf[];
+};
+
+export const createTabCacheEntry = (): TabCacheEntry => ({
+	groupType: VT.GroupType.RootSplit,
+	leaves: [],
+});
+
+const factory = () => createTabCacheEntry();
+
+export type TabCache = DefaultRecord<VT.Identifier, TabCacheEntry>;
+export const createNewTabCache = () => new DefaultRecord(factory) as TabCache;
 
 interface TabCacheStore {
 	tabs: TabCache;

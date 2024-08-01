@@ -12,9 +12,9 @@ export const NavigationContent = (props: NavigationContentProps) => {
 	return (
 		<div className="obsidian-vertical-tabs-container node-insert-event">
 			<div>
-				{groups.map(([group, leaves]) => (
-					<Group key={group} id={group}>
-						{leaves.map((leaf) => (
+				{groups.map(([group, entry]) => (
+					<Group key={group} type={entry.groupType}>
+						{entry.leaves.map((leaf) => (
 							<Tab key={leaf.id} leaf={leaf} />
 						))}
 					</Group>

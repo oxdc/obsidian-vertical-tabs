@@ -2,6 +2,12 @@ import * as Obsidian from "obsidian";
 
 export type Identifier = string;
 
+export enum GroupType {
+	LeftSidebar = "left-sidebar",
+	RightSidebar = "right-sidebar",
+	RootSplit = "root-split",
+}
+
 export interface Workspace extends Obsidian.Workspace {
 	iterateLeaves(
 		split: Obsidian.WorkspaceSplit,

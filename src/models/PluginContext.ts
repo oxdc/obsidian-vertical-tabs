@@ -1,7 +1,12 @@
 import { App } from "obsidian";
 import { createContext, useContext, useState } from "react";
 import ObsidianVerticalTabs from "src/main";
-import { Settings, SettingsMutator } from "./PluginSettings";
+import {
+	Settings,
+	SettingsMutatorFn,
+	SettingsMutator,
+	SettingsMutation,
+} from "./PluginSettings";
 
 export type SettingsContext = [Settings, (mutator: SettingsMutator) => void];
 
@@ -22,8 +27,22 @@ export const useSettings = (): SettingsContext => {
 	const plugin = usePlugin();
 	const [settings, setSettings] = useState(plugin.settings);
 	const saveSettings = (mutator: SettingsMutator) => {
-		plugin.settings = { ...plugin.settings, ...mutator(plugin.settings) };
+		switch (typeof mutator) {
+			case "object":
+				plugin.settings = {
+					...plugin.settings,
+					...(mutator as SettingsMutation),
+				};
+				break;
+			case "function":
+				plugin.settings = {
+					...plugin.settings,
+					...(mutator as SettingsMutatorFn)(plugin.settings),
+				};
+				break;
+		}
 		plugin.saveSettings();
+		plugin.updateViewStates();
 		setSettings(plugin.settings);
 	};
 	return [settings, saveSettings];
