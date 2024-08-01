@@ -55,6 +55,7 @@ export const Tab = ({ leaf }: TabProps) => {
 			toolbar={toolbar}
 			onClick={activeTab}
 			dataType={leaf.getViewState().type}
+			dataId={leaf.id}
 		/>
 	);
 };
