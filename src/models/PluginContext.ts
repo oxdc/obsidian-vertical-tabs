@@ -1,6 +1,9 @@
 import { App } from "obsidian";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 import ObsidianVerticalTabs from "src/main";
+import { Settings, SettingsMutator } from "./PluginSettings";
+
+export type SettingsContext = [Settings, (mutator: SettingsMutator) => void];
 
 export const PluginContext = createContext<ObsidianVerticalTabs | null>(null);
 
@@ -13,4 +16,15 @@ export const usePlugin = (): ObsidianVerticalTabs => {
 export const useApp = (): App => {
 	const plugin = usePlugin();
 	return plugin.app;
-}
+};
+
+export const useSettings = (): SettingsContext => {
+	const plugin = usePlugin();
+	const [settings, setSettings] = useState(plugin.settings);
+	const saveSettings = (mutator: SettingsMutator) => {
+		plugin.settings = { ...plugin.settings, ...mutator(plugin.settings) };
+		plugin.saveSettings();
+		setSettings(plugin.settings);
+	};
+	return [settings, saveSettings];
+};

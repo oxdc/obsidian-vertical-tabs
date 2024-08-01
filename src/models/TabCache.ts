@@ -16,7 +16,7 @@ interface TabCacheStore {
 export const useTabCache = create<TabCacheStore>((set) => ({
 	tabs: createNewTabCache(),
 	clear: () => set((state) => (state.tabs = createNewTabCache())),
-	refresh: (app: App) => set((state) => (state.tabs = getTabs(app))),
+	refresh: (app) => set((state) => (state.tabs = getTabs(app))),
 }));
 
 export const REFRESH_TIMEOUT = 10;

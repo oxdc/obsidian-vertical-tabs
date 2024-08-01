@@ -1,8 +1,12 @@
 import { Plugin, WorkspaceLeaf } from "obsidian";
 import { NavigationView, VIEW_TYPE } from "src/navigation";
+import { DEFAULT_SETTINGS, Settings } from "./models/PluginSettings";
 
 export default class ObsidianVerticalTabs extends Plugin {
+	settings: Settings = DEFAULT_SETTINGS;
+
 	async onload() {
+		this.loadSettings();
 		this.registerEventsAndViews();
 		this.setupCommands();
 	}
@@ -26,4 +30,16 @@ export default class ObsidianVerticalTabs extends Plugin {
 	}
 
 	onunload() {}
+
+	async loadSettings() {
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			await this.loadData()
+		);
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
 }
