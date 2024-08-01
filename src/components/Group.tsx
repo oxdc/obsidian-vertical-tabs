@@ -32,7 +32,12 @@ export const Group = ({ type, children }: GroupProps) => {
 	};
 
 	return (
-		<NavigationTreeItem isTab={false} {...props} onClick={toggle}>
+		<NavigationTreeItem
+			isTab={false}
+			{...props}
+			onClick={toggle}
+			dataType={type}
+		>
 			{children}
 		</NavigationTreeItem>
 	);

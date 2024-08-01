@@ -13,6 +13,8 @@ interface NavigationTreeItemProps {
 	children?: React.ReactNode;
 	toolbar?: React.ReactNode;
 	onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+	dataType?: string;
+	dataId?: string;
 }
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
@@ -47,6 +49,8 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		<div
 			className={toClassName(itemElClasses)}
 			style={{ minHeight: props.isCollapsed ? 0 : height }}
+			data-type={props.dataType}
+			data-id={props.dataId}
 		>
 			<div className={toClassName(selfElClasses)} onClick={props.onClick}>
 				<div className="tree-item-icon" ref={iconEl}></div>
