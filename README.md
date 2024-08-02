@@ -6,7 +6,11 @@
 
 Productive users of Obsidian may find themselves with a large number of open notes. The default horizontal tab layout can make it difficult to quickly find and switch between notes. The tabs are becoming narrower and narrower as more notes are opened, making it difficult to read the note titles. This plugin provides an alternative vertical tab layout that is more space-efficient and easier to navigate.
 
-![Showcase Video](./images/drag_and_drop.mp4)
+
+
+https://github.com/user-attachments/assets/02a13031-cf2e-4c43-8e84-be1fda7e4b4b
+
+
 
 ## Features
 
