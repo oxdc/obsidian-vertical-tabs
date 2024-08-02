@@ -1,7 +1,15 @@
+.vertical-tabs {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	height: 100%;
+}
+
 .obsidian-vertical-tabs-container {
 	font-size: var(--font-ui-small);
 	padding: var(--size-4-3) var(--size-4-3) var(--size-4-8);
-	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
 }
 
 .obsidian-vertical-tabs-container .tree-item-self {
@@ -14,6 +22,10 @@
 
 .obsidian-vertical-tabs-container > div {
 	width: 100%;
+}
+
+.obsidian-vertical-tabs-container .tree-item.is-group {
+	transition: all 0.2s ease-in-out;
 }
 
 .obsidian-vertical-tabs-container .tree-item .action-button {
@@ -33,22 +45,66 @@
 }
 
 .obsidian-vertical-tabs-container .tree-item.is-tab.is-pinned .action-x {
+	color: var(--text-faint);
+	opacity: 0.5;
+}
+
+.obsidian-vertical-tabs-container
+	.tree-item.is-group.is-collapsed
+	.tree-item-children {
 	display: none;
 }
 
-.obsidian-vertical-tabs-container .tree-item-children.is-hidden {
-	display: none;
+.obsidian-vertical-tabs-container .tree-item.is-group .tree-item-icon svg {
+	stroke-width: 4px;
+	width: 10px;
+	height: 10px;
+	transition: transform 100ms ease-in-out;
 }
 
-body.show-active-tabs
+.obsidian-vertical-tabs-container
+	.tree-item.is-group.is-collapsed
+	.tree-item-icon
+	svg {
+	transform: rotate(calc(var(--direction) * -1 * 90deg));
+}
+
+body.vt-show-active-tabs
 	.workspace-split.mod-root
 	.workspace-tab-header:not(.is-active) {
 	display: none;
 }
 
-body.show-active-tabs
+body.vt-show-active-tabs
 	.workspace-split.mod-root
 	.workspace-tab-header.is-active {
 	max-width: unset;
 	width: unset;
+}
+
+body.vt-hide-sidebars
+	.obsidian-vertical-tabs-container
+	.tree-item.is-group.is-sidebar {
+	display: none;
+}
+
+body.vt-exclude-self
+	.obsidian-vertical-tabs-container
+	.tree-item.is-tab[data-type="vertical-tabs"] {
+	display: none;
+}
+
+.obsidian-vertical-tabs-container .tab-slot {
+	height: 30px;
+	background-color: var(--background-modifier-hover);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--border-radius);
+}
+
+.obsidian-vertical-tabs-container .tab-slot.is-hidden {
+	display: none;
+}
+
+.obsidian-vertical-tabs-container .tab-droppable {
+	min-height: 2px;
 }

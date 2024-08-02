@@ -11,7 +11,9 @@
 		"importHelpers": true,
 		"isolatedModules": true,
 		"strictNullChecks": true,
+		"jsx": "react-jsx",
 		"lib": ["DOM", "ES5", "ES6", "ES7"],
+		"sourceRoot": "/src"
 	},
-	"include": ["**/*.ts"],
+	"include": ["**/*.ts", "**/*.tsx", "src/components/NavigationContainer.tsx"]
 }

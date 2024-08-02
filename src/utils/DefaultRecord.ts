@@ -1,4 +1,4 @@
-export default class DefaultRecord<K, V> extends Map<K, V> {
+export class DefaultRecord<K, V> extends Map<K, V> {
 	factory: () => V;
 
 	constructor(
