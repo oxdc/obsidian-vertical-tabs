@@ -1,14 +1,12 @@
 # (Yet Another) Obsidian Vertical Tabs
 
+![Screenshot](./images/showcase.png)
+
 ## Description
 
-Productive users of Obsidian may find themselves with a large number of open notes. The default horizontal tab layout can make it difficult to quickly find and switch between notes,
+Productive users of Obsidian may find themselves with a large number of open notes. The default horizontal tab layout can make it difficult to quickly find and switch between notes. The tabs are becoming narrower and narrower as more notes are opened, making it difficult to read the note titles. This plugin provides an alternative vertical tab layout that is more space-efficient and easier to navigate.
 
-![Default](./images/default.png)
-
-The tabs are becoming narrower and narrower as more notes are opened, making it difficult to read the note titles. This plugin provides an alternative vertical tab layout that is more space-efficient and easier to navigate,
-
-![Vertical Tabs](./images/vertical-tabs.png)
+![Showcase Video](./images/drag_and_drop.mp4)
 
 ## Features
 
