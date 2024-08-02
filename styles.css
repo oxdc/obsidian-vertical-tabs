@@ -84,7 +84,7 @@ body.vt-show-active-tabs
 
 body.vt-hide-sidebars
 	.obsidian-vertical-tabs-container
-	.tree-item.is-group.is-collapsed.is-sidebar {
+	.tree-item.is-group.is-sidebar {
 	display: none;
 }
 
@@ -105,6 +105,6 @@ body.vt-exclude-self
 	display: none;
 }
 
-.obsidian-vertical-tabs-container .is-tab-dragging .tab-droppable {
-	min-height: 5px;
+.obsidian-vertical-tabs-container .tab-droppable {
+	min-height: 2px;
 }

@@ -1,13 +1,20 @@
 import { TabCache } from "src/models/TabCache";
 import { Tab } from "./Tab";
 import { Group } from "./Group";
-import { DndContext, DragEndEvent } from "@dnd-kit/core";
+import {
+	DndContext,
+	DragEndEvent,
+	PointerSensor,
+	useSensor,
+	useSensors,
+} from "@dnd-kit/core";
 import { Droppable } from "./Droppable";
 import { Draggable } from "./Draggable";
 import { moveTab, moveTabToEnd } from "src/services/MoveTab";
 import { useApp } from "src/models/PluginContext";
 import { useState } from "react";
 import * as VT from "src/models/VTWorkspace";
+import { CssClasses, toClassName } from "src/utils/CssClasses";
 
 interface NavigationContentProps {
 	tabs: TabCache;
@@ -16,17 +23,24 @@ interface NavigationContentProps {
 export const NavigationContent = (props: NavigationContentProps) => {
 	const app = useApp();
 	const groups = Array.from(props.tabs.entries());
+	const sensors = useSensors(
+		useSensor(PointerSensor, {
+			activationConstraint: {
+				distance: 8,
+			},
+		})
+	);
 	const [isDragging, setIsDragging] = useState(false);
 	const handleDragEnd = (event: DragEndEvent) => {
 		setIsDragging(false);
 		const source = event.active.id as VT.Identifier;
 		const target = event.over?.id as VT.Identifier;
-		if (target.startsWith("in:")) {
+		if (target && target.startsWith("in:")) {
 			const groupID = target.slice(3);
+			if (!props.tabs.has(groupID)) return;
 			const group = props.tabs.get(groupID);
-			if (group.group) {
-				moveTabToEnd(app, source, group.group);
-			}
+			if (group.group === null) return;
+			moveTabToEnd(app, source, group.group);
 		} else {
 			moveTab(app, source, target);
 		}
@@ -34,11 +48,15 @@ export const NavigationContent = (props: NavigationContentProps) => {
 	const handleDragMove = () => {
 		setIsDragging(true);
 	};
+	const containerClasses: CssClasses = {
+		"is-tab-dragging": isDragging,
+	};
 
 	return (
 		<div className="obsidian-vertical-tabs-container node-insert-event">
-			<div className={`${isDragging ? "is-tab-dragging" : null}`}>
+			<div className={toClassName(containerClasses)}>
 				<DndContext
+					sensors={sensors}
 					onDragEnd={handleDragEnd}
 					onDragMove={handleDragMove}
 				>
