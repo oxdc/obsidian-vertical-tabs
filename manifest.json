@@ -6,5 +6,8 @@
 	"description": "Provide an alternative view that shows open tabs in the vertical direction for better navigation experience.",
 	"author": "oxdc",
 	"authorUrl": "https://github.com/oxdc",
-	"isDesktopOnly": false
+	"isDesktopOnly": false,
+	"fundingUrl": {
+		"Ko-fi": "https://ko-fi.com/oxdcq"
+	}
 }
