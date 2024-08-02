@@ -7,33 +7,27 @@ interface GroupProps {
 	children?: React.ReactNode;
 }
 
+const titleMap: Record<VT.GroupType, string> = {
+	[VT.GroupType.LeftSidebar]: "Left sidebar",
+	[VT.GroupType.RightSidebar]: "Right sidebar",
+	[VT.GroupType.RootSplit]: "Grouped tabs",
+};
+
 export const Group = ({ type, children }: GroupProps) => {
 	const isSidebar =
 		type === VT.GroupType.LeftSidebar || type === VT.GroupType.RightSidebar;
 	const [isCollapsed, setIsCollapsed] = useState(isSidebar ? true : false);
 	const toggle = () => setIsCollapsed(!isCollapsed);
-
-	const mapToTitle = (type: VT.GroupType) => {
-		switch (type) {
-			case VT.GroupType.LeftSidebar:
-				return "Left Sidebar";
-			case VT.GroupType.RightSidebar:
-				return "Right Sidebar";
-			default:
-				return "Grouped Tabs";
-		}
-	};
-
+	const title = titleMap[type];
 	const props = {
-		title: mapToTitle(type),
 		icon: "right-triangle",
 		isCollapsed,
 		isSidebar,
 	};
-
 	return (
 		<NavigationTreeItem
 			isTab={false}
+			title={title}
 			{...props}
 			onClick={toggle}
 			dataType={type}

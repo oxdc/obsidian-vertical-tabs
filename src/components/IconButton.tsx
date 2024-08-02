@@ -14,7 +14,6 @@ interface IconButtonProps {
 
 export const IconButton = (props: IconButtonProps) => {
 	const buttonEl = useRef<HTMLDivElement>(null);
-
 	const buttonElClasses: CssClasses = {
 		"clickable-icon": true,
 		"action-button": !props.isNavAction,
@@ -22,7 +21,7 @@ export const IconButton = (props: IconButtonProps) => {
 		[`action-${props.icon}`]: true,
 		"is-active": props.isActive,
 	};
-
+	
 	useEffect(() => {
 		if (buttonEl && buttonEl.current) {
 			setIcon(buttonEl.current, props.icon);

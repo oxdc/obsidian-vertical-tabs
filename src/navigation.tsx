@@ -22,7 +22,7 @@ export class NavigationView extends ItemView {
 	}
 
 	getDisplayText() {
-		return "Vertical Tabs";
+		return "Vertical tabs";
 	}
 
 	async onOpen() {
