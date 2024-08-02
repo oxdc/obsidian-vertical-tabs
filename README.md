@@ -1,5 +1,7 @@
 # (Yet Another) Obsidian Vertical Tabs
 
+[👉 Click To Install](https://obsidian.md/plugins?id=vertical-tabs)
+
 ![Screenshot](./images/showcase.png)
 
 ## Description
