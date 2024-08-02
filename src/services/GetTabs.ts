@@ -2,31 +2,35 @@ import { App } from "obsidian";
 import { createNewTabCache, TabCache } from "src/models/TabCache";
 import * as VT from "src/models/VTWorkspace";
 
+function record(
+	nameOrID: string,
+	type: VT.GroupType,
+	leaf: VT.WorkspaceLeaf,
+	tabs: TabCache
+) {
+	tabs.get(nameOrID).groupType = type;
+	tabs.get(nameOrID).group = leaf.parent as VT.WorkspaceParent;
+	tabs.get(nameOrID).leaves.push(leaf);
+}
+
 export function getTabs(app: App): TabCache {
 	const tabs = createNewTabCache();
 
 	(app.workspace as VT.Workspace).iterateLeaves(
 		app.workspace.leftSplit,
-		(leaf) => {
-			tabs.get("left-sidebar").groupType = VT.GroupType.LeftSidebar;
-			tabs.get("left-sidebar").leaves.push(leaf);
-		}
+		(leaf) => record("left-sidebar", VT.GroupType.LeftSidebar, leaf, tabs)
 	);
 
 	(app.workspace as VT.Workspace).iterateLeaves(
 		app.workspace.rightSplit,
-		(leaf) => {
-			tabs.get("right-sidebar").groupType = VT.GroupType.RightSidebar;
-			tabs.get("right-sidebar").leaves.push(leaf);
-		}
+		(leaf) => record("right-sidebar", VT.GroupType.RightSidebar, leaf, tabs)
 	);
 
 	(app.workspace as VT.Workspace).iterateLeaves(
 		app.workspace.rootSplit,
 		(leaf) => {
 			const parent = leaf.parent as VT.WorkspaceParent;
-			tabs.get(parent.id).groupType = VT.GroupType.RootSplit;
-			tabs.get(parent.id).leaves.push(leaf);
+			record(parent.id, VT.GroupType.RootSplit, leaf, tabs);
 		}
 	);
 

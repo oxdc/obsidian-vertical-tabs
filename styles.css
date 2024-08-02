@@ -93,3 +93,18 @@ body.vt-exclude-self
 	.tree-item.is-tab[data-type="vertical-tabs"] {
 	display: none;
 }
+
+.obsidian-vertical-tabs-container .tab-slot {
+	height: 30px;
+	background-color: var(--background-modifier-hover);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--border-radius);
+}
+
+.obsidian-vertical-tabs-container .tab-slot.is-hidden {
+	display: none;
+}
+
+.obsidian-vertical-tabs-container .is-tab-dragging .tab-droppable {
+	min-height: 5px;
+}

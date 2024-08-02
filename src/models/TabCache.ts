@@ -6,11 +6,13 @@ import { getTabs } from "src/services/GetTabs";
 
 export type TabCacheEntry = {
 	groupType: VT.GroupType;
+	group: VT.WorkspaceParent | null;
 	leaves: VT.WorkspaceLeaf[];
 };
 
 export const createTabCacheEntry = (): TabCacheEntry => ({
 	groupType: VT.GroupType.RootSplit,
+	group: null,
 	leaves: [],
 });
 

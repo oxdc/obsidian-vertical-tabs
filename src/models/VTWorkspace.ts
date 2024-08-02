@@ -20,14 +20,15 @@ export interface WorkspaceParent extends Obsidian.WorkspaceParent {
 	id: Identifier;
 	children: WorkspaceLeaf[];
 	selectTab: (leaf: WorkspaceLeaf) => void;
-	removeChild: (leaf: WorkspaceLeaf) => void;
-	insertChild: (leaf: WorkspaceLeaf, index: number) => void;
+	selectTabIndex: (index: number) => void;
+	recomputeChildrenDimensions: () => void;
+	detach: () => void;
 }
 
 export interface WorkspaceLeaf extends Obsidian.WorkspaceLeaf {
 	id: Identifier;
 	parent: WorkspaceParent;
-	parentSplit: WorkspaceParent;
+	setParent: (parent: WorkspaceParent) => void;
 	tabHeaderEl?: HTMLElement;
 	tabHeaderInnerTitleEl?: HTMLElement;
 }

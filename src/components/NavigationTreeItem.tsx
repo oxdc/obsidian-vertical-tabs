@@ -55,7 +55,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 			<div className={toClassName(selfElClasses)} onClick={props.onClick}>
 				<div className="tree-item-icon" ref={iconEl}></div>
 				<div className="tree-item-inner">
-					<div className="tree-item-inner-text">{props.title}</div>
+					<div className="tree-item-inner-text">{`${props.title} ${props.dataId}`}</div>
 				</div>
 				<div className="tree-item-flair-outer">{props.toolbar}</div>
 			</div>

@@ -2,9 +2,11 @@ import { TabCache } from "src/models/TabCache";
 import { Tab } from "./Tab";
 import { Group } from "./Group";
 import { DndContext, DragEndEvent } from "@dnd-kit/core";
-import { Draggable, Droppable } from "./Movable";
-import { moveTab } from "src/services/MoveTab";
+import { Droppable } from "./Droppable";
+import { Draggable } from "./Draggable";
+import { moveTab, moveTabToEnd } from "src/services/MoveTab";
 import { useApp } from "src/models/PluginContext";
+import { useState } from "react";
 import * as VT from "src/models/VTWorkspace";
 
 interface NavigationContentProps {
@@ -14,16 +16,32 @@ interface NavigationContentProps {
 export const NavigationContent = (props: NavigationContentProps) => {
 	const app = useApp();
 	const groups = Array.from(props.tabs.entries());
-	const onDragEnd = (event: DragEndEvent) => {
+	const [isDragging, setIsDragging] = useState(false);
+	const handleDragEnd = (event: DragEndEvent) => {
+		setIsDragging(false);
 		const source = event.active.id as VT.Identifier;
 		const target = event.over?.id as VT.Identifier;
-		moveTab(app, source, target);
+		if (target.startsWith("in:")) {
+			const groupID = target.slice(3);
+			const group = props.tabs.get(groupID);
+			if (group.group) {
+				moveTabToEnd(app, source, group.group);
+			}
+		} else {
+			moveTab(app, source, target);
+		}
+	};
+	const handleDragMove = () => {
+		setIsDragging(true);
 	};
 
 	return (
 		<div className="obsidian-vertical-tabs-container node-insert-event">
-			<div>
-				<DndContext onDragEnd={onDragEnd}>
+			<div className={`${isDragging ? "is-tab-dragging" : null}`}>
+				<DndContext
+					onDragEnd={handleDragEnd}
+					onDragMove={handleDragMove}
+				>
 					{groups.map(([group, entry]) => (
 						<Group key={group} type={entry.groupType}>
 							{entry.leaves.map((leaf) => (
