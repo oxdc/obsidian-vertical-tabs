@@ -105,6 +105,10 @@ body.vt-exclude-self
 	display: none;
 }
 
-.obsidian-vertical-tabs-container .tab-droppable {
+.obsidian-vertical-tabs-container .tab-droppable:not(.is-dragging-self) {
 	min-height: 2px;
+}
+
+.obsidian-vertical-tabs-container .tab-droppable.is-dragging-self {
+	height: 0px;
 }
