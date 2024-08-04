@@ -6,10 +6,13 @@ import { useEffect } from "react";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
-	const { tabs, refresh } = useTabCache();
+	const { tabs, refresh, sort } = useTabCache();
 
 	const autoRefresh = () => {
-		setTimeout(() => refresh(plugin.app), REFRESH_TIMEOUT);
+		setTimeout(() => {
+			refresh(plugin.app);
+			sort();
+		}, REFRESH_TIMEOUT);
 	};
 
 	useEffect(() => {

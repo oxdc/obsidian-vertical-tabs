@@ -30,7 +30,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	};
 
 	const activeTab = () => {
-		plugin.app.workspace.revealLeaf(leaf);
+		plugin.app.workspace.setActiveLeaf(leaf, { focus: true });
 		(plugin.app.workspace as VT.Workspace).onLayoutChange();
 	};
 

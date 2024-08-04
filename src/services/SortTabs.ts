@@ -16,6 +16,7 @@ export function sortTabs(
 	if (sortStrategy.reverse) group.children.reverse();
 	group.recomputeChildrenDimensions();
 	group.selectTab(activeLeaf);
+	return group.children;
 }
 
 export function byTitle(a: VT.WorkspaceLeaf, b: VT.WorkspaceLeaf) {

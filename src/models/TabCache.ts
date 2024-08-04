@@ -3,7 +3,13 @@ import * as VT from "./VTWorkspace";
 import { create } from "zustand";
 import { DefaultRecord } from "src/utils/DefaultRecord";
 import { getTabs } from "src/services/GetTabs";
-import { byActiveTime, byPinned, byTitle, SortStrategy, sortTabs } from "src/services/SortTabs";
+import {
+	byActiveTime,
+	byPinned,
+	byTitle,
+	SortStrategy,
+	sortTabs,
+} from "src/services/SortTabs";
 
 export type TabCacheEntry = {
 	groupType: VT.GroupType;
@@ -27,8 +33,8 @@ interface TabCacheStore {
 	sortStrategy: SortStrategy | null;
 	clear: () => void;
 	refresh: (app: App) => void;
-	setSortStrategy: (app: App, strategy: SortStrategy) => void;
-	setSorted: (app: App) => void;
+	setSortStrategy: (strategy: SortStrategy | null) => void;
+	sort: () => void;
 }
 
 export const sortStrategies: Record<string, SortStrategy> = {
@@ -44,25 +50,24 @@ export const useTabCache = create<TabCacheStore>((set, get) => ({
 	tabs: createNewTabCache(),
 	sortStrategy: null,
 	clear: () => set((state) => (state.tabs = createNewTabCache())),
-	refresh: (app) => {
-		set((state) => (state.tabs = getTabs(app)));
-		get().setSorted(app);
-	},
-	setSortStrategy: (app: App, strategy: SortStrategy) => {
+	refresh: (app) => set((state) => (state.tabs = getTabs(app))),
+	setSortStrategy: (strategy) => {
 		set({ sortStrategy: strategy });
-		get().setSorted(app);
+		get().sort();
 	},
-	setSorted: (app: App) => {
+	sort: () => {
 		const { tabs, sortStrategy } = get();
+		const newTabs = createNewTabCache();
 		if (!sortStrategy) return;
 		for (const key of tabs.keys()) {
 			const entry = tabs.get(key);
+			newTabs.set(key, entry);
 			const group =
 				entry.group ||
 				(entry.leaves.length > 0 ? entry.leaves[0].parent : null);
-			if (group) sortTabs(group, sortStrategy);
+			if (group) newTabs.get(key).leaves = sortTabs(group, sortStrategy);
 		}
-		(app.workspace as VT.Workspace).onLayoutChange();
+		set({ tabs: newTabs });
 	},
 }));
 
