@@ -18,6 +18,7 @@ export interface Workspace extends Obsidian.Workspace {
 
 export interface WorkspaceParent extends Obsidian.WorkspaceParent {
 	id: Identifier;
+	currentTab: number;
 	children: WorkspaceLeaf[];
 	selectTab: (leaf: WorkspaceLeaf) => void;
 	selectTabIndex: (index: number) => void;
@@ -27,6 +28,7 @@ export interface WorkspaceParent extends Obsidian.WorkspaceParent {
 
 export interface WorkspaceLeaf extends Obsidian.WorkspaceLeaf {
 	id: Identifier;
+	activeTime: number;
 	parent: WorkspaceParent;
 	setParent: (parent: WorkspaceParent) => void;
 	tabHeaderEl?: HTMLElement;
