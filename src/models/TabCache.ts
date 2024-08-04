@@ -3,7 +3,7 @@ import * as VT from "./VTWorkspace";
 import { create } from "zustand";
 import { DefaultRecord } from "src/utils/DefaultRecord";
 import { getTabs } from "src/services/GetTabs";
-import { byTitle, SortStrategy, sortTabs } from "src/services/SortTabs";
+import { byActiveTime, byPinned, byTitle, SortStrategy, sortTabs } from "src/services/SortTabs";
 
 export type TabCacheEntry = {
 	groupType: VT.GroupType;
@@ -34,10 +34,10 @@ interface TabCacheStore {
 export const sortStrategies: Record<string, SortStrategy> = {
 	titleAToZ: { compareFn: byTitle, reverse: false },
 	titleZToA: { compareFn: byTitle, reverse: true },
-	pinnedAtTop: { compareFn: byTitle, reverse: false },
-	pinnedAtBottom: { compareFn: byTitle, reverse: true },
-	recentOnTop: { compareFn: byTitle, reverse: false },
-	recentOnBottom: { compareFn: byTitle, reverse: true },
+	pinnedAtTop: { compareFn: byPinned, reverse: false },
+	pinnedAtBottom: { compareFn: byPinned, reverse: true },
+	recentOnTop: { compareFn: byActiveTime, reverse: false },
+	recentOnBottom: { compareFn: byActiveTime, reverse: true },
 };
 
 export const useTabCache = create<TabCacheStore>((set, get) => ({
