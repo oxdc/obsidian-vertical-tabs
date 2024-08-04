@@ -5,7 +5,7 @@ import { CssClasses, toClassName } from "src/utils/CssClasses";
 interface IconButtonProps {
 	icon: string;
 	action: string;
-	tooltip: string;
+	tooltip?: string;
 	disabled?: boolean;
 	isNavAction?: boolean;
 	isActive?: boolean;
@@ -21,11 +21,11 @@ export const IconButton = (props: IconButtonProps) => {
 		[`action-${props.icon}`]: true,
 		"is-active": props.isActive,
 	};
-	
+
 	useEffect(() => {
 		if (buttonEl && buttonEl.current) {
 			setIcon(buttonEl.current, props.icon);
-			setTooltip(buttonEl.current, props.tooltip);
+			if (props.tooltip) setTooltip(buttonEl.current, props.tooltip);
 		}
 	}, []);
 

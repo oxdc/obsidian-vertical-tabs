@@ -13,6 +13,9 @@ interface NavigationTreeItemProps {
 	children?: React.ReactNode;
 	toolbar?: React.ReactNode;
 	onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+	onContextMenu?: (
+		event: React.MouseEvent<HTMLDivElement, MouseEvent>
+	) => void;
 	dataType?: string;
 	dataId?: string;
 }
@@ -52,7 +55,11 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 			data-type={props.dataType}
 			data-id={props.dataId}
 		>
-			<div className={toClassName(selfElClasses)} onClick={props.onClick}>
+			<div
+				className={toClassName(selfElClasses)}
+				onClick={props.onClick}
+				onContextMenu={props.onContextMenu}
+			>
 				<div className="tree-item-icon" ref={iconEl}></div>
 				<div className="tree-item-inner">
 					<div className="tree-item-inner-text">{props.title}</div>
