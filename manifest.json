@@ -1,7 +1,7 @@
 {
 	"id": "vertical-tabs",
 	"name": "Vertical Tabs",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"minAppVersion": "1.6.2",
 	"description": "Provide an alternative view that shows open tabs in the vertical direction for better navigation experience.",
 	"author": "oxdc",
