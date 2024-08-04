@@ -9,9 +9,7 @@ export const NavigationContainer = () => {
 	const { tabs, refresh } = useTabCache();
 
 	const autoRefresh = () => {
-		setTimeout(() => {
-			refresh(plugin.app);
-		}, REFRESH_TIMEOUT);
+		setTimeout(() => refresh(plugin.app), REFRESH_TIMEOUT);
 	};
 
 	useEffect(() => {
