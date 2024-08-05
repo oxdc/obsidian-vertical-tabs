@@ -98,6 +98,16 @@ body:not(.vt-zen-mode) .workspace-split.mod-root .workspace-tabs.is-hidden {
 	display: none;
 }
 
+body:not(.vt-zen-mode) .workspace-split.mod-root .workspace-split {
+	display: none;
+}
+
+body:not(.vt-zen-mode)
+	.workspace-split.mod-root
+	.workspace-split:has(.workspace-tabs:not(.is-hidden)) {
+	display: flex;
+}
+
 body.vt-zen-mode .workspace-split.mod-root .workspace-tabs:not(.mod-active) {
 	display: none;
 	flex-basis: unset;
