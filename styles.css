@@ -94,9 +94,7 @@ body.vt-exclude-self
 	display: none;
 }
 
-body:not(.vt-zen-mode)
-	.workspace-split.mod-root
-	.workspace-tabs.mod-top.is-hidden {
+body:not(.vt-zen-mode) .workspace-split.mod-root .workspace-tabs.is-hidden {
 	display: none;
 }
 

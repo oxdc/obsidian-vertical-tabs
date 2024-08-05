@@ -27,8 +27,12 @@ export const NavigationHeader = () => {
 			zenMode: !settings.zenMode,
 		});
 		const leaf = view.leaf as VT.WorkspaceLeaf;
+		const parent = leaf.parent;
 		app.workspace.setActiveLeaf(leaf, { focus: true });
-		leaf.parent.recomputeChildrenDimensions();
+		if (parent.isStacked) {
+			leaf.parent.setStacked(false);
+			leaf.parent.setStacked(true);
+		}
 	};
 
 	const sortMenu = new Menu();

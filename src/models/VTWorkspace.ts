@@ -25,6 +25,8 @@ export interface WorkspaceParent extends Obsidian.WorkspaceParent {
 	selectTab: (leaf: WorkspaceLeaf) => void;
 	selectTabIndex: (index: number) => void;
 	recomputeChildrenDimensions: () => void;
+	isStacked: boolean;
+	setStacked: (stacked: boolean) => void;
 	detach: () => void;
 }
 
