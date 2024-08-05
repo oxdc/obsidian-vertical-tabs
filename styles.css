@@ -120,6 +120,12 @@ body.vt-zen-mode .workspace-split.mod-root .workspace-tabs.mod-active {
 
 body.vt-zen-mode
 	.workspace-split.mod-root
+	.workspace-split:has(.workspace-tabs.mod-active) {
+	flex-basis: 100%;
+}
+
+body.vt-zen-mode
+	.workspace-split.mod-root
 	.workspace-tab-header:not(.is-active) {
 	display: none;
 }
