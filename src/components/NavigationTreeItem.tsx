@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
 
 interface NavigationTreeItemProps {
-	title: string;
+	title: string | React.ReactNode;
 	icon: string;
 	isTab: boolean;
 	isActive?: boolean;
