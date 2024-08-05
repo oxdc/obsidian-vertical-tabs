@@ -94,6 +94,44 @@ body.vt-exclude-self
 	display: none;
 }
 
+body:not(.vt-zen-mode)
+	.workspace-split.mod-root
+	.workspace-tabs.mod-top.is-hidden {
+	display: none;
+}
+
+body.vt-zen-mode .workspace-split.mod-root .workspace-tabs:not(.mod-active) {
+	display: none;
+	flex-basis: unset;
+}
+
+body.vt-zen-mode .workspace-split.mod-root .workspace-tabs.mod-active {
+	display: flex;
+	flex-basis: 100%;
+}
+
+body.vt-zen-mode
+	.workspace-split.mod-root
+	.workspace-tab-header:not(.is-active) {
+	display: none;
+}
+
+body.vt-zen-mode .workspace-split.mod-root .workspace-tab-header.is-active {
+	max-width: unset;
+	width: unset;
+}
+
+body.vt-zen-mode {
+	--tab-stacked-pane-width: 100%;
+}
+
+body.vt-zen-mode
+	.obsidian-vertical-tabs-container
+	.tree-item.is-group
+	.clickable-icon.action-button.action-eye-off {
+	visibility: hidden;
+}
+
 .obsidian-vertical-tabs-container .tab-slot {
 	height: 30px;
 	background-color: var(--background-modifier-border);

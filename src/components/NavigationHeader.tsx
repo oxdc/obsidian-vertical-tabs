@@ -1,9 +1,11 @@
-import { useSettings } from "src/models/PluginContext";
+import { useApp, useSettings } from "src/models/PluginContext";
 import { IconButton } from "./IconButton";
 import { Menu } from "obsidian";
 import { sortStrategies, useTabCache } from "src/models/TabCache";
+import * as VT from "src/models/VTWorkspace";
 
 export const NavigationHeader = () => {
+	const app = useApp();
 	const [settings, setSettings] = useSettings();
 	const { sortStrategy, setSortStrategy } = useTabCache();
 
@@ -17,6 +19,16 @@ export const NavigationHeader = () => {
 		setSettings({
 			hideSidebars: !settings.hideSidebars,
 		});
+	};
+
+	const toggleZenMode = () => {
+		const view = (app.workspace as VT.Workspace).getActiveFileView();
+		setSettings({
+			zenMode: !settings.zenMode,
+		});
+		const leaf = view.leaf as VT.WorkspaceLeaf;
+		app.workspace.setActiveLeaf(leaf, { focus: true });
+		leaf.parent.recomputeChildrenDimensions();
 	};
 
 	const sortMenu = new Menu();
@@ -80,6 +92,14 @@ export const NavigationHeader = () => {
 					action="sort-tabs"
 					tooltip="Sort tabs"
 					onClick={(e) => sortMenu.showAtMouseEvent(e.nativeEvent)}
+					isNavAction={true}
+				/>
+				<IconButton
+					icon="focus"
+					action="zen-mode"
+					tooltip="Zen mode"
+					onClick={toggleZenMode}
+					isActive={settings.zenMode}
 					isNavAction={true}
 				/>
 			</div>

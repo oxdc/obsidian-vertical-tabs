@@ -52,5 +52,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.toggle("vt-hide-sidebars", this.settings.hideSidebars);
 		this.toggle("vt-show-active-tabs", this.settings.showActiveTabs);
 		this.toggle("vt-exclude-self", this.settings.sidebarExcludeSelf);
+		this.toggle("vt-zen-mode", this.settings.zenMode);
 	}
 }

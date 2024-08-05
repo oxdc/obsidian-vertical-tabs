@@ -14,10 +14,12 @@ export interface Workspace extends Obsidian.Workspace {
 		callback: (leaf: WorkspaceLeaf) => void
 	): void;
 	onLayoutChange: () => void;
+	getActiveFileView: () => Obsidian.FileView;
 }
 
 export interface WorkspaceParent extends Obsidian.WorkspaceParent {
 	id: Identifier;
+	containerEl: HTMLElement;
 	currentTab: number;
 	children: WorkspaceLeaf[];
 	selectTab: (leaf: WorkspaceLeaf) => void;

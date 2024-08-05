@@ -27,7 +27,7 @@ export const IconButton = (props: IconButtonProps) => {
 			setIcon(buttonEl.current, props.icon);
 			if (props.tooltip) setTooltip(buttonEl.current, props.tooltip);
 		}
-	}, []);
+	}, [props.icon, props.tooltip]);
 
 	return (
 		<div

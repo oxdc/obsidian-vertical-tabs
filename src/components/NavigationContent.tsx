@@ -60,8 +60,12 @@ export const NavigationContent = (props: NavigationContentProps) => {
 					onDragEnd={handleDragEnd}
 					onDragMove={handleDragMove}
 				>
-					{groups.map(([group, entry]) => (
-						<Group key={group} type={entry.groupType}>
+					{groups.map(([groupID, entry]) => (
+						<Group
+							key={groupID}
+							type={entry.groupType}
+							group={entry.group}
+						>
 							{entry.leaves.map((leaf) => (
 								<Droppable key={leaf.id} id={leaf.id}>
 									<Draggable key={leaf.id} id={leaf.id}>
@@ -69,7 +73,7 @@ export const NavigationContent = (props: NavigationContentProps) => {
 									</Draggable>
 								</Droppable>
 							))}
-							<Droppable key={group} id={`in:${group}`} />
+							<Droppable key={groupID} id={`in:${groupID}`} />
 						</Group>
 					))}
 				</DndContext>
