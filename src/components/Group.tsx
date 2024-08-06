@@ -40,6 +40,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	};
 	const titleEditor = (
 		<input
+			autoFocus
 			value={ephemeralTitle}
 			onChange={(e) => setEphemeralTitle(e.target.value)}
 			onClick={(e) => e.stopPropagation()}
@@ -77,6 +78,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		<NavigationTreeItem
 			isTab={false}
 			title={isEditing ? titleEditor : title}
+			isRenaming={isEditing}
 			{...props}
 			onClick={toggleCollapsed}
 			dataType={type}

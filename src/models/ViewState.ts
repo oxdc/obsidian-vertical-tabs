@@ -15,12 +15,25 @@ interface ViewState {
 	setGroupTitle: (id: VT.Identifier, name: string) => void;
 }
 
+const saveViewState = (titles: GroupTitles) => {
+	const data = Array.from(titles.entries());
+	localStorage.setItem("view-state", JSON.stringify(data));
+};
+
+const loadViewState = (): GroupTitles | null => {
+	const data = localStorage.getItem("view-state");
+	if (!data) return null;
+	const entries = JSON.parse(data) as [VT.Identifier, string][];
+	return new DefaultRecord(factory, entries);
+};
+
 export const useViewState = create<ViewState>()((set) => ({
-	groupTitles: createNewGroupTitles(),
+	groupTitles: loadViewState() ?? createNewGroupTitles(),
 	clear: () => set({ groupTitles: createNewGroupTitles() }),
 	setGroupTitle: (id: VT.Identifier, name: string) =>
 		set((state) => {
 			state.groupTitles.set(id, name);
+			saveViewState(state.groupTitles);
 			return state;
 		}),
 }));
