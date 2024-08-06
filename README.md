@@ -1,4 +1,4 @@
-# (Yet Another) Obsidian Vertical Tabs
+# Obsidian Vertical Tabs
 
 [👉 Click To Install](https://obsidian.md/plugins?id=vertical-tabs)
 
