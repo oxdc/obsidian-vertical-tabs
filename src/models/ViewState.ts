@@ -11,8 +11,10 @@ export const createNewGroupTitles = () =>
 
 interface ViewState {
 	groupTitles: GroupTitles;
+	hiddenGroups: Set<VT.Identifier>;
 	clear: () => void;
 	setGroupTitle: (id: VT.Identifier, name: string) => void;
+	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -27,13 +29,32 @@ const loadViewState = (): GroupTitles | null => {
 	return new DefaultRecord(factory, entries);
 };
 
+const saveHiddenGroups = (hiddenGroups: Set<VT.Identifier>) => {
+	const data = Array.from(hiddenGroups);
+	localStorage.setItem("hidden-groups", JSON.stringify(data));
+};
+
+const loadHiddenGroups = (): Set<VT.Identifier> => {
+	const data = localStorage.getItem("hidden-groups");
+	if (!data) return new Set();
+	return new Set(JSON.parse(data));
+};
+
 export const useViewState = create<ViewState>()((set) => ({
 	groupTitles: loadViewState() ?? createNewGroupTitles(),
+	hiddenGroups: loadHiddenGroups(),
 	clear: () => set({ groupTitles: createNewGroupTitles() }),
 	setGroupTitle: (id: VT.Identifier, name: string) =>
 		set((state) => {
 			state.groupTitles.set(id, name);
 			saveViewState(state.groupTitles);
+			return state;
+		}),
+	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) =>
+		set((state) => {
+			if (isHidden) state.hiddenGroups.add(id);
+			else state.hiddenGroups.delete(id);
+			saveHiddenGroups(state.hiddenGroups);
 			return state;
 		}),
 }));
