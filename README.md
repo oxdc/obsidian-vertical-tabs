@@ -1,5 +1,26 @@
 # Obsidian Vertical Tabs
 
+<p align="center">
+  <a href="https://obsidian.md/plugins?id=vertical-tabs">
+    <img
+      alt="Install"
+      src="https://img.shields.io/badge/Install-blue?style=for-the-badge&logo=obsidian&logoColor=white"
+    />
+  </a>
+  <a href="https://github.com/oxdc/obsidian-vertical-tabs">
+    <img
+      alt="Github Repo"
+      src="https://img.shields.io/badge/GitHub%20Repo-7037C8?style=for-the-badge&logo=GitHub&logoColor=white"
+    />
+  </a>
+  <a href="https://ko-fi.com/oxdcq">
+    <img
+      alt="Support"
+      src="https://img.shields.io/badge/Support-orange?style=for-the-badge&logo=ko-fi&logoColor=white"
+    />
+  </a>
+</p>
+
 [👉 Click To Install](https://obsidian.md/plugins?id=vertical-tabs)
 
 ![Screenshot](./images/showcase.png)
