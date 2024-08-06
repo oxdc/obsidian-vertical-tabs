@@ -54,3 +54,7 @@ https://github.com/user-attachments/assets/b2c2af6a-75d7-4a83-b279-3f65e38c5b03
 **Zen Mode**:
 
 https://github.com/user-attachments/assets/38e77c08-7b9a-4a40-8da7-4f5bb6bf5815
+
+**Rename Groups**:
+
+https://github.com/user-attachments/assets/2f04f9ce-3fbd-4068-8655-d06ebfe34ba5
