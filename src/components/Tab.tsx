@@ -10,6 +10,7 @@ import {
 	closeTabsToBottomInGroup,
 	closeTabsToTopInGroup,
 } from "src/services/CloseTabs";
+import { useTabCache } from "src/models/TabCache";
 
 interface TabProps {
 	leaf: VT.WorkspaceLeaf;
@@ -18,15 +19,18 @@ interface TabProps {
 export const Tab = ({ leaf }: TabProps) => {
 	const plugin = usePlugin();
 	const [isPinned, setIsPinned] = useState(leaf.getViewState().pinned);
+	const { sort } = useTabCache();
 
 	const togglePinned = () => {
 		leaf.togglePinned();
 		setIsPinned(leaf.getViewState().pinned);
+		sort();
 	};
 
 	const unPin = () => {
 		leaf.setPinned(false);
 		setIsPinned(false);
+		sort();
 	};
 
 	const activeTab = () => {
