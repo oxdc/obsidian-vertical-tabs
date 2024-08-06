@@ -15,7 +15,7 @@ interface ViewState {
 	setGroupTitle: (id: VT.Identifier, name: string) => void;
 }
 
-export const useViewState = create<ViewState>((set) => ({
+export const useViewState = create<ViewState>()((set) => ({
 	groupTitles: createNewGroupTitles(),
 	clear: () => set({ groupTitles: createNewGroupTitles() }),
 	setGroupTitle: (id: VT.Identifier, name: string) =>
