@@ -46,11 +46,11 @@ export const sortStrategies: Record<string, SortStrategy> = {
 	recentOnBottom: { compareFn: byActiveTime, reverse: true },
 };
 
-export const useTabCache = create<TabCacheStore>((set, get) => ({
+export const useTabCache = create<TabCacheStore>()((set, get) => ({
 	tabs: createNewTabCache(),
 	sortStrategy: null,
-	clear: () => set((state) => (state.tabs = createNewTabCache())),
-	refresh: (app) => set((state) => (state.tabs = getTabs(app))),
+	clear: () => set({ tabs: createNewTabCache() }),
+	refresh: (app) => set({ tabs: getTabs(app) }),
 	setSortStrategy: (strategy) => {
 		set({ sortStrategy: strategy });
 		get().sort();

@@ -3,10 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
 
 interface NavigationTreeItemProps {
-	title: string;
+	title: string | React.ReactNode;
 	icon: string;
 	isTab: boolean;
 	isActive?: boolean;
+	isRenaming?: boolean;
 	isPinned?: boolean;
 	isCollapsed?: boolean;
 	isSidebar?: boolean;
@@ -36,6 +37,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"tree-item-self": true,
 		"is-clickable": true,
 		"is-active": props.isActive,
+		"is-being-renamed": props.isRenaming,
 	};
 
 	useEffect(() => {

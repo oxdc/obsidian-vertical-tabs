@@ -169,3 +169,12 @@ body.vt-zen-mode
 .obsidian-vertical-tabs-container .tab-droppable.is-dragging-self {
 	height: 0px;
 }
+
+.obsidian-vertical-tabs-container .tree-item.is-group input {
+	background: transparent;
+	outline: none;
+	border: none;
+	color: inherit;
+	font: inherit;
+	padding: 0;
+}

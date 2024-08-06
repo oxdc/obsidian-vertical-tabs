@@ -33,9 +33,10 @@ export const IconButton = (props: IconButtonProps) => {
 		<div
 			className={toClassName(buttonElClasses)}
 			ref={buttonEl}
-			onClick={(e) =>
-				!props.disabled && props.onClick && props.onClick(e)
-			}
+			onClick={(e) => {
+				e.stopPropagation();
+				!props.disabled && props.onClick && props.onClick(e);
+			}}
 		/>
 	);
 };
