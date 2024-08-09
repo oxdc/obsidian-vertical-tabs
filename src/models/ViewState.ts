@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import * as VT from "./VTWorkspace";
 import { DefaultRecord } from "src/utils/DefaultRecord";
+import { ItemView } from "obsidian";
+import ObsidianVerticalTabs from "src/main";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -12,9 +14,11 @@ export const createNewGroupTitles = () =>
 interface ViewState {
 	groupTitles: GroupTitles;
 	hiddenGroups: Set<VT.Identifier>;
+	latestActiveLeaf: VT.WorkspaceLeaf | null;
 	clear: () => void;
 	setGroupTitle: (id: VT.Identifier, name: string) => void;
 	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => void;
+	setActiveLeaf: (plugin: ObsidianVerticalTabs) => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -40,9 +44,10 @@ const loadHiddenGroups = (): Set<VT.Identifier> => {
 	return new Set(JSON.parse(data));
 };
 
-export const useViewState = create<ViewState>()((set) => ({
+export const useViewState = create<ViewState>()((set, get) => ({
 	groupTitles: loadViewState() ?? createNewGroupTitles(),
 	hiddenGroups: loadHiddenGroups(),
+	latestActiveLeaf: null,
 	clear: () => set({ groupTitles: createNewGroupTitles() }),
 	setGroupTitle: (id: VT.Identifier, name: string) =>
 		set((state) => {
@@ -57,4 +62,19 @@ export const useViewState = create<ViewState>()((set) => ({
 			saveHiddenGroups(state.hiddenGroups);
 			return state;
 		}),
+	setActiveLeaf(plugin: ObsidianVerticalTabs) {
+		if (!plugin.settings.zenMode) return;
+		const workspace = plugin.app.workspace as VT.Workspace;
+		const activeView = workspace.getActiveViewOfType(ItemView);
+		if (!activeView) return;
+		const activeLeaf = activeView.leaf as VT.WorkspaceLeaf;
+		const isRootLeaf = activeLeaf.getRoot() === workspace.rootSplit;
+		if (isRootLeaf) {
+			set({ latestActiveLeaf: activeLeaf });
+		} else {
+			const latestActiveLeaf = get().latestActiveLeaf;
+			if (!latestActiveLeaf) return;
+			workspace.setActiveLeaf(latestActiveLeaf, { focus: false });
+		}
+	},
 }));
