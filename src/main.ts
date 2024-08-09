@@ -26,11 +26,15 @@ export default class ObsidianVerticalTabs extends Plugin {
 	}
 
 	async openVerticalTabs() {
-		const leaf: WorkspaceLeaf =
-			this.app.workspace.getLeavesOfType(VIEW_TYPE)[0] ??
-			this.app.workspace.getLeftLeaf(false);
-		leaf.setViewState({ type: VIEW_TYPE, active: true });
-		this.app.workspace.revealLeaf(leaf);
+		try {
+			const leaf: WorkspaceLeaf =
+				this.app.workspace.getLeavesOfType(VIEW_TYPE)[0] ??
+				this.app.workspace.getLeftLeaf(false);
+			leaf.setViewState({ type: VIEW_TYPE, active: true });
+			this.app.workspace.revealLeaf(leaf);
+		} catch {
+			// do nothing
+		}
 	}
 
 	onunload() {}

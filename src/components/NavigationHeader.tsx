@@ -22,10 +22,11 @@ export const NavigationHeader = () => {
 	};
 
 	const toggleZenMode = () => {
-		const view = (app.workspace as VT.Workspace).getActiveFileView();
 		setSettings({
 			zenMode: !settings.zenMode,
 		});
+		const view = (app.workspace as VT.Workspace).getActiveFileView();
+		if (!view) return;
 		const leaf = view.leaf as VT.WorkspaceLeaf;
 		const parent = leaf.parent;
 		app.workspace.setActiveLeaf(leaf, { focus: true });
