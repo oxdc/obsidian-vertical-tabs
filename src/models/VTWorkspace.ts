@@ -15,6 +15,8 @@ export interface Workspace extends Obsidian.Workspace {
 	): void;
 	onLayoutChange: () => void;
 	getActiveFileView: () => Obsidian.FileView;
+	leftSidebarToggleButtonEl: HTMLElement;
+	rightSidebarToggleButtonEl: HTMLElement;
 }
 
 export interface WorkspaceParent extends Obsidian.WorkspaceParent {
@@ -28,6 +30,7 @@ export interface WorkspaceParent extends Obsidian.WorkspaceParent {
 	isStacked: boolean;
 	setStacked: (stacked: boolean) => void;
 	detach: () => void;
+	tabHeaderContainerEl: HTMLElement;
 }
 
 export interface WorkspaceLeaf extends Obsidian.WorkspaceLeaf {

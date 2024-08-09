@@ -19,6 +19,7 @@ interface ViewState {
 	setGroupTitle: (id: VT.Identifier, name: string) => void;
 	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => void;
 	setActiveLeaf: (plugin: ObsidianVerticalTabs) => void;
+	lockFocus: (plugin: ObsidianVerticalTabs) => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -63,18 +64,51 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			return state;
 		}),
 	setActiveLeaf(plugin: ObsidianVerticalTabs) {
-		if (!plugin.settings.zenMode) return;
 		const workspace = plugin.app.workspace as VT.Workspace;
 		const activeView = workspace.getActiveViewOfType(ItemView);
+		// The following line shall never be reached?
 		if (!activeView) return;
 		const activeLeaf = activeView.leaf as VT.WorkspaceLeaf;
 		const isRootLeaf = activeLeaf.getRoot() === workspace.rootSplit;
 		if (isRootLeaf) {
 			set({ latestActiveLeaf: activeLeaf });
 		} else {
-			const latestActiveLeaf = get().latestActiveLeaf;
-			if (!latestActiveLeaf) return;
-			workspace.setActiveLeaf(latestActiveLeaf, { focus: false });
+			// Focus has been moved to sidebars, so we need to move it back
+			get().lockFocus(plugin);
 		}
+	},
+	lockFocus(plugin: ObsidianVerticalTabs) {
+		// We only need to force focus on the most recent leaf when Zen mode is enabled
+		if (!plugin.settings.zenMode) return;
+		const workspace = plugin.app.workspace as VT.Workspace;
+		const activeLeaf = get().latestActiveLeaf;
+		if (activeLeaf) {
+			// Move the sidebar toggle button to the current visible tab bar
+			workspace.setActiveLeaf(activeLeaf, { focus: false });
+			const button = workspace.rightSidebarToggleButtonEl;
+			const tabHeader = activeLeaf.parent.tabHeaderContainerEl;
+			if (button && tabHeader) tabHeader.appendChild(button);
+			// Force maximize the active leaf in stacked mode
+			const parent = activeLeaf.parent;
+			if (parent.isStacked) {
+				parent.setStacked(false);
+				parent.setStacked(true);
+			}
+			return;
+		}
+		// No active leaf in the RootSplit has been recorded,
+		// try to get the first active one in the first group
+		const groups: VT.WorkspaceParent[] = [];
+		workspace.iterateRootLeaves((leaf: VT.WorkspaceLeaf) => {
+			const group = leaf.parent as VT.WorkspaceParent;
+			if (!groups.includes(group)) groups.push(group);
+		});
+		if (groups.length > 0) {
+			const group = groups[0];
+			const activeLeaf = group.children[group.currentTab];
+			workspace.setActiveLeaf(activeLeaf, { focus: false });
+			return;
+		}
+		// No root group has been found, this shall never happen?
 	},
 }));

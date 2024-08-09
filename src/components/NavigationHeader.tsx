@@ -1,13 +1,14 @@
-import { useApp, useSettings } from "src/models/PluginContext";
+import { usePlugin, useSettings } from "src/models/PluginContext";
 import { IconButton } from "./IconButton";
 import { Menu } from "obsidian";
 import { sortStrategies, useTabCache } from "src/models/TabCache";
-import * as VT from "src/models/VTWorkspace";
+import { useViewState } from "src/models/ViewState";
 
 export const NavigationHeader = () => {
-	const app = useApp();
+	const plugin = usePlugin();
 	const [settings, setSettings] = useSettings();
 	const { sortStrategy, setSortStrategy } = useTabCache();
+	const { lockFocus } = useViewState();
 
 	const toggleTabVisibility = () => {
 		setSettings({
@@ -25,15 +26,7 @@ export const NavigationHeader = () => {
 		setSettings({
 			zenMode: !settings.zenMode,
 		});
-		const view = (app.workspace as VT.Workspace).getActiveFileView();
-		if (!view) return;
-		const leaf = view.leaf as VT.WorkspaceLeaf;
-		const parent = leaf.parent;
-		app.workspace.setActiveLeaf(leaf, { focus: true });
-		if (parent.isStacked) {
-			leaf.parent.setStacked(false);
-			leaf.parent.setStacked(true);
-		}
+		lockFocus(plugin);
 	};
 
 	const sortMenu = new Menu();
