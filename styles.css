@@ -178,3 +178,7 @@ body.vt-zen-mode
 	font: inherit;
 	padding: 0;
 }
+
+.workspace-tab-header[data-type="vertical-tabs"] {
+	display: flex !important; // always show vertical tabs
+}

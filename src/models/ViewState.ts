@@ -67,8 +67,11 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	setActiveLeaf(plugin: ObsidianVerticalTabs) {
 		const workspace = plugin.app.workspace as VT.Workspace;
 		const activeView = workspace.getActiveViewOfType(ItemView);
-		// The following line shall never be reached?
-		if (!activeView) return;
+		if (!activeView) {
+			// Focus has already been moved, try our best to lock it back
+			get().lockFocus(plugin);
+			return;
+		}
 		const activeLeaf = activeView.leaf as VT.WorkspaceLeaf;
 		const isRootLeaf = activeLeaf.getRoot() === workspace.rootSplit;
 		if (isRootLeaf) {
