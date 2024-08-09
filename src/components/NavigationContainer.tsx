@@ -11,6 +11,7 @@ export const NavigationContainer = () => {
 	const { setActiveLeaf } = useViewState();
 
 	const autoRefresh = () => {
+		setActiveLeaf(plugin);
 		setTimeout(() => {
 			refresh(plugin.app);
 			sort();
@@ -24,11 +25,6 @@ export const NavigationContainer = () => {
 		);
 		plugin.registerEvent(
 			plugin.app.workspace.on("active-leaf-change", autoRefresh)
-		);
-		plugin.registerEvent(
-			plugin.app.workspace.on("active-leaf-change", () => {
-				setActiveLeaf(plugin);
-			})
 		);
 	}, []);
 

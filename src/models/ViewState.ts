@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import * as VT from "./VTWorkspace";
 import { DefaultRecord } from "src/utils/DefaultRecord";
-import { ItemView } from "obsidian";
+import { App, ItemView } from "obsidian";
 import ObsidianVerticalTabs from "src/main";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
@@ -20,6 +20,7 @@ interface ViewState {
 	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => void;
 	setActiveLeaf: (plugin: ObsidianVerticalTabs) => void;
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
+	lockFocusOnLeaf: (app: App, leaf: VT.WorkspaceLeaf) => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -82,18 +83,10 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		if (!plugin.settings.zenMode) return;
 		const workspace = plugin.app.workspace as VT.Workspace;
 		const activeLeaf = get().latestActiveLeaf;
-		if (activeLeaf) {
-			// Move the sidebar toggle button to the current visible tab bar
-			workspace.setActiveLeaf(activeLeaf, { focus: false });
-			const button = workspace.rightSidebarToggleButtonEl;
-			const tabHeader = activeLeaf.parent.tabHeaderContainerEl;
-			if (button && tabHeader) tabHeader.appendChild(button);
-			// Force maximize the active leaf in stacked mode
-			const parent = activeLeaf.parent;
-			if (parent.isStacked) {
-				parent.setStacked(false);
-				parent.setStacked(true);
-			}
+		const isRootLeaf = activeLeaf?.getRoot() === workspace.rootSplit;
+		// We should check this again, since the user may have moved or closed the tab
+		if (activeLeaf && isRootLeaf) {
+			get().lockFocusOnLeaf(plugin.app, activeLeaf);
 			return;
 		}
 		// No active leaf in the RootSplit has been recorded,
@@ -106,9 +99,23 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		if (groups.length > 0) {
 			const group = groups[0];
 			const activeLeaf = group.children[group.currentTab];
-			workspace.setActiveLeaf(activeLeaf, { focus: false });
+			get().lockFocusOnLeaf(plugin.app, activeLeaf);
 			return;
 		}
 		// No root group has been found, this shall never happen?
+	},
+	lockFocusOnLeaf(app: App, leaf: VT.WorkspaceLeaf) {
+		const workspace = app.workspace as VT.Workspace;
+		const parent = leaf.parent;
+		workspace.setActiveLeaf(leaf, { focus: false });
+		// Move the sidebar toggle button to the current visible tab bar
+		const button = workspace.rightSidebarToggleButtonEl;
+		const tabHeader = parent.tabHeaderContainerEl;
+		if (button && tabHeader) tabHeader.appendChild(button);
+		// Force maximize the active leaf in stacked mode
+		if (parent.isStacked) {
+			parent.setStacked(false);
+			parent.setStacked(true);
+		}
 	},
 }));
