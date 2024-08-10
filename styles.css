@@ -62,6 +62,11 @@
 	transition: transform 100ms ease-in-out;
 }
 
+.obsidian-vertical-tabs-container .tree-item.is-tab .tree-item-icon svg {
+	width: var(--icon-xs);
+	height: var(--icon-xs);
+}
+
 .obsidian-vertical-tabs-container
 	.tree-item.is-group.is-collapsed
 	.tree-item-icon
@@ -108,19 +113,24 @@ body:not(.vt-zen-mode)
 	display: flex;
 }
 
-body.vt-zen-mode .workspace-split.mod-root .workspace-tabs:not(.mod-active) {
+body.vt-zen-mode .workspace-split.mod-root .workspace-tabs:not(.mod-active),
+body.vt-zen-mode .workspace-split.mod-root .workspace-tabs:not(.vt-mod-active) {
 	display: none;
 	flex-basis: unset;
 }
 
-body.vt-zen-mode .workspace-split.mod-root .workspace-tabs.mod-active {
+body.vt-zen-mode .workspace-split.mod-root .workspace-tabs.mod-active,
+body.vt-zen-mode .workspace-split.mod-root .workspace-tabs.vt-mod-active {
 	display: flex;
 	flex-basis: 100%;
 }
 
 body.vt-zen-mode
 	.workspace-split.mod-root
-	.workspace-split:has(.workspace-tabs.mod-active) {
+	.workspace-split:has(.workspace-tabs.mod-active),
+body.vt-zen-mode
+	.workspace-split.mod-root
+	.workspace-split:has(.workspace-tabs.vt-mod-active) {
 	flex-basis: 100%;
 }
 
@@ -172,4 +182,72 @@ body.vt-zen-mode
 	color: inherit;
 	font: inherit;
 	padding: 0;
+}
+
+.workspace-tab-header[data-type="vertical-tabs"] {
+	display: flex !important; // always show vertical tabs
+}
+
+body.vt-zen-mode .workspace-split.mod-root .workspace-tab-header-container {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+body.vt-zen-mode
+	.workspace-split.mod-root
+	.workspace-tab-header-container
+	.sidebar-toggle-button {
+	visibility: hidden;
+}
+
+body.vt-zen-mode:has(
+		.workspace-split.mod-sidedock.mod-left-split.is-sidedock-collapsed
+	)
+	.workspace-split.mod-root
+	.workspace-tab-header-container {
+	padding-left: calc(var(--size-4-3) + var(--frame-left-space) + 27px);
+}
+
+body.vt-zen-mode:has(
+		.workspace-split.mod-sidedock.mod-left-split.is-sidedock-collapsed
+	)
+	.workspace-split.mod-root
+	.workspace-tab-header-container:has(.sidebar-toggle-button.mod-left) {
+	padding-left: calc(var(--size-4-3) + var(--frame-left-space));
+}
+
+body.vt-zen-mode:has(
+		.workspace-split.mod-sidedock.mod-right-split.is-sidedock-collapsed
+	)
+	.workspace-split.mod-root
+	.workspace-tab-header-container {
+	padding-right: 38px;
+}
+
+body > .sidebar-toggle-buttons .sidebar-toggle-button {
+	display: none;
+}
+
+body.vt-zen-mode:has(
+		.workspace-split.mod-sidedock.mod-left-split.is-sidedock-collapsed
+	)
+	> .sidebar-toggle-buttons
+	.sidebar-toggle-button.mod-left {
+	display: flex;
+	align-items: center;
+	position: fixed;
+	top: 0;
+	left: var(--left-sidebar-toggle-button-offset);
+}
+
+body.vt-zen-mode:has(
+		.workspace-split.mod-sidedock.mod-right-split.is-sidedock-collapsed
+	)
+	> .sidebar-toggle-buttons
+	.sidebar-toggle-button.mod-right {
+	display: flex;
+	align-items: center;
+	position: fixed;
+	top: 0;
+	right: 0;
 }

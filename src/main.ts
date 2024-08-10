@@ -10,6 +10,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		await this.registerEventsAndViews();
 		await this.setupCommands();
 		await this.updateViewStates();
+		setTimeout(() => this.openVerticalTabs(), 10);
 	}
 
 	async registerEventsAndViews() {
@@ -20,14 +21,20 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.addCommand({
 			id: "open-vertical-tabs",
 			name: "Open vertical tabs",
-			callback: () => {
-				const leaf: WorkspaceLeaf =
-					this.app.workspace.getLeavesOfType(VIEW_TYPE)[0] ??
-					this.app.workspace.getLeftLeaf(false);
-				leaf.setViewState({ type: VIEW_TYPE, active: true });
-				this.app.workspace.revealLeaf(leaf);
-			},
+			callback: () => this.openVerticalTabs(),
 		});
+	}
+
+	async openVerticalTabs() {
+		try {
+			const leaf: WorkspaceLeaf =
+				this.app.workspace.getLeavesOfType(VIEW_TYPE)[0] ??
+				this.app.workspace.getLeftLeaf(false);
+			leaf.setViewState({ type: VIEW_TYPE, active: true });
+			this.app.workspace.revealLeaf(leaf);
+		} catch {
+			// do nothing
+		}
 	}
 
 	onunload() {}

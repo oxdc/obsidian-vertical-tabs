@@ -1,4 +1,25 @@
-# (Yet Another) Obsidian Vertical Tabs
+# Obsidian Vertical Tabs
+
+<p align="center">
+  <a href="https://obsidian.md/plugins?id=vertical-tabs">
+    <img
+      alt="Install"
+      src="https://img.shields.io/badge/Install-blue?style=for-the-badge&logo=obsidian&logoColor=white"
+    />
+  </a>
+  <a href="https://github.com/oxdc/obsidian-vertical-tabs">
+    <img
+      alt="Github Repo"
+      src="https://img.shields.io/badge/GitHub%20Repo-7037C8?style=for-the-badge&logo=GitHub&logoColor=white"
+    />
+  </a>
+  <a href="https://ko-fi.com/oxdcq">
+    <img
+      alt="Support"
+      src="https://img.shields.io/badge/Support-orange?style=for-the-badge&logo=ko-fi&logoColor=white"
+    />
+  </a>
+</p>
 
 [👉 Click To Install](https://obsidian.md/plugins?id=vertical-tabs)
 
@@ -33,3 +54,7 @@ https://github.com/user-attachments/assets/b2c2af6a-75d7-4a83-b279-3f65e38c5b03
 **Zen Mode**:
 
 https://github.com/user-attachments/assets/38e77c08-7b9a-4a40-8da7-4f5bb6bf5815
+
+**Rename Groups**:
+
+https://github.com/user-attachments/assets/2f04f9ce-3fbd-4068-8655-d06ebfe34ba5

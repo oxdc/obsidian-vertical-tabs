@@ -1,13 +1,22 @@
-import { useApp, useSettings } from "src/models/PluginContext";
+import { usePlugin, useSettings } from "src/models/PluginContext";
 import { IconButton } from "./IconButton";
 import { Menu } from "obsidian";
 import { sortStrategies, useTabCache } from "src/models/TabCache";
-import * as VT from "src/models/VTWorkspace";
+import { useViewState } from "src/models/ViewState";
+import * as VT from "../models/VTWorkspace";
 
 export const NavigationHeader = () => {
-	const app = useApp();
+	const plugin = usePlugin();
 	const [settings, setSettings] = useSettings();
 	const { sortStrategy, setSortStrategy } = useTabCache();
+	const { lockFocus } = useViewState();
+
+	const createAndShowNewTab = () => {
+		const workspace = plugin.app.workspace as VT.Workspace;
+		const leaf = workspace.getLeaf(true)
+		workspace.setActiveLeaf(leaf, { focus: true });
+		workspace.onLayoutChange();
+	};
 
 	const toggleTabVisibility = () => {
 		setSettings({
@@ -22,17 +31,10 @@ export const NavigationHeader = () => {
 	};
 
 	const toggleZenMode = () => {
-		const view = (app.workspace as VT.Workspace).getActiveFileView();
 		setSettings({
 			zenMode: !settings.zenMode,
 		});
-		const leaf = view.leaf as VT.WorkspaceLeaf;
-		const parent = leaf.parent;
-		app.workspace.setActiveLeaf(leaf, { focus: true });
-		if (parent.isStacked) {
-			leaf.parent.setStacked(false);
-			leaf.parent.setStacked(true);
-		}
+		lockFocus(plugin);
 	};
 
 	const sortMenu = new Menu();
@@ -75,6 +77,13 @@ export const NavigationHeader = () => {
 	return (
 		<div className="nav-header">
 			<div className="nav-buttons-container">
+				<IconButton
+					icon="plus"
+					action="new-tab"
+					tooltip="New tab"
+					onClick={createAndShowNewTab}
+					isNavAction={true}
+				/>
 				<IconButton
 					icon="app-window"
 					action="toggle-tab"
