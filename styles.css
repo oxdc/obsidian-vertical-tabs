@@ -113,19 +113,24 @@ body:not(.vt-zen-mode)
 	display: flex;
 }
 
-body.vt-zen-mode .workspace-split.mod-root .workspace-tabs:not(.mod-active) {
+body.vt-zen-mode .workspace-split.mod-root .workspace-tabs:not(.mod-active),
+body.vt-zen-mode .workspace-split.mod-root .workspace-tabs:not(.vt-mod-active) {
 	display: none;
 	flex-basis: unset;
 }
 
-body.vt-zen-mode .workspace-split.mod-root .workspace-tabs.mod-active {
+body.vt-zen-mode .workspace-split.mod-root .workspace-tabs.mod-active,
+body.vt-zen-mode .workspace-split.mod-root .workspace-tabs.vt-mod-active {
 	display: flex;
 	flex-basis: 100%;
 }
 
 body.vt-zen-mode
 	.workspace-split.mod-root
-	.workspace-split:has(.workspace-tabs.mod-active) {
+	.workspace-split:has(.workspace-tabs.mod-active),
+body.vt-zen-mode
+	.workspace-split.mod-root
+	.workspace-split:has(.workspace-tabs.vt-mod-active) {
 	flex-basis: 100%;
 }
 

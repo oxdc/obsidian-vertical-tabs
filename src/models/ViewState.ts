@@ -21,6 +21,7 @@ interface ViewState {
 	setActiveLeaf: (plugin: ObsidianVerticalTabs) => void;
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
 	lockFocusOnLeaf: (app: App, leaf: VT.WorkspaceLeaf) => void;
+	resetFocusFlags: (app: App) => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -108,13 +109,26 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		// No root group has been found, this shall never happen?
 	},
 	lockFocusOnLeaf(app: App, leaf: VT.WorkspaceLeaf) {
-		const workspace = app.workspace as VT.Workspace;
+		get().resetFocusFlags(app);
 		const parent = leaf.parent;
-		workspace.setActiveLeaf(leaf, { focus: false });
+		// Focus on the parent group with CSS class
+		parent.containerEl.toggleClass("vt-mod-active", true);
 		// Force maximize the active leaf in stacked mode
 		if (parent.isStacked) {
 			parent.setStacked(false);
 			parent.setStacked(true);
+		}
+	},
+	resetFocusFlags(app: App) {
+		const rootGroups: Record<VT.Identifier, VT.WorkspaceParent> = {};
+		const workspace = app.workspace as VT.Workspace;
+		workspace.iterateRootLeaves((leaf: VT.WorkspaceLeaf) => {
+			const group = leaf.parent as VT.WorkspaceParent;
+			rootGroups[group.id] = group;
+		});
+		for (const id in rootGroups) {
+			const group = rootGroups[id];
+			group.containerEl.toggleClass("vt-mod-active", false);
 		}
 	},
 }));
