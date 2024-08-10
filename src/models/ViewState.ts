@@ -111,10 +111,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		const workspace = app.workspace as VT.Workspace;
 		const parent = leaf.parent;
 		workspace.setActiveLeaf(leaf, { focus: false });
-		// Move the sidebar toggle button to the current visible tab bar
-		const button = workspace.rightSidebarToggleButtonEl;
-		const tabHeader = parent.tabHeaderContainerEl;
-		if (button && tabHeader) tabHeader.appendChild(button);
 		// Force maximize the active leaf in stacked mode
 		if (parent.isStacked) {
 			parent.setStacked(false);
