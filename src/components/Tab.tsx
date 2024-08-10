@@ -33,9 +33,22 @@ export const Tab = ({ leaf }: TabProps) => {
 		sort();
 	};
 
-	const activeTab = () => {
-		plugin.app.workspace.setActiveLeaf(leaf, { focus: true });
-		(plugin.app.workspace as VT.Workspace).onLayoutChange();
+	const close = () => {
+		if (!leaf.getViewState().pinned) leaf.detach();
+	};
+
+	const open = () => {
+		const workspace = plugin.app.workspace as VT.Workspace;
+		workspace.setActiveLeaf(leaf, { focus: true });
+		workspace.onLayoutChange();
+	};
+
+	const activeTab = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+		if (event.button === 1 || event.ctrlKey) {
+			close();
+		} else {
+			open();
+		}
 	};
 
 	const menu = new Menu();
@@ -104,7 +117,7 @@ export const Tab = ({ leaf }: TabProps) => {
 					action="close"
 					tooltip="Close tab"
 					disabled={isPinned}
-					onClick={() => leaf.detach()}
+					onClick={close}
 				/>
 			)}
 		</Fragment>
@@ -123,6 +136,7 @@ export const Tab = ({ leaf }: TabProps) => {
 			{...props}
 			toolbar={toolbar}
 			onClick={activeTab}
+			onDoubleClick={close}
 			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
 			dataType={leaf.getViewState().type}
 			dataId={leaf.id}

@@ -3,12 +3,20 @@ import { IconButton } from "./IconButton";
 import { Menu } from "obsidian";
 import { sortStrategies, useTabCache } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
+import * as VT from "../models/VTWorkspace";
 
 export const NavigationHeader = () => {
 	const plugin = usePlugin();
 	const [settings, setSettings] = useSettings();
 	const { sortStrategy, setSortStrategy } = useTabCache();
 	const { lockFocus } = useViewState();
+
+	const createAndShowNewTab = () => {
+		const workspace = plugin.app.workspace as VT.Workspace;
+		const leaf = workspace.getLeaf(true)
+		workspace.setActiveLeaf(leaf, { focus: true });
+		workspace.onLayoutChange();
+	};
 
 	const toggleTabVisibility = () => {
 		setSettings({
@@ -69,6 +77,13 @@ export const NavigationHeader = () => {
 	return (
 		<div className="nav-header">
 			<div className="nav-buttons-container">
+				<IconButton
+					icon="plus"
+					action="new-tab"
+					tooltip="New tab"
+					onClick={createAndShowNewTab}
+					isNavAction={true}
+				/>
 				<IconButton
 					icon="app-window"
 					action="toggle-tab"
