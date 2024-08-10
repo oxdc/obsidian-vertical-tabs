@@ -120,15 +120,8 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		}
 	},
 	resetFocusFlags(app: App) {
-		const rootGroups: Record<VT.Identifier, VT.WorkspaceParent> = {};
-		const workspace = app.workspace as VT.Workspace;
-		workspace.iterateRootLeaves((leaf: VT.WorkspaceLeaf) => {
-			const group = leaf.parent as VT.WorkspaceParent;
-			rootGroups[group.id] = group;
+		document.querySelectorAll(".vt-mod-active").forEach((el) => {
+			el.classList.remove("vt-mod-active");
 		});
-		for (const id in rootGroups) {
-			const group = rootGroups[id];
-			group.containerEl.toggleClass("vt-mod-active", false);
-		}
 	},
 }));
