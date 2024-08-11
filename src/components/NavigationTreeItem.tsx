@@ -9,6 +9,7 @@ interface NavigationTreeItemProps {
 	title: string | React.ReactNode;
 	icon: string;
 	isTab: boolean;
+	isTabSlot?: boolean;
 	isActive?: boolean;
 	isRenaming?: boolean;
 	isPinned?: boolean;
@@ -31,7 +32,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 	const { attributes, listeners, setNodeRef, isDragging, isOver } =
 		useSortable({
 			id: props.id ?? "",
-			data: { isTab: props.isTab },
+			data: { isTab: props.isTab && !props.isTabSlot },
 			disabled: !props.id,
 		});
 
@@ -47,6 +48,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-sidebar": props.isSidebar,
 		"is-dragging-self": isDragging,
 		"is-dragging-over": isOver,
+		"is-tab-slot": props.isTabSlot,
 	};
 	const selfElClasses: CssClasses = {
 		"tree-item-self": true,

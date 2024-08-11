@@ -18,6 +18,7 @@ import { SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import * as VT from "src/models/VTWorkspace";
 import { moveTab, moveTabToEnd } from "src/services/MoveTab";
+import { TabSlot } from "./TabSlot";
 
 export const NavigationContent = () => {
 	const { groupIDs, content, swapGroup } = useTabCache();
@@ -51,7 +52,10 @@ export const NavigationContent = () => {
 			if (isOverTab) {
 				moveTab(app, activeID, overID);
 			} else {
-				const parent = content.get(overID).group;
+				const groupID = overID.startsWith("slot")
+					? overID.slice(5)
+					: overID;
+				const parent = content.get(groupID).group;
 				if (parent) moveTabToEnd(app, activeID, parent);
 			}
 		} else {
@@ -75,6 +79,15 @@ export const NavigationContent = () => {
 		"is-dragging": isDragging,
 	};
 
+	const leaveIDs = (groupID: VT.Identifier) => {
+		const group = content.get(groupID);
+		return [...group.leafIDs, `slot-${groupID}`];
+	};
+
+	const entryOf = (groupID: VT.Identifier) => {
+		return content.get(groupID);
+	};
+
 	return (
 		<div className={toClassName(rootContainerClasses)}>
 			<div className={toClassName(containerClasses)}>
@@ -87,15 +100,16 @@ export const NavigationContent = () => {
 						{groupIDs.map((groupID) => (
 							<Group
 								key={groupID}
-								type={content.get(groupID).groupType}
-								group={content.get(groupID).group}
+								type={entryOf(groupID).groupType}
+								group={entryOf(groupID).group}
 							>
-								<SortableContext
-									items={content.get(groupID).leafIDs}
-								>
-									{content.get(groupID).leaves.map((leaf) => (
+								<SortableContext items={leaveIDs(groupID)}>
+									{entryOf(groupID).leaves.map((leaf) => (
 										<Tab key={leaf.id} leaf={leaf} />
 									))}
+									{isDragging && !isDraggingGroup && (
+										<TabSlot groupID={groupID} />
+									)}
 								</SortableContext>
 							</Group>
 						))}
