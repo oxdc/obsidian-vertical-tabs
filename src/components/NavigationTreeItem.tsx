@@ -1,8 +1,11 @@
 import { setIcon } from "obsidian";
 import { useEffect, useRef, useState } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
+import * as VT from "src/models/VTWorkspace";
+import { useSortable } from "@dnd-kit/sortable";
 
 interface NavigationTreeItemProps {
+	id: VT.Identifier | null;
 	title: string | React.ReactNode;
 	icon: string;
 	isTab: boolean;
@@ -25,6 +28,13 @@ interface NavigationTreeItemProps {
 }
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
+	const { attributes, listeners, setNodeRef, isDragging, isOver } =
+		useSortable({
+			id: props.id ?? "",
+			data: { isTab: props.isTab },
+			disabled: !props.id,
+		});
+
 	const iconEl = useRef<HTMLDivElement>(null);
 	const [height, setHeight] = useState(0);
 
@@ -35,6 +45,8 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-pinned": props.isPinned,
 		"is-collapsed": props.isCollapsed,
 		"is-sidebar": props.isSidebar,
+		"is-dragging-self": isDragging,
+		"is-dragging-over": isOver,
 	};
 	const selfElClasses: CssClasses = {
 		"tree-item-self": true,
@@ -56,9 +68,12 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 	return (
 		<div
 			className={toClassName(itemElClasses)}
-			style={{ minHeight: props.isCollapsed ? 0 : height }}
 			data-type={props.dataType}
 			data-id={props.dataId}
+			style={{ minHeight: props.isCollapsed ? 0 : height }}
+			ref={props.id && setNodeRef}
+			{...attributes}
+			{...listeners}
 		>
 			<div
 				className={toClassName(selfElClasses)}

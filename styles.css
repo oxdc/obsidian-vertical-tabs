@@ -167,14 +167,6 @@ body.vt-zen-mode
 	display: none;
 }
 
-.obsidian-vertical-tabs-container .tab-droppable:not(.is-dragging-self) {
-	min-height: 2px;
-}
-
-.obsidian-vertical-tabs-container .tab-droppable.is-dragging-self {
-	height: 0px;
-}
-
 .obsidian-vertical-tabs-container .tree-item.is-group input {
 	background: transparent;
 	outline: none;
@@ -250,4 +242,17 @@ body.vt-zen-mode:has(
 	position: fixed;
 	top: 0;
 	right: 0;
+}
+
+.obsidian-vertical-tabs-container.is-dragging-group
+	.tree-item.is-group.is-dragging-over,
+.obsidian-vertical-tabs-container.is-dragging-group
+	.tree-item.is-group:has(.is-dragging-over),
+.obsidian-vertical-tabs-container:not(.is-dragging-group)
+	.tree-item.is-tab.is-dragging-over {
+	background-color: var(--background-modifier-border);
+}
+
+.obsidian-vertical-tabs-container .tree-item.is-dragging-self {
+	opacity: 0.5;
 }

@@ -29,7 +29,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	const toggleCollapsed = () => setIsCollapsed(!isCollapsed);
 	const toggleHidden = () => {
 		if (isSidebar) return;
-		if(group) toggleHiddenGroup(group.id, !isHidden);
+		if (group) toggleHiddenGroup(group.id, !isHidden);
 		setIsHidden(!isHidden);
 	};
 	useEffect(() => {
@@ -83,6 +83,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	);
 	return (
 		<NavigationTreeItem
+			id={isSidebar ? null : group?.id ?? null}
 			isTab={false}
 			title={isEditing ? titleEditor : title}
 			isRenaming={isEditing}
