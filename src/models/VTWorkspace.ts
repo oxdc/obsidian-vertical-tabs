@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import * as Obsidian from "obsidian";
 
 export type Identifier = string;
@@ -40,4 +41,8 @@ export interface WorkspaceLeaf extends Obsidian.WorkspaceLeaf {
 	setParent: (parent: WorkspaceParent) => void;
 	tabHeaderEl?: HTMLElement;
 	tabHeaderInnerTitleEl?: HTMLElement;
+}
+
+export function generateId(): Identifier {
+	return nanoid();
 }
