@@ -10,6 +10,7 @@ interface NavigationTreeItemProps {
 	icon: string;
 	isTab: boolean;
 	isTabSlot?: boolean;
+	isGroupSlot?: boolean;
 	isActive?: boolean;
 	isRenaming?: boolean;
 	isPinned?: boolean;
@@ -49,6 +50,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-dragging-self": isDragging,
 		"is-dragging-over": isOver,
 		"is-tab-slot": props.isTabSlot,
+		"is-group-slot": props.isGroupSlot,
 	};
 	const selfElClasses: CssClasses = {
 		"tree-item-self": true,
@@ -89,7 +91,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				</div>
 				<div className="tree-item-flair-outer">{props.toolbar}</div>
 			</div>
-			{!props.isCollapsed && (
+			{!props.isCollapsed && !isDragging && (
 				<div className="tree-item-children">{props.children}</div>
 			)}
 		</div>

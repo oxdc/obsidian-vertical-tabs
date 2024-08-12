@@ -17,8 +17,9 @@ import { CssClasses, toClassName } from "src/utils/CssClasses";
 import { SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import * as VT from "src/models/VTWorkspace";
-import { moveTab, moveTabToEnd } from "src/services/MoveTab";
+import { moveTab, moveTabToEnd, moveTabToNewGroup } from "src/services/MoveTab";
 import { TabSlot } from "./TabSlot";
+import { GroupSlot } from "./GroupSlot";
 
 export const NavigationContent = () => {
 	const { groupIDs, content, swapGroup } = useTabCache();
@@ -55,8 +56,12 @@ export const NavigationContent = () => {
 				const groupID = overID.startsWith("slot")
 					? overID.slice(5)
 					: overID;
-				const parent = content.get(groupID).group;
-				if (parent) moveTabToEnd(app, activeID, parent);
+				if (groupID === "new") {
+					moveTabToNewGroup(app, activeID);
+				} else {
+					const parent = content.get(groupID).group;
+					if (parent) moveTabToEnd(app, activeID, parent);
+				}
 			}
 		} else {
 			if (isOverTab) {
@@ -79,7 +84,9 @@ export const NavigationContent = () => {
 		"is-dragging": isDragging,
 	};
 
-	const leaveIDs = (groupID: VT.Identifier) => {
+	const getGroupIDs = () => [...groupIDs, "slot-new"];
+
+	const getLeaveIDs = (groupID: VT.Identifier) => {
 		const group = content.get(groupID);
 		return [...group.leafIDs, `slot-${groupID}`];
 	};
@@ -96,14 +103,14 @@ export const NavigationContent = () => {
 					onDragStart={handleDragStart}
 					onDragEnd={handleDragEnd}
 				>
-					<SortableContext items={groupIDs}>
+					<SortableContext items={getGroupIDs()}>
 						{groupIDs.map((groupID) => (
 							<Group
 								key={groupID}
 								type={entryOf(groupID).groupType}
 								group={entryOf(groupID).group}
 							>
-								<SortableContext items={leaveIDs(groupID)}>
+								<SortableContext items={getLeaveIDs(groupID)}>
 									{entryOf(groupID).leaves.map((leaf) => (
 										<Tab key={leaf.id} leaf={leaf} />
 									))}
@@ -113,13 +120,9 @@ export const NavigationContent = () => {
 								</SortableContext>
 							</Group>
 						))}
+						<GroupSlot />
 					</SortableContext>
-					{createPortal(
-						<DragOverlay>
-							{/* <div>placeholder</div> */}
-						</DragOverlay>,
-						document.body
-					)}
+					{createPortal(<DragOverlay />, document.body)}
 				</DndContext>
 			</div>
 		</div>
