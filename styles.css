@@ -251,6 +251,11 @@ body.vt-zen-mode:has(
 	border-top: 5px solid var(--interactive-accent);
 }
 
+.obsidian-vertical-tabs-container .tree-item {
+	margin-top: -5px;
+	border-top: 5px solid transparent;
+}
+
 .obsidian-vertical-tabs-container .tree-item.is-dragging-self {
 	opacity: 0.5;
 }
@@ -258,7 +263,7 @@ body.vt-zen-mode:has(
 .obsidian-vertical-tabs-container:not(.is-dragging-group) .is-tab-slot {
 	height: 6px;
 	background: none !important;
-	display: none;
+	/* display: none; */
 }
 
 .obsidian-vertical-tabs-container:not(.is-dragging-group)

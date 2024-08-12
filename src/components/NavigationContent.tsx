@@ -3,6 +3,7 @@ import { useTabCache } from "src/models/TabCache";
 import { Tab } from "./Tab";
 import { Group } from "./Group";
 import {
+	closestCenter,
 	DndContext,
 	DragEndEvent,
 	DragOverlay,
@@ -100,6 +101,7 @@ export const NavigationContent = () => {
 			<div className={toClassName(containerClasses)}>
 				<DndContext
 					sensors={sensors}
+					collisionDetection={closestCenter}
 					onDragStart={handleDragStart}
 					onDragEnd={handleDragEnd}
 				>
