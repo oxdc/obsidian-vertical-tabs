@@ -131,6 +131,7 @@ export const Tab = ({ leaf }: TabProps) => {
 
 	return (
 		<NavigationTreeItem
+			id={leaf.id}
 			isTab={true}
 			isPinned={isPinned}
 			{...props}

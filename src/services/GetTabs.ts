@@ -6,33 +6,36 @@ function record(
 	nameOrID: string,
 	type: VT.GroupType,
 	leaf: VT.WorkspaceLeaf,
-	tabs: TabCache
+	content: TabCache
 ) {
-	tabs.get(nameOrID).groupType = type;
-	tabs.get(nameOrID).group = leaf.parent as VT.WorkspaceParent;
-	tabs.get(nameOrID).leaves.push(leaf);
+	content.get(nameOrID).groupType = type;
+	content.get(nameOrID).group = leaf.parent as VT.WorkspaceParent;
+	content.get(nameOrID).leaves.push(leaf);
+	content.get(nameOrID).leafIDs.push(leaf.id);
 }
 
 export function getTabs(app: App): TabCache {
-	const tabs = createNewTabCache();
+	const content = createNewTabCache();
 
 	(app.workspace as VT.Workspace).iterateLeaves(
 		app.workspace.leftSplit,
-		(leaf) => record("left-sidebar", VT.GroupType.LeftSidebar, leaf, tabs)
+		(leaf) =>
+			record("left-sidebar", VT.GroupType.LeftSidebar, leaf, content)
 	);
 
 	(app.workspace as VT.Workspace).iterateLeaves(
 		app.workspace.rightSplit,
-		(leaf) => record("right-sidebar", VT.GroupType.RightSidebar, leaf, tabs)
+		(leaf) =>
+			record("right-sidebar", VT.GroupType.RightSidebar, leaf, content)
 	);
 
 	(app.workspace as VT.Workspace).iterateLeaves(
 		app.workspace.rootSplit,
 		(leaf) => {
 			const parent = leaf.parent as VT.WorkspaceParent;
-			record(parent.id, VT.GroupType.RootSplit, leaf, tabs);
+			record(parent.id, VT.GroupType.RootSplit, leaf, content);
 		}
 	);
 
-	return tabs;
+	return content;
 }

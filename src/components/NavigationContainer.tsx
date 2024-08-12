@@ -10,7 +10,7 @@ import * as VT from "../models/VTWorkspace";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
-	const { tabs, refresh, sort } = useTabCache();
+	const { refresh, sort } = useTabCache();
 	const { setActiveLeaf } = useViewState();
 
 	const autoRefresh = () => {
@@ -45,7 +45,7 @@ export const NavigationContainer = () => {
 	return (
 		<div className="vertical-tabs">
 			<NavigationHeader />
-			<NavigationContent tabs={tabs} />
+			<NavigationContent />
 			{createPortal(
 				<div className="sidebar-toggle-buttons">
 					<div className="sidebar-toggle-button mod-left">

@@ -15,12 +15,14 @@ export type TabCacheEntry = {
 	groupType: VT.GroupType;
 	group: VT.WorkspaceParent | null;
 	leaves: VT.WorkspaceLeaf[];
+	leafIDs: VT.Identifier[];
 };
 
 export const createTabCacheEntry = (): TabCacheEntry => ({
 	groupType: VT.GroupType.RootSplit,
 	group: null,
 	leaves: [],
+	leafIDs: [],
 });
 
 const factory = () => createTabCacheEntry();
@@ -29,10 +31,13 @@ export type TabCache = DefaultRecord<VT.Identifier, TabCacheEntry>;
 export const createNewTabCache = () => new DefaultRecord(factory) as TabCache;
 
 interface TabCacheStore {
-	tabs: TabCache;
+	content: TabCache;
+	groupIDs: VT.Identifier[];
+	leaveIDs: VT.Identifier[];
 	sortStrategy: SortStrategy | null;
 	clear: () => void;
 	refresh: (app: App) => void;
+	swapGroup: (source: VT.Identifier, target: VT.Identifier) => void;
 	setSortStrategy: (strategy: SortStrategy | null) => void;
 	sort: () => void;
 }
@@ -47,27 +52,54 @@ export const sortStrategies: Record<string, SortStrategy> = {
 };
 
 export const useTabCache = create<TabCacheStore>()((set, get) => ({
-	tabs: createNewTabCache(),
+	content: createNewTabCache(),
+	groupIDs: [],
+	leaveIDs: [],
 	sortStrategy: null,
-	clear: () => set({ tabs: createNewTabCache() }),
-	refresh: (app) => set({ tabs: getTabs(app) }),
+	clear: () =>
+		set({ content: createNewTabCache(), groupIDs: [], leaveIDs: [] }),
+	refresh: (app) =>
+		set((state) => {
+			const content = getTabs(app);
+			const leaveIDs = Array.from(content.values()).flatMap(
+				(entry) => entry.leafIDs
+			);
+			const groupIDs = state.groupIDs.filter((id) => content.has(id));
+			const newGroupIDs = Array.from(content.keys()).filter(
+				(id) => !groupIDs.includes(id)
+			);
+			return {
+				...state,
+				content,
+				leaveIDs,
+				groupIDs: [...groupIDs, ...newGroupIDs],
+			};
+		}),
+	swapGroup: (source, target) => {
+		const { groupIDs } = get();
+		const sourceIndex = groupIDs.indexOf(source);
+		const targetIndex = groupIDs.indexOf(target);
+		groupIDs[sourceIndex] = target;
+		groupIDs[targetIndex] = source;
+		set({ groupIDs });
+	},
 	setSortStrategy: (strategy) => {
 		set({ sortStrategy: strategy });
 		get().sort();
 	},
 	sort: () => {
-		const { tabs, sortStrategy } = get();
+		const { content, sortStrategy } = get();
 		const newTabs = createNewTabCache();
 		if (!sortStrategy) return;
-		for (const key of tabs.keys()) {
-			const entry = tabs.get(key);
+		for (const key of content.keys()) {
+			const entry = content.get(key);
 			newTabs.set(key, entry);
 			const group =
 				entry.group ||
 				(entry.leaves.length > 0 ? entry.leaves[0].parent : null);
 			if (group) newTabs.get(key).leaves = sortTabs(group, sortStrategy);
 		}
-		set({ tabs: newTabs });
+		set({ content: newTabs });
 	},
 }));
 

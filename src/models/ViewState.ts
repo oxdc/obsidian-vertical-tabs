@@ -21,7 +21,7 @@ interface ViewState {
 	setActiveLeaf: (plugin: ObsidianVerticalTabs) => void;
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
 	lockFocusOnLeaf: (app: App, leaf: VT.WorkspaceLeaf) => void;
-	resetFocusFlags: (app: App) => void;
+	resetFocusFlags: () => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -109,7 +109,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		// No root group has been found, this shall never happen?
 	},
 	lockFocusOnLeaf(app: App, leaf: VT.WorkspaceLeaf) {
-		get().resetFocusFlags(app);
+		get().resetFocusFlags();
 		const parent = leaf.parent;
 		// Focus on the parent group with CSS class
 		parent.containerEl.toggleClass("vt-mod-active", true);
@@ -119,7 +119,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			parent.setStacked(true);
 		}
 	},
-	resetFocusFlags(app: App) {
+	resetFocusFlags() {
 		document.querySelectorAll(".vt-mod-active").forEach((el) => {
 			el.classList.remove("vt-mod-active");
 		});

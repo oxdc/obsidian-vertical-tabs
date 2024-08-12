@@ -1,15 +1,18 @@
-import { CssClasses, toClassName } from "src/utils/CssClasses";
+import { NavigationTreeItem } from "./NavigationTreeItem";
+import * as VT from "src/models/VTWorkspace";
 
 interface TabSlotProps {
-	isHidden?: boolean;
+	groupID: VT.Identifier;
 }
 
-export const TabSlot = ({ isHidden }: TabSlotProps) => {
-	const tabSlotClasses: CssClasses = {
-		"tree-item": true,
-		"is-tab": true,
-		"tab-slot": true,
-		"is-hidden": isHidden,
-	};
-	return <div className={toClassName(tabSlotClasses)}></div>;
+export const TabSlot = ({ groupID }: TabSlotProps) => {
+	return (
+		<NavigationTreeItem
+			title=""
+			icon=""
+			id={`slot-${groupID}`}
+			isTab={true}
+			isTabSlot={true}
+		/>
+	);
 };
