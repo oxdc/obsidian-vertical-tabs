@@ -281,6 +281,10 @@ body.vt-zen-mode:has(
 	display: none;
 }
 
+.obsidian-vertical-tabs-container .is-group-slot * {
+	background: none !important;
+}
+
 .obsidian-vertical-tabs-container:not(.is-dragging-group) .is-group-slot {
 	display: block;
 }
