@@ -22,6 +22,7 @@ interface ViewState {
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
 	lockFocusOnLeaf: (app: App, leaf: VT.WorkspaceLeaf) => void;
 	resetFocusFlags: () => void;
+	insertToggleButtons: (app: App) => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -123,5 +124,36 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		document.querySelectorAll(".vt-mod-active").forEach((el) => {
 			el.classList.remove("vt-mod-active");
 		});
+	},
+	insertToggleButtons(app: App) {
+		const workspace = app.workspace as VT.Workspace;
+		const leftButton = workspace.leftSidebarToggleButtonEl;
+		const rightButton = workspace.rightSidebarToggleButtonEl;
+		const { leftSplit, rightSplit } = workspace;
+		const onClickLeftButton = () => leftSplit.toggle();
+		const onClickRightButton = () => rightSplit.toggle();
+		const tabBars = Array.from(
+			document.querySelectorAll(
+				".workspace-split.mod-root .workspace-tab-header-container"
+			)
+		);
+		for (const tabBar of tabBars) {
+			if (tabBar.querySelector(".vt-mod-toggle.mod-left") === null) {
+				const leftButtonClone = leftButton.cloneNode(
+					true
+				) as HTMLElement;
+				leftButtonClone.classList.add("vt-mod-toggle");
+				leftButtonClone.addEventListener("click", onClickLeftButton);
+				tabBar.prepend(leftButtonClone);
+			}
+			if (tabBar.querySelector(".vt-mod-toggle.mod-right") === null) {
+				const rightButtonClone = rightButton.cloneNode(
+					true
+				) as HTMLElement;
+				rightButtonClone.classList.add("vt-mod-toggle");
+				rightButtonClone.addEventListener("click", onClickRightButton);
+				tabBar.append(rightButtonClone);
+			}
+		}
 	},
 }));

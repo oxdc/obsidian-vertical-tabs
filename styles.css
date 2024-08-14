@@ -176,68 +176,47 @@ body.vt-zen-mode
 	display: flex !important; // always show vertical tabs
 }
 
-body.vt-zen-mode .workspace-split.mod-root .workspace-tab-header-container {
-	padding-left: 0;
-	padding-right: 0;
-}
-
-body.vt-zen-mode
-	.workspace-split.mod-root
-	.workspace-tab-header-container
-	.sidebar-toggle-button {
-	visibility: hidden;
-}
-
+// left spacing
 body.vt-zen-mode:has(
 		.workspace-split.mod-sidedock.mod-left-split.is-sidedock-collapsed
 	)
 	.workspace-split.mod-root
 	.workspace-tab-header-container {
-	padding-left: calc(var(--size-4-3) + var(--frame-left-space) + 27px);
+	padding-left: calc(var(--size-4-2) + var(--frame-left-space));
 }
-
-body.vt-zen-mode:has(
-		.workspace-split.mod-sidedock.mod-left-split.is-sidedock-collapsed
-	)
-	.workspace-split.mod-root
-	.workspace-tab-header-container:has(.sidebar-toggle-button.mod-left) {
-	padding-left: calc(var(--size-4-3) + var(--frame-left-space));
-}
-
+// right spacing
 body.vt-zen-mode:has(
 		.workspace-split.mod-sidedock.mod-right-split.is-sidedock-collapsed
 	)
 	.workspace-split.mod-root
 	.workspace-tab-header-container {
-	padding-right: 38px;
+	padding-right: calc(var(--size-4-2) + var(--frame-right-space));
 }
-
-body > .sidebar-toggle-buttons .sidebar-toggle-button {
+// hide VT toggle buttons by default
+.sidebar-toggle-button.vt-mod-toggle {
 	display: none;
 }
-
+// show VT toggle buttons when sidebar is collapsed
 body.vt-zen-mode:has(
 		.workspace-split.mod-sidedock.mod-left-split.is-sidedock-collapsed
 	)
-	> .sidebar-toggle-buttons
-	.sidebar-toggle-button.mod-left {
-	display: flex;
-	align-items: center;
-	position: fixed;
-	top: 0;
-	left: var(--left-sidebar-toggle-button-offset);
-}
-
+	.sidebar-toggle-button.mod-left.vt-mod-toggle,
 body.vt-zen-mode:has(
 		.workspace-split.mod-sidedock.mod-right-split.is-sidedock-collapsed
 	)
-	> .sidebar-toggle-buttons
-	.sidebar-toggle-button.mod-right {
+	.sidebar-toggle-button.mod-right.vt-mod-toggle {
 	display: flex;
-	align-items: center;
-	position: fixed;
-	top: 0;
-	right: 0;
+}
+// hide native toggle buttons when VT toggle buttons are shown
+body.vt-zen-mode:has(
+		.workspace-split.mod-sidedock.mod-left-split.is-sidedock-collapsed
+	)
+	.sidebar-toggle-button.mod-left:not(.vt-mod-toggle),
+body.vt-zen-mode:has(
+		.workspace-split.mod-sidedock.mod-right-split.is-sidedock-collapsed
+	)
+	.sidebar-toggle-button.mod-right:not(.vt-mod-toggle) {
+	display: none;
 }
 
 .obsidian-vertical-tabs-container.is-dragging-group
