@@ -19,6 +19,7 @@ interface NavigationTreeItemProps {
 	children?: React.ReactNode;
 	toolbar?: React.ReactNode;
 	onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+	onAuxClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 	onDoubleClick?: (
 		event: React.MouseEvent<HTMLDivElement, MouseEvent>
 	) => void;
@@ -82,6 +83,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 			<div
 				className={toClassName(selfElClasses)}
 				onClick={props.onClick}
+				onAuxClick={props.onAuxClick}
 				onDoubleClick={props.onDoubleClick}
 				onContextMenu={props.onContextMenu}
 			>

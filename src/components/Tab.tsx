@@ -44,7 +44,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	};
 
 	const activeTab = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-		if (event.button === 1 || event.ctrlKey) {
+		if (event.altKey) {
 			close();
 		} else {
 			open();
@@ -137,6 +137,7 @@ export const Tab = ({ leaf }: TabProps) => {
 			{...props}
 			toolbar={toolbar}
 			onClick={activeTab}
+			onAuxClick={close}
 			onDoubleClick={close}
 			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
 			dataType={leaf.getViewState().type}
