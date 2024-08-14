@@ -32,6 +32,7 @@ export const IconButton = (props: IconButtonProps) => {
 	return (
 		<div
 			className={toClassName(buttonElClasses)}
+			data-action={props.action}
 			ref={buttonEl}
 			onClick={(e) => {
 				e.stopPropagation();

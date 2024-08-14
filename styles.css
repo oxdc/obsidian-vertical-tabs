@@ -267,3 +267,28 @@ body.vt-zen-mode:has(
 .obsidian-vertical-tabs-container:not(.is-dragging-group) .is-group-slot {
 	display: block;
 }
+
+.obsidian-vertical-tabs-container
+	.tree-item
+	.clickable-icon[data-action="drag-handle"] {
+	visibility: visible !important;
+	color: var(--text-faint);
+}
+
+.obsidian-vertical-tabs-container
+	.tree-item:not(.is-slot)
+	.clickable-icon[data-action="drag-handle"]
+	svg {
+	height: var(--icon-xs);
+	width: var(--icon-xs);
+}
+
+.obsidian-vertical-tabs-container
+	.tree-item.is-slot
+	.clickable-icon[data-action="drag-handle"] {
+	display: none;
+}
+
+.obsidian-vertical-tabs-container .tree-item .drag-handle {
+	touch-action: none;
+}

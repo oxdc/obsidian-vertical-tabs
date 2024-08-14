@@ -1,8 +1,9 @@
-import { setIcon } from "obsidian";
+import { Platform, setIcon } from "obsidian";
 import { useEffect, useRef, useState } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
 import * as VT from "src/models/VTWorkspace";
 import { useSortable } from "@dnd-kit/sortable";
+import { IconButton } from "./IconButton";
 
 interface NavigationTreeItemProps {
 	id: VT.Identifier | null;
@@ -52,6 +53,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-dragging-over": isOver,
 		"is-tab-slot": props.isTabSlot,
 		"is-group-slot": props.isGroupSlot,
+		"is-slot": props.isTabSlot || props.isGroupSlot,
 	};
 	const selfElClasses: CssClasses = {
 		"tree-item-self": true,
@@ -70,32 +72,77 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		}
 	}, [props.isCollapsed]);
 
-	return (
-		<div
-			className={toClassName(itemElClasses)}
-			data-type={props.dataType}
-			data-id={props.dataId}
-			style={{ minHeight: props.isCollapsed ? 0 : height }}
-			ref={props.id && setNodeRef}
-			{...attributes}
-			{...listeners}
-		>
+	if (Platform.isMobile) {
+		return (
 			<div
-				className={toClassName(selfElClasses)}
-				onClick={props.onClick}
-				onAuxClick={props.onAuxClick}
-				onDoubleClick={props.onDoubleClick}
-				onContextMenu={props.onContextMenu}
+				className={toClassName(itemElClasses)}
+				data-type={props.dataType}
+				data-id={props.dataId}
+				style={{ minHeight: props.isCollapsed ? 0 : height }}
 			>
-				<div className="tree-item-icon" ref={iconEl}></div>
-				<div className="tree-item-inner">
-					<div className="tree-item-inner-text">{props.title}</div>
+				<div
+					className={toClassName(selfElClasses)}
+					onClick={props.onClick}
+					onAuxClick={props.onAuxClick}
+					onDoubleClick={props.onDoubleClick}
+					onContextMenu={props.onContextMenu}
+				>
+					<div className="tree-item-icon" ref={iconEl}></div>
+					<div className="tree-item-inner">
+						<div className="tree-item-inner-text">
+							{props.title}
+						</div>
+					</div>
+					<div className="tree-item-flair-outer">
+						{props.toolbar}
+						<div
+							className="drag-handle"
+							ref={props.id && setNodeRef}
+							{...attributes}
+							{...listeners}
+						>
+							<IconButton
+								icon="grip-vertical"
+								action="drag-handle"
+							/>
+						</div>
+					</div>
 				</div>
-				<div className="tree-item-flair-outer">{props.toolbar}</div>
+				{!props.isCollapsed && !isDragging && (
+					<div className="tree-item-children">{props.children}</div>
+				)}
 			</div>
-			{!props.isCollapsed && !isDragging && (
-				<div className="tree-item-children">{props.children}</div>
-			)}
-		</div>
-	);
+		);
+	} else {
+		return (
+			<div
+				className={toClassName(itemElClasses)}
+				data-type={props.dataType}
+				data-id={props.dataId}
+				style={{ minHeight: props.isCollapsed ? 0 : height }}
+				ref={props.id && setNodeRef}
+				{...attributes}
+				{...listeners}
+			>
+				<div
+					className={toClassName(selfElClasses)}
+					onClick={props.onClick}
+					onAuxClick={props.onAuxClick}
+					onDoubleClick={props.onDoubleClick}
+					onContextMenu={props.onContextMenu}
+				>
+					<div className="tree-item-icon" ref={iconEl}></div>
+					<div className="tree-item-inner">
+						<div className="tree-item-inner-text">
+							{props.title}
+						</div>
+					</div>
+					<div className="tree-item-flair-outer">{props.toolbar}</div>
+				</div>
+				{!props.isCollapsed && !isDragging && (
+					<div className="tree-item-children">{props.children}</div>
+				)}
+			</div>
+		);
+	}
 };
