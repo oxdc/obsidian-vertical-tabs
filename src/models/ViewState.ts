@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import * as VT from "./VTWorkspace";
 import { DefaultRecord } from "src/utils/DefaultRecord";
-import { App, ItemView } from "obsidian";
+import { App, EventRef, ItemView } from "obsidian";
 import ObsidianVerticalTabs from "src/main";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
@@ -11,10 +11,16 @@ export type GroupTitles = DefaultRecord<VT.Identifier, string>;
 export const createNewGroupTitles = () =>
 	new DefaultRecord(factory) as GroupTitles;
 
+export type PinningEvents = DefaultRecord<VT.Identifier, EventRef | null>;
+export type PinningEventCallback = (pinned: boolean) => void;
+export const createNewPinningEvents = () =>
+	new DefaultRecord(() => null) as PinningEvents;
+
 interface ViewState {
 	groupTitles: GroupTitles;
 	hiddenGroups: Set<VT.Identifier>;
 	latestActiveLeaf: VT.WorkspaceLeaf | null;
+	pinningEvents: PinningEvents;
 	clear: () => void;
 	setGroupTitle: (id: VT.Identifier, name: string) => void;
 	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => void;
@@ -23,6 +29,11 @@ interface ViewState {
 	lockFocusOnLeaf: (app: App, leaf: VT.WorkspaceLeaf) => void;
 	resetFocusFlags: () => void;
 	insertToggleButtons: (app: App) => void;
+	bindPinningEvent: (
+		leaf: VT.WorkspaceLeaf,
+		callback: PinningEventCallback
+	) => void;
+	unbindPinningEvent: (leaf: VT.WorkspaceLeaf) => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -52,6 +63,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	groupTitles: loadViewState() ?? createNewGroupTitles(),
 	hiddenGroups: loadHiddenGroups(),
 	latestActiveLeaf: null,
+	pinningEvents: createNewPinningEvents(),
 	clear: () => set({ groupTitles: createNewGroupTitles() }),
 	setGroupTitle: (id: VT.Identifier, name: string) =>
 		set((state) => {
@@ -154,6 +166,26 @@ export const useViewState = create<ViewState>()((set, get) => ({
 				rightButtonClone.addEventListener("click", onClickRightButton);
 				tabBar.append(rightButtonClone);
 			}
+		}
+	},
+	bindPinningEvent(
+		leaf: VT.WorkspaceLeaf,
+		callback: (pinned: boolean) => void
+	) {
+		const { pinningEvents } = get();
+		const event = pinningEvents.get(leaf.id);
+		if (event) return;
+		const newEvent = leaf.on("pinned-change", callback);
+		pinningEvents.set(leaf.id, newEvent);
+		set({ pinningEvents });
+	},
+	unbindPinningEvent(leaf: VT.WorkspaceLeaf) {
+		const { pinningEvents } = get();
+		const event = pinningEvents.get(leaf.id);
+		if (event) {
+			leaf.offref(event);
+			pinningEvents.set(leaf.id, null);
+			set({ pinningEvents });
 		}
 	},
 }));

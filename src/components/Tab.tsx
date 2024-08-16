@@ -2,7 +2,7 @@ import * as VT from "src/models/VTWorkspace";
 import { NavigationTreeItem } from "./NavigationTreeItem";
 import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePlugin } from "src/models/PluginContext";
 import { Menu } from "obsidian";
 import {
@@ -11,6 +11,7 @@ import {
 	closeTabsToTopInGroup,
 } from "src/services/CloseTabs";
 import { useTabCache } from "src/models/TabCache";
+import { useViewState } from "src/models/ViewState";
 
 interface TabProps {
 	leaf: VT.WorkspaceLeaf;
@@ -18,8 +19,13 @@ interface TabProps {
 
 export const Tab = ({ leaf }: TabProps) => {
 	const plugin = usePlugin();
+	const { bindPinningEvent } = useViewState();
 	const [isPinned, setIsPinned] = useState(leaf.getViewState().pinned);
 	const { sort } = useTabCache();
+
+	useEffect(() => {
+		bindPinningEvent(leaf, setIsPinned);
+	}, [leaf.id]);
 
 	const togglePinned = () => {
 		leaf.togglePinned();
