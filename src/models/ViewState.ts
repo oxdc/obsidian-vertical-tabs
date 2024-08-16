@@ -1,8 +1,10 @@
 import { create } from "zustand";
 import * as VT from "./VTWorkspace";
 import { DefaultRecord } from "src/utils/DefaultRecord";
-import { App, ItemView } from "obsidian";
+import { App, ItemView, MarkdownPreviewView } from "obsidian";
 import ObsidianVerticalTabs from "src/main";
+import { toJpeg } from "html-to-image";
+import { Options } from "html-to-image/lib/types";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -15,6 +17,7 @@ interface ViewState {
 	groupTitles: GroupTitles;
 	hiddenGroups: Set<VT.Identifier>;
 	latestActiveLeaf: VT.WorkspaceLeaf | null;
+	screenShots: Map<VT.Identifier, string>;
 	clear: () => void;
 	setGroupTitle: (id: VT.Identifier, name: string) => void;
 	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => void;
@@ -23,6 +26,7 @@ interface ViewState {
 	lockFocusOnLeaf: (app: App, leaf: VT.WorkspaceLeaf) => void;
 	resetFocusFlags: () => void;
 	insertToggleButtons: (app: App) => void;
+	getScreenShot: (leaf: VT.WorkspaceLeaf) => Promise<string | null>;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -52,6 +56,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	groupTitles: loadViewState() ?? createNewGroupTitles(),
 	hiddenGroups: loadHiddenGroups(),
 	latestActiveLeaf: null,
+	screenShots: new Map(),
 	clear: () => set({ groupTitles: createNewGroupTitles() }),
 	setGroupTitle: (id: VT.Identifier, name: string) =>
 		set((state) => {
@@ -155,5 +160,29 @@ export const useViewState = create<ViewState>()((set, get) => ({
 				tabBar.append(rightButtonClone);
 			}
 		}
+	},
+	async getScreenShot(leaf: VT.WorkspaceLeaf) {
+		const { screenShots } = get();
+		// const screenshot = screenShots.get(leaf.id);
+		// if (screenshot) return screenshot;
+		const scale = 0.4;
+		const options: Options = {
+			width: 150 / scale,
+			height: 225 / scale,
+			backgroundColor: "white",
+		};
+		console.log(leaf);
+		const parent = leaf.parent as VT.WorkspaceParent;
+		const currentTab = parent.currentTab;
+		parent.selectTab(leaf);
+		const el = leaf.view.containerEl.querySelector(
+			".markdown-reading-view"
+		);
+		if (!el) return null;
+		const dataUrl = await toJpeg(el as HTMLElement, options);
+		parent.selectTabIndex(currentTab);
+		screenShots.set(leaf.id, dataUrl);
+		set({ screenShots });
+		return dataUrl;
 	},
 }));

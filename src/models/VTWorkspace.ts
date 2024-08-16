@@ -38,6 +38,7 @@ export interface WorkspaceLeaf extends Obsidian.WorkspaceLeaf {
 	activeTime: number;
 	parent: WorkspaceParent;
 	setParent: (parent: WorkspaceParent) => void;
+	containerEl: HTMLElement;
 	tabHeaderEl?: HTMLElement;
 	tabHeaderInnerTitleEl?: HTMLElement;
 }

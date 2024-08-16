@@ -21,6 +21,7 @@ import * as VT from "src/models/VTWorkspace";
 import { moveTab, moveTabToEnd, moveTabToNewGroup } from "src/services/MoveTab";
 import { TabSlot } from "./TabSlot";
 import { GroupSlot } from "./GroupSlot";
+import { TabPreview } from "./TabPreview";
 
 export const NavigationContent = () => {
 	const { groupIDs, content, swapGroup } = useTabCache();
@@ -120,6 +121,11 @@ export const NavigationContent = () => {
 										<TabSlot groupID={groupID} />
 									)}
 								</SortableContext>
+								<div className="tab-previews">
+									{entryOf(groupID).leaves.map((leaf) => (
+										<TabPreview key={leaf.id} leaf={leaf} />
+									))}
+								</div>
 							</Group>
 						))}
 						<GroupSlot />

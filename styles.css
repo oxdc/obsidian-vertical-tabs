@@ -292,3 +292,20 @@ body.vt-zen-mode:has(
 .obsidian-vertical-tabs-container .tree-item .drag-handle {
 	touch-action: none;
 }
+
+.tab-previews {
+	display: flex;
+	flex-direction: row;
+	overflow-x: scroll;
+	flex-wrap: nowrap;
+}
+
+.tab-preview {
+	width: 150px;
+	height: 225px;
+	border: var(--border-width) solid var(--background-modifier-border);
+	border-radius: var(--border-radius);
+	background: var(--background-primary);
+	flex-shrink: 0;
+	margin: 5px;
+}
