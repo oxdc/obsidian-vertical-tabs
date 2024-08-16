@@ -1,14 +1,16 @@
 import { NavigationContent } from "./NavigationContent";
 import { NavigationHeader } from "./NavigationHeader";
 import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
-import { usePlugin } from "src/models/PluginContext";
+import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect } from "react";
 import { useViewState } from "src/models/ViewState";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
 	const { refresh, sort } = useTabCache();
-	const { setActiveLeaf, insertToggleButtons } = useViewState();
+	const { setActiveLeaf, insertToggleButtons, lockFocus } = useViewState();
+	const loadSettings = useSettings.use.loadSettings();
+	const toggleZenMode = useSettings.use.toggleZenMode();
 
 	const autoRefresh = () => {
 		setActiveLeaf(plugin);
@@ -20,6 +22,7 @@ export const NavigationContainer = () => {
 	};
 
 	useEffect(() => {
+		loadSettings(plugin);
 		autoRefresh();
 		plugin.registerEvent(
 			plugin.app.workspace.on("layout-change", autoRefresh)
@@ -27,6 +30,14 @@ export const NavigationContainer = () => {
 		plugin.registerEvent(
 			plugin.app.workspace.on("active-leaf-change", autoRefresh)
 		);
+		plugin.addCommand({
+			id: "toggle-zen-mode",
+			name: "Toggle zen mode",
+			callback: () => {
+				toggleZenMode();
+				lockFocus(plugin);
+			},
+		});
 	}, []);
 
 	return (

@@ -1,12 +1,15 @@
 import { App } from "obsidian";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
 import ObsidianVerticalTabs from "src/main";
 import {
 	Settings,
 	SettingsMutatorFn,
 	SettingsMutator,
 	SettingsMutation,
+	DEFAULT_SETTINGS,
 } from "./PluginSettings";
+import { create } from "zustand";
+import { createSelectors } from "./Selectors";
 
 export type SettingsContext = [Settings, (mutator: SettingsMutator) => void];
 
@@ -23,27 +26,56 @@ export const useApp = (): App => {
 	return plugin.app;
 };
 
-export const useSettings = (): SettingsContext => {
-	const plugin = usePlugin();
-	const [settings, setSettings] = useState(plugin.settings);
-	const saveSettings = (mutator: SettingsMutator) => {
-		switch (typeof mutator) {
-			case "object":
-				plugin.settings = {
-					...plugin.settings,
-					...(mutator as SettingsMutation),
-				};
-				break;
-			case "function":
-				plugin.settings = {
-					...plugin.settings,
-					...(mutator as SettingsMutatorFn)(plugin.settings),
-				};
-				break;
-		}
-		plugin.saveSettings();
-		plugin.updateViewStates();
-		setSettings(plugin.settings);
-	};
-	return [settings, saveSettings];
-};
+interface SettingsActions {
+	plugin: ObsidianVerticalTabs | null;
+	loadSettings: (plugin: ObsidianVerticalTabs) => Promise<void>;
+	setSettings: (mutator: SettingsMutator) => void;
+	toggleTabVisibility: () => void;
+	toggleSidebarVisibility: () => void;
+	toggleZenMode: () => void;
+}
+
+export const useSettingsBase = create<Settings & SettingsActions>(
+	(set, get) => ({
+		...DEFAULT_SETTINGS,
+		plugin: null,
+		loadSettings: async (plugin) => {
+			set({ plugin });
+			await plugin.loadData();
+			const settings = plugin.settings;
+			set(settings);
+		},
+		setSettings: (mutator: SettingsMutator) => {
+			const { plugin } = get();
+			if (!plugin) return;
+			switch (typeof mutator) {
+				case "object":
+					plugin.settings = {
+						...plugin.settings,
+						...(mutator as SettingsMutation),
+					};
+					break;
+				case "function":
+					plugin.settings = {
+						...plugin.settings,
+						...(mutator as SettingsMutatorFn)(plugin.settings),
+					};
+					break;
+			}
+			plugin.saveSettings();
+			plugin.updateViewStates();
+			set({ ...plugin.settings });
+		},
+		toggleTabVisibility() {
+			get().setSettings({ showActiveTabs: !get().showActiveTabs });
+		},
+		toggleSidebarVisibility() {
+			get().setSettings({ hideSidebars: !get().hideSidebars });
+		},
+		toggleZenMode() {
+			get().setSettings({ zenMode: !get().zenMode });
+		},
+	})
+);
+
+export const useSettings = createSelectors(useSettingsBase);

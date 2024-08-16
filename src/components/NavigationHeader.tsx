@@ -7,33 +7,24 @@ import * as VT from "../models/VTWorkspace";
 
 export const NavigationHeader = () => {
 	const plugin = usePlugin();
-	const [settings, setSettings] = useSettings();
+	const showActiveTabs = useSettings.use.showActiveTabs();
+	const toggleTabVisibility = useSettings.use.toggleTabVisibility();
+	const hideSidebars = useSettings.use.hideSidebars();
+	const toggleSidebarVisibility = useSettings.use.toggleSidebarVisibility();
+	const zenMode = useSettings.use.zenMode();
+	const toggleZenMode = useSettings.use.toggleZenMode();
 	const { sortStrategy, setSortStrategy } = useTabCache();
 	const { lockFocus } = useViewState();
 
 	const createAndShowNewTab = () => {
 		const workspace = plugin.app.workspace as VT.Workspace;
-		const leaf = workspace.getLeaf(true)
+		const leaf = workspace.getLeaf(true);
 		workspace.setActiveLeaf(leaf, { focus: true });
 		workspace.onLayoutChange();
 	};
 
-	const toggleTabVisibility = () => {
-		setSettings({
-			showActiveTabs: !settings.showActiveTabs,
-		});
-	};
-
-	const toggleSidebarVisibility = () => {
-		setSettings({
-			hideSidebars: !settings.hideSidebars,
-		});
-	};
-
-	const toggleZenMode = () => {
-		setSettings({
-			zenMode: !settings.zenMode,
-		});
+	const toggleZenModeAndLockFocus = () => {
+		toggleZenMode();
 		lockFocus(plugin);
 	};
 
@@ -89,7 +80,7 @@ export const NavigationHeader = () => {
 					action="toggle-tab"
 					tooltip="Show active tabs"
 					onClick={toggleTabVisibility}
-					isActive={settings.showActiveTabs}
+					isActive={showActiveTabs}
 					isNavAction={true}
 				/>
 				<IconButton
@@ -97,7 +88,7 @@ export const NavigationHeader = () => {
 					action="toggle-sidebar"
 					tooltip="Hide sidebars"
 					onClick={toggleSidebarVisibility}
-					isActive={settings.hideSidebars}
+					isActive={hideSidebars}
 					isNavAction={true}
 				/>
 				<IconButton
@@ -111,8 +102,8 @@ export const NavigationHeader = () => {
 					icon="focus"
 					action="zen-mode"
 					tooltip="Zen mode"
-					onClick={toggleZenMode}
-					isActive={settings.zenMode}
+					onClick={toggleZenModeAndLockFocus}
+					isActive={zenMode}
 					isNavAction={true}
 				/>
 			</div>
