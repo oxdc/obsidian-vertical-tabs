@@ -1,3 +1,6 @@
+@import "styles/ShowActiveTabs.scss";
+@import "styles/ZenMode.scss";
+
 .vertical-tabs {
 	display: flex;
 	flex-direction: column;
@@ -70,19 +73,6 @@
 	transform: rotate(calc(var(--direction) * -1 * 90deg));
 }
 
-body.vt-show-active-tabs
-	.workspace-split.mod-root
-	.workspace-tab-header:not(.is-active) {
-	display: none;
-}
-
-body.vt-show-active-tabs
-	.workspace-split.mod-root
-	.workspace-tab-header.is-active {
-	max-width: unset;
-	width: unset;
-}
-
 body.vt-hide-sidebars
 	.obsidian-vertical-tabs-container
 	.tree-item.is-group.is-sidebar {
@@ -93,63 +83,6 @@ body.vt-exclude-self
 	.obsidian-vertical-tabs-container
 	.tree-item.is-tab[data-type="vertical-tabs"] {
 	display: none;
-}
-
-body:not(.vt-zen-mode) .workspace-split.mod-root .workspace-tabs.is-hidden {
-	display: none;
-}
-
-body:not(.vt-zen-mode) .workspace-split.mod-root .workspace-split {
-	display: none;
-}
-
-body:not(.vt-zen-mode)
-	.workspace-split.mod-root
-	.workspace-split:has(.workspace-tabs:not(.is-hidden)) {
-	display: flex;
-}
-
-body.vt-zen-mode .workspace-split.mod-root .workspace-tabs:not(.mod-active),
-body.vt-zen-mode .workspace-split.mod-root .workspace-tabs:not(.vt-mod-active) {
-	display: none;
-	flex-basis: unset;
-}
-
-body.vt-zen-mode .workspace-split.mod-root .workspace-tabs.mod-active,
-body.vt-zen-mode .workspace-split.mod-root .workspace-tabs.vt-mod-active {
-	display: flex;
-	flex-basis: 100%;
-}
-
-body.vt-zen-mode
-	.workspace-split.mod-root
-	.workspace-split:has(.workspace-tabs.mod-active),
-body.vt-zen-mode
-	.workspace-split.mod-root
-	.workspace-split:has(.workspace-tabs.vt-mod-active) {
-	flex-basis: 100%;
-}
-
-body.vt-zen-mode
-	.workspace-split.mod-root
-	.workspace-tab-header:not(.is-active) {
-	display: none;
-}
-
-body.vt-zen-mode .workspace-split.mod-root .workspace-tab-header.is-active {
-	max-width: unset;
-	width: unset;
-}
-
-body.vt-zen-mode {
-	--tab-stacked-pane-width: 100%;
-}
-
-body.vt-zen-mode
-	.obsidian-vertical-tabs-container
-	.tree-item.is-group
-	.clickable-icon.action-button.action-eye-off {
-	visibility: hidden;
 }
 
 .obsidian-vertical-tabs-container .tab-slot {

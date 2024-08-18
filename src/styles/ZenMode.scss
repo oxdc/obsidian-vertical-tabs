@@ -1,0 +1,60 @@
+body:not(.vt-zen-mode) .workspace-split.mod-root {
+	.workspace-tabs.is-hidden {
+		display: none;
+	}
+
+	.workspace-split {
+		display: none;
+
+		&:has(.workspace-tabs:not(.is-hidden)) {
+			display: flex;
+		}
+	}
+}
+
+body.vt-zen-mode .workspace-split.mod-root {
+	.workspace-tabs {
+		&:not(.mod-active),
+		&:not(.vt-mod-active) {
+			display: none;
+			flex-basis: unset;
+		}
+
+		&.mod-active,
+		&.vt-mod-active {
+			display: flex;
+			flex-basis: 100%;
+		}
+	}
+
+	.workspace-split {
+		&:has(.workspace-tabs.mod-active),
+		&:has(.workspace-tabs.vt-mod-active) {
+			flex-basis: 100%;
+		}
+	}
+
+	.workspace-tabs > .workspace-tab-header-container {
+		.workspace-tab-header {
+			&:not(.is-active) {
+				display: none;
+			}
+
+			&.is-active {
+				max-width: unset;
+				width: unset;
+			}
+		}
+	}
+}
+
+body.vt-zen-mode {
+	--tab-stacked-pane-width: 100%;
+}
+
+body.vt-zen-mode
+	.obsidian-vertical-tabs-container
+	.tree-item.is-group
+	.clickable-icon.action-button.action-eye-off {
+	visibility: hidden;
+}

@@ -1,0 +1,16 @@
+body.vt-show-active-tabs {
+	.workspace-split.mod-root {
+		.workspace-tabs > .workspace-tab-header-container {
+			.workspace-tab-header {
+				&:not(.is-active) {
+					display: none;
+				}
+
+				&.is-active {
+					max-width: unset;
+					width: unset;
+				}
+			}
+		}
+	}
+}

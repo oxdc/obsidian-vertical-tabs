@@ -146,7 +146,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		const onClickRightButton = () => rightSplit.toggle();
 		const tabBars = Array.from(
 			document.querySelectorAll(
-				".workspace-split.mod-root .workspace-tab-header-container"
+				".workspace-split.mod-root .workspace-tabs > .workspace-tab-header-container"
 			)
 		);
 		for (const tabBar of tabBars) {
