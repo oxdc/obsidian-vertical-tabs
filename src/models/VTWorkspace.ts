@@ -17,6 +17,7 @@ export interface Workspace extends Obsidian.Workspace {
 	getActiveFileView: () => Obsidian.FileView;
 	leftSidebarToggleButtonEl: HTMLElement;
 	rightSidebarToggleButtonEl: HTMLElement;
+	floatingSplit: Obsidian.WorkspaceSplit;
 }
 
 export interface WorkspaceParent extends Obsidian.WorkspaceParent {

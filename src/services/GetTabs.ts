@@ -16,26 +16,27 @@ function record(
 
 export function getTabs(app: App): TabCache {
 	const content = createNewTabCache();
+	const workspace = app.workspace as VT.Workspace;
 
-	(app.workspace as VT.Workspace).iterateLeaves(
-		app.workspace.leftSplit,
-		(leaf) =>
-			record("left-sidebar", VT.GroupType.LeftSidebar, leaf, content)
+	const { leftSplit, rightSplit, rootSplit, floatingSplit } = workspace;
+
+	workspace.iterateLeaves(leftSplit, (leaf) =>
+		record("left-sidebar", VT.GroupType.LeftSidebar, leaf, content)
 	);
 
-	(app.workspace as VT.Workspace).iterateLeaves(
-		app.workspace.rightSplit,
-		(leaf) =>
-			record("right-sidebar", VT.GroupType.RightSidebar, leaf, content)
+	workspace.iterateLeaves(rightSplit, (leaf) =>
+		record("right-sidebar", VT.GroupType.RightSidebar, leaf, content)
 	);
 
-	(app.workspace as VT.Workspace).iterateLeaves(
-		app.workspace.rootSplit,
-		(leaf) => {
-			const parent = leaf.parent as VT.WorkspaceParent;
-			record(parent.id, VT.GroupType.RootSplit, leaf, content);
-		}
-	);
+	workspace.iterateLeaves(rootSplit, (leaf) => {
+		const parent = leaf.parent as VT.WorkspaceParent;
+		record(parent.id, VT.GroupType.RootSplit, leaf, content);
+	});
+
+	workspace.iterateLeaves(floatingSplit, (leaf) => {
+		const parent = leaf.parent as VT.WorkspaceParent;
+		record(parent.id, VT.GroupType.RootSplit, leaf, content);
+	});
 
 	return content;
 }

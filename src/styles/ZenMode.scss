@@ -12,7 +12,7 @@ body:not(.vt-zen-mode) .workspace-split.mod-root {
 	}
 }
 
-body.vt-zen-mode .workspace-split.mod-root {
+body.vt-zen-mode:not(.is-popout-window) .workspace-split.mod-root {
 	.workspace-tabs {
 		&:not(.mod-active),
 		&:not(.vt-mod-active) {
