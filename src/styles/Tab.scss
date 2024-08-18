@@ -1,0 +1,9 @@
+.obsidian-vertical-tabs-container {
+	.tree-item {
+		&.is-tab {
+			&.is-highlighted .tree-item-self {
+				background-color: var(--background-modifier-active-hover);
+			}
+		}
+	}
+}

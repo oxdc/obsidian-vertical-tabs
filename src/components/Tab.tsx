@@ -22,6 +22,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	const { bindPinningEvent } = useViewState();
 	const [isPinned, setIsPinned] = useState(leaf.getViewState().pinned);
 	const { sort } = useTabCache();
+	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 
 	useEffect(() => {
 		bindPinningEvent(leaf, setIsPinned);
@@ -140,6 +141,7 @@ export const Tab = ({ leaf }: TabProps) => {
 			id={leaf.id}
 			isTab={true}
 			isPinned={isPinned}
+			isHighlighted={lastActiveLeaf?.id === leaf.id}
 			{...props}
 			toolbar={toolbar}
 			onClick={activeTab}

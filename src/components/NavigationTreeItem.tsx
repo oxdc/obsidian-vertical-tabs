@@ -17,6 +17,7 @@ interface NavigationTreeItemProps {
 	isPinned?: boolean;
 	isCollapsed?: boolean;
 	isSidebar?: boolean;
+	isHighlighted?: boolean;
 	children?: React.ReactNode;
 	toolbar?: React.ReactNode;
 	onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
@@ -54,6 +55,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-tab-slot": props.isTabSlot,
 		"is-group-slot": props.isGroupSlot,
 		"is-slot": props.isTabSlot || props.isGroupSlot,
+		"is-highlighted": props.isHighlighted,
 	};
 	const selfElClasses: CssClasses = {
 		"tree-item-self": true,
