@@ -34,6 +34,7 @@ interface ViewState {
 		callback: PinningEventCallback
 	) => void;
 	unbindPinningEvent: (leaf: VT.WorkspaceLeaf) => void;
+	updatePositionLabels: () => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -187,5 +188,39 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			pinningEvents.set(leaf.id, null);
 			set({ pinningEvents });
 		}
+	},
+	updatePositionLabels: () => {
+		const tabContainers = Array.from(
+			document.querySelectorAll(
+				".workspace-split.mod-root .workspace-tabs"
+			)
+		);
+		tabContainers.forEach((tabContainer) => {
+			tabContainer.classList.remove(
+				"vt-mod-top-left-space",
+				"vt-mod-top-right-space"
+			);
+		});
+		const x = tabContainers.map(
+			(tabContainer) => tabContainer.getBoundingClientRect().x
+		);
+		const y = tabContainers.map(
+			(tabContainer) => tabContainer.getBoundingClientRect().y
+		);
+		const xMin = Math.min(...x);
+		const yMin = Math.min(...y);
+		const xMax = Math.max(...x);
+		const topLeftContainer = tabContainers.find(
+			(tabContainer) =>
+				tabContainer.getBoundingClientRect().x === xMin &&
+				tabContainer.getBoundingClientRect().y === yMin
+		);
+		const topRightContainer = tabContainers.find(
+			(tabContainer) =>
+				tabContainer.getBoundingClientRect().x === xMax &&
+				tabContainer.getBoundingClientRect().y === yMin
+		);
+		topLeftContainer?.classList.add("vt-mod-top-left-space");
+		topRightContainer?.classList.add("vt-mod-top-right-space");
 	},
 }));

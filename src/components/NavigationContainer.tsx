@@ -8,13 +8,19 @@ import { useViewState } from "src/models/ViewState";
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
 	const { refresh, sort } = useTabCache();
-	const { setActiveLeaf, insertToggleButtons, lockFocus } = useViewState();
+	const {
+		setActiveLeaf,
+		insertToggleButtons,
+		lockFocus,
+		updatePositionLabels,
+	} = useViewState();
 	const loadSettings = useSettings.use.loadSettings();
 	const toggleZenMode = useSettings.use.toggleZenMode();
 
 	const autoRefresh = () => {
 		setActiveLeaf(plugin);
 		insertToggleButtons(plugin.app);
+		updatePositionLabels();
 		setTimeout(() => {
 			refresh(plugin.app);
 			sort();
