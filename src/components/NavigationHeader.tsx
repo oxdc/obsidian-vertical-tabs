@@ -26,6 +26,8 @@ export const NavigationHeader = () => {
 	const toggleZenModeAndLockFocus = () => {
 		toggleZenMode();
 		lockFocus(plugin);
+		const workspace = plugin.app.workspace as VT.Workspace;
+		workspace.trigger("vertical-tabs:update-toggle");
 	};
 
 	const sortMenu = new Menu();

@@ -7,6 +7,34 @@
 		&.vt-mod-top-right-space .workspace-tab-header-container {
 			padding-right: calc(var(--size-4-2) + var(--frame-right-space));
 		}
+
+		&.vt-mod-top-left-space {
+			border: 2px solid green;
+
+			&::before {
+				content: "Top Left";
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: 10;
+				color: green;
+				background-color: lightgreen;
+			}
+		}
+
+		&.vt-mod-top-right-space {
+			border: 2px solid green;
+
+			&::after {
+				content: "Top Right";
+				position: absolute;
+				top: 0;
+				right: 0;
+				z-index: 10;
+				color: green;
+				background-color: lightgreen;
+			}
+		}
 	}
 
 	&:not(.mod-macos) {

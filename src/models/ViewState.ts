@@ -201,10 +201,14 @@ export const useViewState = create<ViewState>()((set, get) => ({
 				"vt-mod-top-right-space"
 			);
 		});
-		const x = tabContainers.map(
+		const visibleTabContainers = tabContainers.filter(
+			(tabContainer) =>
+				tabContainer.clientHeight > 0 && tabContainer.clientWidth > 0
+		);
+		const x = visibleTabContainers.map(
 			(tabContainer) => tabContainer.getBoundingClientRect().x
 		);
-		const y = tabContainers.map(
+		const y = visibleTabContainers.map(
 			(tabContainer) => tabContainer.getBoundingClientRect().y
 		);
 		const xMin = Math.min(...x);

@@ -3,6 +3,7 @@ import { NavigationTreeItem } from "./NavigationTreeItem";
 import { Fragment, useEffect, useState } from "react";
 import { IconButton } from "./IconButton";
 import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
+import { useApp } from "src/models/PluginContext";
 
 interface GroupProps {
 	type: VT.GroupType;
@@ -17,6 +18,8 @@ const titleMap: Record<VT.GroupType, string> = {
 };
 
 export const Group = ({ type, children, group }: GroupProps) => {
+	const app = useApp();
+	const workspace = app.workspace as VT.Workspace;
 	const isSidebar =
 		type === VT.GroupType.LeftSidebar || type === VT.GroupType.RightSidebar;
 	const [isCollapsed, setIsCollapsed] = useState(isSidebar ? true : false);
@@ -31,6 +34,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		if (isSidebar) return;
 		if (group) toggleHiddenGroup(group.id, !isHidden);
 		setIsHidden(!isHidden);
+		workspace.trigger("vertical-tabs:update-toggle");
 	};
 	useEffect(() => {
 		if (!group) return;
