@@ -20,7 +20,8 @@ interface NavigationTreeItemProps {
 	isHighlighted?: boolean;
 	children?: React.ReactNode;
 	toolbar?: React.ReactNode;
-	onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+	onClick?: (event?: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+	onTouchEnd?: (event: React.TouchEvent<HTMLDivElement>) => void;
 	onAuxClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 	onDoubleClick?: (
 		event: React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -85,6 +86,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				<div
 					className={toClassName(selfElClasses)}
 					onClick={props.onClick}
+					onTouchEnd={props.onTouchEnd}
 					onAuxClick={props.onAuxClick}
 					onDoubleClick={props.onDoubleClick}
 					onContextMenu={props.onContextMenu}

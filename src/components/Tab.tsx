@@ -155,6 +155,7 @@ export const Tab = ({ leaf }: TabProps) => {
 			{...props}
 			toolbar={toolbar}
 			onClick={activeOrCloseTab}
+			onTouchEnd={openTab}
 			onAuxClick={midClickCloseTab}
 			onDoubleClick={closeTab}
 			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
