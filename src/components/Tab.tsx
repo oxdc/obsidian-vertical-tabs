@@ -22,7 +22,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	const { bindPinningEvent } = useViewState();
 	const [isPinned, setIsPinned] = useState(leaf.getViewState().pinned);
 	const { sort } = useTabCache();
-	const { lockFocusOnLeaf } = useViewState();
+	const { lockFocusOnLeaf, toggleHiddenGroup } = useViewState();
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 
 	useEffect(() => {
@@ -55,6 +55,7 @@ export const Tab = ({ leaf }: TabProps) => {
 		const workspace = plugin.app.workspace as VT.Workspace;
 		workspace.setActiveLeaf(leaf, { focus: true });
 		workspace.onLayoutChange();
+		toggleHiddenGroup(leaf.parent.id, false);
 		lockFocusOnLeaf(plugin.app, leaf);
 	};
 

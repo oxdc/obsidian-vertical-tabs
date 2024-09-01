@@ -18,7 +18,7 @@ export const createNewPinningEvents = () =>
 
 interface ViewState {
 	groupTitles: GroupTitles;
-	hiddenGroups: Set<VT.Identifier>;
+	hiddenGroups: Array<VT.Identifier>;
 	latestActiveLeaf: VT.WorkspaceLeaf | null;
 	pinningEvents: PinningEvents;
 	clear: () => void;
@@ -51,15 +51,14 @@ const loadViewState = (): GroupTitles | null => {
 	return new DefaultRecord(factory, entries);
 };
 
-const saveHiddenGroups = (hiddenGroups: Set<VT.Identifier>) => {
-	const data = Array.from(hiddenGroups);
-	localStorage.setItem("hidden-groups", JSON.stringify(data));
+const saveHiddenGroups = (hiddenGroups: Array<VT.Identifier>) => {
+	localStorage.setItem("hidden-groups", JSON.stringify(hiddenGroups));
 };
 
-const loadHiddenGroups = (): Set<VT.Identifier> => {
+const loadHiddenGroups = (): Array<VT.Identifier> => {
 	const data = localStorage.getItem("hidden-groups");
-	if (!data) return new Set();
-	return new Set(JSON.parse(data));
+	if (!data) return [];
+	return JSON.parse(data);
 };
 
 export const useViewState = create<ViewState>()((set, get) => ({
@@ -74,13 +73,16 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			saveViewState(state.groupTitles);
 			return state;
 		}),
-	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) =>
-		set((state) => {
-			if (isHidden) state.hiddenGroups.add(id);
-			else state.hiddenGroups.delete(id);
-			saveHiddenGroups(state.hiddenGroups);
-			return state;
-		}),
+	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => {
+		if (isHidden) {
+			set((state) => ({ hiddenGroups: [...state.hiddenGroups, id] }));
+		} else {
+			set((state) => ({
+				hiddenGroups: state.hiddenGroups.filter((gid) => gid !== id),
+			}));
+		}
+		saveHiddenGroups(get().hiddenGroups);
+	},
 	setLatestActiveLeaf(plugin: ObsidianVerticalTabs) {
 		const workspace = plugin.app.workspace as VT.Workspace;
 		const activeView = workspace.getActiveViewOfType(ItemView);

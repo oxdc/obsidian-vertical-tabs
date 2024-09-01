@@ -20,17 +20,15 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	const isSidebar =
 		type === VT.GroupType.LeftSidebar || type === VT.GroupType.RightSidebar;
 	const [isCollapsed, setIsCollapsed] = useState(isSidebar ? true : false);
-	const { groupTitles, setGroupTitle, hiddenGroups, toggleHiddenGroup } =
-		useViewState();
-	const [isHidden, setIsHidden] = useState(
-		group ? hiddenGroups.has(group.id) : false
+	const { groupTitles, setGroupTitle, toggleHiddenGroup } = useViewState();
+	const isHidden = useViewState((state) =>
+		group ? state.hiddenGroups.includes(group.id) : false
 	);
 	const [isEditing, setIsEditing] = useState(false);
 	const toggleCollapsed = () => setIsCollapsed(!isCollapsed);
 	const toggleHidden = () => {
 		if (isSidebar) return;
 		if (group) toggleHiddenGroup(group.id, !isHidden);
-		setIsHidden(!isHidden);
 	};
 	useEffect(() => {
 		if (!group) return;
