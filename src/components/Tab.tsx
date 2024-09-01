@@ -22,6 +22,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	const { bindPinningEvent } = useViewState();
 	const [isPinned, setIsPinned] = useState(leaf.getViewState().pinned);
 	const { sort } = useTabCache();
+	const { lockFocusOnLeaf } = useViewState();
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 
 	useEffect(() => {
@@ -44,17 +45,22 @@ export const Tab = ({ leaf }: TabProps) => {
 		if (!leaf.getViewState().pinned) leaf.detach();
 	};
 
-	const midClickCloseTab = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+	const midClickCloseTab = (
+		event: React.MouseEvent<HTMLDivElement, MouseEvent>
+	) => {
 		if (event.button === 1) closeTab();
-	}
+	};
 
 	const openTab = () => {
 		const workspace = plugin.app.workspace as VT.Workspace;
 		workspace.setActiveLeaf(leaf, { focus: true });
 		workspace.onLayoutChange();
+		lockFocusOnLeaf(plugin.app, leaf);
 	};
 
-	const activeOrCloseTab = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+	const activeOrCloseTab = (
+		event: React.MouseEvent<HTMLDivElement, MouseEvent>
+	) => {
 		if (event.altKey) {
 			closeTab();
 		} else {

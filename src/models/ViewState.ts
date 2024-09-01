@@ -24,7 +24,10 @@ interface ViewState {
 	clear: () => void;
 	setGroupTitle: (id: VT.Identifier, name: string) => void;
 	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => void;
-	setActiveLeaf: (plugin: ObsidianVerticalTabs) => void;
+	setLatestActiveLeaf: (
+		plugin: ObsidianVerticalTabs,
+		leaf?: VT.WorkspaceLeaf | null
+	) => void;
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
 	lockFocusOnLeaf: (app: App, leaf: VT.WorkspaceLeaf) => void;
 	resetFocusFlags: () => void;
@@ -78,7 +81,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			saveHiddenGroups(state.hiddenGroups);
 			return state;
 		}),
-	setActiveLeaf(plugin: ObsidianVerticalTabs) {
+	setLatestActiveLeaf(plugin: ObsidianVerticalTabs) {
 		const workspace = plugin.app.workspace as VT.Workspace;
 		const activeView = workspace.getActiveViewOfType(ItemView);
 		if (!activeView) {
