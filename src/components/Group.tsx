@@ -54,6 +54,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 			onKeyDown={(e) => {
 				if (e.key === "Enter") handleTitleChange();
 			}}
+			onBlur={handleTitleChange}
 		/>
 	);
 	const props = {
