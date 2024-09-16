@@ -78,6 +78,17 @@ export function isSelfContainedInGroup(
 	return self.parent?.id === groupID;
 }
 
+export function isSelfTheOnlyChildOfGroup(
+	app: App,
+	groupID: VT.Identifier
+): boolean {
+	const leaves = app.workspace.getLeavesOfType(VIEW_TYPE);
+	if (leaves.length === 0) return false;
+	const self = leaves[0] as VT.WorkspaceLeaf;
+	const parent = self.parent as VT.WorkspaceParent;
+	return self.parent?.id === groupID && parent.children.length === 1;
+}
+
 export async function moveSelfToDefaultLocation(app: App) {
 	const workspace = app.workspace as VT.Workspace;
 	const leaves = workspace.getLeavesOfType(VIEW_TYPE);

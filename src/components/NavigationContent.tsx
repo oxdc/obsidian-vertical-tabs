@@ -19,7 +19,7 @@ import { SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import * as VT from "src/models/VTWorkspace";
 import {
-	isSelfContainedInGroup,
+	isSelfTheOnlyChildOfGroup,
 	moveTab,
 	moveTabToEnd,
 	moveTabToNewGroup,
@@ -102,13 +102,6 @@ export const NavigationContent = () => {
 		return content.get(groupID);
 	};
 
-	const hasOnlySelf = (groupID: VT.Identifier): boolean => {
-		return (
-			isSelfContainedInGroup(app, groupID) &&
-			content.get(groupID).leafIDs.length == 1
-		);
-	};
-
 	return (
 		<div className={toClassName(rootContainerClasses)}>
 			<div className={toClassName(containerClasses)}>
@@ -120,7 +113,8 @@ export const NavigationContent = () => {
 				>
 					<SortableContext items={getGroupIDs()}>
 						{groupIDs.map((groupID) =>
-							hasOnlySelf(groupID) && excludeSelf ? null : (
+							isSelfTheOnlyChildOfGroup(app, groupID) &&
+							excludeSelf ? null : (
 								<Group
 									key={groupID}
 									type={entryOf(groupID).groupType}
