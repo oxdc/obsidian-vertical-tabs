@@ -5,6 +5,7 @@ import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect } from "react";
 import { useViewState } from "src/models/ViewState";
 import * as VT from "src/models/VTWorkspace";
+import { debounce } from "obsidian";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
@@ -40,6 +41,9 @@ export const NavigationContainer = () => {
 		autoRefresh();
 		plugin.registerEvent(workspace.on("layout-change", autoRefresh));
 		plugin.registerEvent(workspace.on("active-leaf-change", autoRefresh));
+		plugin.registerEvent(
+			workspace.on("resize", debounce(updatePositionLabels))
+		);
 		plugin.registerEvent(
 			workspace.on("vertical-tabs:update-toggle", updateToggles)
 		);

@@ -191,9 +191,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	},
 	updatePositionLabels: () => {
 		const tabContainers = Array.from(
-			document.querySelectorAll(
-				".workspace-split.mod-root .workspace-tabs"
-			)
+			document.querySelectorAll(".workspace-tabs")
 		);
 		tabContainers.forEach((tabContainer) => {
 			tabContainer.classList.remove(
