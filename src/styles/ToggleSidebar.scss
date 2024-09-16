@@ -1,63 +1,35 @@
-.is-hidden-frameless:not(.is-fullscreen) {
-	.workspace-tabs {
-		&.vt-mod-top-left-space .workspace-tab-header-container {
+.is-hidden-frameless {
+	&:not(.is-fullscreen) {
+		.workspace-tabs.vt-mod-top-left-space .workspace-tab-header-container {
 			padding-left: calc(var(--size-4-2) + var(--frame-left-space));
 		}
 
-		&.vt-mod-top-right-space .workspace-tab-header-container {
+		.workspace-tabs.vt-mod-top-right-space .workspace-tab-header-container {
 			padding-right: calc(var(--size-4-2) + var(--frame-right-space));
-		}
-
-		&.vt-mod-top-left-space {
-			border: 2px solid green;
-
-			&::before {
-				content: "Top Left";
-				position: absolute;
-				top: 0;
-				left: 0;
-				z-index: 10;
-				color: green;
-				background-color: lightgreen;
-			}
-		}
-
-		&.vt-mod-top-right-space {
-			border: 2px solid green;
-
-			&::after {
-				content: "Top Right";
-				position: absolute;
-				top: 0;
-				right: 0;
-				z-index: 10;
-				color: green;
-				background-color: lightgreen;
-			}
 		}
 	}
 
 	&:not(.mod-macos) {
-		.workspace-tabs {
-			&.vt-mod-top-left-space .workspace-tab-header-container:before {
-				-webkit-app-region: no-drag;
-				content: "";
-				height: 100%;
-				left: 0;
-				top: 0;
-				position: absolute;
-				width: var(--frame-left-space);
-			}
+		.workspace-tabs.vt-mod-top-left-space
+			.workspace-tab-header-container:before {
+			-webkit-app-region: no-drag;
+			content: "";
+			height: 100%;
+			left: 0;
+			top: 0;
+			position: absolute;
+			width: var(--frame-left-space);
+		}
 
-			&.vt-mod-top-right-space .workspace-tab-header-container:after {
-				-webkit-app-region: no-drag;
-				content: "";
-				height: 100%;
-				right: 0;
-				top: 0;
-				position: absolute;
-				width: var(--frame-right-space);
-			}
+		.workspace-tabs.vt-mod-top-right-space
+			.workspace-tab-header-container:after {
+			-webkit-app-region: no-drag;
+			content: "";
+			height: 100%;
+			right: 0;
+			top: 0;
+			position: absolute;
+			width: var(--frame-right-space);
 		}
 	}
 }
@@ -67,8 +39,4 @@
 	.workspace-tabs.vt-mod-top-right-space
 	.workspace-tab-header-container {
 	padding-right: 38px;
-}
-
-.sidebar-toggle-button.vt-mod-toggle {
-	background-color: red !important;
 }

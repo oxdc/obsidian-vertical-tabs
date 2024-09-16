@@ -51,6 +51,7 @@ export const NavigationContainer = () => {
 			callback: () => {
 				toggleZenMode();
 				lockFocus(plugin);
+				workspace.trigger("vertical-tabs:update-toggle");
 			},
 		});
 	}, []);
