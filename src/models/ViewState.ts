@@ -252,7 +252,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		topRightContainer?.classList.add("vt-mod-top-right-space");
 		const excludedRightSidebar = tabContainers.filter(
 			(tabContainer) =>
-				!tabContainer.parentElement?.hasClass(".mod-right-split")
+				!tabContainer.parentElement?.hasClass("mod-right-split")
 		);
 		const topRightMainContainer =
 			getCornerContainers(excludedRightSidebar).topRightContainer;
