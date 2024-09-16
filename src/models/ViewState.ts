@@ -189,9 +189,11 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	},
 	insertCloneButtons() {
 		if (!Platform.isDesktop) return;
-		if (isRibbonVisible() && !hasControlButtonsOnTheLeft()) {
-			// the left sidebar toggle button is always visible
-		} else {
+		const isFrameHidden = getFrameStyle() === WindowFrameStyle.Hidden;
+		if (
+			!isRibbonVisible() ||
+			(hasControlButtonsOnTheLeft() && isFrameHidden)
+		) {
 			const { topLeftContainer, leftButtonClone } = get();
 			if (!hasLeftSidebarToggle(topLeftContainer))
 				insertLeftSidebarToggle(topLeftContainer, leftButtonClone);
