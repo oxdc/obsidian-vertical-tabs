@@ -97,12 +97,12 @@ const getCornerContainers = (tabContainers: Array<Element>) => {
 	const xMin = Math.min(...x);
 	const yMin = Math.min(...y);
 	const xMax = Math.max(...x);
-	const topLeftContainer = tabContainers.find(
+	const topLeftContainer = visibleTabContainers.find(
 		(tabContainer) =>
 			tabContainer.getBoundingClientRect().x === xMin &&
 			tabContainer.getBoundingClientRect().y === yMin
 	);
-	const topRightContainer = tabContainers.find(
+	const topRightContainer = visibleTabContainers.find(
 		(tabContainer) =>
 			tabContainer.getBoundingClientRect().x === xMax &&
 			tabContainer.getBoundingClientRect().y === yMin
