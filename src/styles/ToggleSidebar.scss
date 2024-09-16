@@ -69,29 +69,6 @@
 	padding-right: 38px;
 }
 
-// hide VT toggle buttons by default
 .sidebar-toggle-button.vt-mod-toggle {
-	display: none;
 	background-color: red !important;
-}
-
-body:has(.workspace-tabs.is-hidden),
-body.vt-zen-mode {
-	// show VT toggle buttons when sidebar is collapsed
-	&:has(.workspace-split.mod-sidedock.mod-left-split.is-sidedock-collapsed)
-		.vt-mod-top-left-space
-		.sidebar-toggle-button.mod-left.vt-mod-toggle,
-	&:has(.workspace-split.mod-sidedock.mod-right-split.is-sidedock-collapsed)
-		.vt-mod-top-right-space
-		.sidebar-toggle-button.mod-right.vt-mod-toggle {
-		display: flex;
-	}
-
-	// hide native toggle buttons when VT toggle buttons are shown
-	&:has(.workspace-split.mod-sidedock.mod-left-split.is-sidedock-collapsed)
-		.sidebar-toggle-button.mod-left:not(.vt-mod-toggle),
-	&:has(.workspace-split.mod-sidedock.mod-right-split.is-sidedock-collapsed)
-		.sidebar-toggle-button.mod-right:not(.vt-mod-toggle) {
-		display: none;
-	}
 }

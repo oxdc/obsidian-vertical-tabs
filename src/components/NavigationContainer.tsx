@@ -12,7 +12,7 @@ export const NavigationContainer = () => {
 	const { refresh, sort } = useTabCache();
 	const {
 		setActiveLeaf,
-		insertToggleButtons,
+		refreshToggleButtons,
 		lockFocus,
 		updatePositionLabels,
 	} = useViewState();
@@ -21,7 +21,7 @@ export const NavigationContainer = () => {
 
 	const autoRefresh = () => {
 		setActiveLeaf(plugin);
-		insertToggleButtons(plugin.app);
+		refreshToggleButtons(plugin.app);
 		updatePositionLabels();
 		setTimeout(() => {
 			refresh(plugin.app);
@@ -31,7 +31,7 @@ export const NavigationContainer = () => {
 
 	const updateToggles = () => {
 		setTimeout(() => {
-			updatePositionLabels();
+			refreshToggleButtons(plugin.app);
 		}, REFRESH_TIMEOUT);
 	};
 
@@ -41,9 +41,7 @@ export const NavigationContainer = () => {
 		autoRefresh();
 		plugin.registerEvent(workspace.on("layout-change", autoRefresh));
 		plugin.registerEvent(workspace.on("active-leaf-change", autoRefresh));
-		plugin.registerEvent(
-			workspace.on("resize", debounce(updatePositionLabels))
-		);
+		plugin.registerEvent(workspace.on("resize", debounce(updateToggles)));
 		plugin.registerEvent(
 			workspace.on("vertical-tabs:update-toggle", updateToggles)
 		);

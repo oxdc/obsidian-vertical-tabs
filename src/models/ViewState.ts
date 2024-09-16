@@ -1,8 +1,19 @@
 import { create } from "zustand";
 import * as VT from "./VTWorkspace";
 import { DefaultRecord } from "src/utils/DefaultRecord";
-import { App, EventRef, ItemView } from "obsidian";
+import { App, EventRef, ItemView, Platform } from "obsidian";
 import ObsidianVerticalTabs from "src/main";
+import {
+	hasControlButtonsOnTheLeft,
+	hasControlButtonsOnTheRight,
+	isRibbonVisible,
+} from "src/services/WindowFrame";
+import {
+	hasLeftSidebarToggle,
+	hasRightSidebarToggle,
+	insertLeftSidebarToggle,
+	insertRightSidebarToggle,
+} from "src/services/SidebarToggles";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -28,13 +39,20 @@ interface ViewState {
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
 	lockFocusOnLeaf: (app: App, leaf: VT.WorkspaceLeaf) => void;
 	resetFocusFlags: () => void;
-	insertToggleButtons: (app: App) => void;
+	leftButtonClone: HTMLElement | null;
+	rightButtonClone: HTMLElement | null;
+	topLeftContainer: Element | null;
+	topRightContainer: Element | null;
+	cloneToggleButtons: (app: App) => void;
+	removeCloneButtons: () => void;
+	insertCloneButtons: () => void;
+	updatePositionLabels: () => void;
+	refreshToggleButtons: (app: App) => void;
 	bindPinningEvent: (
 		leaf: VT.WorkspaceLeaf,
 		callback: PinningEventCallback
 	) => void;
 	unbindPinningEvent: (leaf: VT.WorkspaceLeaf) => void;
-	updatePositionLabels: () => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -65,6 +83,10 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	hiddenGroups: loadHiddenGroups(),
 	latestActiveLeaf: null,
 	pinningEvents: createNewPinningEvents(),
+	leftButtonClone: null,
+	rightButtonClone: null,
+	topLeftContainer: null,
+	topRightContainer: null,
 	clear: () => set({ groupTitles: createNewGroupTitles() }),
 	setGroupTitle: (id: VT.Identifier, name: string) =>
 		set((state) => {
@@ -138,60 +160,43 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			el.classList.remove("vt-mod-active");
 		});
 	},
-	insertToggleButtons(app: App) {
+	cloneToggleButtons(app: App) {
 		const workspace = app.workspace as VT.Workspace;
 		const leftButton = workspace.leftSidebarToggleButtonEl;
 		const rightButton = workspace.rightSidebarToggleButtonEl;
+		const leftButtonClone = leftButton.cloneNode(true) as HTMLElement;
+		const rightButtonClone = rightButton.cloneNode(true) as HTMLElement;
 		const { leftSplit, rightSplit } = workspace;
 		const onClickLeftButton = () => leftSplit.toggle();
 		const onClickRightButton = () => rightSplit.toggle();
-		const tabBars = Array.from(
-			document.querySelectorAll(
-				".workspace-split.mod-root .workspace-tabs > .workspace-tab-header-container"
-			)
-		);
-		for (const tabBar of tabBars) {
-			if (tabBar.querySelector(".vt-mod-toggle.mod-left") === null) {
-				const leftButtonClone = leftButton.cloneNode(
-					true
-				) as HTMLElement;
-				leftButtonClone.classList.add("vt-mod-toggle");
-				leftButtonClone.addEventListener("click", onClickLeftButton);
-				tabBar.prepend(leftButtonClone);
-			}
-			if (tabBar.querySelector(".vt-mod-toggle.mod-right") === null) {
-				const rightButtonClone = rightButton.cloneNode(
-					true
-				) as HTMLElement;
-				rightButtonClone.classList.add("vt-mod-toggle");
-				rightButtonClone.addEventListener("click", onClickRightButton);
-				tabBar.append(rightButtonClone);
-			}
-		}
+		leftButtonClone.classList.add("vt-mod-toggle");
+		rightButtonClone.classList.add("vt-mod-toggle");
+		leftButtonClone.addEventListener("click", onClickLeftButton);
+		rightButtonClone.addEventListener("click", onClickRightButton);
+		set({ leftButtonClone, rightButtonClone });
 	},
-	bindPinningEvent(
-		leaf: VT.WorkspaceLeaf,
-		callback: (pinned: boolean) => void
-	) {
-		const { pinningEvents } = get();
-		const event = pinningEvents.get(leaf.id);
-		if (event) return;
-		const newEvent = leaf.on("pinned-change", callback);
-		pinningEvents.set(leaf.id, newEvent);
-		set({ pinningEvents });
+	removeCloneButtons() {
+		const { leftButtonClone, rightButtonClone } = get();
+		leftButtonClone?.remove();
+		rightButtonClone?.remove();
 	},
-	unbindPinningEvent(leaf: VT.WorkspaceLeaf) {
-		const { pinningEvents } = get();
-		const event = pinningEvents.get(leaf.id);
-		if (event) {
-			leaf.offref(event);
-			pinningEvents.set(leaf.id, null);
-			set({ pinningEvents });
-		}
+	insertCloneButtons() {
+		if (!Platform.isDesktop) return;
+		if (isRibbonVisible() && !hasControlButtonsOnTheLeft()) return;
+		const { topLeftContainer, leftButtonClone } = get();
+		if (!hasLeftSidebarToggle(topLeftContainer))
+			insertLeftSidebarToggle(topLeftContainer, leftButtonClone);
+		const { topRightContainer, rightButtonClone } = get();
+		if (!hasRightSidebarToggle(topRightContainer))
+			insertRightSidebarToggle(topRightContainer, rightButtonClone);
 	},
 	updatePositionLabels: () => {
 		const tabContainers = Array.from(
-			document.querySelectorAll(".workspace-tabs")
+			document.querySelectorAll(
+				hasControlButtonsOnTheRight()
+					? ".workspace-split:not(.mod-right-split) .workspace-tabs"
+					: ".workspace-tabs"
+			)
 		);
 		tabContainers.forEach((tabContainer) => {
 			tabContainer.classList.remove(
@@ -224,5 +229,35 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		);
 		topLeftContainer?.classList.add("vt-mod-top-left-space");
 		topRightContainer?.classList.add("vt-mod-top-right-space");
+		set({ topLeftContainer, topRightContainer });
+	},
+	refreshToggleButtons(app: App) {
+		get().removeCloneButtons();
+
+		get().updatePositionLabels();
+		const { leftButtonClone, rightButtonClone } = get();
+		if (!leftButtonClone || !rightButtonClone)
+			get().cloneToggleButtons(app);
+		get().insertCloneButtons();
+	},
+	bindPinningEvent(
+		leaf: VT.WorkspaceLeaf,
+		callback: (pinned: boolean) => void
+	) {
+		const { pinningEvents } = get();
+		const event = pinningEvents.get(leaf.id);
+		if (event) return;
+		const newEvent = leaf.on("pinned-change", callback);
+		pinningEvents.set(leaf.id, newEvent);
+		set({ pinningEvents });
+	},
+	unbindPinningEvent(leaf: VT.WorkspaceLeaf) {
+		const { pinningEvents } = get();
+		const event = pinningEvents.get(leaf.id);
+		if (event) {
+			leaf.offref(event);
+			pinningEvents.set(leaf.id, null);
+			set({ pinningEvents });
+		}
 	},
 }));
