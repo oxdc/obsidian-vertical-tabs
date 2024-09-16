@@ -21,7 +21,11 @@ export function isRibbonVisible(): boolean {
 }
 
 function isControlButtonContainerEmpty(container: Element | null): boolean {
-	return container?.querySelector(".titlebar-button") === null;
+	return (
+		container?.querySelector(".titlebar-button.mod-minimize") === null &&
+		container?.querySelector(".titlebar-button.mod-maximize") === null &&
+		container?.querySelector(".titlebar-button.mod-close") === null
+	);
 }
 
 export function hasControlButtonsOnTheLeft(): boolean {

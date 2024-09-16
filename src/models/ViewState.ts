@@ -4,9 +4,11 @@ import { DefaultRecord } from "src/utils/DefaultRecord";
 import { App, EventRef, ItemView, Platform } from "obsidian";
 import ObsidianVerticalTabs from "src/main";
 import {
+	getFrameStyle,
 	hasControlButtonsOnTheLeft,
 	hasControlButtonsOnTheRight,
 	isRibbonVisible,
+	WindowFrameStyle,
 } from "src/services/WindowFrame";
 import {
 	hasLeftSidebarToggle,
@@ -182,18 +184,24 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	},
 	insertCloneButtons() {
 		if (!Platform.isDesktop) return;
-		if (isRibbonVisible() && !hasControlButtonsOnTheLeft()) return;
-		const { topLeftContainer, leftButtonClone } = get();
-		if (!hasLeftSidebarToggle(topLeftContainer))
-			insertLeftSidebarToggle(topLeftContainer, leftButtonClone);
+		if (isRibbonVisible() && !hasControlButtonsOnTheLeft()) {
+			// the left sidebar toggle button is always visible
+		} else {
+			const { topLeftContainer, leftButtonClone } = get();
+			if (!hasLeftSidebarToggle(topLeftContainer))
+				insertLeftSidebarToggle(topLeftContainer, leftButtonClone);
+		}
 		const { topRightContainer, rightButtonClone } = get();
 		if (!hasRightSidebarToggle(topRightContainer))
 			insertRightSidebarToggle(topRightContainer, rightButtonClone);
 	},
 	updatePositionLabels: () => {
+		const excludeRightSidebar =
+			hasControlButtonsOnTheRight() &&
+			getFrameStyle() === WindowFrameStyle.Hidden;
 		const tabContainers = Array.from(
 			document.querySelectorAll(
-				hasControlButtonsOnTheRight()
+				excludeRightSidebar
 					? ".workspace-split:not(.mod-right-split) .workspace-tabs"
 					: ".workspace-tabs"
 			)
