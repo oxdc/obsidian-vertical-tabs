@@ -13,7 +13,8 @@ export const NavigationHeader = () => {
 	const toggleSidebarVisibility = useSettings.use.toggleSidebarVisibility();
 	const zenMode = useSettings.use.zenMode();
 	const toggleZenMode = useSettings.use.toggleZenMode();
-	const { sortStrategy, setSortStrategy } = useTabCache();
+	const sortStrategy = useTabCache((state) => state.sortStrategy);
+	const { setSortStrategy } = useTabCache();
 	const { lockFocus } = useViewState();
 
 	const createAndShowNewTab = () => {
@@ -96,6 +97,7 @@ export const NavigationHeader = () => {
 					action="sort-tabs"
 					tooltip="Sort tabs"
 					onClick={(e) => sortMenu.showAtMouseEvent(e.nativeEvent)}
+					isActive={sortStrategy !== null}
 					isNavAction={true}
 				/>
 				<IconButton

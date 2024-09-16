@@ -51,11 +51,24 @@ export const sortStrategies: Record<string, SortStrategy> = {
 	recentOnBottom: { compareFn: byActiveTime, reverse: true },
 };
 
+const saveSortStrategy = (strategy: SortStrategy | null) => {
+	const name =
+		Object.keys(sortStrategies).find(
+			(key) => sortStrategies[key] === strategy
+		) ?? "none";
+	localStorage.setItem("sort-strategy", name);
+};
+
+const loadSortStrategy = (): SortStrategy | null => {
+	const name = localStorage.getItem("sort-strategy") ?? "none";
+	return sortStrategies[name] ?? null;
+};
+
 export const useTabCache = create<TabCacheStore>()((set, get) => ({
 	content: createNewTabCache(),
 	groupIDs: [],
 	leaveIDs: [],
-	sortStrategy: null,
+	sortStrategy: loadSortStrategy(),
 	clear: () =>
 		set({ content: createNewTabCache(), groupIDs: [], leaveIDs: [] }),
 	refresh: (app) =>
@@ -84,6 +97,7 @@ export const useTabCache = create<TabCacheStore>()((set, get) => ({
 		set({ groupIDs });
 	},
 	setSortStrategy: (strategy) => {
+		saveSortStrategy(strategy);
 		set({ sortStrategy: strategy });
 		get().sort();
 	},

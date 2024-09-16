@@ -4,6 +4,7 @@ import { CssClasses, toClassName } from "src/utils/CssClasses";
 import * as VT from "src/models/VTWorkspace";
 import { useSortable } from "@dnd-kit/sortable";
 import { IconButton } from "./IconButton";
+import { useTabCache } from "src/models/TabCache";
 
 interface NavigationTreeItemProps {
 	id: VT.Identifier | null;
@@ -34,11 +35,12 @@ interface NavigationTreeItemProps {
 }
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
+	const sortStrategy = useTabCache((state) => state.sortStrategy);
 	const { attributes, listeners, setNodeRef, isDragging, isOver } =
 		useSortable({
 			id: props.id ?? "",
 			data: { isTab: props.isTab && !props.isTabSlot },
-			disabled: !props.id,
+			disabled: !props.id || (props.isTab && sortStrategy !== null),
 		});
 
 	const iconEl = useRef<HTMLDivElement>(null);
@@ -124,9 +126,6 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				data-type={props.dataType}
 				data-id={props.dataId}
 				style={{ minHeight: props.isCollapsed ? 0 : height }}
-				ref={props.id && setNodeRef}
-				{...attributes}
-				{...listeners}
 			>
 				<div
 					className={toClassName(selfElClasses)}
@@ -134,6 +133,9 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 					onAuxClick={props.onAuxClick}
 					onDoubleClick={props.onDoubleClick}
 					onContextMenu={props.onContextMenu}
+					ref={props.id && setNodeRef}
+					{...attributes}
+					{...listeners}
 				>
 					<div className="tree-item-icon" ref={iconEl}></div>
 					<div className="tree-item-inner">
