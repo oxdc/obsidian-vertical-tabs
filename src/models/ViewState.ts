@@ -48,6 +48,7 @@ interface ViewState {
 	rightButtonClone: HTMLElement | null;
 	topLeftContainer: Element | null;
 	topRightContainer: Element | null;
+	topRightMainContainer: Element | null;
 	cloneToggleButtons: (app: App) => void;
 	removeCloneButtons: () => void;
 	insertCloneButtons: () => void;
@@ -82,6 +83,33 @@ const loadHiddenGroups = (): Array<VT.Identifier> => {
 	return JSON.parse(data);
 };
 
+const getCornerContainers = (tabContainers: Array<Element>) => {
+	const visibleTabContainers = tabContainers.filter(
+		(tabContainer) =>
+			tabContainer.clientHeight > 0 && tabContainer.clientWidth > 0
+	);
+	const x = visibleTabContainers.map(
+		(tabContainer) => tabContainer.getBoundingClientRect().x
+	);
+	const y = visibleTabContainers.map(
+		(tabContainer) => tabContainer.getBoundingClientRect().y
+	);
+	const xMin = Math.min(...x);
+	const yMin = Math.min(...y);
+	const xMax = Math.max(...x);
+	const topLeftContainer = tabContainers.find(
+		(tabContainer) =>
+			tabContainer.getBoundingClientRect().x === xMin &&
+			tabContainer.getBoundingClientRect().y === yMin
+	);
+	const topRightContainer = tabContainers.find(
+		(tabContainer) =>
+			tabContainer.getBoundingClientRect().x === xMax &&
+			tabContainer.getBoundingClientRect().y === yMin
+	);
+	return { topLeftContainer, topRightContainer };
+};
+
 export const useViewState = create<ViewState>()((set, get) => ({
 	groupTitles: loadViewState() ?? createNewGroupTitles(),
 	hiddenGroups: loadHiddenGroups(),
@@ -91,6 +119,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	rightButtonClone: null,
 	topLeftContainer: null,
 	topRightContainer: null,
+	topRightMainContainer: null,
 	clear: () => set({ groupTitles: createNewGroupTitles() }),
 	setGroupTitle: (id: VT.Identifier, name: string) =>
 		set((state) => {
@@ -198,20 +227,18 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			if (!hasLeftSidebarToggle(topLeftContainer))
 				insertLeftSidebarToggle(topLeftContainer, leftButtonClone);
 		}
-		const { topRightContainer, rightButtonClone } = get();
+		const excludeRightSidebar =
+			hasControlButtonsOnTheRight() && isFrameHidden;
+		const topRightContainer = excludeRightSidebar
+			? get().topRightMainContainer
+			: get().topRightContainer;
+		const { rightButtonClone } = get();
 		if (!hasRightSidebarToggle(topRightContainer))
 			insertRightSidebarToggle(topRightContainer, rightButtonClone);
 	},
 	updatePositionLabels: () => {
-		const excludeRightSidebar =
-			hasControlButtonsOnTheRight() &&
-			getFrameStyle() === WindowFrameStyle.Hidden;
 		const tabContainers = Array.from(
-			document.querySelectorAll(
-				excludeRightSidebar
-					? ".workspace-split:not(.mod-right-split) .workspace-tabs"
-					: ".workspace-tabs"
-			)
+			document.querySelectorAll(".workspace-tabs")
 		);
 		tabContainers.forEach((tabContainer) => {
 			tabContainer.classList.remove(
@@ -219,32 +246,21 @@ export const useViewState = create<ViewState>()((set, get) => ({
 				"vt-mod-top-right-space"
 			);
 		});
-		const visibleTabContainers = tabContainers.filter(
-			(tabContainer) =>
-				tabContainer.clientHeight > 0 && tabContainer.clientWidth > 0
-		);
-		const x = visibleTabContainers.map(
-			(tabContainer) => tabContainer.getBoundingClientRect().x
-		);
-		const y = visibleTabContainers.map(
-			(tabContainer) => tabContainer.getBoundingClientRect().y
-		);
-		const xMin = Math.min(...x);
-		const yMin = Math.min(...y);
-		const xMax = Math.max(...x);
-		const topLeftContainer = tabContainers.find(
-			(tabContainer) =>
-				tabContainer.getBoundingClientRect().x === xMin &&
-				tabContainer.getBoundingClientRect().y === yMin
-		);
-		const topRightContainer = tabContainers.find(
-			(tabContainer) =>
-				tabContainer.getBoundingClientRect().x === xMax &&
-				tabContainer.getBoundingClientRect().y === yMin
-		);
+		const { topLeftContainer, topRightContainer } =
+			getCornerContainers(tabContainers);
 		topLeftContainer?.classList.add("vt-mod-top-left-space");
 		topRightContainer?.classList.add("vt-mod-top-right-space");
-		set({ topLeftContainer, topRightContainer });
+		const excludedRightSidebar = tabContainers.filter(
+			(tabContainer) =>
+				!tabContainer.parentElement?.hasClass(".mod-right-split")
+		);
+		const topRightMainContainer =
+			getCornerContainers(excludedRightSidebar).topRightContainer;
+		set({
+			topLeftContainer,
+			topRightContainer,
+			topRightMainContainer,
+		});
 	},
 	refreshToggleButtons(app: App) {
 		get().removeCloneButtons();
