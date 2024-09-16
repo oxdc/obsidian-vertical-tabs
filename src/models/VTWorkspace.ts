@@ -48,3 +48,7 @@ export interface WorkspaceLeaf extends Obsidian.WorkspaceLeaf {
 	tabHeaderEl?: HTMLElement;
 	tabHeaderInnerTitleEl?: HTMLElement;
 }
+
+export interface WorkspaceSidedock extends Obsidian.WorkspaceSidedock {
+	children: WorkspaceParent[];
+}

@@ -12,18 +12,24 @@ import {
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
-import { useApp } from "src/models/PluginContext";
+import { useApp, useSettings } from "src/models/PluginContext";
 import { useState } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
 import { SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import * as VT from "src/models/VTWorkspace";
-import { moveTab, moveTabToEnd, moveTabToNewGroup } from "src/services/MoveTab";
+import {
+	isSelfContainedInGroup,
+	moveTab,
+	moveTabToEnd,
+	moveTabToNewGroup,
+} from "src/services/MoveTab";
 import { TabSlot } from "./TabSlot";
 import { GroupSlot } from "./GroupSlot";
 
 export const NavigationContent = () => {
 	const { groupIDs, content, swapGroup } = useTabCache();
+	const excludeSelf = useSettings.use.excludeSelf();
 	const app = useApp();
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -96,6 +102,13 @@ export const NavigationContent = () => {
 		return content.get(groupID);
 	};
 
+	const hasOnlySelf = (groupID: VT.Identifier): boolean => {
+		return (
+			isSelfContainedInGroup(app, groupID) &&
+			content.get(groupID).leafIDs.length == 1
+		);
+	};
+
 	return (
 		<div className={toClassName(rootContainerClasses)}>
 			<div className={toClassName(containerClasses)}>
@@ -106,22 +119,26 @@ export const NavigationContent = () => {
 					onDragEnd={handleDragEnd}
 				>
 					<SortableContext items={getGroupIDs()}>
-						{groupIDs.map((groupID) => (
-							<Group
-								key={groupID}
-								type={entryOf(groupID).groupType}
-								group={entryOf(groupID).group}
-							>
-								<SortableContext items={getLeaveIDs(groupID)}>
-									{entryOf(groupID).leaves.map((leaf) => (
-										<Tab key={leaf.id} leaf={leaf} />
-									))}
-									{isDragging && !isDraggingGroup && (
-										<TabSlot groupID={groupID} />
-									)}
-								</SortableContext>
-							</Group>
-						))}
+						{groupIDs.map((groupID) =>
+							hasOnlySelf(groupID) && excludeSelf ? null : (
+								<Group
+									key={groupID}
+									type={entryOf(groupID).groupType}
+									group={entryOf(groupID).group}
+								>
+									<SortableContext
+										items={getLeaveIDs(groupID)}
+									>
+										{entryOf(groupID).leaves.map((leaf) => (
+											<Tab key={leaf.id} leaf={leaf} />
+										))}
+										{isDragging && !isDraggingGroup && (
+											<TabSlot groupID={groupID} />
+										)}
+									</SortableContext>
+								</Group>
+							)
+						)}
 						<GroupSlot />
 					</SortableContext>
 					{createPortal(<DragOverlay />, document.body)}

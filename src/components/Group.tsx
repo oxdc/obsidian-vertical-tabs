@@ -31,7 +31,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	const toggleCollapsed = () => setIsCollapsed(!isCollapsed);
 	const toggleHidden = () => {
 		if (isSidebar) return;
-		if (group) toggleHiddenGroup(group.id, !isHidden);
+		if (group) toggleHiddenGroup(app, group.id, !isHidden);
 		workspace.trigger("vertical-tabs:update-toggle");
 	};
 	useEffect(() => {

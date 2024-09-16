@@ -1,9 +1,11 @@
-.obsidian-vertical-tabs-container {
-	.tree-item {
-		&.is-tab {
-			&.is-highlighted .tree-item-self {
-				background-color: var(--background-modifier-active-hover);
-			}
-		}
-	}
+.obsidian-vertical-tabs-container
+	.tree-item.is-tab.is-highlighted
+	.tree-item-self {
+	background-color: var(--background-modifier-active-hover);
+}
+
+body.vt-exclude-self
+	.obsidian-vertical-tabs-container
+	.tree-item.is-tab.is-self {
+	display: none;
 }

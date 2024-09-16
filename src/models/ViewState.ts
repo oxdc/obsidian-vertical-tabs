@@ -16,6 +16,10 @@ import {
 	insertLeftSidebarToggle,
 	insertRightSidebarToggle,
 } from "src/services/SidebarToggles";
+import {
+	isSelfContainedInGroup,
+	moveSelfToDefaultLocation,
+} from "src/services/MoveTab";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -36,7 +40,7 @@ interface ViewState {
 	pinningEvents: PinningEvents;
 	clear: () => void;
 	setGroupTitle: (id: VT.Identifier, name: string) => void;
-	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => void;
+	toggleHiddenGroup: (app: App, id: VT.Identifier, isHidden: boolean) => void;
 	setLatestActiveLeaf: (
 		plugin: ObsidianVerticalTabs,
 		leaf?: VT.WorkspaceLeaf | null
@@ -127,9 +131,10 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			saveViewState(state.groupTitles);
 			return state;
 		}),
-	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => {
+	toggleHiddenGroup: (app: App, id: VT.Identifier, isHidden: boolean) => {
 		if (isHidden) {
 			set((state) => ({ hiddenGroups: [...state.hiddenGroups, id] }));
+			if (isSelfContainedInGroup(app, id)) moveSelfToDefaultLocation(app);
 		} else {
 			set((state) => ({
 				hiddenGroups: state.hiddenGroups.filter((gid) => gid !== id),

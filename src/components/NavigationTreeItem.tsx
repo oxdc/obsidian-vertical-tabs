@@ -11,6 +11,7 @@ interface NavigationTreeItemProps {
 	title: string | React.ReactNode;
 	icon: string;
 	isTab: boolean;
+	isSelf?: boolean;
 	isTabSlot?: boolean;
 	isGroupSlot?: boolean;
 	isActive?: boolean;
@@ -49,6 +50,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 	const itemElClasses: CssClasses = {
 		"tree-item": true,
 		"is-tab": props.isTab,
+		"is-self": props.isTab && props.isSelf,
 		"is-group": !props.isTab,
 		"is-pinned": props.isPinned,
 		"is-collapsed": props.isCollapsed,

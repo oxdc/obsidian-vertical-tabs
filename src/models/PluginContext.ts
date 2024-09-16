@@ -10,6 +10,7 @@ import {
 } from "./PluginSettings";
 import { create } from "zustand";
 import { createSelectors } from "./Selectors";
+import { moveSelfToDefaultLocation } from "src/services/MoveTab";
 
 export type SettingsContext = [Settings, (mutator: SettingsMutator) => void];
 
@@ -74,6 +75,8 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 		},
 		toggleZenMode() {
 			get().setSettings({ zenMode: !get().zenMode });
+			const { plugin } = get();
+			if (plugin) moveSelfToDefaultLocation(plugin.app);
 		},
 	})
 );

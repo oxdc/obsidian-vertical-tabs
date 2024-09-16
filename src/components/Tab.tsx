@@ -12,6 +12,7 @@ import {
 } from "src/services/CloseTabs";
 import { useTabCache } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
+import { VIEW_TYPE } from "src/navigation";
 
 interface TabProps {
 	leaf: VT.WorkspaceLeaf;
@@ -55,7 +56,7 @@ export const Tab = ({ leaf }: TabProps) => {
 		const workspace = plugin.app.workspace as VT.Workspace;
 		workspace.setActiveLeaf(leaf, { focus: true });
 		workspace.onLayoutChange();
-		toggleHiddenGroup(leaf.parent.id, false);
+		toggleHiddenGroup(plugin.app, leaf.parent.id, false);
 		lockFocusOnLeaf(plugin.app, leaf);
 	};
 
@@ -147,10 +148,13 @@ export const Tab = ({ leaf }: TabProps) => {
 		isActive: leaf.tabHeaderEl?.classList.contains("is-active"),
 	};
 
+	const isSelf = leaf.getViewState().type === VIEW_TYPE;
+
 	return (
 		<NavigationTreeItem
 			id={leaf.id}
 			isTab={true}
+			isSelf={isSelf}
 			isPinned={isPinned}
 			isHighlighted={lastActiveLeaf?.id === leaf.id}
 			{...props}
