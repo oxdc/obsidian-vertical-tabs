@@ -1,8 +1,21 @@
 import { create } from "zustand";
 import * as VT from "./VTWorkspace";
 import { DefaultRecord } from "src/utils/DefaultRecord";
-import { App, EventRef, ItemView } from "obsidian";
+import { App, EventRef, ItemView, Platform } from "obsidian";
 import ObsidianVerticalTabs from "src/main";
+import {
+	getFrameStyle,
+	hasControlButtonsOnTheLeft,
+	hasControlButtonsOnTheRight,
+	isRibbonVisible,
+	WindowFrameStyle,
+} from "src/services/WindowFrame";
+import {
+	hasLeftSidebarToggle,
+	hasRightSidebarToggle,
+	insertLeftSidebarToggle,
+	insertRightSidebarToggle,
+} from "src/services/SidebarToggles";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -31,7 +44,15 @@ interface ViewState {
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
 	lockFocusOnLeaf: (app: App, leaf: VT.WorkspaceLeaf) => void;
 	resetFocusFlags: () => void;
-	insertToggleButtons: (app: App) => void;
+	leftButtonClone: HTMLElement | null;
+	rightButtonClone: HTMLElement | null;
+	topLeftContainer: Element | null;
+	topRightContainer: Element | null;
+	cloneToggleButtons: (app: App) => void;
+	removeCloneButtons: () => void;
+	insertCloneButtons: () => void;
+	updatePositionLabels: () => void;
+	refreshToggleButtons: (app: App) => void;
 	bindPinningEvent: (
 		leaf: VT.WorkspaceLeaf,
 		callback: PinningEventCallback
@@ -66,6 +87,10 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	hiddenGroups: loadHiddenGroups(),
 	latestActiveLeaf: null,
 	pinningEvents: createNewPinningEvents(),
+	leftButtonClone: null,
+	rightButtonClone: null,
+	topLeftContainer: null,
+	topRightContainer: null,
 	clear: () => set({ groupTitles: createNewGroupTitles() }),
 	setGroupTitle: (id: VT.Identifier, name: string) =>
 		set((state) => {
@@ -142,36 +167,90 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			el.classList.remove("vt-mod-active");
 		});
 	},
-	insertToggleButtons(app: App) {
+	cloneToggleButtons(app: App) {
 		const workspace = app.workspace as VT.Workspace;
 		const leftButton = workspace.leftSidebarToggleButtonEl;
 		const rightButton = workspace.rightSidebarToggleButtonEl;
+		const leftButtonClone = leftButton.cloneNode(true) as HTMLElement;
+		const rightButtonClone = rightButton.cloneNode(true) as HTMLElement;
 		const { leftSplit, rightSplit } = workspace;
 		const onClickLeftButton = () => leftSplit.toggle();
 		const onClickRightButton = () => rightSplit.toggle();
-		const tabBars = Array.from(
+		leftButtonClone.classList.add("vt-mod-toggle");
+		rightButtonClone.classList.add("vt-mod-toggle");
+		leftButtonClone.addEventListener("click", onClickLeftButton);
+		rightButtonClone.addEventListener("click", onClickRightButton);
+		set({ leftButtonClone, rightButtonClone });
+	},
+	removeCloneButtons() {
+		const { leftButtonClone, rightButtonClone } = get();
+		leftButtonClone?.remove();
+		rightButtonClone?.remove();
+	},
+	insertCloneButtons() {
+		if (!Platform.isDesktop) return;
+		if (isRibbonVisible() && !hasControlButtonsOnTheLeft()) {
+			// the left sidebar toggle button is always visible
+		} else {
+			const { topLeftContainer, leftButtonClone } = get();
+			if (!hasLeftSidebarToggle(topLeftContainer))
+				insertLeftSidebarToggle(topLeftContainer, leftButtonClone);
+		}
+		const { topRightContainer, rightButtonClone } = get();
+		if (!hasRightSidebarToggle(topRightContainer))
+			insertRightSidebarToggle(topRightContainer, rightButtonClone);
+	},
+	updatePositionLabels: () => {
+		const excludeRightSidebar =
+			hasControlButtonsOnTheRight() &&
+			getFrameStyle() === WindowFrameStyle.Hidden;
+		const tabContainers = Array.from(
 			document.querySelectorAll(
-				".workspace-split.mod-root .workspace-tabs > .workspace-tab-header-container"
+				excludeRightSidebar
+					? ".workspace-split:not(.mod-right-split) .workspace-tabs"
+					: ".workspace-tabs"
 			)
 		);
-		for (const tabBar of tabBars) {
-			if (tabBar.querySelector(".vt-mod-toggle.mod-left") === null) {
-				const leftButtonClone = leftButton.cloneNode(
-					true
-				) as HTMLElement;
-				leftButtonClone.classList.add("vt-mod-toggle");
-				leftButtonClone.addEventListener("click", onClickLeftButton);
-				tabBar.prepend(leftButtonClone);
-			}
-			if (tabBar.querySelector(".vt-mod-toggle.mod-right") === null) {
-				const rightButtonClone = rightButton.cloneNode(
-					true
-				) as HTMLElement;
-				rightButtonClone.classList.add("vt-mod-toggle");
-				rightButtonClone.addEventListener("click", onClickRightButton);
-				tabBar.append(rightButtonClone);
-			}
-		}
+		tabContainers.forEach((tabContainer) => {
+			tabContainer.classList.remove(
+				"vt-mod-top-left-space",
+				"vt-mod-top-right-space"
+			);
+		});
+		const visibleTabContainers = tabContainers.filter(
+			(tabContainer) =>
+				tabContainer.clientHeight > 0 && tabContainer.clientWidth > 0
+		);
+		const x = visibleTabContainers.map(
+			(tabContainer) => tabContainer.getBoundingClientRect().x
+		);
+		const y = visibleTabContainers.map(
+			(tabContainer) => tabContainer.getBoundingClientRect().y
+		);
+		const xMin = Math.min(...x);
+		const yMin = Math.min(...y);
+		const xMax = Math.max(...x);
+		const topLeftContainer = tabContainers.find(
+			(tabContainer) =>
+				tabContainer.getBoundingClientRect().x === xMin &&
+				tabContainer.getBoundingClientRect().y === yMin
+		);
+		const topRightContainer = tabContainers.find(
+			(tabContainer) =>
+				tabContainer.getBoundingClientRect().x === xMax &&
+				tabContainer.getBoundingClientRect().y === yMin
+		);
+		topLeftContainer?.classList.add("vt-mod-top-left-space");
+		topRightContainer?.classList.add("vt-mod-top-right-space");
+		set({ topLeftContainer, topRightContainer });
+	},
+	refreshToggleButtons(app: App) {
+		get().removeCloneButtons();
+		get().updatePositionLabels();
+		const { leftButtonClone, rightButtonClone } = get();
+		if (!leftButtonClone || !rightButtonClone)
+			get().cloneToggleButtons(app);
+		get().insertCloneButtons();
 	},
 	bindPinningEvent(
 		leaf: VT.WorkspaceLeaf,

@@ -8,6 +8,12 @@ export enum GroupType {
 	RootSplit = "root-split",
 }
 
+declare module "obsidian" {
+	interface Workspace {
+		on(name: "vertical-tabs:update-toggle", callback: () => void): EventRef;
+	}
+}
+
 export interface Workspace extends Obsidian.Workspace {
 	iterateLeaves(
 		split: Obsidian.WorkspaceSplit,

@@ -29,6 +29,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	const toggleHidden = () => {
 		if (isSidebar) return;
 		if (group) toggleHiddenGroup(group.id, !isHidden);
+		workspace.trigger("vertical-tabs:update-toggle");
 	};
 	useEffect(() => {
 		if (!group) return;

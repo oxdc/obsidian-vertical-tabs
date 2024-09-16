@@ -1,0 +1,42 @@
+.is-hidden-frameless {
+	&:not(.is-fullscreen) {
+		.workspace-tabs.vt-mod-top-left-space .workspace-tab-header-container {
+			padding-left: calc(var(--size-4-2) + var(--frame-left-space));
+		}
+
+		.workspace-tabs.vt-mod-top-right-space .workspace-tab-header-container {
+			padding-right: calc(var(--size-4-2) + var(--frame-right-space));
+		}
+	}
+
+	&:not(.mod-macos) {
+		.workspace-tabs.vt-mod-top-left-space
+			.workspace-tab-header-container:before {
+			-webkit-app-region: no-drag;
+			content: "";
+			height: 100%;
+			left: 0;
+			top: 0;
+			position: absolute;
+			width: var(--frame-left-space);
+		}
+
+		.workspace-tabs.vt-mod-top-right-space
+			.workspace-tab-header-container:after {
+			-webkit-app-region: no-drag;
+			content: "";
+			height: 100%;
+			right: 0;
+			top: 0;
+			position: absolute;
+			width: var(--frame-right-space);
+		}
+	}
+}
+
+.mod-macos.is-hidden-frameless:not(.is-popout-window)
+	.workspace
+	.workspace-tabs.vt-mod-top-right-space
+	.workspace-tab-header-container {
+	padding-right: 38px;
+}
