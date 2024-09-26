@@ -3,7 +3,7 @@ import { NavigationTreeItem } from "./NavigationTreeItem";
 import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useState } from "react";
-import { usePlugin } from "src/models/PluginContext";
+import { usePlugin, useSettings } from "src/models/PluginContext";
 import { Menu } from "obsidian";
 import {
 	closeOthersInGroup,
@@ -13,6 +13,10 @@ import {
 import { useTabCache } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
 import { VIEW_TYPE } from "src/navigation";
+import {
+	isSelfContainedInGroup,
+	moveSelfToDefaultLocation,
+} from "src/services/MoveTab";
 
 interface TabProps {
 	leaf: VT.WorkspaceLeaf;
@@ -20,6 +24,7 @@ interface TabProps {
 
 export const Tab = ({ leaf }: TabProps) => {
 	const plugin = usePlugin();
+	const zenMode = useSettings.use.zenMode();
 	const { bindPinningEvent } = useViewState();
 	const [isPinned, setIsPinned] = useState(leaf.getViewState().pinned);
 	const { sort } = useTabCache();
@@ -58,6 +63,9 @@ export const Tab = ({ leaf }: TabProps) => {
 		workspace.onLayoutChange();
 		toggleHiddenGroup(plugin.app, leaf.parent.id, false);
 		lockFocusOnLeaf(plugin.app, leaf);
+		if (!isSelfContainedInGroup(plugin.app, leaf.parent.id) && zenMode) {
+			moveSelfToDefaultLocation(plugin.app);
+		}
 	};
 
 	const activeOrCloseTab = (
