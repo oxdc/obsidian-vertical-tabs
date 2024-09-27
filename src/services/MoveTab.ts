@@ -63,6 +63,11 @@ export async function moveTabToNewGroup(app: App, sourceID: VT.Identifier) {
 	const height = sourceParent.containerEl.clientHeight;
 	const width = sourceParent.containerEl.clientWidth;
 	const preferredDirection = height > width ? "horizontal" : "vertical";
-	await app.workspace.duplicateLeaf(sourceLeaf, "split", preferredDirection);
+	const targetLeaf = await app.workspace.duplicateLeaf(
+		sourceLeaf,
+		"split",
+		preferredDirection
+	);
+	targetLeaf.setPinned(!!sourceLeaf.getViewState().pinned);
 	sourceLeaf.detach();
 }
