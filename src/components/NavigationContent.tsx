@@ -60,8 +60,14 @@ export const NavigationContent = () => {
 				if (groupID === "new") {
 					moveTabToNewGroup(app, activeID);
 				} else {
+					const leaf = app.workspace.getLeafById(
+						activeID
+					) as VT.WorkspaceLeaf | null;
 					const parent = content.get(groupID).group;
-					if (parent) moveTabToEnd(app, activeID, parent);
+					const containsActiveLeaf = leaf?.parent.id === parent?.id;
+					if (parent && !containsActiveLeaf) {
+						moveTabToEnd(app, activeID, parent);
+					}
 				}
 			}
 		} else {
