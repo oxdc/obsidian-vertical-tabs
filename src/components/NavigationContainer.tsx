@@ -51,8 +51,15 @@ export const NavigationContainer = () => {
 		});
 	}, []);
 
+	const disableMiddleClickScrolling = (event: React.MouseEvent) => {
+		if (event.button === 1) event.preventDefault();
+	};
+
 	return (
-		<div className="vertical-tabs">
+		<div
+			className="vertical-tabs"
+			onMouseDown={disableMiddleClickScrolling}
+		>
 			<NavigationHeader />
 			<NavigationContent />
 		</div>
