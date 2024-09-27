@@ -4,7 +4,6 @@ import { CssClasses, toClassName } from "src/utils/CssClasses";
 import * as VT from "src/models/VTWorkspace";
 import { useSortable } from "@dnd-kit/sortable";
 import { IconButton } from "./IconButton";
-import { useTabCache } from "src/models/TabCache";
 
 interface NavigationTreeItemProps {
 	id: VT.Identifier | null;
@@ -35,12 +34,11 @@ interface NavigationTreeItemProps {
 }
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
-	const sortStrategy = useTabCache((state) => state.sortStrategy);
 	const { attributes, listeners, setNodeRef, isDragging, isOver } =
 		useSortable({
 			id: props.id ?? "",
 			data: { isTab: props.isTab && !props.isTabSlot },
-			disabled: !props.id || (props.isTab && sortStrategy !== null),
+			disabled: !props.id,
 		});
 
 	const iconEl = useRef<HTMLDivElement>(null);
