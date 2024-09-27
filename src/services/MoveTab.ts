@@ -1,5 +1,6 @@
-import { App } from "obsidian";
+import { App, WorkspaceMobileDrawer, WorkspaceSidedock } from "obsidian";
 import * as VT from "../models/VTWorkspace";
+import { VIEW_TYPE } from "src/navigation";
 
 function removeChild(parent: VT.WorkspaceParent, index: number) {
 	parent.children.splice(index, 1);
@@ -70,4 +71,28 @@ export async function moveTabToNewGroup(app: App, sourceID: VT.Identifier) {
 	);
 	targetLeaf.setPinned(!!sourceLeaf.getViewState().pinned);
 	sourceLeaf.detach();
+}
+
+export function selfIsNotInTheSidebar(app: App) {
+	const workspace = app.workspace as VT.Workspace;
+	const self = workspace.getLeavesOfType(VIEW_TYPE).first();
+	if (!self) return false;
+	const root = self.getRoot();
+	return root !== workspace.leftSplit && root !== workspace.rightSplit;
+}
+
+export async function moveSelfToDefaultLocation(app: App) {
+	const workspace = app.workspace as VT.Workspace;
+	const leaves = workspace.getLeavesOfType(VIEW_TYPE);
+	if (leaves.length === 0) return;
+	const self = leaves[0] as VT.WorkspaceLeaf;
+	const leftSidebar = workspace.leftSplit;
+	if (leftSidebar instanceof WorkspaceSidedock) {
+		const container = leftSidebar as VT.WorkspaceSidedock;
+		const parent = container.children[0] as VT.WorkspaceParent;
+		moveTabToEnd(app, self.id, parent);
+	} else if (leftSidebar instanceof WorkspaceMobileDrawer) {
+		const parent = leftSidebar.parent as VT.WorkspaceParent;
+		moveTabToEnd(app, self.id, parent);
+	}
 }

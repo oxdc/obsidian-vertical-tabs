@@ -6,6 +6,10 @@ import { useEffect } from "react";
 import { useViewState } from "src/models/ViewState";
 import * as VT from "src/models/VTWorkspace";
 import { debounce } from "obsidian";
+import {
+	moveSelfToDefaultLocation,
+	selfIsNotInTheSidebar,
+} from "src/services/MoveTab";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
@@ -18,6 +22,9 @@ export const NavigationContainer = () => {
 	const autoRefresh = () => {
 		setLatestActiveLeaf(plugin);
 		refreshToggleButtons(plugin.app);
+		if (selfIsNotInTheSidebar(plugin.app)) {
+			moveSelfToDefaultLocation(plugin.app);
+		}
 		setTimeout(() => {
 			refresh(plugin.app);
 			sort();
