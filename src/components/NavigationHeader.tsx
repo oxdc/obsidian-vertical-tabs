@@ -15,7 +15,10 @@ export const NavigationHeader = () => {
 	const toggleZenMode = useSettings.use.toggleZenMode();
 	const sortStrategy = useTabCache((state) => state.sortStrategy);
 	const { setSortStrategy } = useTabCache();
-	const { lockFocus } = useViewState();
+	const { lockFocus, setAllCollapsed, setAllExpanded } = useViewState();
+	const globalCollapseState = useViewState(
+		(state) => state.globalCollapseState
+	);
 
 	const createAndShowNewTab = () => {
 		const workspace = plugin.app.workspace as VT.Workspace;
@@ -108,6 +111,23 @@ export const NavigationHeader = () => {
 					tooltip="Zen mode"
 					onClick={toggleZenModeAndLockFocus}
 					isActive={zenMode}
+					isNavAction={true}
+				/>
+				<IconButton
+					icon={
+						globalCollapseState
+							? "unfold-vertical"
+							: "fold-vertical"
+					}
+					action="global-collapse"
+					tooltip={
+						globalCollapseState ? "Expand all" : "Collapse all"
+					}
+					onClick={() =>
+						globalCollapseState
+							? setAllExpanded()
+							: setAllCollapsed()
+					}
 					isNavAction={true}
 				/>
 			</div>

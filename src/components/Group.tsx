@@ -22,7 +22,18 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	const workspace = app.workspace as VT.Workspace;
 	const isSidebar =
 		type === VT.GroupType.LeftSidebar || type === VT.GroupType.RightSidebar;
-	const [isCollapsed, setIsCollapsed] = useState(isSidebar ? true : false);
+	const globalCollpaseState = useViewState(
+		(state) => state.globalCollapseState
+	);
+	const [isCollapsed, setIsCollapsed] = useState(
+		isSidebar ? true : globalCollpaseState
+	);
+
+	useEffect(() => {
+		if (isSidebar) return;
+		setIsCollapsed(globalCollpaseState);
+	}, [globalCollpaseState]);
+
 	const { groupTitles, setGroupTitle, toggleHiddenGroup } = useViewState();
 	const isHidden = useViewState((state) =>
 		group ? state.hiddenGroups.includes(group.id) : false

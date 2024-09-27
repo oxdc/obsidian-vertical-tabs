@@ -34,6 +34,7 @@ interface ViewState {
 	hiddenGroups: Array<VT.Identifier>;
 	latestActiveLeaf: VT.WorkspaceLeaf | null;
 	pinningEvents: PinningEvents;
+	globalCollapseState: boolean;
 	clear: () => void;
 	setGroupTitle: (id: VT.Identifier, name: string) => void;
 	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => void;
@@ -59,6 +60,8 @@ interface ViewState {
 		callback: PinningEventCallback
 	) => void;
 	unbindPinningEvent: (leaf: VT.WorkspaceLeaf) => void;
+	setAllCollapsed: () => void;
+	setAllExpanded: () => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -115,6 +118,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	hiddenGroups: loadHiddenGroups(),
 	latestActiveLeaf: null,
 	pinningEvents: createNewPinningEvents(),
+	globalCollapseState: false,
 	leftButtonClone: null,
 	rightButtonClone: null,
 	topLeftContainer: null,
@@ -289,5 +293,11 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			pinningEvents.set(leaf.id, null);
 			set({ pinningEvents });
 		}
+	},
+	setAllCollapsed() {
+		set({ globalCollapseState: true });
+	},
+	setAllExpanded() {
+		set({ globalCollapseState: false });
 	},
 }));
