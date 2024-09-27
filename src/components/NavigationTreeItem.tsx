@@ -4,7 +4,9 @@ import { CssClasses, toClassName } from "src/utils/CssClasses";
 import * as VT from "src/models/VTWorkspace";
 import { useSortable } from "@dnd-kit/sortable";
 import { IconButton } from "./IconButton";
-import { useTabCache } from "src/models/TabCache";
+import { sortStrategies, useTabCache } from "src/models/TabCache";
+import { useViewState } from "src/models/ViewState";
+import { useApp } from "src/models/PluginContext";
 
 interface NavigationTreeItemProps {
 	id: VT.Identifier | null;
@@ -36,11 +38,41 @@ interface NavigationTreeItemProps {
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 	const sortStrategy = useTabCache((state) => state.sortStrategy);
+	const app = useApp();
+	const DND = useViewState((state) => state.DND);
+	const draggingPinned = !!(
+		DND.activeID &&
+		app.workspace.getLeafById(DND.activeID)?.getViewState().pinned
+	);
+
+	let disableDrop = false;
+
+	if (props.isTab) {
+		switch (sortStrategy) {
+			case sortStrategies.titleAToZ:
+			case sortStrategies.titleZToA:
+				disableDrop = !props.isTabSlot;
+				break;
+			case sortStrategies.pinnedAtTop:
+			case sortStrategies.pinnedAtBottom:
+				disableDrop =
+					(!draggingPinned && props.isPinned) ||
+					(draggingPinned && !props.isPinned);
+				break;
+			case sortStrategies.recentOnTop:
+			case sortStrategies.recentOnBottom:
+				disableDrop = true;
+				break;
+		}
+	}
+
 	const { attributes, listeners, setNodeRef, isDragging, isOver } =
 		useSortable({
 			id: props.id ?? "",
 			data: { isTab: props.isTab && !props.isTabSlot },
-			disabled: !props.id || (props.isTab && sortStrategy !== null),
+			disabled: props.id === null || {
+				droppable: disableDrop,
+			},
 		});
 
 	const iconEl = useRef<HTMLDivElement>(null);

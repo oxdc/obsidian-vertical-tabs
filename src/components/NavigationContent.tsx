@@ -6,6 +6,7 @@ import {
 	closestCenter,
 	DndContext,
 	DragEndEvent,
+	DragOverEvent,
 	DragOverlay,
 	DragStartEvent,
 	PointerSensor,
@@ -21,9 +22,12 @@ import * as VT from "src/models/VTWorkspace";
 import { moveTab, moveTabToEnd, moveTabToNewGroup } from "src/services/MoveTab";
 import { TabSlot } from "./TabSlot";
 import { GroupSlot } from "./GroupSlot";
+import { useViewState } from "src/models/ViewState";
 
 export const NavigationContent = () => {
 	const { groupIDs, content, swapGroup } = useTabCache();
+	const { setDNDState } = useViewState();
+
 	const app = useApp();
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -32,17 +36,24 @@ export const NavigationContent = () => {
 			},
 		})
 	);
+
 	const [isDragging, setIsDragging] = useState(false);
 	const [isDraggingGroup, setIsDraggingGroup] = useState(false);
+
 	const handleDragStart = (event: DragStartEvent) => {
 		setIsDragging(true);
+		setDNDState({ activeID: event.active.id as VT.Identifier });
 		const { active } = event;
 		const isActiveTab = (active.data.current as any).isTab;
 		setIsDraggingGroup(!isActiveTab);
 	};
+	const handleDragOver = (event: DragOverEvent) => {
+		setDNDState({ overID: event.over?.id as VT.Identifier });
+	};
 	const handleDragEnd = (event: DragEndEvent) => {
 		setIsDragging(false);
 		setIsDraggingGroup(false);
+		setDNDState({ activeID: null, overID: null });
 		const { active, over } = event;
 		if (!over) return;
 		const activeID = active.id as VT.Identifier;
@@ -109,6 +120,7 @@ export const NavigationContent = () => {
 					sensors={sensors}
 					collisionDetection={closestCenter}
 					onDragStart={handleDragStart}
+					onDragOver={handleDragOver}
 					onDragEnd={handleDragEnd}
 				>
 					<SortableContext items={getGroupIDs()}>

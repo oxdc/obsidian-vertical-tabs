@@ -29,12 +29,23 @@ export type PinningEventCallback = (pinned: boolean) => void;
 export const createNewPinningEvents = () =>
 	new DefaultRecord(() => null) as PinningEvents;
 
+export type DNDState = {
+	activeID: VT.Identifier | null;
+	overID: VT.Identifier | null;
+};
+export const createNewDNDState = () => ({
+	activeID: null,
+	overID: null,
+});
+
 interface ViewState {
+	DND: DNDState;
 	groupTitles: GroupTitles;
 	hiddenGroups: Array<VT.Identifier>;
 	latestActiveLeaf: VT.WorkspaceLeaf | null;
 	pinningEvents: PinningEvents;
 	clear: () => void;
+	setDNDState: (newState: Partial<DNDState>) => void;
 	setGroupTitle: (id: VT.Identifier, name: string) => void;
 	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => void;
 	setLatestActiveLeaf: (
@@ -111,6 +122,7 @@ const getCornerContainers = (tabContainers: Array<Element>) => {
 };
 
 export const useViewState = create<ViewState>()((set, get) => ({
+	DND: createNewDNDState(),
 	groupTitles: loadViewState() ?? createNewGroupTitles(),
 	hiddenGroups: loadHiddenGroups(),
 	latestActiveLeaf: null,
@@ -121,6 +133,9 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	topRightContainer: null,
 	topRightMainContainer: null,
 	clear: () => set({ groupTitles: createNewGroupTitles() }),
+	setDNDState: (newState) => {
+		set((state) => ({ DND: { ...state.DND, ...newState } }))
+	},
 	setGroupTitle: (id: VT.Identifier, name: string) =>
 		set((state) => {
 			state.groupTitles.set(id, name);
