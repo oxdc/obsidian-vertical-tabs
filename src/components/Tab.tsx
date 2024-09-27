@@ -12,6 +12,7 @@ import {
 } from "src/services/CloseTabs";
 import { useTabCache } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
+import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 
 interface TabProps {
 	leaf: VT.WorkspaceLeaf;
@@ -142,7 +143,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	);
 
 	const props = {
-		title: leaf.getDisplayText(),
+		title: DeduplicatedTitle(plugin.app, leaf),
 		icon: leaf.getIcon(),
 		isActive: leaf.tabHeaderEl?.classList.contains("is-active"),
 	};
