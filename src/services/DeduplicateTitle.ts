@@ -1,13 +1,12 @@
-import { App } from "obsidian";
-import * as VT from "src/models/VTWorkspace";
+import { App, WorkspaceLeaf } from "obsidian";
 
 function hideExtension(file: string) {
 	const dot = file.lastIndexOf(".");
 	return dot === -1 ? file : file.slice(0, dot);
 }
 
-export function DeduplicatedTitle(app: App, leaf: VT.WorkspaceLeaf) {
-	const workspace = app.workspace as VT.Workspace;
+export function DeduplicatedTitle(app: App, leaf: WorkspaceLeaf) {
+	const workspace = app.workspace;
 	const viewState = leaf.getViewState();
 	const myDefaultTitle = leaf.getDisplayText();
 	if (viewState.type !== "markdown") return myDefaultTitle;
@@ -15,7 +14,7 @@ export function DeduplicatedTitle(app: App, leaf: VT.WorkspaceLeaf) {
 	if (!state || !state.file) return myDefaultTitle;
 	const file = state.file;
 	let hasDuplicates = false;
-	workspace.getLeavesOfType("markdown").forEach((other: VT.WorkspaceLeaf) => {
+	workspace.getLeavesOfType("markdown").forEach((other: WorkspaceLeaf) => {
 		if (
 			other.id !== leaf.id &&
 			other.getViewState().state?.file !== file &&

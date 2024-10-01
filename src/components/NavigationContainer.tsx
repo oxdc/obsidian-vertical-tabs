@@ -4,7 +4,6 @@ import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect } from "react";
 import { useViewState } from "src/models/ViewState";
-import * as VT from "src/models/VTWorkspace";
 import { debounce } from "obsidian";
 import {
 	moveSelfToDefaultLocation,
@@ -38,7 +37,7 @@ export const NavigationContainer = () => {
 	};
 
 	useEffect(() => {
-		const workspace = plugin.app.workspace as VT.Workspace;
+		const workspace = plugin.app.workspace;
 		loadSettings(plugin);
 		autoRefresh();
 		plugin.registerEvent(workspace.on("layout-change", autoRefresh));

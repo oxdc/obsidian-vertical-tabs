@@ -1,5 +1,4 @@
-import { App } from "obsidian";
-import * as VT from "./VTWorkspace";
+import { App, WorkspaceLeaf, WorkspaceParent } from "obsidian";
 import { create } from "zustand";
 import { DefaultRecord } from "src/utils/DefaultRecord";
 import { getTabs } from "src/services/GetTabs";
@@ -10,16 +9,17 @@ import {
 	SortStrategy,
 	sortTabs,
 } from "src/services/SortTabs";
+import { GroupType, Identifier } from "./VTWorkspace";
 
 export type TabCacheEntry = {
-	groupType: VT.GroupType;
-	group: VT.WorkspaceParent | null;
-	leaves: VT.WorkspaceLeaf[];
-	leafIDs: VT.Identifier[];
+	groupType: GroupType;
+	group: WorkspaceParent | null;
+	leaves: WorkspaceLeaf[];
+	leafIDs: Identifier[];
 };
 
 export const createTabCacheEntry = (): TabCacheEntry => ({
-	groupType: VT.GroupType.RootSplit,
+	groupType: GroupType.RootSplit,
 	group: null,
 	leaves: [],
 	leafIDs: [],
@@ -27,17 +27,17 @@ export const createTabCacheEntry = (): TabCacheEntry => ({
 
 const factory = () => createTabCacheEntry();
 
-export type TabCache = DefaultRecord<VT.Identifier, TabCacheEntry>;
+export type TabCache = DefaultRecord<Identifier, TabCacheEntry>;
 export const createNewTabCache = () => new DefaultRecord(factory) as TabCache;
 
 interface TabCacheStore {
 	content: TabCache;
-	groupIDs: VT.Identifier[];
-	leaveIDs: VT.Identifier[];
+	groupIDs: Identifier[];
+	leaveIDs: Identifier[];
 	sortStrategy: SortStrategy | null;
 	clear: () => void;
 	refresh: (app: App) => void;
-	swapGroup: (source: VT.Identifier, target: VT.Identifier) => void;
+	swapGroup: (source: Identifier, target: Identifier) => void;
 	setSortStrategy: (strategy: SortStrategy | null) => void;
 	sort: () => void;
 }

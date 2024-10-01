@@ -1,27 +1,28 @@
-import * as VT from "src/models/VTWorkspace";
 import { NavigationTreeItem } from "./NavigationTreeItem";
 import { Fragment, useEffect, useState } from "react";
 import { IconButton } from "./IconButton";
 import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
 import { useApp } from "src/models/PluginContext";
+import { GroupType } from "src/models/VTWorkspace";
+import { WorkspaceParent } from "obsidian";
 
 interface GroupProps {
-	type: VT.GroupType;
-	group: VT.WorkspaceParent | null;
+	type: GroupType;
+	group: WorkspaceParent | null;
 	children?: React.ReactNode;
 }
 
-const titleMap: Record<VT.GroupType, string> = {
-	[VT.GroupType.LeftSidebar]: "Left sidebar",
-	[VT.GroupType.RightSidebar]: "Right sidebar",
-	[VT.GroupType.RootSplit]: DEFAULT_GROUP_TITLE,
+const titleMap: Record<GroupType, string> = {
+	[GroupType.LeftSidebar]: "Left sidebar",
+	[GroupType.RightSidebar]: "Right sidebar",
+	[GroupType.RootSplit]: DEFAULT_GROUP_TITLE,
 };
 
 export const Group = ({ type, children, group }: GroupProps) => {
 	const app = useApp();
-	const workspace = app.workspace as VT.Workspace;
+	const workspace = app.workspace;
 	const isSidebar =
-		type === VT.GroupType.LeftSidebar || type === VT.GroupType.RightSidebar;
+		type === GroupType.LeftSidebar || type === GroupType.RightSidebar;
 	const globalCollpaseState = useViewState(
 		(state) => state.globalCollapseState
 	);

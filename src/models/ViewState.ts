@@ -1,7 +1,13 @@
 import { create } from "zustand";
-import * as VT from "./VTWorkspace";
 import { DefaultRecord } from "src/utils/DefaultRecord";
-import { App, EventRef, ItemView, Platform } from "obsidian";
+import {
+	App,
+	EventRef,
+	ItemView,
+	Platform,
+	WorkspaceLeaf,
+	WorkspaceParent,
+} from "obsidian";
 import ObsidianVerticalTabs from "src/main";
 import {
 	getFrameStyle,
@@ -16,34 +22,35 @@ import {
 	insertLeftSidebarToggle,
 	insertRightSidebarToggle,
 } from "src/services/SidebarToggles";
+import { Identifier } from "./VTWorkspace";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
 
-export type GroupTitles = DefaultRecord<VT.Identifier, string>;
+export type GroupTitles = DefaultRecord<Identifier, string>;
 export const createNewGroupTitles = () =>
 	new DefaultRecord(factory) as GroupTitles;
 
-export type PinningEvents = DefaultRecord<VT.Identifier, EventRef | null>;
+export type PinningEvents = DefaultRecord<Identifier, EventRef | null>;
 export type PinningEventCallback = (pinned: boolean) => void;
 export const createNewPinningEvents = () =>
 	new DefaultRecord(() => null) as PinningEvents;
 
 interface ViewState {
 	groupTitles: GroupTitles;
-	hiddenGroups: Array<VT.Identifier>;
-	latestActiveLeaf: VT.WorkspaceLeaf | null;
+	hiddenGroups: Array<Identifier>;
+	latestActiveLeaf: WorkspaceLeaf | null;
 	pinningEvents: PinningEvents;
 	globalCollapseState: boolean;
 	clear: () => void;
-	setGroupTitle: (id: VT.Identifier, name: string) => void;
-	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => void;
+	setGroupTitle: (id: Identifier, name: string) => void;
+	toggleHiddenGroup: (id: Identifier, isHidden: boolean) => void;
 	setLatestActiveLeaf: (
 		plugin: ObsidianVerticalTabs,
-		leaf?: VT.WorkspaceLeaf | null
+		leaf?: WorkspaceLeaf | null
 	) => void;
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
-	lockFocusOnLeaf: (app: App, leaf: VT.WorkspaceLeaf) => void;
+	lockFocusOnLeaf: (app: App, leaf: WorkspaceLeaf) => void;
 	resetFocusFlags: () => void;
 	leftButtonClone: HTMLElement | null;
 	rightButtonClone: HTMLElement | null;
@@ -56,10 +63,10 @@ interface ViewState {
 	updatePositionLabels: () => void;
 	refreshToggleButtons: (app: App) => void;
 	bindPinningEvent: (
-		leaf: VT.WorkspaceLeaf,
+		leaf: WorkspaceLeaf,
 		callback: PinningEventCallback
 	) => void;
-	unbindPinningEvent: (leaf: VT.WorkspaceLeaf) => void;
+	unbindPinningEvent: (leaf: WorkspaceLeaf) => void;
 	setAllCollapsed: () => void;
 	setAllExpanded: () => void;
 }
@@ -72,15 +79,15 @@ const saveViewState = (titles: GroupTitles) => {
 const loadViewState = (): GroupTitles | null => {
 	const data = localStorage.getItem("view-state");
 	if (!data) return null;
-	const entries = JSON.parse(data) as [VT.Identifier, string][];
+	const entries = JSON.parse(data) as [Identifier, string][];
 	return new DefaultRecord(factory, entries);
 };
 
-const saveHiddenGroups = (hiddenGroups: Array<VT.Identifier>) => {
+const saveHiddenGroups = (hiddenGroups: Array<Identifier>) => {
 	localStorage.setItem("hidden-groups", JSON.stringify(hiddenGroups));
 };
 
-const loadHiddenGroups = (): Array<VT.Identifier> => {
+const loadHiddenGroups = (): Array<Identifier> => {
 	const data = localStorage.getItem("hidden-groups");
 	if (!data) return [];
 	return JSON.parse(data);
@@ -125,13 +132,13 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	topRightContainer: null,
 	topRightMainContainer: null,
 	clear: () => set({ groupTitles: createNewGroupTitles() }),
-	setGroupTitle: (id: VT.Identifier, name: string) =>
+	setGroupTitle: (id: Identifier, name: string) =>
 		set((state) => {
 			state.groupTitles.set(id, name);
 			saveViewState(state.groupTitles);
 			return state;
 		}),
-	toggleHiddenGroup: (id: VT.Identifier, isHidden: boolean) => {
+	toggleHiddenGroup: (id: Identifier, isHidden: boolean) => {
 		if (isHidden) {
 			set((state) => ({ hiddenGroups: [...state.hiddenGroups, id] }));
 		} else {
@@ -142,14 +149,14 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		saveHiddenGroups(get().hiddenGroups);
 	},
 	setLatestActiveLeaf(plugin: ObsidianVerticalTabs) {
-		const workspace = plugin.app.workspace as VT.Workspace;
+		const workspace = plugin.app.workspace;
 		const activeView = workspace.getActiveViewOfType(ItemView);
 		if (!activeView) {
 			// Focus has already been moved, try our best to lock it back
 			get().lockFocus(plugin);
 			return;
 		}
-		const activeLeaf = activeView.leaf as VT.WorkspaceLeaf;
+		const activeLeaf = activeView.leaf;
 		const isRootLeaf = activeLeaf.getRoot() === workspace.rootSplit;
 		if (isRootLeaf) {
 			set({ latestActiveLeaf: activeLeaf });
@@ -161,7 +168,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	lockFocus(plugin: ObsidianVerticalTabs) {
 		// We only need to force focus on the most recent leaf when Zen mode is enabled
 		if (!plugin.settings.zenMode) return;
-		const workspace = plugin.app.workspace as VT.Workspace;
+		const workspace = plugin.app.workspace;
 		const activeLeaf = get().latestActiveLeaf;
 		const isRootLeaf = activeLeaf?.getRoot() === workspace.rootSplit;
 		// We should check this again, since the user may have moved or closed the tab
@@ -171,9 +178,9 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		}
 		// No active leaf in the RootSplit has been recorded,
 		// try to get the first active one in the first group
-		const groups: VT.WorkspaceParent[] = [];
-		workspace.iterateRootLeaves((leaf: VT.WorkspaceLeaf) => {
-			const group = leaf.parent as VT.WorkspaceParent;
+		const groups: WorkspaceParent[] = [];
+		workspace.iterateRootLeaves((leaf) => {
+			const group = leaf.parent;
 			if (!groups.includes(group)) groups.push(group);
 		});
 		if (groups.length > 0) {
@@ -184,7 +191,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		}
 		// No root group has been found, this shall never happen?
 	},
-	lockFocusOnLeaf(app: App, leaf: VT.WorkspaceLeaf) {
+	lockFocusOnLeaf(app: App, leaf: WorkspaceLeaf) {
 		get().resetFocusFlags();
 		const parent = leaf.parent;
 		// Focus on the parent group with CSS class
@@ -201,7 +208,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		});
 	},
 	cloneToggleButtons(app: App) {
-		const workspace = app.workspace as VT.Workspace;
+		const workspace = app.workspace;
 		const leftButton = workspace.leftSidebarToggleButtonEl;
 		const rightButton = workspace.rightSidebarToggleButtonEl;
 		const leftButtonClone = leftButton.cloneNode(true) as HTMLElement;
@@ -274,10 +281,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			get().cloneToggleButtons(app);
 		get().insertCloneButtons();
 	},
-	bindPinningEvent(
-		leaf: VT.WorkspaceLeaf,
-		callback: (pinned: boolean) => void
-	) {
+	bindPinningEvent(leaf: WorkspaceLeaf, callback: (pinned: boolean) => void) {
 		const { pinningEvents } = get();
 		const event = pinningEvents.get(leaf.id);
 		if (event) return;
@@ -285,7 +289,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		pinningEvents.set(leaf.id, newEvent);
 		set({ pinningEvents });
 	},
-	unbindPinningEvent(leaf: VT.WorkspaceLeaf) {
+	unbindPinningEvent(leaf: WorkspaceLeaf) {
 		const { pinningEvents } = get();
 		const event = pinningEvents.get(leaf.id);
 		if (event) {

@@ -17,10 +17,10 @@ import { useState } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
 import { SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
-import * as VT from "src/models/VTWorkspace";
 import { moveTab, moveTabToEnd, moveTabToNewGroup } from "src/services/MoveTab";
 import { TabSlot } from "./TabSlot";
 import { GroupSlot } from "./GroupSlot";
+import { Identifier } from "src/models/VTWorkspace";
 
 export const NavigationContent = () => {
 	const { groupIDs, content, swapGroup } = useTabCache();
@@ -45,8 +45,8 @@ export const NavigationContent = () => {
 		setIsDraggingGroup(false);
 		const { active, over } = event;
 		if (!over) return;
-		const activeID = active.id as VT.Identifier;
-		const overID = over.id as VT.Identifier;
+		const activeID = active.id as Identifier;
+		const overID = over.id as Identifier;
 		const isActiveTab = (active.data.current as any).isTab;
 		const isOverTab = (over.data.current as any).isTab;
 
@@ -68,8 +68,7 @@ export const NavigationContent = () => {
 			if (isOverTab) {
 				const leaf = app.workspace.getLeafById(overID);
 				if (!leaf) return;
-				const parent = leaf.parent as VT.WorkspaceParent;
-				swapGroup(activeID, parent.id);
+				swapGroup(activeID, leaf.parent.id);
 			} else {
 				swapGroup(activeID, overID);
 			}
@@ -87,12 +86,12 @@ export const NavigationContent = () => {
 
 	const getGroupIDs = () => [...groupIDs, "slot-new"];
 
-	const getLeaveIDs = (groupID: VT.Identifier) => {
+	const getLeaveIDs = (groupID: Identifier) => {
 		const group = content.get(groupID);
 		return [...group.leafIDs, `slot-${groupID}`];
 	};
 
-	const entryOf = (groupID: VT.Identifier) => {
+	const entryOf = (groupID: Identifier) => {
 		return content.get(groupID);
 	};
 

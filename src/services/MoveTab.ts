@@ -1,8 +1,14 @@
-import { App, WorkspaceMobileDrawer, WorkspaceSidedock } from "obsidian";
-import * as VT from "../models/VTWorkspace";
+import {
+	App,
+	WorkspaceLeaf,
+	WorkspaceMobileDrawer,
+	WorkspaceParent,
+	WorkspaceSidedock,
+} from "obsidian";
+import { Identifier } from "src/models/VTWorkspace";
 import { VIEW_TYPE } from "src/navigation";
 
-function removeChild(parent: VT.WorkspaceParent, index: number) {
+function removeChild(parent: WorkspaceParent, index: number) {
 	parent.children.splice(index, 1);
 	if (parent.children.length === 0) {
 		parent.detach();
@@ -13,8 +19,8 @@ function removeChild(parent: VT.WorkspaceParent, index: number) {
 }
 
 function insertChild(
-	parent: VT.WorkspaceParent,
-	leaf: VT.WorkspaceLeaf,
+	parent: WorkspaceParent,
+	leaf: WorkspaceLeaf,
 	index: number | null = null
 ) {
 	if (index === null) {
@@ -29,38 +35,41 @@ function insertChild(
 
 export function moveTab(
 	app: App,
-	sourceID: VT.Identifier,
-	targetID: VT.Identifier | null
+	sourceID: Identifier,
+	targetID: Identifier | null
 ) {
 	if (!targetID) return;
 	if (sourceID === targetID) return;
-	const sourceLeaf = app.workspace.getLeafById(sourceID) as VT.WorkspaceLeaf;
-	const targetLeaf = app.workspace.getLeafById(targetID) as VT.WorkspaceLeaf;
-	const sourceParent = sourceLeaf.parent as VT.WorkspaceParent;
-	const targetParent = targetLeaf.parent as VT.WorkspaceParent;
+	const sourceLeaf = app.workspace.getLeafById(sourceID);
+	const targetLeaf = app.workspace.getLeafById(targetID);
+	if (!sourceLeaf || !targetLeaf) return;
+	const sourceParent = sourceLeaf.parent;
+	const targetParent = targetLeaf.parent;
 	const sourceIndex = sourceParent.children.indexOf(sourceLeaf);
 	const targetIndex = targetParent.children.indexOf(targetLeaf);
 	removeChild(sourceParent, sourceIndex);
 	insertChild(targetParent, sourceLeaf, targetIndex);
-	(app.workspace as VT.Workspace).onLayoutChange();
+	app.workspace.onLayoutChange();
 }
 
 export function moveTabToEnd(
 	app: App,
-	sourceID: VT.Identifier,
-	targetParent: VT.WorkspaceParent
+	sourceID: Identifier,
+	targetParent: WorkspaceParent
 ) {
-	const sourceLeaf = app.workspace.getLeafById(sourceID) as VT.WorkspaceLeaf;
-	const sourceParent = sourceLeaf.parent as VT.WorkspaceParent;
+	const sourceLeaf = app.workspace.getLeafById(sourceID);
+	if (!sourceLeaf) return;
+	const sourceParent = sourceLeaf.parent;
 	const sourceIndex = sourceParent.children.indexOf(sourceLeaf);
 	removeChild(sourceParent, sourceIndex);
 	insertChild(targetParent, sourceLeaf);
-	(app.workspace as VT.Workspace).onLayoutChange();
+	app.workspace.onLayoutChange();
 }
 
-export async function moveTabToNewGroup(app: App, sourceID: VT.Identifier) {
-	const sourceLeaf = app.workspace.getLeafById(sourceID) as VT.WorkspaceLeaf;
-	const sourceParent = sourceLeaf.parent as VT.WorkspaceParent;
+export async function moveTabToNewGroup(app: App, sourceID: Identifier) {
+	const sourceLeaf = app.workspace.getLeafById(sourceID);
+	if (!sourceLeaf) return;
+	const sourceParent = sourceLeaf.parent;
 	const height = sourceParent.containerEl.clientHeight;
 	const width = sourceParent.containerEl.clientWidth;
 	const preferredDirection = height > width ? "horizontal" : "vertical";
@@ -74,7 +83,7 @@ export async function moveTabToNewGroup(app: App, sourceID: VT.Identifier) {
 }
 
 export function selfIsNotInTheSidebar(app: App) {
-	const workspace = app.workspace as VT.Workspace;
+	const workspace = app.workspace;
 	const self = workspace.getLeavesOfType(VIEW_TYPE).first();
 	if (!self) return false;
 	const root = self.getRoot();
@@ -82,17 +91,16 @@ export function selfIsNotInTheSidebar(app: App) {
 }
 
 export async function moveSelfToDefaultLocation(app: App) {
-	const workspace = app.workspace as VT.Workspace;
+	const workspace = app.workspace;
 	const leaves = workspace.getLeavesOfType(VIEW_TYPE);
 	if (leaves.length === 0) return;
-	const self = leaves[0] as VT.WorkspaceLeaf;
+	const self = leaves[0];
 	const leftSidebar = workspace.leftSplit;
 	if (leftSidebar instanceof WorkspaceSidedock) {
-		const container = leftSidebar as VT.WorkspaceSidedock;
-		const parent = container.children[0] as VT.WorkspaceParent;
+		const parent = leftSidebar.children[0] as unknown as WorkspaceParent;
 		moveTabToEnd(app, self.id, parent);
 	} else if (leftSidebar instanceof WorkspaceMobileDrawer) {
-		const parent = leftSidebar.parent as VT.WorkspaceParent;
+		const parent = leftSidebar.parent;
 		moveTabToEnd(app, self.id, parent);
 	}
 }

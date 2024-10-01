@@ -1,10 +1,9 @@
-import * as VT from "src/models/VTWorkspace";
 import { NavigationTreeItem } from "./NavigationTreeItem";
 import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useState } from "react";
 import { usePlugin } from "src/models/PluginContext";
-import { Menu } from "obsidian";
+import { Menu, WorkspaceLeaf } from "obsidian";
 import {
 	closeOthersInGroup,
 	closeTabsToBottomInGroup,
@@ -15,7 +14,7 @@ import { useViewState } from "src/models/ViewState";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 
 interface TabProps {
-	leaf: VT.WorkspaceLeaf;
+	leaf: WorkspaceLeaf;
 }
 
 export const Tab = ({ leaf }: TabProps) => {
@@ -53,7 +52,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	};
 
 	const openTab = () => {
-		const workspace = plugin.app.workspace as VT.Workspace;
+		const workspace = plugin.app.workspace;
 		workspace.setActiveLeaf(leaf, { focus: true });
 		workspace.onLayoutChange();
 		toggleHiddenGroup(leaf.parent.id, false);

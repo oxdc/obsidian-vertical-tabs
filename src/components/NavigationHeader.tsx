@@ -3,7 +3,6 @@ import { IconButton } from "./IconButton";
 import { Menu } from "obsidian";
 import { sortStrategies, useTabCache } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
-import * as VT from "../models/VTWorkspace";
 
 export const NavigationHeader = () => {
 	const plugin = usePlugin();
@@ -21,7 +20,7 @@ export const NavigationHeader = () => {
 	);
 
 	const createAndShowNewTab = () => {
-		const workspace = plugin.app.workspace as VT.Workspace;
+		const workspace = plugin.app.workspace;
 		const leaf = workspace.getLeaf(true);
 		workspace.setActiveLeaf(leaf, { focus: true });
 		workspace.onLayoutChange();
@@ -30,7 +29,7 @@ export const NavigationHeader = () => {
 	const toggleZenModeAndLockFocus = () => {
 		toggleZenMode();
 		lockFocus(plugin);
-		const workspace = plugin.app.workspace as VT.Workspace;
+		const workspace = plugin.app.workspace;
 		workspace.trigger("vertical-tabs:update-toggle");
 	};
 

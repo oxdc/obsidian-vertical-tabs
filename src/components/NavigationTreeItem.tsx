@@ -1,12 +1,12 @@
 import { Platform, setIcon } from "obsidian";
 import { useEffect, useRef, useState } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
-import * as VT from "src/models/VTWorkspace";
 import { useSortable } from "@dnd-kit/sortable";
 import { IconButton } from "./IconButton";
+import { Identifier } from "src/models/VTWorkspace";
 
 interface NavigationTreeItemProps {
-	id: VT.Identifier | null;
+	id: Identifier | null;
 	title: string | React.ReactNode;
 	icon: string;
 	isTab: boolean;

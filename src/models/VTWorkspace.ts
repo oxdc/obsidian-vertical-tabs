@@ -1,5 +1,3 @@
-import * as Obsidian from "obsidian";
-
 export type Identifier = string;
 
 export enum GroupType {
@@ -10,45 +8,42 @@ export enum GroupType {
 
 declare module "obsidian" {
 	interface Workspace {
+		iterateLeaves(
+			split: WorkspaceSplit,
+			callback: (leaf: WorkspaceLeaf) => void
+		): void;
+		onLayoutChange: () => void;
+		getActiveFileView: () => FileView;
+		leftSidebarToggleButtonEl: HTMLElement;
+		rightSidebarToggleButtonEl: HTMLElement;
+		floatingSplit: WorkspaceSplit;
 		on(name: "vertical-tabs:update-toggle", callback: () => void): EventRef;
 	}
-}
 
-export interface Workspace extends Obsidian.Workspace {
-	iterateLeaves(
-		split: Obsidian.WorkspaceSplit,
-		callback: (leaf: WorkspaceLeaf) => void
-	): void;
-	onLayoutChange: () => void;
-	getActiveFileView: () => Obsidian.FileView;
-	leftSidebarToggleButtonEl: HTMLElement;
-	rightSidebarToggleButtonEl: HTMLElement;
-	floatingSplit: Obsidian.WorkspaceSplit;
-}
+	interface WorkspaceParent {
+		id: Identifier;
+		containerEl: HTMLElement;
+		currentTab: number;
+		children: WorkspaceLeaf[];
+		selectTab: (leaf: WorkspaceLeaf) => void;
+		selectTabIndex: (index: number) => void;
+		recomputeChildrenDimensions: () => void;
+		isStacked: boolean;
+		setStacked: (stacked: boolean) => void;
+		detach: () => void;
+		tabHeaderContainerEl: HTMLElement;
+	}
 
-export interface WorkspaceParent extends Obsidian.WorkspaceParent {
-	id: Identifier;
-	containerEl: HTMLElement;
-	currentTab: number;
-	children: WorkspaceLeaf[];
-	selectTab: (leaf: WorkspaceLeaf) => void;
-	selectTabIndex: (index: number) => void;
-	recomputeChildrenDimensions: () => void;
-	isStacked: boolean;
-	setStacked: (stacked: boolean) => void;
-	detach: () => void;
-	tabHeaderContainerEl: HTMLElement;
-}
+	interface WorkspaceLeaf {
+		id: Identifier;
+		activeTime: number;
+		parent: WorkspaceTabs | WorkspaceMobileDrawer;
+		setParent: (parent: WorkspaceParent) => void;
+		tabHeaderEl?: HTMLElement;
+		tabHeaderInnerTitleEl?: HTMLElement;
+	}
 
-export interface WorkspaceLeaf extends Obsidian.WorkspaceLeaf {
-	id: Identifier;
-	activeTime: number;
-	parent: WorkspaceParent;
-	setParent: (parent: WorkspaceParent) => void;
-	tabHeaderEl?: HTMLElement;
-	tabHeaderInnerTitleEl?: HTMLElement;
-}
-
-export interface WorkspaceSidedock extends Obsidian.WorkspaceSidedock {
-	children: WorkspaceParent[];
+	interface WorkspaceSidedock extends WorkspaceSplit {
+		children: WorkspaceLeaf[];
+	}
 }

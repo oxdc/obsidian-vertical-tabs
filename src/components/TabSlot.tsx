@@ -1,8 +1,8 @@
+import { Identifier } from "src/models/VTWorkspace";
 import { NavigationTreeItem } from "./NavigationTreeItem";
-import * as VT from "src/models/VTWorkspace";
 
 interface TabSlotProps {
-	groupID: VT.Identifier;
+	groupID: Identifier;
 }
 
 export const TabSlot = ({ groupID }: TabSlotProps) => {
