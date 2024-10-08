@@ -4,7 +4,8 @@ import { IconButton } from "./IconButton";
 import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
 import { useApp } from "src/models/PluginContext";
 import { GroupType } from "src/models/VTWorkspace";
-import { WorkspaceParent } from "obsidian";
+import { Menu, WorkspaceParent } from "obsidian";
+import { createBookmarkForGroup } from "src/models/VTBookmark";
 
 interface GroupProps {
 	type: GroupType;
@@ -68,6 +69,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 			onKeyDown={(e) => {
 				if (e.key === "Enter") handleTitleChange();
 			}}
+			onFocus={(e) => e.target.select()}
 			onBlur={handleTitleChange}
 		/>
 	);
@@ -96,6 +98,25 @@ export const Group = ({ type, children, group }: GroupProps) => {
 			)}
 		</Fragment>
 	);
+
+	const menu = new Menu();
+
+	menu.addItem((item) => {
+		item.setTitle(isHidden ? "Show" : "Hide").onClick(toggleHidden);
+	});
+	menu.addItem((item) => {
+		item.setTitle("Edit title").onClick(handleTitleChange);
+	});
+	menu.addSeparator();
+	menu.addItem((item) => {
+		item.setTitle("Bookmark group").onClick(() => {
+			if (group) createBookmarkForGroup(app, group, ephemeralTitle);
+		});
+	});
+	menu.addItem((item) => {
+		item.setTitle("Close all").onClick(() => group?.detach());
+	});
+
 	return (
 		<NavigationTreeItem
 			id={isSidebar ? null : group?.id ?? null}
@@ -104,6 +125,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 			isRenaming={isEditing}
 			{...props}
 			onClick={toggleCollapsed}
+			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
 			dataType={type}
 			toolbar={toolbar}
 		>
