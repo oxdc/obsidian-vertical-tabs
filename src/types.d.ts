@@ -44,7 +44,7 @@ declare module "obsidian" {
 	interface BookmarkItem {
 		ctime: number;
 		title: string;
-		type: "file" | "search" | "group";
+		type: "file" | "search" | "group" | "graph" | "url" | "folder";
 	}
 
 	interface BookmarkFileItem extends BookmarkItem {
@@ -58,9 +58,19 @@ declare module "obsidian" {
 		query: string;
 	}
 
+	interface BookmarkGraphItem extends BookmarkItem {
+		type: "graph";
+		options: unknown;
+	}
+
 	interface BookmarkGroupItem extends BookmarkItem {
 		type: "group";
 		items: BookmarkItem[];
+	}
+
+	interface BookmarkWebItem extends BookmarkItem {
+		type: "url";
+		url: string;
 	}
 
 	interface App {

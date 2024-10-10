@@ -105,12 +105,20 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		item.setTitle(isHidden ? "Show" : "Hide").onClick(toggleHidden);
 	});
 	menu.addItem((item) => {
-		item.setTitle("Edit title").onClick(handleTitleChange);
+		item.setTitle("Rename").onClick(handleTitleChange);
 	});
 	menu.addSeparator();
 	menu.addItem((item) => {
-		item.setTitle("Bookmark group").onClick(() => {
+		item.setTitle("Bookmark all").onClick(() => {
 			if (group) createBookmarkForGroup(app, group, ephemeralTitle);
+		});
+	});
+	menu.addItem((item) => {
+		item.setTitle("Bookmark and close all").onClick(() => {
+			if (group) {
+				createBookmarkForGroup(app, group, ephemeralTitle);
+				group.detach();
+			}
 		});
 	});
 	menu.addItem((item) => {
