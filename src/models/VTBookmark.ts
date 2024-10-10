@@ -102,15 +102,15 @@ function NewBookmarkWebItem(url: string, title?: string): BookmarkWebItem {
 	};
 }
 
-function NewBookmarkForView(view: View): BookmarkItem | null {
+function NewBookmarkForView(view: View, title?: string): BookmarkItem | null {
 	if (isGraphView(view)) {
-		return NewBookmarkGraphItem(view.dataEngine.getOptions());
+		return NewBookmarkGraphItem(view.dataEngine.getOptions(), title);
 	} else if (isSearchView(view)) {
-		return NewBookmarkSearchItem(view.getQuery());
+		return NewBookmarkSearchItem(view.getQuery(), title);
 	} else if (isFileView(view)) {
-		return view.file ? NewBookmarkFileItem(view.file) : null;
+		return view.file ? NewBookmarkFileItem(view.file, title) : null;
 	} else if (isWebView(view)) {
-		return NewBookmarkWebItem(view.url);
+		return NewBookmarkWebItem(view.url, title);
 	} else {
 		return null;
 	}
@@ -131,4 +131,15 @@ export function createBookmarkForGroup(
 		if (item) bookmark.items.push(item);
 	});
 	bookmarks.instance.addItem(bookmark);
+}
+
+export function createBookmarkForLeaf(
+	app: App,
+	leaf: WorkspaceLeaf,
+	title: string
+) {
+	const bookmarks = app.internalPlugins.plugins.bookmarks;
+	if (!bookmarks.enabled) return;
+	const item = NewBookmarkForView(leaf.view, title);
+	if (item) bookmarks.instance.addItem(item);
 }

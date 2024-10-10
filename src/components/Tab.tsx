@@ -2,7 +2,7 @@ import { NavigationTreeItem } from "./NavigationTreeItem";
 import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useState } from "react";
-import { usePlugin } from "src/models/PluginContext";
+import { useApp, usePlugin } from "src/models/PluginContext";
 import { Menu, WorkspaceLeaf } from "obsidian";
 import {
 	closeOthersInGroup,
@@ -12,6 +12,7 @@ import {
 import { useTabCache } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
+import { createBookmarkForLeaf } from "src/models/VTBookmark";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -71,6 +72,17 @@ export const Tab = ({ leaf }: TabProps) => {
 
 	const menu = new Menu();
 
+	menu.addItem((item) => {
+		item.setTitle("Bookmark").onClick(() => {
+			createBookmarkForLeaf(plugin.app, leaf, leaf.getDisplayText());
+		});
+	});
+	menu.addItem((item) => {
+		item.setTitle("Bookmark and close").onClick(() => {
+			createBookmarkForLeaf(plugin.app, leaf, leaf.getDisplayText());
+			leaf.detach();
+		});
+	});
 	menu.addItem((item) => {
 		item.setTitle("Close").onClick(() => leaf.detach());
 	});
