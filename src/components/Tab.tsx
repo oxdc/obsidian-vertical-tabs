@@ -2,7 +2,7 @@ import { NavigationTreeItem } from "./NavigationTreeItem";
 import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useState } from "react";
-import { useApp, usePlugin } from "src/models/PluginContext";
+import { usePlugin } from "src/models/PluginContext";
 import { Menu, WorkspaceLeaf } from "obsidian";
 import {
 	closeOthersInGroup,
