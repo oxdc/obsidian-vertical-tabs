@@ -1,0 +1,46 @@
+.obsidian-vertical-tabs-container {
+	.tree-item {
+		&::before {
+			content: "\200B";
+			height: 4px;
+			width: 100%;
+			display: block;
+			margin-top: -4px;
+			color: transparent;
+			background: transparent;
+		}
+	}
+
+	// group
+	&.is-dragging-group {
+		.tree-item.is-group {
+			&.is-dragging-over,
+			&:has(.is-dragging-over) {
+				&::before {
+					background: var(--interactive-accent);
+				}
+			}
+		}
+	}
+
+	// tab
+	&:not(.is-dragging-group) {
+		.tree-item.is-tab.is-dragging-over::before {
+			background: var(--interactive-accent);
+		}
+
+		.tree-item.is-group.is-dragging-over {
+			&.is-group-slot::before {
+				background: var(--interactive-accent);
+			}
+
+			&:not(.is-group-slot) {
+				background: hsla(var(--interactive-accent-hsl), 0.1);
+
+				.is-tab-slot::before {
+					background: var(--interactive-accent);
+				}
+			}
+		}
+	}
+}

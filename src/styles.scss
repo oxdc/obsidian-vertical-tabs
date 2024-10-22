@@ -2,6 +2,7 @@
 @import "styles/ZenMode.scss";
 @import "styles/Tab.scss";
 @import "styles/ToggleSidebar.scss";
+@import "styles/DropIndicator.scss";
 
 .vertical-tabs {
 	display: flex;
@@ -109,22 +110,6 @@ body.vt-exclude-self
 
 .workspace-tab-header[data-type="vertical-tabs"] {
 	display: flex !important; // always show vertical tabs
-}
-
-.obsidian-vertical-tabs-container.is-dragging-group
-	.tree-item.is-group.is-dragging-over,
-.obsidian-vertical-tabs-container.is-dragging-group
-	.tree-item.is-group:has(.is-dragging-over),
-.obsidian-vertical-tabs-container:not(.is-dragging-group)
-	.tree-item.is-tab.is-dragging-over,
-.obsidian-vertical-tabs-container:not(.is-dragging-group)
-	.tree-item.is-group.is-group-slot.is-dragging-over {
-	border-top: 5px solid var(--interactive-accent);
-}
-
-.obsidian-vertical-tabs-container .tree-item {
-	margin-top: -5px;
-	border-top: 5px solid transparent;
 }
 
 .obsidian-vertical-tabs-container .tree-item.is-dragging-self {
