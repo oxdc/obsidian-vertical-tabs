@@ -108,10 +108,13 @@ export const useTabCache = create<TabCacheStore>()((set, get) => ({
 		for (const key of content.keys()) {
 			const entry = content.get(key);
 			newTabs.set(key, entry);
-			const group =
-				entry.group ||
-				(entry.leaves.length > 0 ? entry.leaves[0].parent : null);
-			if (group) newTabs.get(key).leaves = sortTabs(group, sortStrategy);
+			if (entry.groupType === GroupType.RootSplit) {
+				const group =
+					entry.group ||
+					(entry.leaves.length > 0 ? entry.leaves[0].parent : null);
+				if (group)
+					newTabs.get(key).leaves = sortTabs(group, sortStrategy);
+			}
 		}
 		set({ content: newTabs });
 	},
