@@ -80,6 +80,7 @@ export async function moveTabToNewGroup(app: App, sourceID: Identifier) {
 	);
 	targetLeaf.setPinned(!!sourceLeaf.getViewState().pinned);
 	sourceLeaf.detach();
+	return targetLeaf;
 }
 
 export function selfIsNotInTheSidebar(app: App) {

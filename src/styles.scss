@@ -3,6 +3,7 @@
 @import "styles/Tab.scss";
 @import "styles/ToggleSidebar.scss";
 @import "styles/DropIndicator.scss";
+@import "styles/GroupSlot.scss";
 
 .vertical-tabs {
 	display: flex;
@@ -129,16 +130,6 @@ body.vt-exclude-self
 	.tree-item.is-group:has(.is-dragging-over)
 	.is-tab-slot {
 	display: block;
-}
-
-.obsidian-vertical-tabs-container .is-group-slot {
-	height: 10px;
-	background: none !important;
-	display: none;
-}
-
-.obsidian-vertical-tabs-container .is-group-slot * {
-	background: none !important;
 }
 
 .obsidian-vertical-tabs-container:not(.is-dragging-group) .is-group-slot {
