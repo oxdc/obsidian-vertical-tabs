@@ -1,0 +1,13 @@
+.obsidian-vertical-tabs-container {
+	.tree-item.is-group.is-single-group {
+		& > .tree-item-self {
+			display: none;
+		}
+
+		& > .tree-item-children {
+			padding-inline-start: 0;
+			margin-inline-start: 0;
+			border-inline-start: none;
+		}
+	}
+}

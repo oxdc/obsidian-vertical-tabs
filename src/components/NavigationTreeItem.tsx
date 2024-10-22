@@ -12,6 +12,7 @@ interface NavigationTreeItemProps {
 	isTab: boolean;
 	isTabSlot?: boolean;
 	isGroupSlot?: boolean;
+	isSingleGroup?: boolean;
 	isActive?: boolean;
 	isRenaming?: boolean;
 	isPinned?: boolean;
@@ -55,6 +56,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-dragging-over": isOver,
 		"is-tab-slot": props.isTabSlot,
 		"is-group-slot": props.isGroupSlot,
+		"is-single-group": props.isSingleGroup,
 		"is-slot": props.isTabSlot || props.isGroupSlot,
 		"is-highlighted": props.isHighlighted,
 	};

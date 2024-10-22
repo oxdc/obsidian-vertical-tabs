@@ -2,10 +2,11 @@ import { NavigationTreeItem } from "./NavigationTreeItem";
 import { Fragment, useEffect, useState } from "react";
 import { IconButton } from "./IconButton";
 import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
-import { useApp } from "src/models/PluginContext";
+import { useApp, useSettings } from "src/models/PluginContext";
 import { GroupType } from "src/models/VTWorkspace";
 import { Menu, WorkspaceParent } from "obsidian";
 import { createBookmarkForGroup } from "src/models/VTBookmark";
+import { useTabCache } from "src/models/TabCache";
 
 interface GroupProps {
 	type: GroupType;
@@ -24,6 +25,10 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	const workspace = app.workspace;
 	const isSidebar =
 		type === GroupType.LeftSidebar || type === GroupType.RightSidebar;
+	const { hasOnlyOneGroup } = useTabCache();
+	const hideSidebars = useSettings((state) => state.hideSidebars);
+	const isSingleGroup =
+		hasOnlyOneGroup() && hideSidebars && !isSidebar && !!group;
 	const globalCollpaseState = useViewState(
 		(state) => state.globalCollapseState
 	);
@@ -77,6 +82,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		icon: "right-triangle",
 		isCollapsed,
 		isSidebar,
+		isSingleGroup,
 	};
 	const toolbar = (
 		<Fragment>

@@ -40,6 +40,7 @@ interface TabCacheStore {
 	swapGroup: (source: Identifier, target: Identifier) => void;
 	setSortStrategy: (strategy: SortStrategy | null) => void;
 	sort: () => void;
+	hasOnlyOneGroup: () => boolean;
 }
 
 export const sortStrategies: Record<string, SortStrategy> = {
@@ -117,6 +118,11 @@ export const useTabCache = create<TabCacheStore>()((set, get) => ({
 			}
 		}
 		set({ content: newTabs });
+	},
+	hasOnlyOneGroup: () => {
+		const { groupIDs } = get();
+		const rootGroupIDs = groupIDs.filter((id) => !id.endsWith("-sidebar"));
+		return rootGroupIDs.length === 1;
 	},
 }));
 
