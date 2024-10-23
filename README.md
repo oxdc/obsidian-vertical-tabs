@@ -23,7 +23,7 @@
 
 [👉 Click To Install](https://obsidian.md/plugins?id=vertical-tabs)
 
-![Screenshot](./images/showcase.png)
+![Screenshot](./images/hero.png)
 
 ## Description
 
