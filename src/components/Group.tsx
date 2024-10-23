@@ -62,7 +62,11 @@ export const Group = ({ type, children, group }: GroupProps) => {
 			: groupTitles.get(group.id);
 	const [ephemeralTitle, setEphemeralTitle] = useState(title);
 	const handleTitleChange = () => {
-		if (group && isEditing) setGroupTitle(group.id, ephemeralTitle);
+		if (group && isEditing) {
+			let title = ephemeralTitle.trim();
+			if (title === "") title = DEFAULT_GROUP_TITLE;
+			setGroupTitle(group.id, title);
+		}
 		setIsEditing(!isEditing);
 	};
 	const titleEditor = (

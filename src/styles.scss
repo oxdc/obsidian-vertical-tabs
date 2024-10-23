@@ -1,6 +1,7 @@
 @import "styles/ShowActiveTabs.scss";
 @import "styles/ZenMode.scss";
 @import "styles/Tab.scss";
+@import "styles/Group.scss";
 @import "styles/ToggleSidebar.scss";
 @import "styles/DropIndicator.scss";
 @import "styles/GroupSlot.scss";
@@ -99,15 +100,6 @@ body.vt-exclude-self
 
 .obsidian-vertical-tabs-container .tab-slot.is-hidden {
 	display: none;
-}
-
-.obsidian-vertical-tabs-container .tree-item.is-group input {
-	background: transparent;
-	outline: none;
-	border: none;
-	color: inherit;
-	font: inherit;
-	padding: 0;
 }
 
 .workspace-tab-header[data-type="vertical-tabs"] {
