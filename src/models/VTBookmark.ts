@@ -164,3 +164,74 @@ export async function createBookmarkForLeaf(
 	const item = NewBookmarkForView(app, leaf.view, title);
 	if (item) bookmarks.instance.addItem(item);
 }
+
+export async function loadNameFromBookmark(
+	app: App,
+	group: WorkspaceParent
+): Promise<string | undefined> {
+	const bookmarks = app.internalPlugins.plugins.bookmarks;
+	if (!bookmarks.enabled) return;
+	return await findNamesIteratively(bookmarks.instance.items, group);
+}
+
+async function findNamesIteratively(
+	items: BookmarkItem[],
+	group: WorkspaceParent,
+	title?: string
+): Promise<string | undefined> {
+	const groupItems = items.filter((item) => item.type === "group");
+	if (groupItems.length > 0) {
+		const possibleTitles = [];
+		for (const groupItem of groupItems as VTBookmarkGroupItem[]) {
+			if (!groupItem.isCreatedByVT) continue;
+			const possibleTitle = await findNamesIteratively(
+				groupItem.items,
+				group,
+				groupItem.title
+			);
+			if (possibleTitle) possibleTitles.push(possibleTitle);
+		}
+		if (possibleTitles.length > 0) return possibleTitles[0];
+	} else {
+		if (await checkContents(items, group)) {
+			return title;
+		}
+	}
+}
+
+function getFilePathFromView(view: FileView): string | null {
+	if (view.file) {
+		return view.file.path;
+	} else {
+		return view.getState().file as string | null;
+	}
+}
+
+async function checkContents(
+	items: BookmarkItem[],
+	group: WorkspaceParent
+): Promise<boolean> {
+	if (items.length === 0 || items.length !== group.children.length) {
+		return false;
+	}
+	for (const item of items) {
+		if (item.type === "file") {
+			const matchLeaf = group.children.find(async (child) => {
+				await loadDeferredLeaf(child);
+				const fileItem = item as BookmarkFileItem;
+				const viewPath = getFilePathFromView(child.view);
+				return isFileView(child.view) && viewPath === fileItem.path;
+			});
+			if (!matchLeaf) return false;
+		} else if (item.type === "graph") {
+			const matchLeaf = group.children.find(async (child) => {
+				await loadDeferredLeaf(child);
+				return isGraphView(child.view);
+			});
+			if (!matchLeaf) return false;
+		} else {
+			return false;
+		}
+	}
+	return true;
+}

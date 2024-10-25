@@ -5,8 +5,11 @@ import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
 import { useApp, useSettings } from "src/models/PluginContext";
 import { GroupType } from "src/models/VTWorkspace";
 import { Menu, WorkspaceParent } from "obsidian";
-import { createBookmarkForGroup } from "src/models/VTBookmark";
-import { useTabCache } from "src/models/TabCache";
+import {
+	createBookmarkForGroup,
+	loadNameFromBookmark,
+} from "src/models/VTBookmark";
+import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
 
 interface GroupProps {
 	type: GroupType;
@@ -56,6 +59,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		if (!group) return;
 		group.containerEl.toggleClass("is-hidden", isHidden);
 	}, [isHidden]);
+
 	const title =
 		isSidebar || group === null
 			? titleMap[type]
@@ -72,6 +76,16 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		}
 		setIsEditing(!isEditing);
 	};
+	useEffect(() => {
+		setTimeout(async () => {
+			if (!group) return;
+			const titleFromBookmark = await loadNameFromBookmark(app, group);
+			if (titleFromBookmark && getTitle() === DEFAULT_GROUP_TITLE) {
+				setEphemeralTitle(titleFromBookmark);
+				setGroupTitle(group.id, titleFromBookmark);
+			}
+		}, REFRESH_TIMEOUT);
+	});
 	const titleEditor = (
 		<input
 			autoFocus
