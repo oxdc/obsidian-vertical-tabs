@@ -1,7 +1,7 @@
 import {
 	App,
 	BookmarkFileItem,
-	BookmarkGroupItem,
+	VTBookmarkGroupItem,
 	WorkspaceLeaf,
 	WorkspaceParent,
 	TFile,
@@ -11,13 +11,16 @@ import {
 	BookmarkItem,
 	BookmarkWebItem,
 } from "obsidian";
+import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
+import { loadDeferredLeaf } from "src/services/LoadDeferredLeaf";
 
-function NewBookmarkGroupItem(title?: string): BookmarkGroupItem {
+function NewBookmarkGroupItem(title?: string): VTBookmarkGroupItem {
 	return {
 		type: "group",
 		ctime: Date.now(),
 		items: [],
 		title: title || "Untitled group",
+		isCreatedByVT: true,
 	};
 }
 
@@ -64,11 +67,11 @@ function NewBookmarkSearchItem(
 }
 
 interface FileView extends View {
-	file: TFile | null;
+	file?: TFile | null;
 }
 
 function isFileView(view: View): view is FileView {
-	return "file" in view;
+	return "file" in view || "file" in view.getState();
 }
 
 function NewBookmarkFileItem(
@@ -102,13 +105,25 @@ function NewBookmarkWebItem(url: string, title?: string): BookmarkWebItem {
 	};
 }
 
-function NewBookmarkForView(view: View, title?: string): BookmarkItem | null {
+function NewBookmarkForView(
+	app: App,
+	view: View,
+	title?: string
+): BookmarkItem | null {
 	if (isGraphView(view)) {
 		return NewBookmarkGraphItem(view.dataEngine.getOptions(), title);
 	} else if (isSearchView(view)) {
 		return NewBookmarkSearchItem(view.getQuery(), title);
 	} else if (isFileView(view)) {
-		return view.file ? NewBookmarkFileItem(view.file, title) : null;
+		if (view.file) {
+			return NewBookmarkFileItem(view.file, title);
+		} else {
+			const path = view.getState().file as string | undefined;
+			if (!path) return null;
+			const file = app.vault.getFileByPath(path);
+			if (!file) return null;
+			return NewBookmarkFileItem(file, title);
+		}
 	} else if (isWebView(view)) {
 		return NewBookmarkWebItem(view.url, title);
 	} else {
@@ -116,7 +131,7 @@ function NewBookmarkForView(view: View, title?: string): BookmarkItem | null {
 	}
 }
 
-export function createBookmarkForGroup(
+export async function createBookmarkForGroup(
 	app: App,
 	group: WorkspaceParent,
 	title: string
@@ -125,21 +140,27 @@ export function createBookmarkForGroup(
 	if (!bookmarks.enabled) return;
 	const bookmark = NewBookmarkGroupItem();
 	bookmark.title = title;
-	group.children.forEach((child: WorkspaceLeaf) => {
+	for (const child of group.children) {
+		await loadDeferredLeaf(child);
 		const view = child.view;
-		const item = NewBookmarkForView(view);
+		const title = DeduplicatedTitle(app, child);
+		const item = NewBookmarkForView(app, view, title);
 		if (item) bookmark.items.push(item);
-	});
+	}
 	bookmarks.instance.addItem(bookmark);
+	setTimeout(() => {
+		bookmarks.instance.saveData();
+	}, 1000);
 }
 
-export function createBookmarkForLeaf(
+export async function createBookmarkForLeaf(
 	app: App,
 	leaf: WorkspaceLeaf,
 	title: string
 ) {
 	const bookmarks = app.internalPlugins.plugins.bookmarks;
 	if (!bookmarks.enabled) return;
-	const item = NewBookmarkForView(leaf.view, title);
+	await loadDeferredLeaf(leaf);
+	const item = NewBookmarkForView(app, leaf.view, title);
 	if (item) bookmarks.instance.addItem(item);
 }

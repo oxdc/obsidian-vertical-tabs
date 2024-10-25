@@ -61,11 +61,14 @@ export const Group = ({ type, children, group }: GroupProps) => {
 			? titleMap[type]
 			: groupTitles.get(group.id);
 	const [ephemeralTitle, setEphemeralTitle] = useState(title);
+	const getTitle = () => {
+		let title = ephemeralTitle.trim();
+		if (title === "") title = DEFAULT_GROUP_TITLE;
+		return title;
+	};
 	const handleTitleChange = () => {
 		if (group && isEditing) {
-			let title = ephemeralTitle.trim();
-			if (title === "") title = DEFAULT_GROUP_TITLE;
-			setGroupTitle(group.id, title);
+			setGroupTitle(group.id, getTitle());
 		}
 		setIsEditing(!isEditing);
 	};
@@ -120,13 +123,13 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	menu.addSeparator();
 	menu.addItem((item) => {
 		item.setTitle("Bookmark all").onClick(() => {
-			if (group) createBookmarkForGroup(app, group, ephemeralTitle);
+			if (group) createBookmarkForGroup(app, group, getTitle());
 		});
 	});
 	menu.addItem((item) => {
-		item.setTitle("Bookmark and close all").onClick(() => {
+		item.setTitle("Bookmark and close all").onClick(async () => {
 			if (group) {
-				createBookmarkForGroup(app, group, ephemeralTitle);
+				await createBookmarkForGroup(app, group, getTitle());
 				group.detach();
 			}
 		});

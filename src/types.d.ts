@@ -68,6 +68,10 @@ declare module "obsidian" {
 		items: BookmarkItem[];
 	}
 
+	interface VTBookmarkGroupItem extends BookmarkGroupItem {
+		isCreatedByVT: boolean;
+	}
+
 	interface BookmarkWebItem extends BookmarkItem {
 		type: "url";
 		url: string;
@@ -86,6 +90,7 @@ declare module "obsidian" {
 						) => void;
 						editItem: (item: BookmarkItem) => void;
 						removeItem: (item: BookmarkItem) => void;
+						saveData: () => void;
 					};
 				};
 			};
