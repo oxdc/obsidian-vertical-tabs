@@ -65,6 +65,15 @@ const loadSortStrategy = (): SortStrategy | null => {
 	return sortStrategies[name] ?? null;
 };
 
+const saveGroupOrder = (groupIDs: Identifier[]) => {
+	localStorage.setItem("temp-group-order", JSON.stringify(groupIDs));
+};
+
+const loadGroupOrder = (): Identifier[] => {
+	const order = localStorage.getItem("temp-group-order");
+	return order ? JSON.parse(order) : [];
+};
+
 export const useTabCache = create<TabCacheStore>()((set, get) => ({
 	content: createNewTabCache(),
 	groupIDs: [],
@@ -82,11 +91,22 @@ export const useTabCache = create<TabCacheStore>()((set, get) => ({
 			const newGroupIDs = Array.from(content.keys()).filter(
 				(id) => !groupIDs.includes(id)
 			);
+			const unsortedGroupIDs = [...groupIDs, ...newGroupIDs];
+			const loadedGroupIDs = loadGroupOrder();
+			const sortedGroupIDs = ([] as Identifier[])
+				.concat(loadedGroupIDs)
+				.filter((id) => unsortedGroupIDs.includes(id))
+				.concat(
+					unsortedGroupIDs.filter(
+						(id) => !loadedGroupIDs.includes(id)
+					)
+				);
+			saveGroupOrder(sortedGroupIDs);
 			return {
 				...state,
 				content,
 				leaveIDs,
-				groupIDs: [...groupIDs, ...newGroupIDs],
+				groupIDs: sortedGroupIDs,
 			};
 		}),
 	swapGroup: (source, target) => {
@@ -96,6 +116,7 @@ export const useTabCache = create<TabCacheStore>()((set, get) => ({
 		groupIDs[sourceIndex] = target;
 		groupIDs[targetIndex] = source;
 		set({ groupIDs });
+		saveGroupOrder(groupIDs);
 	},
 	setSortStrategy: (strategy) => {
 		saveSortStrategy(strategy);
