@@ -97,7 +97,12 @@ declare module "obsidian" {
 		};
 	}
 
+	interface Menu {
+		items: MenuItem[];
+	}
+
 	interface MenuItem {
 		setSubmenu: () => Menu;
+		section?: string;
 	}
 }

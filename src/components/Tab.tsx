@@ -73,68 +73,93 @@ export const Tab = ({ leaf }: TabProps) => {
 	const menu = new Menu();
 
 	menu.addItem((item) => {
-		item.setTitle("Bookmark").onClick(() => {
-			createBookmarkForLeaf(plugin.app, leaf, leaf.getDisplayText());
-		});
+		item.setSection("bookmark")
+			.setTitle("Bookmark")
+			.onClick(() => {
+				createBookmarkForLeaf(plugin.app, leaf, leaf.getDisplayText());
+			});
 	});
 	menu.addItem((item) => {
-		item.setTitle("Bookmark and close").onClick(() => {
-			createBookmarkForLeaf(plugin.app, leaf, leaf.getDisplayText());
-			leaf.detach();
-		});
-	});
-	menu.addItem((item) => {
-		item.setTitle("Close").onClick(() => leaf.detach());
-	});
-	menu.addItem((item) => {
-		item.setTitle("Close Others").onClick(() =>
-			closeOthersInGroup(plugin.app, leaf)
-		);
-	});
-	menu.addItem((item) => {
-		item.setTitle("Close tabs to the top").onClick(() =>
-			closeTabsToTopInGroup(plugin.app, leaf)
-		);
-	});
-	menu.addItem((item) => {
-		item.setTitle("Close tabs to the bottom").onClick(() =>
-			closeTabsToBottomInGroup(plugin.app, leaf)
-		);
-	});
-	menu.addItem((item) => {
-		item.setTitle("Close all").onClick(() => leaf.parent.detach());
+		item.setSection("bookmark")
+			.setTitle("Bookmark and close")
+			.onClick(() => {
+				createBookmarkForLeaf(plugin.app, leaf, leaf.getDisplayText());
+				leaf.detach();
+			});
 	});
 	menu.addSeparator();
 	menu.addItem((item) => {
-		item.setTitle(isPinned ? "Unpin" : "Pin").onClick(togglePinned);
+		item.setSection("close")
+			.setTitle("Close")
+			.onClick(() => leaf.detach());
+	});
+	menu.addItem((item) => {
+		item.setSection("close")
+			.setTitle("Close Others")
+			.onClick(() => closeOthersInGroup(plugin.app, leaf));
+	});
+	menu.addItem((item) => {
+		item.setSection("close")
+			.setTitle("Close tabs to the top")
+			.onClick(() => closeTabsToTopInGroup(plugin.app, leaf));
+	});
+	menu.addItem((item) => {
+		item.setSection("close")
+			.setTitle("Close tabs to the bottom")
+			.onClick(() => closeTabsToBottomInGroup(plugin.app, leaf));
+	});
+	menu.addItem((item) => {
+		item.setSection("close")
+			.setTitle("Close all")
+			.onClick(() => leaf.parent.detach());
 	});
 	menu.addSeparator();
 	menu.addItem((item) => {
-		item.setTitle("Move to new window").onClick(() => {
-			plugin.app.workspace.duplicateLeaf(leaf, "window");
-			leaf.detach();
-		});
-	});
-	menu.addItem((item) => {
-		item.setTitle("Split right").onClick(() =>
-			plugin.app.workspace.duplicateLeaf(leaf, "split", "vertical")
-		);
-	});
-	menu.addItem((item) => {
-		item.setTitle("Split down").onClick(() =>
-			plugin.app.workspace.duplicateLeaf(leaf, "split", "horizontal")
-		);
-	});
-	menu.addItem((item) => {
-		item.setTitle("Open in new window").onClick(() => {
-			plugin.app.workspace.duplicateLeaf(leaf, "window");
-		});
+		item.setSection("pin")
+			.setTitle(isPinned ? "Unpin" : "Pin")
+			.onClick(togglePinned);
 	});
 	menu.addSeparator();
 	menu.addItem((item) => {
-		item.setTitle("More options");
+		item.setSection("leaf")
+			.setTitle("Move to new window")
+			.onClick(() => {
+				plugin.app.workspace.duplicateLeaf(leaf, "window");
+				leaf.detach();
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("leaf")
+			.setTitle("Split right")
+			.onClick(() =>
+				plugin.app.workspace.duplicateLeaf(leaf, "split", "vertical")
+			);
+	});
+	menu.addItem((item) => {
+		item.setSection("leaf")
+			.setTitle("Split down")
+			.onClick(() =>
+				plugin.app.workspace.duplicateLeaf(leaf, "split", "horizontal")
+			);
+	});
+	menu.addItem((item) => {
+		item.setSection("leaf")
+			.setTitle("Open in new window")
+			.onClick(() => {
+				plugin.app.workspace.duplicateLeaf(leaf, "window");
+			});
+	});
+	menu.addSeparator();
+	menu.addItem((item) => {
+		item.setSection("more").setTitle("More options");
 		const submenu = item.setSubmenu();
 		leaf.view.onPaneMenu(submenu, "more-options");
+		const excludedSections = ["open", "find", "pane"];
+		submenu.items = submenu.items.filter(
+			(item) =>
+				item.section === undefined ||
+				!excludedSections.includes(item.section)
+		);
 	});
 
 	const toolbar = (
