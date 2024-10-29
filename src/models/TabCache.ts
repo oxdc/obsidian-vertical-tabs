@@ -38,6 +38,7 @@ interface TabCacheStore {
 	clear: () => void;
 	refresh: (app: App) => void;
 	swapGroup: (source: Identifier, target: Identifier) => void;
+	moveGroupToEnd: (groupID: Identifier) => void;
 	setSortStrategy: (strategy: SortStrategy | null) => void;
 	sort: () => void;
 	hasOnlyOneGroup: () => boolean;
@@ -115,6 +116,14 @@ export const useTabCache = create<TabCacheStore>()((set, get) => ({
 		const targetIndex = groupIDs.indexOf(target);
 		groupIDs[sourceIndex] = target;
 		groupIDs[targetIndex] = source;
+		set({ groupIDs });
+		saveGroupOrder(groupIDs);
+	},
+	moveGroupToEnd: (groupID) => {
+		const { groupIDs } = get();
+		const index = groupIDs.indexOf(groupID);
+		groupIDs.splice(index, 1);
+		groupIDs.push(groupID);
 		set({ groupIDs });
 		saveGroupOrder(groupIDs);
 	},

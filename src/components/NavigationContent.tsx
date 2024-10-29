@@ -23,7 +23,7 @@ import { GroupSlot } from "./GroupSlot";
 import { Identifier } from "src/models/VTWorkspace";
 
 export const NavigationContent = () => {
-	const { groupIDs, content, swapGroup } = useTabCache();
+	const { groupIDs, content, swapGroup, moveGroupToEnd } = useTabCache();
 	const app = useApp();
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -70,7 +70,11 @@ export const NavigationContent = () => {
 				if (!leaf) return;
 				swapGroup(activeID, leaf.parent.id);
 			} else {
-				swapGroup(activeID, overID);
+				if (overID === "slot-new") {
+					moveGroupToEnd(activeID);
+				} else {
+					swapGroup(activeID, overID);
+				}
 			}
 		}
 	};
