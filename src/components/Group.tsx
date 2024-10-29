@@ -107,11 +107,11 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	};
 	const toolbar = (
 		<Fragment>
-			{!isSidebar && (
+			{!isSidebar && !isEditing && (
 				<IconButton
-					icon={isEditing ? "check" : "pencil"}
-					action="toggle-editing"
-					tooltip={isEditing ? "Save" : "Edit"}
+					icon="pencil"
+					action="edit"
+					tooltip="Edit"
 					onClick={handleTitleChange}
 				/>
 			)}
