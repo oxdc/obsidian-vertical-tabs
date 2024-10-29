@@ -13,6 +13,7 @@ export class NavigationView extends ItemView {
 
 	constructor(leaf: WorkspaceLeaf, plugin: ObsidianVerticalTabs) {
 		super(leaf);
+		this.navigation = false;
 		this.plugin = plugin;
 		this.icon = "gallery-vertical";
 	}
