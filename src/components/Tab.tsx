@@ -130,6 +130,12 @@ export const Tab = ({ leaf }: TabProps) => {
 			plugin.app.workspace.duplicateLeaf(leaf, "window");
 		});
 	});
+	menu.addSeparator();
+	menu.addItem((item) => {
+		item.setTitle("More options");
+		const submenu = item.setSubmenu();
+		leaf.view.onPaneMenu(submenu, "more-options");
+	});
 
 	const toolbar = (
 		<Fragment>
