@@ -21,7 +21,9 @@ interface TabProps {
 export const Tab = ({ leaf }: TabProps) => {
 	const plugin = usePlugin();
 	const { bindPinningEvent } = useViewState();
-	const [isPinned, setIsPinned] = useState(leaf.getViewState().pinned);
+	const [isPinned, setIsPinned] = useState(
+		leaf.getViewState().pinned ?? false
+	);
 	const { sort } = useTabCache();
 	const { lockFocusOnLeaf, toggleHiddenGroup } = useViewState();
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
@@ -32,7 +34,7 @@ export const Tab = ({ leaf }: TabProps) => {
 
 	const togglePinned = () => {
 		leaf.togglePinned();
-		setIsPinned(leaf.getViewState().pinned);
+		setIsPinned(leaf.getViewState().pinned ?? false);
 		sort();
 	};
 
@@ -91,6 +93,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	menu.addItem((item) => {
 		item.setSection("close")
 			.setTitle("Close")
+			.setDisabled(isPinned)
 			.onClick(() => leaf.detach());
 	});
 	menu.addItem((item) => {
@@ -111,6 +114,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	menu.addItem((item) => {
 		item.setSection("close")
 			.setTitle("Close all")
+			.setDisabled(isPinned)
 			.onClick(() => leaf.parent.detach());
 	});
 	menu.addSeparator();
