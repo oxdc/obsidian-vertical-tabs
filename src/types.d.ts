@@ -28,6 +28,10 @@ declare module "obsidian" {
 		tabHeaderContainerEl: HTMLElement;
 	}
 
+	interface HistoryState extends ViewState {
+		title: string;
+	}
+
 	interface WorkspaceLeaf {
 		id: Identifier;
 		activeTime: number;
@@ -35,6 +39,13 @@ declare module "obsidian" {
 		setParent: (parent: WorkspaceParent) => void;
 		tabHeaderEl?: HTMLElement;
 		tabHeaderInnerTitleEl?: HTMLElement;
+		history: {
+			backHistory: HistoryState[];
+			forwardHistory: HistoryState[];
+			back: () => void;
+			forward: () => void;
+			go: (offset: number) => void;
+		};
 	}
 
 	interface WorkspaceSidedock extends WorkspaceSplit {

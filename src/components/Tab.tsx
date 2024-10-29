@@ -9,7 +9,7 @@ import {
 	closeTabsToBottomInGroup,
 	closeTabsToTopInGroup,
 } from "src/services/CloseTabs";
-import { useTabCache } from "src/models/TabCache";
+import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 import { createBookmarkForLeaf } from "src/models/VTBookmark";
@@ -24,7 +24,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	const [isPinned, setIsPinned] = useState(
 		leaf.getViewState().pinned ?? false
 	);
-	const { sort } = useTabCache();
+	const { refresh, sort } = useTabCache();
 	const { lockFocusOnLeaf, toggleHiddenGroup } = useViewState();
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 
@@ -153,6 +153,59 @@ export const Tab = ({ leaf }: TabProps) => {
 				plugin.app.workspace.duplicateLeaf(leaf, "window");
 			});
 	});
+	if (leaf.view.navigation) {
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("history")
+				.setTitle(`Back`)
+				.setDisabled(leaf.history.backHistory.length === 0)
+				.onClick(() => leaf.history.back());
+		});
+		menu.addItem((item) => {
+			item.setSection("history")
+				.setTitle("Forward")
+				.setDisabled(leaf.history.forwardHistory.length === 0)
+				.onClick(() => leaf.history.forward());
+		});
+		menu.addItem((item) => {
+			item.setSection("history").setTitle("Browse history");
+			const submenu = item.setSubmenu();
+			const { backHistory, forwardHistory } = leaf.history;
+			const { length } = backHistory;
+			backHistory.forEach((state, index) => {
+				submenu.addItem((item) => {
+					item.setTitle(state.title).setChecked(false);
+					item.onClick(() => leaf.history.go(index - length));
+				});
+			});
+			submenu.addItem((item) => {
+				item.setTitle(DeduplicatedTitle(plugin.app, leaf)).setChecked(
+					true
+				);
+			});
+			forwardHistory.forEach((state, index) => {
+				submenu.addItem((item) => {
+					item.setTitle(state.title).setChecked(false);
+					item.onClick(() => leaf.history.go(index + 1));
+				});
+			});
+		});
+		const historyLength =
+			leaf.history.backHistory.length +
+			leaf.history.forwardHistory.length;
+		menu.addItem((item) => {
+			item.setSection("history")
+				.setTitle("Clear history")
+				.setDisabled(historyLength === 0)
+				.onClick(() => {
+					leaf.history.backHistory = [];
+					leaf.history.forwardHistory = [];
+					setTimeout(() => {
+						refresh(plugin.app);
+					}, REFRESH_TIMEOUT);
+				});
+		});
+	}
 	menu.addSeparator();
 	menu.addItem((item) => {
 		item.setSection("more").setTitle("More options");
