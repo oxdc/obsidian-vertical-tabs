@@ -4,10 +4,12 @@
 		margin-top: 10px;
 
 		.tree-item-self {
-			color: hsla(var(--interactive-accent-hsl), 0.5);
+			color: var(--text-faint);
+			cursor: pointer;
 		}
 
-		.tree-item-icon {
+		.tree-item-icon svg {
+			color: var(--text-faint) !important;
 			width: 16px !important;
 			height: 16px !important;
 		}

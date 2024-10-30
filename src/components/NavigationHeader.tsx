@@ -115,8 +115,8 @@ export const NavigationHeader = () => {
 				<IconButton
 					icon={
 						globalCollapseState
-							? "unfold-vertical"
-							: "fold-vertical"
+							? "chevrons-up-down"
+							: "chevrons-down-up"
 					}
 					action="global-collapse"
 					tooltip={
