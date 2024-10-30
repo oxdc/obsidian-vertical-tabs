@@ -74,7 +74,7 @@ export const NavigationHeader = () => {
 		<div className="nav-header">
 			<div className="nav-buttons-container">
 				<IconButton
-					icon="plus"
+					icon="file-plus"
 					action="new-tab"
 					tooltip="New tab"
 					onClick={createAndShowNewTab}

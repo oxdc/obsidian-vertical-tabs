@@ -9,9 +9,8 @@
 		}
 
 		.tree-item-icon svg {
+			--icon-size: var(--icon-s) !important;
 			color: var(--text-faint) !important;
-			width: 16px !important;
-			height: 16px !important;
 		}
 	}
 }
