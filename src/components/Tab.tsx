@@ -16,7 +16,10 @@ import {
 	createBookmarkForLeaf,
 	createBookmarkForLeafHistory,
 } from "src/models/VTBookmark";
-import { loadDeferredLeaf } from "src/services/LoadDeferredLeaf";
+import {
+	isDeferredLeaf,
+	loadDeferredLeaf,
+} from "src/services/LoadDeferredLeaf";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -249,6 +252,19 @@ export const Tab = ({ leaf }: TabProps) => {
 					leaf.history.forwardHistory = [];
 					setTimeout(() => refresh(app), REFRESH_TIMEOUT);
 				});
+		});
+	}
+	if (isDeferredLeaf(leaf)) {
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("history")
+				.setTitle("(Inactive)")
+				.setDisabled(true);
+		});
+		menu.addItem((item) => {
+			item.setSection("history")
+				.setTitle("Load history")
+				.onClick(async () => await loadDeferredLeaf(leaf));
 		});
 	}
 	menu.addSeparator();
