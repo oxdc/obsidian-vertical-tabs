@@ -16,6 +16,7 @@ import {
 	createBookmarkForLeaf,
 	createBookmarkForLeafHistory,
 } from "src/models/VTBookmark";
+import { loadDeferredLeaf } from "src/services/LoadDeferredLeaf";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -23,12 +24,18 @@ interface TabProps {
 
 export const Tab = ({ leaf }: TabProps) => {
 	const plugin = usePlugin();
-	const { bindPinningEvent } = useViewState();
+	const app = plugin.app;
+	const workspace = app.workspace;
+	const {
+		bindPinningEvent,
+		setGroupTitle,
+		lockFocusOnLeaf,
+		toggleHiddenGroup,
+	} = useViewState();
 	const [isPinned, setIsPinned] = useState(
 		leaf.getViewState().pinned ?? false
 	);
 	const { refresh, sort } = useTabCache();
-	const { lockFocusOnLeaf, toggleHiddenGroup } = useViewState();
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 
 	useEffect(() => {
@@ -58,11 +65,10 @@ export const Tab = ({ leaf }: TabProps) => {
 	};
 
 	const openTab = () => {
-		const workspace = plugin.app.workspace;
 		workspace.setActiveLeaf(leaf, { focus: true });
 		workspace.onLayoutChange();
 		toggleHiddenGroup(leaf.parent.id, false);
-		lockFocusOnLeaf(plugin.app, leaf);
+		lockFocusOnLeaf(app, leaf);
 	};
 
 	const activeOrCloseTab = (
@@ -81,14 +87,14 @@ export const Tab = ({ leaf }: TabProps) => {
 		item.setSection("bookmark")
 			.setTitle("Bookmark")
 			.onClick(() => {
-				createBookmarkForLeaf(plugin.app, leaf, leaf.getDisplayText());
+				createBookmarkForLeaf(app, leaf, leaf.getDisplayText());
 			});
 	});
 	menu.addItem((item) => {
 		item.setSection("bookmark")
 			.setTitle("Bookmark and close")
 			.onClick(() => {
-				createBookmarkForLeaf(plugin.app, leaf, leaf.getDisplayText());
+				createBookmarkForLeaf(app, leaf, leaf.getDisplayText());
 				leaf.detach();
 			});
 	});
@@ -102,17 +108,17 @@ export const Tab = ({ leaf }: TabProps) => {
 	menu.addItem((item) => {
 		item.setSection("close")
 			.setTitle("Close Others")
-			.onClick(() => closeOthersInGroup(plugin.app, leaf));
+			.onClick(() => closeOthersInGroup(app, leaf));
 	});
 	menu.addItem((item) => {
 		item.setSection("close")
 			.setTitle("Close tabs to the top")
-			.onClick(() => closeTabsToTopInGroup(plugin.app, leaf));
+			.onClick(() => closeTabsToTopInGroup(app, leaf));
 	});
 	menu.addItem((item) => {
 		item.setSection("close")
 			.setTitle("Close tabs to the bottom")
-			.onClick(() => closeTabsToBottomInGroup(plugin.app, leaf));
+			.onClick(() => closeTabsToBottomInGroup(app, leaf));
 	});
 	menu.addItem((item) => {
 		item.setSection("close")
@@ -131,29 +137,27 @@ export const Tab = ({ leaf }: TabProps) => {
 		item.setSection("leaf")
 			.setTitle("Move to new window")
 			.onClick(() => {
-				plugin.app.workspace.duplicateLeaf(leaf, "window");
+				workspace.duplicateLeaf(leaf, "window");
 				leaf.detach();
 			});
 	});
 	menu.addItem((item) => {
 		item.setSection("leaf")
 			.setTitle("Split right")
-			.onClick(() =>
-				plugin.app.workspace.duplicateLeaf(leaf, "split", "vertical")
-			);
+			.onClick(() => workspace.duplicateLeaf(leaf, "split", "vertical"));
 	});
 	menu.addItem((item) => {
 		item.setSection("leaf")
 			.setTitle("Split down")
 			.onClick(() =>
-				plugin.app.workspace.duplicateLeaf(leaf, "split", "horizontal")
+				workspace.duplicateLeaf(leaf, "split", "horizontal")
 			);
 	});
 	menu.addItem((item) => {
 		item.setSection("leaf")
 			.setTitle("Open in new window")
 			.onClick(() => {
-				plugin.app.workspace.duplicateLeaf(leaf, "window");
+				workspace.duplicateLeaf(leaf, "window");
 			});
 	});
 	if (leaf.view.navigation) {
@@ -182,9 +186,7 @@ export const Tab = ({ leaf }: TabProps) => {
 				});
 			});
 			submenu.addItem((item) => {
-				item.setTitle(DeduplicatedTitle(plugin.app, leaf)).setChecked(
-					true
-				);
+				item.setTitle(DeduplicatedTitle(app, leaf)).setChecked(true);
 			});
 			forwardHistory.forEach((state, index) => {
 				submenu.addItem((item) => {
@@ -200,7 +202,43 @@ export const Tab = ({ leaf }: TabProps) => {
 			item.setSection("history")
 				.setTitle("Bookmark history")
 				.setDisabled(historyLength === 0)
-				.onClick(() => createBookmarkForLeafHistory(plugin.app, leaf));
+				.onClick(() => createBookmarkForLeafHistory(app, leaf));
+		});
+		menu.addItem((item) => {
+			item.setSection("history")
+				.setTitle("Open history in new group")
+				.setDisabled(historyLength === 0)
+				.onClick(async () => {
+					const duplicatedLeaf = await workspace.duplicateLeaf(
+						leaf,
+						"split"
+					);
+					loadDeferredLeaf(duplicatedLeaf);
+					duplicatedLeaf.history.backHistory = [];
+					duplicatedLeaf.history.forwardHistory = [];
+					const group = duplicatedLeaf.parent;
+					const { backHistory, forwardHistory } = leaf.history;
+					let index = 0;
+					for (const state of backHistory) {
+						const leaf = workspace.createLeafInParent(group, index);
+						leaf.setViewState(state.state);
+						await loadDeferredLeaf(leaf);
+						leaf.setEphemeralState(state.eState);
+						index += 1;
+					}
+					index += 1;
+					for (const state of forwardHistory) {
+						const leaf = workspace.createLeafInParent(group, index);
+						leaf.setViewState(state.state);
+						await loadDeferredLeaf(leaf);
+						leaf.setEphemeralState(state.eState);
+						index += 1;
+					}
+					const title = DeduplicatedTitle(app, leaf);
+					setGroupTitle(group.id, `History: ${title}`);
+					workspace.setActiveLeaf(duplicatedLeaf, { focus: true });
+					lockFocusOnLeaf(app, duplicatedLeaf);
+				});
 		});
 		menu.addItem((item) => {
 			item.setSection("history")
@@ -209,9 +247,7 @@ export const Tab = ({ leaf }: TabProps) => {
 				.onClick(() => {
 					leaf.history.backHistory = [];
 					leaf.history.forwardHistory = [];
-					setTimeout(() => {
-						refresh(plugin.app);
-					}, REFRESH_TIMEOUT);
+					setTimeout(() => refresh(app), REFRESH_TIMEOUT);
 				});
 		});
 	}
@@ -251,7 +287,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	);
 
 	const props = {
-		title: DeduplicatedTitle(plugin.app, leaf),
+		title: DeduplicatedTitle(app, leaf),
 		icon: leaf.getIcon(),
 		isActive: leaf.tabHeaderEl?.classList.contains("is-active"),
 	};

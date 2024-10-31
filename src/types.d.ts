@@ -31,6 +31,7 @@ declare module "obsidian" {
 	interface HistoryState {
 		title: string;
 		state: ViewState;
+		eState: unknown;
 	}
 
 	interface MarkdownViewState extends ViewState {
