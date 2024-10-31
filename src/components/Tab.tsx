@@ -12,7 +12,10 @@ import {
 import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
-import { createBookmarkForLeaf } from "src/models/VTBookmark";
+import {
+	createBookmarkForLeaf,
+	createBookmarkForLeafHistory,
+} from "src/models/VTBookmark";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -193,6 +196,12 @@ export const Tab = ({ leaf }: TabProps) => {
 		const historyLength =
 			leaf.history.backHistory.length +
 			leaf.history.forwardHistory.length;
+		menu.addItem((item) => {
+			item.setSection("history")
+				.setTitle("Bookmark history")
+				.setDisabled(historyLength === 0)
+				.onClick(() => createBookmarkForLeafHistory(plugin.app, leaf));
+		});
 		menu.addItem((item) => {
 			item.setSection("history")
 				.setTitle("Clear history")

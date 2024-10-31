@@ -10,6 +10,9 @@ import {
 	View,
 	BookmarkItem,
 	BookmarkWebItem,
+	HistoryState,
+	MarkdownViewState,
+	ViewState,
 } from "obsidian";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 import { loadDeferredLeaf } from "src/services/LoadDeferredLeaf";
@@ -131,6 +134,29 @@ function NewBookmarkForView(
 	}
 }
 
+function isMarkdownViewState(state: ViewState): state is MarkdownViewState {
+	return !!state && "type" in state && state.type === "markdown";
+}
+
+function NewFileBookmarkForHistoryState(
+	app: App,
+	state: HistoryState
+): BookmarkFileItem | null {
+	if (!isMarkdownViewState(state.state)) return null;
+	const viewState = state.state as MarkdownViewState;
+	const file = app.vault.getFileByPath(viewState.state.file);
+	if (!file) return null;
+	return NewBookmarkFileItem(file, state.state.title);
+}
+
+function forceSaveBookmarks(app: App) {
+	const bookmarks = app.internalPlugins.plugins.bookmarks;
+	if (!bookmarks.enabled) return;
+	setTimeout(() => {
+		bookmarks.instance.saveData();
+	}, 1000);
+}
+
 export async function createBookmarkForGroup(
 	app: App,
 	group: WorkspaceParent,
@@ -148,9 +174,7 @@ export async function createBookmarkForGroup(
 		if (item) bookmark.items.push(item);
 	}
 	bookmarks.instance.addItem(bookmark);
-	setTimeout(() => {
-		bookmarks.instance.saveData();
-	}, 1000);
+	forceSaveBookmarks(app);
 }
 
 export async function createBookmarkForLeaf(
@@ -163,6 +187,32 @@ export async function createBookmarkForLeaf(
 	await loadDeferredLeaf(leaf);
 	const item = NewBookmarkForView(app, leaf.view, title);
 	if (item) bookmarks.instance.addItem(item);
+	forceSaveBookmarks(app);
+}
+
+export async function createBookmarkForLeafHistory(
+	app: App,
+	leaf: WorkspaceLeaf
+) {
+	const bookmarks = app.internalPlugins.plugins.bookmarks;
+	if (!bookmarks.enabled) return;
+	await loadDeferredLeaf(leaf);
+	const bookmark = NewBookmarkGroupItem();
+	const leafTitle = DeduplicatedTitle(app, leaf);
+	bookmark.title = `History: ${leafTitle}`;
+	const { backHistory, forwardHistory } = leaf.history;
+	backHistory.forEach((state) => {
+		const item = NewFileBookmarkForHistoryState(app, state);
+		if (item) bookmark.items.push(item);
+	});
+	const currentItem = NewBookmarkForView(app, leaf.view, `${leafTitle} (last viewed)`);
+	if (currentItem) bookmark.items.push(currentItem);
+	forwardHistory.forEach((state) => {
+		const item = NewFileBookmarkForHistoryState(app, state);
+		if (item) bookmark.items.push(item);
+	});
+	bookmarks.instance.addItem(bookmark);
+	forceSaveBookmarks(app);
 }
 
 export async function loadNameFromBookmark(

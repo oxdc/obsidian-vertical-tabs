@@ -28,8 +28,17 @@ declare module "obsidian" {
 		tabHeaderContainerEl: HTMLElement;
 	}
 
-	interface HistoryState extends ViewState {
+	interface HistoryState {
 		title: string;
+		state: ViewState;
+	}
+
+	interface MarkdownViewState extends ViewState {
+		type: "markdown";
+		title: string;
+		state: {
+			file: string;
+		};
 	}
 
 	interface WorkspaceLeaf {
