@@ -3,7 +3,7 @@ import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useState } from "react";
 import { usePlugin } from "src/models/PluginContext";
-import { Menu, WorkspaceLeaf } from "obsidian";
+import { Menu, Platform, WorkspaceLeaf } from "obsidian";
 import {
 	closeOthersInGroup,
 	closeTabsToBottomInGroup,
@@ -20,6 +20,7 @@ import {
 	isDeferredLeaf,
 	loadDeferredLeaf,
 } from "src/services/LoadDeferredLeaf";
+import { useTouchSensor } from "src/services/TouchSeneor";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -257,9 +258,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	if (isDeferredLeaf(leaf)) {
 		menu.addSeparator();
 		menu.addItem((item) => {
-			item.setSection("history")
-				.setTitle("(Inactive)")
-				.setDisabled(true);
+			item.setSection("history").setTitle("(Inactive)").setDisabled(true);
 		});
 		menu.addItem((item) => {
 			item.setSection("history")
@@ -290,7 +289,7 @@ export const Tab = ({ leaf }: TabProps) => {
 					onClick={unPin}
 				/>
 			)}
-			{!isPinned && (
+			{!isPinned && Platform.isDesktop && (
 				<IconButton
 					icon="x"
 					action="close"
@@ -308,6 +307,13 @@ export const Tab = ({ leaf }: TabProps) => {
 		isActive: leaf.tabHeaderEl?.classList.contains("is-active"),
 	};
 
+	const { listeners } = useTouchSensor({
+		minDistance: 10,
+		callback: (moved) => {
+			if (!moved) openTab();
+		},
+	});
+
 	return (
 		<NavigationTreeItem
 			id={leaf.id}
@@ -315,9 +321,9 @@ export const Tab = ({ leaf }: TabProps) => {
 			isPinned={isPinned}
 			isHighlighted={lastActiveLeaf?.id === leaf.id}
 			{...props}
+			{...listeners}
 			toolbar={toolbar}
 			onClick={activeOrCloseTab}
-			onTouchEnd={openTab}
 			onAuxClick={midClickCloseTab}
 			onDoubleClick={closeTab}
 			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
