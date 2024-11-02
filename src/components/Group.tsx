@@ -101,7 +101,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	);
 	const props = {
 		icon: "right-triangle",
-		isCollapsed,
+		isCollapsed: isCollapsed && !isSingleGroup, // Single group should not be collapsed
 		isSidebar,
 		isSingleGroup,
 	};
