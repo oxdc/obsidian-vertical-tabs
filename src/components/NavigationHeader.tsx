@@ -83,7 +83,7 @@ export const NavigationHeader = () => {
 				<IconButton
 					icon="app-window"
 					action="toggle-tab"
-					tooltip="Show active tabs"
+					tooltip="Show active tabs only"
 					onClick={toggleTabVisibility}
 					isActive={showActiveTabs}
 					isNavAction={true}

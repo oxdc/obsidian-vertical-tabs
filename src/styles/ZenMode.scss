@@ -36,10 +36,6 @@ body.vt-zen-mode:not(.is-popout-window) .workspace-split.mod-root {
 
 	.workspace-tabs > .workspace-tab-header-container {
 		.workspace-tab-header {
-			&:not(.is-active) {
-				display: none;
-			}
-
 			&.is-active {
 				max-width: unset;
 				width: unset;

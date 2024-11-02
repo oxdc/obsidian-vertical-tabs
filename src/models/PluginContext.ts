@@ -73,7 +73,9 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			get().setSettings({ hideSidebars: !get().hideSidebars });
 		},
 		toggleZenMode() {
-			get().setSettings({ zenMode: !get().zenMode });
+			const zenMode = !get().zenMode;
+			const showActiveTabs = zenMode ? true : get().showActiveTabs;
+			get().setSettings({ zenMode, showActiveTabs });
 		},
 	})
 );
