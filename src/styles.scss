@@ -106,10 +106,6 @@ body.vt-exclude-self
 	display: flex !important; // always show vertical tabs
 }
 
-.obsidian-vertical-tabs-container .tree-item.is-dragging-self {
-	opacity: 0.5;
-}
-
 .obsidian-vertical-tabs-container:not(.is-dragging-group) .is-tab-slot {
 	height: 6px;
 	background: none !important;
@@ -117,10 +113,10 @@ body.vt-exclude-self
 }
 
 .obsidian-vertical-tabs-container:not(.is-dragging-group)
-	.tree-item.is-group.is-dragging-over
+	.tree-item.is-group.is-being-dragged-over
 	.is-tab-slot,
 .obsidian-vertical-tabs-container:not(.is-dragging-group)
-	.tree-item.is-group:has(.is-dragging-over)
+	.tree-item.is-group:has(.is-being-dragged-over)
 	.is-tab-slot {
 	display: block;
 }

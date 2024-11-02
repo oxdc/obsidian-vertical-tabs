@@ -51,11 +51,12 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"tree-item": true,
 		"is-tab": props.isTab,
 		"is-group": !props.isTab,
+		"nav-folder": !props.isTab,
 		"is-pinned": props.isPinned,
 		"is-collapsed": props.isCollapsed,
 		"is-sidebar": props.isSidebar,
-		"is-dragging-self": isDragging,
-		"is-dragging-over": isOver,
+		"is-being-dragged": isDragging,
+		"is-being-dragged-over": isOver,
 		"is-tab-slot": props.isTabSlot,
 		"is-group-slot": props.isGroupSlot,
 		"is-single-group": props.isSingleGroup,
@@ -66,6 +67,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"tree-item-self": true,
 		"is-clickable": true,
 		"is-active": props.isActive,
+		"is-being-dragged": isDragging,
 		"is-being-renamed": props.isRenaming,
 	};
 

@@ -14,8 +14,8 @@
 	// group
 	&.is-dragging-group {
 		.tree-item.is-group {
-			&.is-dragging-over,
-			&:has(.is-dragging-over) {
+			&.is-being-dragged-over,
+			&:has(.is-being-dragged-over) {
 				&::before {
 					background: var(--interactive-accent);
 				}
@@ -25,11 +25,11 @@
 
 	// tab
 	&:not(.is-dragging-group) {
-		.tree-item.is-tab.is-dragging-over::before {
+		.tree-item.is-tab.is-being-dragged-over::before {
 			background: var(--interactive-accent);
 		}
 
-		.tree-item.is-group.is-dragging-over {
+		.tree-item.is-group.is-being-dragged-over {
 			&.is-group-slot {
 				background: hsla(var(--interactive-accent-hsl), 0.2);
 
