@@ -1,0 +1,24 @@
+.obsidian-vertical-tabs-container {
+	.tree-item.is-tab-slot {
+		.tree-item-self {
+			cursor: pointer;
+
+			&:not(:hover) {
+				height: 6px;
+				padding: 0;
+
+				* {
+					display: none;
+				}
+			}
+
+			&:hover {
+				height: unset;
+
+				* {
+					display: initial;
+				}
+			}
+		}
+	}
+}

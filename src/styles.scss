@@ -2,9 +2,10 @@
 @import "styles/ZenMode.scss";
 @import "styles/Tab.scss";
 @import "styles/Group.scss";
+@import "styles/TabSlot.scss";
+@import "styles/GroupSlot.scss";
 @import "styles/ToggleSidebar.scss";
 @import "styles/DropIndicator.scss";
-@import "styles/GroupSlot.scss";
 @import "styles/SingleGroup.scss";
 
 .vertical-tabs {
@@ -91,38 +92,8 @@ body.vt-exclude-self
 	display: none;
 }
 
-.obsidian-vertical-tabs-container .tab-slot {
-	height: 30px;
-	background-color: var(--background-modifier-border);
-	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--border-radius);
-}
-
-.obsidian-vertical-tabs-container .tab-slot.is-hidden {
-	display: none;
-}
-
 .workspace-tab-header[data-type="vertical-tabs"] {
 	display: flex !important; // always show vertical tabs
-}
-
-.obsidian-vertical-tabs-container:not(.is-dragging-group) .is-tab-slot {
-	height: 6px;
-	background: none !important;
-	/* display: none; */
-}
-
-.obsidian-vertical-tabs-container:not(.is-dragging-group)
-	.tree-item.is-group.is-being-dragged-over
-	.is-tab-slot,
-.obsidian-vertical-tabs-container:not(.is-dragging-group)
-	.tree-item.is-group:has(.is-being-dragged-over)
-	.is-tab-slot {
-	display: block;
-}
-
-.obsidian-vertical-tabs-container:not(.is-dragging-group) .is-group-slot {
-	display: block;
 }
 
 .obsidian-vertical-tabs-container

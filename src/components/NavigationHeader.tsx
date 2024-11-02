@@ -19,13 +19,6 @@ export const NavigationHeader = () => {
 		(state) => state.globalCollapseState
 	);
 
-	const createAndShowNewTab = () => {
-		const workspace = plugin.app.workspace;
-		const leaf = workspace.getLeaf(true);
-		workspace.setActiveLeaf(leaf, { focus: true });
-		workspace.onLayoutChange();
-	};
-
 	const toggleZenModeAndLockFocus = () => {
 		toggleZenMode();
 		lockFocus(plugin);
@@ -73,13 +66,6 @@ export const NavigationHeader = () => {
 	return (
 		<div className="nav-header">
 			<div className="nav-buttons-container">
-				<IconButton
-					icon="file-plus"
-					action="new-tab"
-					tooltip="New tab"
-					onClick={createAndShowNewTab}
-					isNavAction={true}
-				/>
 				<IconButton
 					icon="app-window"
 					action="toggle-tab"

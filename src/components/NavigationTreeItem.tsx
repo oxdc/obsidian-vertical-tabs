@@ -41,7 +41,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		useSortable({
 			id: props.id ?? "",
 			data: { isTab: props.isTab && !props.isTabSlot },
-			disabled: !props.id,
+			disabled: !props.id || props.isTabSlot || props.isGroupSlot,
 		});
 
 	const iconEl = useRef<HTMLDivElement>(null);

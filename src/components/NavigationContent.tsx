@@ -119,9 +119,7 @@ export const NavigationContent = () => {
 									{entryOf(groupID).leaves.map((leaf) => (
 										<Tab key={leaf.id} leaf={leaf} />
 									))}
-									{isDragging && !isDraggingGroup && (
-										<TabSlot groupID={groupID} />
-									)}
+									<TabSlot groupID={groupID} />
 								</SortableContext>
 							</Group>
 						))}

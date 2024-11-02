@@ -19,7 +19,7 @@ export const GroupSlot = () => {
 
 	return (
 		<NavigationTreeItem
-			title="New Group"
+			title="New group"
 			icon="plus"
 			id={`slot-new`}
 			isTab={false}
