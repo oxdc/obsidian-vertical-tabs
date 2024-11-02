@@ -47,8 +47,12 @@ export function moveTab(
 	const targetParent = targetLeaf.parent;
 	const sourceIndex = sourceParent.children.indexOf(sourceLeaf);
 	const targetIndex = targetParent.children.indexOf(targetLeaf);
+	const insertIndex =
+		sourceParent.id === targetParent.id && sourceIndex < targetIndex
+			? targetIndex - 1
+			: targetIndex;
 	removeChild(sourceParent, sourceIndex);
-	insertChild(targetParent, sourceLeaf, targetIndex);
+	insertChild(targetParent, sourceLeaf, insertIndex);
 	app.workspace.onLayoutChange();
 }
 
