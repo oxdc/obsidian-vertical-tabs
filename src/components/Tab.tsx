@@ -273,17 +273,17 @@ export const Tab = ({ leaf }: TabProps) => {
 		const submenu = item.setSubmenu();
 		submenu.addItem((item) => {
 			item.setTitle("Zoom in").onClick(() => {
-				zoomIn(leaf);
+				zoomIn(leaf.view);
 			});
 		});
 		submenu.addItem((item) => {
 			item.setTitle("Zoom out").onClick(() => {
-				zoomOut(leaf);
+				zoomOut(leaf.view);
 			});
 		});
 		submenu.addItem((item) => {
 			item.setTitle("Reset zoom").onClick(() => {
-				resetZoom(leaf);
+				resetZoom(leaf.view);
 			});
 		});
 	});

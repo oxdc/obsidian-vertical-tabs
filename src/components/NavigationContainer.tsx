@@ -4,11 +4,12 @@ import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect } from "react";
 import { useViewState } from "src/models/ViewState";
-import { debounce } from "obsidian";
+import { debounce, ItemView } from "obsidian";
 import {
 	moveSelfToDefaultLocation,
 	selfIsNotInTheSidebar,
 } from "src/services/MoveTab";
+import { resetZoom, zoomIn, zoomOut } from "src/services/TabZoom";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
@@ -53,6 +54,30 @@ export const NavigationContainer = () => {
 				toggleZenMode();
 				lockFocus(plugin);
 				workspace.trigger("vertical-tabs:update-toggle");
+			},
+		});
+		plugin.addCommand({
+			id: "zoom-in-current-tab",
+			name: "Zoom in current tab",
+			callback: () => {
+				const view = workspace.getActiveViewOfType(ItemView);
+				if (view) zoomIn(view);
+			},
+		});
+		plugin.addCommand({
+			id: "zoom-out-current-tab",
+			name: "Zoom out current tab",
+			callback: () => {
+				const view = workspace.getActiveViewOfType(ItemView);
+				if (view) zoomOut(view);
+			},
+		});
+		plugin.addCommand({
+			id: "zoom-reset-current-tab",
+			name: "Reset zoom in current tab",
+			callback: () => {
+				const view = workspace.getActiveViewOfType(ItemView);
+				if (view) resetZoom(view);
 			},
 		});
 	}, []);
