@@ -1,6 +1,16 @@
 import { Identifier } from "./models/VTWorkspace";
 
 declare module "obsidian" {
+	interface SyncViewState {
+		active: boolean;
+		state: ViewState;
+		eState: unknown;
+	}
+
+	interface ItemView {
+		getSyncViewState: () => SyncViewState;
+	}
+
 	interface Workspace {
 		iterateLeaves(
 			split: WorkspaceSplit,

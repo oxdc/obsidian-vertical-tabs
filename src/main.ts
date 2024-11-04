@@ -1,4 +1,4 @@
-import { ItemView, Plugin, WorkspaceLeaf } from "obsidian";
+import { ItemView, MarkdownView, Plugin, View, WorkspaceLeaf } from "obsidian";
 import { NavigationView, VIEW_TYPE } from "src/navigation";
 import { DEFAULT_SETTINGS, Settings } from "./models/PluginSettings";
 import { around } from "monkey-around";
@@ -11,7 +11,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		await this.registerEventsAndViews();
 		await this.setupCommands();
 		await this.updateViewStates();
-		await this.patchWorkspaceLeaf();
+		await this.patchViews();
 		setTimeout(() => this.openVerticalTabs(), 10);
 	}
 
@@ -65,8 +65,8 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.toggle("vt-enable-tab-zoom", this.settings.enableTabZoom);
 	}
 
-	async patchWorkspaceLeaf() {
-		const applyZoom = (view: ItemView, zoom: number) => {
+	async patchViews() {
+		const applyZoom = (view: View, zoom: number) => {
 			if (zoom <= 0) return;
 			view.containerEl.setCssProps({
 				"--vt-tab-zoom-factor": zoom.toString(),
@@ -95,6 +95,18 @@ export default class ObsidianVerticalTabs extends Plugin {
 					return function () {
 						old.call(this);
 						applyZoom(this, this.zoom ?? 1);
+					};
+				},
+			})
+		);
+
+		this.register(
+			around(MarkdownView.prototype, {
+				getSyncViewState(old) {
+					return function () {
+						const syncViewState = old.call(this);
+						delete syncViewState.eState.zoom;
+						return syncViewState;
 					};
 				},
 			})
