@@ -2,7 +2,7 @@ import { NavigationTreeItem } from "./NavigationTreeItem";
 import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useState } from "react";
-import { usePlugin } from "src/models/PluginContext";
+import { usePlugin, useSettings } from "src/models/PluginContext";
 import { Menu, Platform, WorkspaceLeaf } from "obsidian";
 import {
 	closeOthersInGroup,
@@ -42,6 +42,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	);
 	const { refresh, sort } = useTabCache();
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
+	const enableTabZoom = useSettings((state) => state.enableTabZoom);
 
 	useEffect(() => {
 		bindPinningEvent(leaf, setIsPinned);
@@ -269,7 +270,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	}
 	menu.addSeparator();
 	menu.addItem((item) => {
-		item.setSection("zoom").setTitle("Zoom");
+		item.setSection("zoom").setTitle("Zoom").setDisabled(!enableTabZoom);
 		const submenu = item.setSubmenu();
 		submenu.addItem((item) => {
 			item.setTitle("Zoom in").onClick(() => {
