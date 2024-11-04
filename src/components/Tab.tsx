@@ -21,6 +21,7 @@ import {
 	loadDeferredLeaf,
 } from "src/services/LoadDeferredLeaf";
 import { useTouchSensor } from "src/services/TouchSeneor";
+import { zoomIn, zoomOut, resetZoom } from "src/services/TabZoom";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -266,6 +267,26 @@ export const Tab = ({ leaf }: TabProps) => {
 				.onClick(async () => await loadDeferredLeaf(leaf));
 		});
 	}
+	menu.addSeparator();
+	menu.addItem((item) => {
+		item.setSection("zoom").setTitle("Zoom");
+		const submenu = item.setSubmenu();
+		submenu.addItem((item) => {
+			item.setTitle("Zoom in").onClick(() => {
+				zoomIn(leaf);
+			});
+		});
+		submenu.addItem((item) => {
+			item.setTitle("Zoom out").onClick(() => {
+				zoomOut(leaf);
+			});
+		});
+		submenu.addItem((item) => {
+			item.setTitle("Reset zoom").onClick(() => {
+				resetZoom(leaf);
+			});
+		});
+	});
 	menu.addSeparator();
 	menu.addItem((item) => {
 		item.setSection("more").setTitle("More options");

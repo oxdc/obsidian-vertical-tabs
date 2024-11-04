@@ -1,6 +1,7 @@
-import { Plugin, WorkspaceLeaf } from "obsidian";
+import { ItemView, Plugin, WorkspaceLeaf } from "obsidian";
 import { NavigationView, VIEW_TYPE } from "src/navigation";
 import { DEFAULT_SETTINGS, Settings } from "./models/PluginSettings";
+import { around } from "monkey-around";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -10,6 +11,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		await this.registerEventsAndViews();
 		await this.setupCommands();
 		await this.updateViewStates();
+		await this.patchWorkspaceLeaf();
 		setTimeout(() => this.openVerticalTabs(), 10);
 	}
 
@@ -60,5 +62,42 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.toggle("vt-show-active-tabs", this.settings.showActiveTabs);
 		this.toggle("vt-exclude-self", this.settings.sidebarExcludeSelf);
 		this.toggle("vt-zen-mode", this.settings.zenMode);
+		this.toggle("vt-enable-tab-zoom", this.settings.enableTabZoom);
+	}
+
+	async patchWorkspaceLeaf() {
+		const applyZoom = (view: ItemView, zoom: number) => {
+			if (zoom <= 0) return;
+			view.containerEl.setCssProps({
+				"--vt-tab-zoom-factor": zoom.toString(),
+			});
+		};
+
+		this.register(
+			around(ItemView.prototype, {
+				setEphemeralState(old) {
+					return function (eState: object) {
+						const newState = { zoom: this.zoom ?? 1, ...eState };
+						old.call(this, newState);
+						this.zoom = newState.zoom;
+						applyZoom(this, this.zoom);
+					};
+				},
+				getEphemeralState(old) {
+					return function () {
+						const eState = old.call(this);
+						this.zoom = this.zoom ?? 1;
+						applyZoom(this, this.zoom);
+						return { zoom: this.zoom, ...eState };
+					};
+				},
+				onload(old) {
+					return function () {
+						old.call(this);
+						applyZoom(this, this.zoom ?? 1);
+					};
+				},
+			})
+		);
 	}
 }

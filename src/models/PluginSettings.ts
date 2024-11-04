@@ -4,6 +4,7 @@ interface ObsidianVerticalTabsSettings {
 	sidebarTabTypes: string[] | null;
 	sidebarExcludeSelf: boolean;
 	zenMode: boolean;
+	enableTabZoom: boolean;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -12,6 +13,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	sidebarTabTypes: ["markdown"],
 	sidebarExcludeSelf: true,
 	zenMode: false,
+	enableTabZoom: true,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;
