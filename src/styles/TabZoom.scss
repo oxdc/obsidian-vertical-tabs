@@ -9,6 +9,14 @@ body.vt-enable-tab-zoom {
 		zoom: var(--vt-tab-zoom-factor);
 	}
 
+	.cm-gap {
+		display: none;
+	}
+
+	.embedded-backlinks {
+		min-height: unset !important;
+	}
+
 	.markdown-source-view.mod-cm6.is-readable-line-width .cm-sizer {
 		max-width: calc(var(--file-line-width) / var(--vt-tab-zoom-factor));
 	}
