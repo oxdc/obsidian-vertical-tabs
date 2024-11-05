@@ -1,0 +1,50 @@
+.workspace-tabs.vt-continuous-view {
+	.workspace-leaf {
+		display: block !important;
+		contain: unset !important;
+		height: unset !important;
+		flex-grow: 1 !important;
+	}
+
+	.workspace-tab-container {
+		flex-direction: column;
+		display: block;
+		overflow-y: scroll;
+	}
+
+	.markdown-preview-sizer,
+	.cm-contentContainer > div {
+		padding-bottom: 0 !important;
+		min-height: unset !important;
+	}
+
+	.embedded-backlinks,
+	.metadata-container {
+		display: none !important;
+	}
+
+	.workspace-tab-header-container-inner {
+		display: none;
+	}
+
+	&.vt-continuous-view-show-backlinks {
+		.embedded-backlinks {
+			display: block !important;
+			min-height: unset !important;
+		}
+
+		.cm-contentContainer > div {
+			padding-bottom: 50px !important;
+		}
+	}
+
+	&.vt-continuous-view-show-metadata {
+		.metadata-container {
+			display: var(--metadata-display-editing) !important;
+		}
+
+		.metadata-container[data-property-count="0"] {
+			display: none !important;
+		}
+	}
+}

@@ -1,0 +1,31 @@
+.workspace-tabs.vt-mission-control-view {
+	--vt-mission-control-view-leaf-gap: 20px;
+	--vt-mission-control-view-leaf-zoom-factor: 0.5;
+	--vt-mission-control-view-leaf-height: 500px;
+	--vt-mission-control-view-leaf-width: 300px;
+
+	.workspace-leaf {
+		display: block !important;
+		height: var(--vt-mission-control-view-leaf-height);
+		min-width: var(--vt-mission-control-view-leaf-width);
+		max-width: var(--vt-mission-control-view-leaf-width);
+		zoom: var(--vt-mission-control-view-leaf-zoom-factor);
+		pointer-events: none;
+	}
+
+	.workspace-tab-container {
+		display: flex;
+		flex-wrap: wrap !important;
+		gap: var(--vt-mission-control-view-leaf-gap);
+		flex: 1 0 auto;
+		justify-content: center;
+		align-content: flex-start;
+		overflow-y: scroll !important;
+		position: relative;
+		height: 0;
+	}
+
+	.workspace-tab-header-container-inner {
+		display: none;
+	}
+}
