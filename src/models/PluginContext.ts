@@ -1,4 +1,4 @@
-import { App } from "obsidian";
+import { App, EventRef } from "obsidian";
 import { createContext, useContext } from "react";
 import ObsidianVerticalTabs from "src/main";
 import {
@@ -10,6 +10,10 @@ import {
 } from "./PluginSettings";
 import { create } from "zustand";
 import { createSelectors } from "./Selectors";
+import {
+	deduplicateExistingTabs,
+	deduplicateTab,
+} from "src/services/DeduplicateTab";
 
 export type SettingsContext = [Settings, (mutator: SettingsMutator) => void];
 
@@ -37,12 +41,15 @@ interface SettingsActions {
 	disableNavigation: (app: App) => void;
 	resetNavigation: (app: App) => void;
 	setNavigation: (app: App) => void;
+	toggleDeduplicateTabs: (app: App) => void;
+	deduplicateTask: EventRef | null;
 }
 
 export const useSettingsBase = create<Settings & SettingsActions>(
 	(set, get) => ({
 		...DEFAULT_SETTINGS,
 		plugin: null,
+		deduplicateTask: null,
 		loadSettings: async (plugin) => {
 			set({ plugin });
 			await plugin.loadData();
@@ -111,6 +118,25 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				get().disableNavigation(app);
 			} else {
 				get().resetNavigation(app);
+			}
+		},
+		toggleDeduplicateTabs(app) {
+			const deduplicateTabs = !get().deduplicateTabs;
+			get().setSettings({ deduplicateTabs });
+			if (deduplicateTabs) {
+				const deduplicateTask = app.workspace.on("file-open", (file) =>
+					deduplicateTab(app, file)
+				);
+				set({ deduplicateTask });
+				const plugin = get().plugin;
+				if (plugin) plugin.registerEvent(deduplicateTask);
+				deduplicateExistingTabs(app);
+			} else {
+				const deduplicateTask = get().deduplicateTask;
+				if (deduplicateTask) {
+					app.workspace.offref(deduplicateTask);
+					set({ deduplicateTask: null });
+				}
 			}
 		},
 	})

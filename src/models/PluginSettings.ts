@@ -6,6 +6,7 @@ interface ObsidianVerticalTabsSettings {
 	zenMode: boolean;
 	enableTabZoom: boolean;
 	alwaysOpenInNewTab: boolean;
+	deduplicateTabs: boolean;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -16,6 +17,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	zenMode: false,
 	enableTabZoom: true,
 	alwaysOpenInNewTab: false,
+	deduplicateTabs: false,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;

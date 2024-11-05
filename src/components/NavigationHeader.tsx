@@ -11,9 +11,11 @@ export const NavigationHeader = () => {
 	const hideSidebars = useSettings.use.hideSidebars();
 	const toggleSidebarVisibility = useSettings.use.toggleSidebarVisibility();
 	const zenMode = useSettings.use.zenMode();
-	const alwaysOpenInNewTab = useSettings.use.alwaysOpenInNewTab();
 	const toggleZenMode = useSettings.use.toggleZenMode();
+	const alwaysOpenInNewTab = useSettings.use.alwaysOpenInNewTab();
 	const toggleAlwaysOpenInNewTab = useSettings.use.toggleAlwaysOpenInNewTab();
+	const deduplicateTabs = useSettings.use.deduplicateTabs();
+	const toggleDeduplicateTabs = useSettings.use.toggleDeduplicateTabs();
 	const sortStrategy = useTabCache((state) => state.sortStrategy);
 	const { setSortStrategy } = useTabCache();
 	const { lockFocus, setAllCollapsed, setAllExpanded } = useViewState();
@@ -127,6 +129,14 @@ export const NavigationHeader = () => {
 					}
 					onClick={() => toggleAlwaysOpenInNewTab(plugin.app)}
 					isActive={alwaysOpenInNewTab}
+					isNavAction={true}
+				/>
+				<IconButton
+					icon="copy-slash"
+					action="deduplicate-tabs"
+					tooltip="Deduplicate tabs"
+					onClick={() => toggleDeduplicateTabs(plugin.app)}
+					isActive={deduplicateTabs}
 					isNavAction={true}
 				/>
 			</div>
