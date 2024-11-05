@@ -73,9 +73,18 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			get().setSettings({ hideSidebars: !get().hideSidebars });
 		},
 		toggleZenMode() {
-			const zenMode = !get().zenMode;
-			const showActiveTabs = zenMode ? true : get().showActiveTabs;
-			get().setSettings({ zenMode, showActiveTabs });
+			const { zenMode, showActiveTabs } = get();
+			if (zenMode) {
+				const showActiveTabs =
+					localStorage.getItem("vt-show-active-tabs") === "true";
+				get().setSettings({ zenMode: false, showActiveTabs });
+			} else {
+				localStorage.setItem(
+					"vt-show-active-tabs",
+					showActiveTabs.toString()
+				);
+				get().setSettings({ zenMode: true, showActiveTabs: true });
+			}
 		},
 	})
 );
