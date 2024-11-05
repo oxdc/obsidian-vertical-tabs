@@ -5,6 +5,7 @@ interface ObsidianVerticalTabsSettings {
 	sidebarExcludeSelf: boolean;
 	zenMode: boolean;
 	enableTabZoom: boolean;
+	alwaysOpenInNewTab: boolean;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -14,6 +15,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	sidebarExcludeSelf: true,
 	zenMode: false,
 	enableTabZoom: true,
+	alwaysOpenInNewTab: false,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;

@@ -18,6 +18,7 @@ export const NavigationContainer = () => {
 		useViewState();
 	const loadSettings = useSettings.use.loadSettings();
 	const toggleZenMode = useSettings.use.toggleZenMode();
+	const setNavigation = useSettings.use.setNavigation();
 
 	const autoRefresh = () => {
 		setLatestActiveLeaf(plugin);
@@ -26,6 +27,7 @@ export const NavigationContainer = () => {
 			moveSelfToDefaultLocation(plugin.app);
 		}
 		setTimeout(() => {
+			setNavigation(plugin.app);
 			refresh(plugin.app);
 			sort();
 		}, REFRESH_TIMEOUT);

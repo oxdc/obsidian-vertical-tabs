@@ -11,7 +11,9 @@ export const NavigationHeader = () => {
 	const hideSidebars = useSettings.use.hideSidebars();
 	const toggleSidebarVisibility = useSettings.use.toggleSidebarVisibility();
 	const zenMode = useSettings.use.zenMode();
+	const alwaysOpenInNewTab = useSettings.use.alwaysOpenInNewTab();
 	const toggleZenMode = useSettings.use.toggleZenMode();
+	const toggleAlwaysOpenInNewTab = useSettings.use.toggleAlwaysOpenInNewTab();
 	const sortStrategy = useTabCache((state) => state.sortStrategy);
 	const { setSortStrategy } = useTabCache();
 	const { lockFocus, setAllCollapsed, setAllExpanded } = useViewState();
@@ -113,6 +115,18 @@ export const NavigationHeader = () => {
 							? setAllExpanded()
 							: setAllCollapsed()
 					}
+					isNavAction={true}
+				/>
+				<IconButton
+					icon="copy-plus"
+					action="always-open-in-new-tab"
+					tooltip={
+						alwaysOpenInNewTab
+							? "Navigate in current tab"
+							: "Always open in new tab"
+					}
+					onClick={() => toggleAlwaysOpenInNewTab(plugin.app)}
+					isActive={alwaysOpenInNewTab}
 					isNavAction={true}
 				/>
 			</div>
