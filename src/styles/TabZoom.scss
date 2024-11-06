@@ -7,13 +7,24 @@ body.vt-enable-tab-zoom {
 	.document-replace,
 	.browser-content {
 		zoom: var(--vt-tab-zoom-factor);
+
+		& {
+			.markdown-source-view,
+			.markdown-preview-view,
+			.release-notes-view,
+			.document-replace,
+			.browser-content {
+				zoom: 1;
+			}
+		}
 	}
 
 	.cm-gap {
 		display: none;
 	}
 
-	.embedded-backlinks {
+	.embedded-backlinks,
+	.markdown-preview-sizer {
 		min-height: unset !important;
 	}
 
