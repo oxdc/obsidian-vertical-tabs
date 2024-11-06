@@ -288,18 +288,20 @@ export const Tab = ({ leaf }: TabProps) => {
 			});
 		});
 	});
-	menu.addSeparator();
-	menu.addItem((item) => {
-		item.setSection("more").setTitle("More options");
-		const submenu = item.setSubmenu();
-		leaf.view.onPaneMenu(submenu, "more-options");
-		const excludedSections = ["open", "find", "pane"];
-		submenu.items = submenu.items.filter(
-			(item) =>
-				item.section === undefined ||
-				!excludedSections.includes(item.section)
-		);
-	});
+	if (Platform.isDesktop) {
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("more").setTitle("More options");
+			const submenu = item.setSubmenu();
+			leaf.view.onPaneMenu(submenu, "more-options");
+			const excludedSections = ["open", "find", "pane"];
+			submenu.items = submenu.items.filter(
+				(item) =>
+					item.section === undefined ||
+					!excludedSections.includes(item.section)
+			);
+		});
+	}
 
 	const toolbar = (
 		<Fragment>
