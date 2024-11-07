@@ -1,5 +1,8 @@
 body.vt-enable-tab-zoom .workspace-leaf.vt-apply-tab-zoom {
 	--vt-tab-zoom-factor: 1;
+	--vt-scaled-file-line-width: calc(
+		var(--file-line-width) / var(--vt-tab-zoom-factor)
+	);
 
 	.markdown-source-view,
 	.markdown-preview-view,
@@ -28,37 +31,36 @@ body.vt-enable-tab-zoom .workspace-leaf.vt-apply-tab-zoom {
 		min-height: unset !important;
 	}
 
-	.markdown-source-view.mod-cm6.is-readable-line-width .cm-sizer {
-		max-width: calc(var(--file-line-width) / var(--vt-tab-zoom-factor));
+	.markdown-source-view.mod-cm6.is-readable-line-width {
+		.cm-sizer,
+		.cm-content,
+		.cm-line {
+			max-width: var(--vt-scaled-file-line-width);
+		}
 	}
 
-	.markdown-source-view.mod-cm6.is-readable-line-width .cm-content {
-		max-width: calc(var(--file-line-width) / var(--vt-tab-zoom-factor));
-	}
-
-	.markdown-source-view.mod-cm6.is-readable-line-width .cm-line {
-		max-width: calc(var(--file-line-width) / var(--vt-tab-zoom-factor));
-	}
-
-	.markdown-preview-view.is-readable-line-width .markdown-preview-sizer {
-		max-width: calc(var(--file-line-width) / var(--vt-tab-zoom-factor));
+	.markdown-preview-view.is-readable-line-width {
+		.markdown-preview-sizer {
+			max-width: var(--vt-scaled-file-line-width);
+		}
 	}
 
 	.release-notes-view .is-readable-line-width {
-		max-width: calc(var(--file-line-width) / var(--vt-tab-zoom-factor));
+		max-width: var(--vt-scaled-file-line-width);
 	}
 
 	.document-replace {
-		max-width: calc(var(--file-line-width) / var(--vt-tab-zoom-factor));
+		max-width: var(--vt-scaled-file-line-width);
 	}
 
 	.browser-content
 		.reader-mode-content.is-readable-line-width
 		.markdown-preview-sizer {
-		max-width: calc(var(--file-line-width) / var(--vt-tab-zoom-factor));
+		max-width: var(--vt-scaled-file-line-width);
 	}
 
 	.browser-content .error-notice {
-		max-width: calc(var(--file-line-width) / var(--vt-tab-zoom-factor));
+		max-width: var(--vt-scaled-file-line-width);
 	}
 }
+
