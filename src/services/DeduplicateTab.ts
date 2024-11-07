@@ -11,16 +11,13 @@ export function deduplicateTab(app: App, file: TFile | null, focus = true) {
 			targetLeaves.push(leaf);
 		}
 	});
-	const earliestTime = targetLeaves.reduce((acc, leaf) => {
-		return Math.min(acc, leaf.activeTime);
-	}, Infinity);
-	if (earliestTime === Infinity) return;
-	const leavesToClose = targetLeaves.filter(
-		(leaf) => leaf.activeTime !== earliestTime
+	const sortedLeaves = targetLeaves.sort(
+		(leaf, another) => leaf.activeTime - another.activeTime
 	);
-	leavesToClose.forEach((leaf) => leaf.detach());
-	const leafToKeep = targetLeaves.first();
+	const leafToKeep = sortedLeaves.first();
 	if (!leafToKeep) return;
+	const leavesToClose = sortedLeaves.slice(1);
+	leavesToClose.forEach((leaf) => leaf.detach());
 	loadDeferredLeaf(leafToKeep);
 	if (focus) {
 		app.workspace.setActiveLeaf(leafToKeep, { focus: true });

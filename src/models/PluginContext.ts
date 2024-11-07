@@ -1,4 +1,4 @@
-import { App, EventRef } from "obsidian";
+import { App, EventRef, FileView, TFile } from "obsidian";
 import { createContext, useContext } from "react";
 import ObsidianVerticalTabs from "src/main";
 import {
@@ -42,14 +42,14 @@ interface SettingsActions {
 	resetNavigation: (app: App) => void;
 	setNavigation: (app: App) => void;
 	toggleDeduplicateTabs: (app: App) => void;
-	deduplicateTask: EventRef | null;
+	deduplicateTasks: EventRef[];
 }
 
 export const useSettingsBase = create<Settings & SettingsActions>(
 	(set, get) => ({
 		...DEFAULT_SETTINGS,
 		plugin: null,
-		deduplicateTask: null,
+		deduplicateTasks: [],
 		loadSettings: async (plugin) => {
 			set({ plugin });
 			await plugin.loadData();
@@ -124,19 +124,33 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			const deduplicateTabs = !get().deduplicateTabs;
 			get().setSettings({ deduplicateTabs });
 			if (deduplicateTabs) {
-				const deduplicateTask = app.workspace.on("file-open", (file) =>
-					deduplicateTab(app, file)
-				);
-				set({ deduplicateTask });
+				const deduplicateTasks = [
+					app.workspace.on("file-open", (file) =>
+						deduplicateTab(app, file)
+					),
+					app.workspace.on("active-leaf-change", (leaf) => {
+						const path = leaf?.getViewState().state?.file as string;
+						if (leaf instanceof FileView) {
+							deduplicateTab(app, leaf.file);
+						} else if (path) {
+							const file = app.vault.getAbstractFileByPath(path);
+							if (file instanceof TFile)
+								deduplicateTab(app, file);
+						}
+					}),
+				];
+				set({ deduplicateTasks });
 				const plugin = get().plugin;
-				if (plugin) plugin.registerEvent(deduplicateTask);
+				if (plugin)
+					deduplicateTasks.forEach((task) =>
+						plugin.registerEvent(task)
+					);
 				deduplicateExistingTabs(app);
 			} else {
-				const deduplicateTask = get().deduplicateTask;
-				if (deduplicateTask) {
-					app.workspace.offref(deduplicateTask);
-					set({ deduplicateTask: null });
-				}
+				get().deduplicateTasks.forEach((task) =>
+					app.workspace.offref(task)
+				);
+				set({ deduplicateTasks: [] });
 			}
 		},
 	})
