@@ -57,6 +57,7 @@ declare module "obsidian" {
 		activeTime: number;
 		parent: WorkspaceTabs | WorkspaceMobileDrawer;
 		setParent: (parent: WorkspaceParent) => void;
+		containerEl?: HTMLElement;
 		tabHeaderEl?: HTMLElement;
 		tabHeaderInnerTitleEl?: HTMLElement;
 		history: {

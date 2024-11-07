@@ -2,6 +2,7 @@ import { ItemView, MarkdownView, Plugin, View, WorkspaceLeaf } from "obsidian";
 import { NavigationView, VIEW_TYPE } from "src/navigation";
 import { DEFAULT_SETTINGS, Settings } from "./models/PluginSettings";
 import { around } from "monkey-around";
+import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -68,9 +69,16 @@ export default class ObsidianVerticalTabs extends Plugin {
 	async patchViews() {
 		const applyZoom = (view: View, zoom: number) => {
 			if (zoom <= 0) return;
-			view.containerEl.setCssProps({
-				"--vt-tab-zoom-factor": zoom.toString(),
-			});
+			const isNonUnitaryZoom = Math.abs(zoom - 1) > ZOOM_FACTOR_TOLERANCE;
+			if (isNonUnitaryZoom) {
+				view.containerEl.setCssProps({
+					"--vt-tab-zoom-factor": zoom.toString(),
+				});
+			}
+			view.leaf.containerEl?.toggleClass(
+				"vt-apply-tab-zoom",
+				isNonUnitaryZoom
+			);
 		};
 
 		this.register(
