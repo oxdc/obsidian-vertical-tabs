@@ -1,8 +1,12 @@
 import { App, FileView, TFile, WorkspaceLeaf } from "obsidian";
 import { loadDeferredLeaf } from "./LoadDeferredLeaf";
 
-export function deduplicateTab(app: App, file: TFile | null, focus = true) {
-	if (!file) return;
+export function deduplicateTab(
+	app: App,
+	file: TFile | null,
+	focus = true
+): WorkspaceLeaf | null {
+	if (!file) return null;
 	const targetLeaves: WorkspaceLeaf[] = [];
 	app.workspace.iterateRootLeaves((leaf) => {
 		if (leaf.view instanceof FileView && leaf.view.file === file) {
@@ -15,16 +19,18 @@ export function deduplicateTab(app: App, file: TFile | null, focus = true) {
 		(leaf, another) => leaf.activeTime - another.activeTime
 	);
 	const leafToKeep = sortedLeaves.first();
-	if (!leafToKeep) return;
+	if (!leafToKeep) return null;
 	const leavesToClose = sortedLeaves.slice(1);
 	leavesToClose.forEach((leaf) => leaf.detach());
 	loadDeferredLeaf(leafToKeep);
 	if (focus) {
 		app.workspace.setActiveLeaf(leafToKeep, { focus: true });
+		return leafToKeep;
 	}
+	return null;
 }
 
-export function deduplicateExistingTabs(app: App) {
+export function deduplicateExistingTabs(app: App): WorkspaceLeaf | null {
 	const openFiles: TFile[] = [];
 	app.workspace.iterateAllLeaves((leaf) => {
 		const path = leaf.getViewState().state?.file as string | undefined;
@@ -43,6 +49,7 @@ export function deduplicateExistingTabs(app: App) {
 	}
 	uniqueFiles.forEach((file) => deduplicateTab(app, file, false));
 	if (activeFile instanceof TFile) {
-		deduplicateTab(app, activeFile, true);
+		return deduplicateTab(app, activeFile, true);
 	}
+	return null;
 }
