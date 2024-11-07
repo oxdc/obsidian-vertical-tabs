@@ -21,7 +21,6 @@ export function deduplicateTab(app: App, file: TFile | null, focus = true) {
 	loadDeferredLeaf(leafToKeep);
 	if (focus) {
 		app.workspace.setActiveLeaf(leafToKeep, { focus: true });
-		app.workspace.onLayoutChange();
 	}
 }
 

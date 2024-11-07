@@ -3,6 +3,7 @@ import { IconButton } from "./IconButton";
 import { Menu } from "obsidian";
 import { sortStrategies, useTabCache } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
+import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
 
 export const NavigationHeader = () => {
 	const plugin = usePlugin();
@@ -135,7 +136,12 @@ export const NavigationHeader = () => {
 					icon="copy-slash"
 					action="deduplicate-tabs"
 					tooltip="Deduplicate tabs"
-					onClick={() => toggleDeduplicateTabs(plugin.app)}
+					onClick={() => {
+						if (!deduplicateTabs) {
+							deduplicateExistingTabs(plugin.app);
+						}
+						toggleDeduplicateTabs();
+					}}
 					isActive={deduplicateTabs}
 					isNavAction={true}
 				/>

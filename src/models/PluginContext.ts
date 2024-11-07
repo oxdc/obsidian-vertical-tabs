@@ -1,4 +1,4 @@
-import { App, EventRef, FileView, TFile } from "obsidian";
+import { App } from "obsidian";
 import { createContext, useContext } from "react";
 import ObsidianVerticalTabs from "src/main";
 import {
@@ -10,10 +10,6 @@ import {
 } from "./PluginSettings";
 import { create } from "zustand";
 import { createSelectors } from "./Selectors";
-import {
-	deduplicateExistingTabs,
-	deduplicateTab,
-} from "src/services/DeduplicateTab";
 
 export type SettingsContext = [Settings, (mutator: SettingsMutator) => void];
 
@@ -41,8 +37,7 @@ interface SettingsActions {
 	disableNavigation: (app: App) => void;
 	resetNavigation: (app: App) => void;
 	setNavigation: (app: App) => void;
-	toggleDeduplicateTabs: (app: App) => void;
-	deduplicateTasks: EventRef[];
+	toggleDeduplicateTabs: () => void;
 }
 
 export const useSettingsBase = create<Settings & SettingsActions>(
@@ -120,38 +115,8 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				get().resetNavigation(app);
 			}
 		},
-		toggleDeduplicateTabs(app) {
-			const deduplicateTabs = !get().deduplicateTabs;
-			get().setSettings({ deduplicateTabs });
-			if (deduplicateTabs) {
-				const deduplicateTasks = [
-					app.workspace.on("file-open", (file) =>
-						deduplicateTab(app, file)
-					),
-					app.workspace.on("active-leaf-change", (leaf) => {
-						const path = leaf?.getViewState().state?.file as string;
-						if (leaf instanceof FileView) {
-							deduplicateTab(app, leaf.file);
-						} else if (path) {
-							const file = app.vault.getAbstractFileByPath(path);
-							if (file instanceof TFile)
-								deduplicateTab(app, file);
-						}
-					}),
-				];
-				set({ deduplicateTasks });
-				const plugin = get().plugin;
-				if (plugin)
-					deduplicateTasks.forEach((task) =>
-						plugin.registerEvent(task)
-					);
-				deduplicateExistingTabs(app);
-			} else {
-				get().deduplicateTasks.forEach((task) =>
-					app.workspace.offref(task)
-				);
-				set({ deduplicateTasks: [] });
-			}
+		toggleDeduplicateTabs() {
+			get().setSettings({ deduplicateTabs: !get().deduplicateTabs });
 		},
 	})
 );
