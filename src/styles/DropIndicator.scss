@@ -33,18 +33,8 @@
 		}
 
 		.tree-item.is-group.is-being-dragged-over {
-			&.is-group-slot {
-				background: hsla(var(--interactive-accent-hsl), 0.2);
-
-        &::before {
-				  background: var(--interactive-accent);
-        }
-			}
-
-			&:not(.is-group-slot) {
-				.is-tab-slot::before {
-					background: var(--interactive-accent);
-				}
+			.is-tab-slot::before {
+				background: var(--interactive-accent);
 			}
 		}
 	}
