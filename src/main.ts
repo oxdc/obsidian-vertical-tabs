@@ -108,6 +108,24 @@ export default class ObsidianVerticalTabs extends Plugin {
 			})
 		);
 
+		const modifyCanNavigate = (fallback: () => boolean): boolean => {
+			if (this.settings.alwaysOpenInNewTab) {
+				return false;
+			} else {
+				return fallback();
+			}
+		};
+
+		this.register(
+			around(WorkspaceLeaf.prototype, {
+				canNavigate(old) {
+					return function () {
+						return modifyCanNavigate(() => old.call(this));
+					};
+				},
+			})
+		);
+
 		this.register(
 			around(MarkdownView.prototype, {
 				getSyncViewState(old) {

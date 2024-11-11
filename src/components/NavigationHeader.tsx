@@ -128,7 +128,7 @@ export const NavigationHeader = () => {
 							? "Navigate in current tab"
 							: "Always open in new tab"
 					}
-					onClick={() => toggleAlwaysOpenInNewTab(plugin.app)}
+					onClick={() => toggleAlwaysOpenInNewTab()}
 					isActive={alwaysOpenInNewTab}
 					isNavAction={true}
 				/>

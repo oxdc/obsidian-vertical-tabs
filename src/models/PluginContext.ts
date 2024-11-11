@@ -33,10 +33,7 @@ interface SettingsActions {
 	toggleTabVisibility: () => void;
 	toggleSidebarVisibility: () => void;
 	toggleZenMode: () => void;
-	toggleAlwaysOpenInNewTab: (app: App) => void;
-	disableNavigation: (app: App) => void;
-	resetNavigation: (app: App) => void;
-	setNavigation: (app: App) => void;
+	toggleAlwaysOpenInNewTab: () => void;
 	toggleDeduplicateTabs: () => void;
 }
 
@@ -92,28 +89,9 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				get().setSettings({ zenMode: true, showActiveTabs: true });
 			}
 		},
-		toggleAlwaysOpenInNewTab(app) {
+		toggleAlwaysOpenInNewTab() {
 			const alwaysOpenInNewTab = !get().alwaysOpenInNewTab;
 			get().setSettings({ alwaysOpenInNewTab });
-			get().setNavigation(app);
-		},
-		disableNavigation: (app) => {
-			app.workspace.iterateRootLeaves((leaf) => {
-				leaf.view.navigation = false;
-			});
-		},
-		resetNavigation: (app) => {
-			app.workspace.iterateRootLeaves((leaf) => {
-				// todo: save original navigation state
-				leaf.view.navigation = true;
-			});
-		},
-		setNavigation: (app) => {
-			if (get().alwaysOpenInNewTab) {
-				get().disableNavigation(app);
-			} else {
-				get().resetNavigation(app);
-			}
 		},
 		toggleDeduplicateTabs() {
 			get().setSettings({ deduplicateTabs: !get().deduplicateTabs });
