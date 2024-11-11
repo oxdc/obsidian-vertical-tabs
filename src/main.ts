@@ -74,6 +74,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 				view.containerEl.setCssProps({
 					"--vt-tab-zoom-factor": zoom.toString(),
 				});
+			} else {
+				view.containerEl.setCssProps({
+					"--vt-tab-zoom-factor": "",
+				});
 			}
 			view.leaf.containerEl?.toggleClass(
 				"vt-apply-tab-zoom",
