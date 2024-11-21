@@ -120,11 +120,30 @@ export default class ObsidianVerticalTabs extends Plugin {
 			}
 		};
 
+		// const installHandler = (leaf: WorkspaceLeaf) => {
+		// 	if (!leaf.tabHeaderEl) return;
+		// 	leaf.tabHeaderEl.ondblclick = (event: MouseEvent) => {
+		// 		// leaf.isEphemeral = false;
+		// 		leaf.tabHeaderEl?.toggleClass("vt-non-ephemeral", true);
+		// 		event.stopPropagation();
+		// 	};
+		// };
+
 		this.register(
 			around(WorkspaceLeaf.prototype, {
 				canNavigate(old) {
 					return function () {
+						// if (
+						// 	this.isEphemeral === undefined ||
+						// 	this.isEphemeral === null
+						// ) {
+						// 	this.isEphemeral = true;
+						// }
+						// if (this.isEphemeral === true) {
+						// 	return old.call(this);
+						// } else {
 						return modifyCanNavigate(() => old.call(this));
+						// }
 					};
 				},
 			})
