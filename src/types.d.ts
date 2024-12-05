@@ -60,6 +60,7 @@ declare module "obsidian" {
 		containerEl?: HTMLElement;
 		tabHeaderEl?: HTMLElement;
 		tabHeaderInnerTitleEl?: HTMLElement;
+		isVisible: () => boolean;
 		history: {
 			backHistory: HistoryState[];
 			forwardHistory: HistoryState[];

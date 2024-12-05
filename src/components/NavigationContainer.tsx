@@ -10,6 +10,7 @@ import {
 	selfIsNotInTheSidebar,
 } from "src/services/MoveTab";
 import { resetZoom, zoomIn, zoomOut } from "src/services/TabZoom";
+import { isSelfVisible } from "src/services/Visibility";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
@@ -28,8 +29,10 @@ export const NavigationContainer = () => {
 		}
 		setTimeout(() => {
 			setNavigation(plugin.app);
-			refresh(plugin.app);
-			sort();
+			if (isSelfVisible(plugin.app)) {
+				refresh(plugin.app);
+				sort();
+			}
 		}, REFRESH_TIMEOUT);
 	};
 
