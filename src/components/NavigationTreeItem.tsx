@@ -56,7 +56,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-collapsed": props.isCollapsed,
 		"is-sidebar": props.isSidebar,
 		"is-being-dragged": isDragging,
-		"is-being-dragged-over": isOver,
+		"vt-is-being-dragged-over": isOver,
 		"is-tab-slot": props.isTabSlot,
 		"is-group-slot": props.isGroupSlot,
 		"is-single-group": props.isSingleGroup,
