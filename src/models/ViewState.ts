@@ -5,6 +5,7 @@ import {
 	EventRef,
 	ItemView,
 	Platform,
+	Workspace,
 	WorkspaceLeaf,
 	WorkspaceParent,
 } from "obsidian";
@@ -69,6 +70,11 @@ interface ViewState {
 	unbindPinningEvent: (leaf: WorkspaceLeaf) => void;
 	setAllCollapsed: () => void;
 	setAllExpanded: () => void;
+	checkIfGroupChanged: (
+		workspace: Workspace,
+		oldLeaf: WorkspaceLeaf | null,
+		newLeaf: WorkspaceLeaf | null
+	) => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -149,6 +155,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		saveHiddenGroups(get().hiddenGroups);
 	},
 	setLatestActiveLeaf(plugin: ObsidianVerticalTabs) {
+		const oldActiveLeaf = get().latestActiveLeaf;
 		const workspace = plugin.app.workspace;
 		const activeView = workspace.getActiveViewOfType(ItemView);
 		if (!activeView) {
@@ -163,6 +170,20 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		} else {
 			// Focus has been moved to sidebars, so we need to move it back
 			get().lockFocus(plugin);
+		}
+		const newActiveLeaf = get().latestActiveLeaf;
+		get().checkIfGroupChanged(workspace, oldActiveLeaf, newActiveLeaf);
+	},
+	checkIfGroupChanged(
+		workspace: Workspace,
+		oldLeaf: WorkspaceLeaf | null,
+		newLeaf: WorkspaceLeaf | null
+	) {
+		if (oldLeaf === null && newLeaf === null) return;
+		if (oldLeaf === null || newLeaf === null) {
+			workspace.trigger("vertical-tabs:update-toggle");
+		} else if (oldLeaf.parent.id !== newLeaf.parent.id) {
+			workspace.trigger("vertical-tabs:update-toggle");
 		}
 	},
 	lockFocus(plugin: ObsidianVerticalTabs) {

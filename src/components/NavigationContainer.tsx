@@ -23,7 +23,6 @@ export const NavigationContainer = () => {
 
 	const autoRefresh = () => {
 		setLatestActiveLeaf(plugin);
-		refreshToggleButtons(plugin.app);
 		if (selfIsNotInTheSidebar(plugin.app)) {
 			moveSelfToDefaultLocation(plugin.app);
 		}
