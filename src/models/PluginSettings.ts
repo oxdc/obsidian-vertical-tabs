@@ -1,3 +1,5 @@
+import { TabNavigationStrategy } from "./TabNavigation";
+
 interface ObsidianVerticalTabsSettings {
 	showActiveTabs: boolean;
 	hideSidebars: boolean;
@@ -7,8 +9,9 @@ interface ObsidianVerticalTabsSettings {
 	enableTabZoom: boolean;
 	alwaysOpenInNewTab: boolean;
 	deduplicateTabs: boolean;
-	enableEphemeralTabs: boolean;
+	ephemeralTabs: boolean;
 	smartNavigation: boolean;
+	navigationStrategy: TabNavigationStrategy;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -20,8 +23,9 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	enableTabZoom: true,
 	alwaysOpenInNewTab: false,
 	deduplicateTabs: false,
-	enableEphemeralTabs: false,
+	ephemeralTabs: false,
 	smartNavigation: true,
+	navigationStrategy: TabNavigationStrategy.ObsidianPlus,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;

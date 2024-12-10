@@ -17,7 +17,7 @@ export const NavigationHeader = () => {
 	const toggleAlwaysOpenInNewTab = useSettings.use.toggleAlwaysOpenInNewTab();
 	const deduplicateTabs = useSettings.use.deduplicateTabs();
 	const toggleDeduplicateTabs = useSettings.use.toggleDeduplicateTabs();
-	const enableEphemeralTabs = useSettings.use.enableEphemeralTabs();
+	const ephemeralTabs = useSettings.use.ephemeralTabs();
 	const toggleEphemeralTabs = useSettings.use.toggleEphemeralTabs();
 	const smartNavigation = useSettings.use.smartNavigation();
 	const toggleSmartNavigation = useSettings.use.toggleSmartNavigation();
@@ -154,7 +154,7 @@ export const NavigationHeader = () => {
 					action="toggle-ephemeral-tabs"
 					tooltip="Toggle ephemeral tabs"
 					onClick={() => toggleEphemeralTabs(plugin.app)}
-					isActive={enableEphemeralTabs}
+					isActive={ephemeralTabs}
 					isNavAction={true}
 				/>
 				<IconButton

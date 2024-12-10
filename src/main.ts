@@ -4,6 +4,7 @@ import { DEFAULT_SETTINGS, Settings } from "./models/PluginSettings";
 import { around } from "monkey-around";
 import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
 import { useViewState } from "./models/ViewState";
+import { ObsidianVerticalTabsSettingTab } from "./SettingTab";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -14,6 +15,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		await this.setupCommands();
 		await this.updateViewStates();
 		await this.patchViews();
+		this.addSettingTab(new ObsidianVerticalTabsSettingTab(this.app, this));
 		setTimeout(() => this.openVerticalTabs(), 10);
 	}
 
@@ -65,7 +67,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.toggle("vt-exclude-self", this.settings.sidebarExcludeSelf);
 		this.toggle("vt-zen-mode", this.settings.zenMode);
 		this.toggle("vt-enable-tab-zoom", this.settings.enableTabZoom);
-		this.toggle("vt-ephemeral-tabs", this.settings.enableEphemeralTabs);
+		this.toggle("vt-ephemeral-tabs", this.settings.ephemeralTabs);
 	}
 
 	async patchViews() {
@@ -121,7 +123,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 			if (this.settings.alwaysOpenInNewTab) {
 				return false;
 			} else if (
-				this.settings.enableEphemeralTabs ||
+				this.settings.ephemeralTabs ||
 				this.settings.smartNavigation
 			) {
 				const ephemeralTabsecision =
