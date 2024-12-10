@@ -64,6 +64,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.toggle("vt-exclude-self", this.settings.sidebarExcludeSelf);
 		this.toggle("vt-zen-mode", this.settings.zenMode);
 		this.toggle("vt-enable-tab-zoom", this.settings.enableTabZoom);
+		this.toggle("vt-ephemeral-tabs", this.settings.enableEphemeralTabs);
 	}
 
 	async patchViews() {
@@ -120,30 +121,18 @@ export default class ObsidianVerticalTabs extends Plugin {
 			}
 		};
 
-		// const installHandler = (leaf: WorkspaceLeaf) => {
-		// 	if (!leaf.tabHeaderEl) return;
-		// 	leaf.tabHeaderEl.ondblclick = (event: MouseEvent) => {
-		// 		// leaf.isEphemeral = false;
-		// 		leaf.tabHeaderEl?.toggleClass("vt-non-ephemeral", true);
-		// 		event.stopPropagation();
-		// 	};
-		// };
-
 		this.register(
 			around(WorkspaceLeaf.prototype, {
 				canNavigate(old) {
 					return function () {
-						// if (
-						// 	this.isEphemeral === undefined ||
-						// 	this.isEphemeral === null
-						// ) {
-						// 	this.isEphemeral = true;
-						// }
-						// if (this.isEphemeral === true) {
-						// 	return old.call(this);
-						// } else {
-						return modifyCanNavigate(() => old.call(this));
-						// }
+						if (
+							this.isEphemeral === undefined ||
+							this.isEphemeral === true
+						) {
+							return old.call(this);
+						} else {
+							return modifyCanNavigate(() => old.call(this));
+						}
 					};
 				},
 			})

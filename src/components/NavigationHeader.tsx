@@ -17,6 +17,8 @@ export const NavigationHeader = () => {
 	const toggleAlwaysOpenInNewTab = useSettings.use.toggleAlwaysOpenInNewTab();
 	const deduplicateTabs = useSettings.use.deduplicateTabs();
 	const toggleDeduplicateTabs = useSettings.use.toggleDeduplicateTabs();
+	const enableEphemeralTabs = useSettings.use.enableEphemeralTabs();
+	const toggleEphemeralTabs = useSettings.use.toggleEphemeralTabs();
 	const sortStrategy = useTabCache((state) => state.sortStrategy);
 	const { setSortStrategy } = useTabCache();
 	const { lockFocus, setAllCollapsed, setAllExpanded } = useViewState();
@@ -143,6 +145,14 @@ export const NavigationHeader = () => {
 						toggleDeduplicateTabs();
 					}}
 					isActive={deduplicateTabs}
+					isNavAction={true}
+				/>
+				<IconButton
+					icon="square-asterisk"
+					action="toggle-ephemeral-tabs"
+					tooltip="Toggle ephemeral tabs"
+					onClick={() => toggleEphemeralTabs(plugin.app)}
+					isActive={enableEphemeralTabs}
 					isNavAction={true}
 				/>
 			</div>

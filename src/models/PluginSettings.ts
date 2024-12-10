@@ -7,6 +7,7 @@ interface ObsidianVerticalTabsSettings {
 	enableTabZoom: boolean;
 	alwaysOpenInNewTab: boolean;
 	deduplicateTabs: boolean;
+	enableEphemeralTabs: boolean;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -18,6 +19,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	enableTabZoom: true,
 	alwaysOpenInNewTab: false,
 	deduplicateTabs: false,
+	enableEphemeralTabs: false,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;

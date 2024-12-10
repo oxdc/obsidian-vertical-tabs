@@ -10,14 +10,20 @@ import {
 	selfIsNotInTheSidebar,
 } from "src/services/MoveTab";
 import { resetZoom, zoomIn, zoomOut } from "src/services/TabZoom";
+import {
+	installTabHeaderHandlers,
+	uninstallTabHeaderHandlers,
+} from "src/services/EphemeralTabs";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
+	const app = plugin.app;
 	const { refresh, sort } = useTabCache();
 	const { setLatestActiveLeaf, refreshToggleButtons, lockFocus } =
 		useViewState();
 	const loadSettings = useSettings.use.loadSettings();
 	const toggleZenMode = useSettings.use.toggleZenMode();
+	const updateEphemeralTabs = useSettings.use.updateEphemeralTabs();
 
 	const autoRefresh = () => {
 		setLatestActiveLeaf(plugin);
@@ -27,6 +33,7 @@ export const NavigationContainer = () => {
 		}
 		setTimeout(() => {
 			refresh(plugin.app);
+			updateEphemeralTabs(plugin.app);
 			sort();
 		}, REFRESH_TIMEOUT);
 	};
@@ -46,6 +53,12 @@ export const NavigationContainer = () => {
 		plugin.registerEvent(workspace.on("resize", debounce(updateToggles)));
 		plugin.registerEvent(
 			workspace.on("vertical-tabs:update-toggle", updateToggles)
+		);
+		plugin.registerEvent(
+			workspace.on("vertical-tabs:ephemeral-tabs", (enable) => {
+				if (enable) installTabHeaderHandlers(app);
+				else uninstallTabHeaderHandlers(app);
+			})
 		);
 		plugin.addCommand({
 			id: "toggle-zen-mode",

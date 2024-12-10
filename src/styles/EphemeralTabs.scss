@@ -1,0 +1,13 @@
+body.vt-ephemeral-tabs {
+	.workspace-tab-header {
+		.workspace-tab-header-inner-title {
+			font-style: italic;
+		}
+
+		&.vt-non-ephemeral {
+			.workspace-tab-header-inner-title {
+				font-style: normal;
+			}
+		}
+	}
+}

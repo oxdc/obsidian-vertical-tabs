@@ -35,6 +35,8 @@ interface SettingsActions {
 	toggleZenMode: () => void;
 	toggleAlwaysOpenInNewTab: () => void;
 	toggleDeduplicateTabs: () => void;
+	toggleEphemeralTabs: (app: App) => void;
+	updateEphemeralTabs: (app: App) => void;
 }
 
 export const useSettingsBase = create<Settings & SettingsActions>(
@@ -96,6 +98,21 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 		toggleDeduplicateTabs() {
 			get().setSettings({ deduplicateTabs: !get().deduplicateTabs });
 		},
+		toggleEphemeralTabs(app: App) {
+			const enableEphemeralTabs = !get().enableEphemeralTabs;
+			get().setSettings({ enableEphemeralTabs });
+			app.workspace.trigger(
+				"vertical-tabs:ephemeral-tabs",
+				enableEphemeralTabs
+			);
+		},
+		updateEphemeralTabs(app: App) {
+			const { enableEphemeralTabs } = get();
+			app.workspace.trigger(
+				"vertical-tabs:ephemeral-tabs",
+				enableEphemeralTabs
+			);
+		}
 	})
 );
 
