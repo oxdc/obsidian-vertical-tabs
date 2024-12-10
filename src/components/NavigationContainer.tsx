@@ -21,9 +21,7 @@ export const NavigationContainer = () => {
 	const { refresh, sort } = useTabCache();
 	const { setLatestActiveLeaf, refreshToggleButtons, lockFocus } =
 		useViewState();
-	const loadSettings = useSettings.use.loadSettings();
-	const toggleZenMode = useSettings.use.toggleZenMode();
-	const updateEphemeralTabs = useSettings.use.updateEphemeralTabs();
+	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
 	const autoRefresh = () => {
 		setLatestActiveLeaf(plugin);

@@ -5,6 +5,7 @@ interface ObsidianVerticalTabsSettings {
 	hideSidebars: boolean;
 	sidebarTabTypes: string[] | null;
 	sidebarExcludeSelf: boolean;
+	trimTabNames: boolean;
 	zenMode: boolean;
 	enableTabZoom: boolean;
 	alwaysOpenInNewTab: boolean;
@@ -15,10 +16,11 @@ interface ObsidianVerticalTabsSettings {
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
-	showActiveTabs: true,
+	showActiveTabs: false,
 	hideSidebars: true,
 	sidebarTabTypes: ["markdown"],
 	sidebarExcludeSelf: true,
+	trimTabNames: false,
 	zenMode: false,
 	enableTabZoom: true,
 	alwaysOpenInNewTab: false,

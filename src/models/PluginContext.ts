@@ -11,6 +11,7 @@ import {
 import { create } from "zustand";
 import { createSelectors } from "./Selectors";
 import { convertNameToStrategy, TabNavigationStrategy } from "./TabNavigation";
+import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
 
 export type SettingsContext = [Settings, (mutator: SettingsMutator) => void];
 
@@ -31,15 +32,9 @@ interface SettingsActions {
 	plugin: ObsidianVerticalTabs | null;
 	loadSettings: (plugin: ObsidianVerticalTabs) => Promise<void>;
 	setSettings: (mutator: SettingsMutator) => void;
-	toggleTabVisibility: () => void;
-	toggleSidebarVisibility: () => void;
 	toggleZenMode: () => void;
-	toggleAlwaysOpenInNewTab: () => void;
-	toggleDeduplicateTabs: () => void;
-	toggleEphemeralTabs: (app: App) => void;
 	updateEphemeralTabs: (app: App) => void;
-	toggleSmartNavigation: () => void;
-	setTabNavigationStrategy: (name: string) => void;
+	setTabNavigationStrategy: (app: App, name: string) => void;
 }
 
 export const useSettingsBase = create<Settings & SettingsActions>(
@@ -74,12 +69,6 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			plugin.updateViewStates();
 			set({ ...plugin.settings });
 		},
-		toggleTabVisibility() {
-			get().setSettings({ showActiveTabs: !get().showActiveTabs });
-		},
-		toggleSidebarVisibility() {
-			get().setSettings({ hideSidebars: !get().hideSidebars });
-		},
 		toggleZenMode() {
 			const { zenMode, showActiveTabs } = get();
 			if (zenMode) {
@@ -94,21 +83,6 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				get().setSettings({ zenMode: true, showActiveTabs: true });
 			}
 		},
-		toggleAlwaysOpenInNewTab() {
-			const alwaysOpenInNewTab = !get().alwaysOpenInNewTab;
-			get().setSettings({ alwaysOpenInNewTab });
-		},
-		toggleDeduplicateTabs() {
-			get().setSettings({ deduplicateTabs: !get().deduplicateTabs });
-		},
-		toggleEphemeralTabs(app: App) {
-			const ephemeralTabs = !get().ephemeralTabs;
-			get().setSettings({ ephemeralTabs });
-			app.workspace.trigger(
-				"vertical-tabs:ephemeral-tabs",
-				ephemeralTabs
-			);
-		},
 		updateEphemeralTabs(app: App) {
 			const { ephemeralTabs } = get();
 			app.workspace.trigger(
@@ -116,10 +90,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				ephemeralTabs
 			);
 		},
-		toggleSmartNavigation() {
-			get().setSettings({ smartNavigation: !get().smartNavigation });
-		},
-		setTabNavigationStrategy(name: string) {
+		setTabNavigationStrategy(app: App, name: string) {
 			const strategy = convertNameToStrategy(name);
 			switch (strategy) {
 				case TabNavigationStrategy.Obsidian:
@@ -186,6 +157,14 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 					});
 					break;
 			}
+			const { deduplicateTabs, ephemeralTabs } = get();
+			if (deduplicateTabs) {
+				deduplicateExistingTabs(app);
+			}
+			app.workspace.trigger(
+				"vertical-tabs:ephemeral-tabs",
+				ephemeralTabs
+			);
 		},
 	})
 );
