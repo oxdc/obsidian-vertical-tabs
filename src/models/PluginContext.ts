@@ -37,6 +37,7 @@ interface SettingsActions {
 	toggleDeduplicateTabs: () => void;
 	toggleEphemeralTabs: (app: App) => void;
 	updateEphemeralTabs: (app: App) => void;
+	toggleSmartNavigation: () => void;
 }
 
 export const useSettingsBase = create<Settings & SettingsActions>(
@@ -112,7 +113,10 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				"vertical-tabs:ephemeral-tabs",
 				enableEphemeralTabs
 			);
-		}
+		},
+		toggleSmartNavigation() {
+			get().setSettings({ smartNavigation: !get().smartNavigation });
+		},
 	})
 );
 

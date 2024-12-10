@@ -8,6 +8,7 @@ interface ObsidianVerticalTabsSettings {
 	alwaysOpenInNewTab: boolean;
 	deduplicateTabs: boolean;
 	enableEphemeralTabs: boolean;
+	smartNavigation: boolean;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -20,6 +21,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	alwaysOpenInNewTab: false,
 	deduplicateTabs: false,
 	enableEphemeralTabs: false,
+	smartNavigation: true,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;

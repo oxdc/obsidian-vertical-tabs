@@ -19,6 +19,8 @@ export const NavigationHeader = () => {
 	const toggleDeduplicateTabs = useSettings.use.toggleDeduplicateTabs();
 	const enableEphemeralTabs = useSettings.use.enableEphemeralTabs();
 	const toggleEphemeralTabs = useSettings.use.toggleEphemeralTabs();
+	const smartNavigation = useSettings.use.smartNavigation();
+	const toggleSmartNavigation = useSettings.use.toggleSmartNavigation();
 	const sortStrategy = useTabCache((state) => state.sortStrategy);
 	const { setSortStrategy } = useTabCache();
 	const { lockFocus, setAllCollapsed, setAllExpanded } = useViewState();
@@ -153,6 +155,14 @@ export const NavigationHeader = () => {
 					tooltip="Toggle ephemeral tabs"
 					onClick={() => toggleEphemeralTabs(plugin.app)}
 					isActive={enableEphemeralTabs}
+					isNavAction={true}
+				/>
+				<IconButton
+					icon="brain"
+					action="smart-navigation"
+					tooltip="Toggle smart navigation"
+					onClick={toggleSmartNavigation}
+					isActive={smartNavigation}
 					isNavAction={true}
 				/>
 			</div>

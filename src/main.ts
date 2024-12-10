@@ -3,6 +3,7 @@ import { NavigationView, VIEW_TYPE } from "src/navigation";
 import { DEFAULT_SETTINGS, Settings } from "./models/PluginSettings";
 import { around } from "monkey-around";
 import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
+import { useViewState } from "./models/ViewState";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -113,9 +114,22 @@ export default class ObsidianVerticalTabs extends Plugin {
 			})
 		);
 
-		const modifyCanNavigate = (fallback: () => boolean): boolean => {
+		const modifyCanNavigate = (
+			target: WorkspaceLeaf,
+			fallback: () => boolean
+		): boolean => {
 			if (this.settings.alwaysOpenInNewTab) {
 				return false;
+			} else if (this.settings.enableEphemeralTabs) {
+				if (target.isEphemeral === undefined || target.isEphemeral) {
+					return fallback();
+				} else {
+					return false;
+				}
+			} else if (this.settings.smartNavigation) {
+				return useViewState
+					.getState()
+					.executeSmartNavigation(this.app, target, fallback);
 			} else {
 				return fallback();
 			}
@@ -125,14 +139,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 			around(WorkspaceLeaf.prototype, {
 				canNavigate(old) {
 					return function () {
-						if (
-							this.isEphemeral === undefined ||
-							this.isEphemeral === true
-						) {
-							return old.call(this);
-						} else {
-							return modifyCanNavigate(() => old.call(this));
-						}
+						return modifyCanNavigate(this, () => old.call(this));
 					};
 				},
 			})
