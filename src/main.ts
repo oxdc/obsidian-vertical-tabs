@@ -120,16 +120,18 @@ export default class ObsidianVerticalTabs extends Plugin {
 		): boolean => {
 			if (this.settings.alwaysOpenInNewTab) {
 				return false;
-			} else if (this.settings.enableEphemeralTabs) {
-				if (target.isEphemeral === undefined || target.isEphemeral) {
-					return fallback();
-				} else {
-					return false;
-				}
-			} else if (this.settings.smartNavigation) {
-				return useViewState
+			} else if (
+				this.settings.enableEphemeralTabs ||
+				this.settings.smartNavigation
+			) {
+				const ephemeralTabsecision =
+					target.isEphemeral === undefined || target.isEphemeral
+						? fallback()
+						: false;
+				const smartNavigationDecision = useViewState
 					.getState()
 					.executeSmartNavigation(this.app, target, fallback);
+				return ephemeralTabsecision && smartNavigationDecision;
 			} else {
 				return fallback();
 			}
