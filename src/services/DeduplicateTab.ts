@@ -1,6 +1,16 @@
 import { App, FileView, TFile, WorkspaceLeaf } from "obsidian";
 import { loadDeferredLeaf } from "./LoadDeferredLeaf";
 
+function iterateRootOrFloatingLeaves(
+	app: App,
+	callback: (leaf: WorkspaceLeaf) => void
+) {
+	const workspace = app.workspace;
+	const { rootSplit, floatingSplit } = workspace;
+	workspace.iterateLeaves(rootSplit, callback);
+	workspace.iterateLeaves(floatingSplit, callback);
+}
+
 export function deduplicateTab(
 	app: App,
 	file: TFile | null,
@@ -8,7 +18,7 @@ export function deduplicateTab(
 ): WorkspaceLeaf | null {
 	if (!file) return null;
 	const targetLeaves: WorkspaceLeaf[] = [];
-	app.workspace.iterateRootLeaves((leaf) => {
+	iterateRootOrFloatingLeaves(app, (leaf) => {
 		if (leaf.view instanceof FileView && leaf.view.file === file) {
 			targetLeaves.push(leaf);
 		} else if (leaf.getViewState().state?.file === file.path) {
