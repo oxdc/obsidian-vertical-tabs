@@ -57,6 +57,19 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					});
 			});
 
+		new Setting(containerEl)
+			.setName("Enable tab zoom")
+			.setDesc("Enable per tab zooming.")
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.enableTabZoom)
+					.onChange(async (value) => {
+						useSettings
+							.getState()
+							.setSettings({ enableTabZoom: value });
+					});
+			});
+
 		new Setting(containerEl).setName("Tab navigation").setHeading();
 
 		new Setting(containerEl)

@@ -2,7 +2,7 @@ import { View } from "obsidian";
 
 export const ZOOM_STEP = 0.1;
 export const ZOOM_FACTOR_TOLERANCE = 0.01;
-export const MIN_ZOOM = 0.3;
+export const MIN_ZOOM = 0.5;
 export const MAX_ZOOM = 3;
 
 const clamp = (value: number, min: number, max: number) =>

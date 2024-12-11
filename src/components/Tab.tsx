@@ -269,26 +269,28 @@ export const Tab = ({ leaf }: TabProps) => {
 				.onClick(async () => await loadDeferredLeaf(leaf));
 		});
 	}
-	menu.addSeparator();
-	menu.addItem((item) => {
-		item.setSection("zoom").setTitle("Zoom").setDisabled(!enableTabZoom);
-		const submenu = item.setSubmenu();
-		submenu.addItem((item) => {
-			item.setTitle("Zoom in").onClick(() => {
-				zoomIn(leaf.view);
+	if (enableTabZoom) {
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("zoom").setTitle("Zoom");
+			const submenu = item.setSubmenu();
+			submenu.addItem((item) => {
+				item.setTitle("Zoom in").onClick(() => {
+					zoomIn(leaf.view);
+				});
+			});
+			submenu.addItem((item) => {
+				item.setTitle("Zoom out").onClick(() => {
+					zoomOut(leaf.view);
+				});
+			});
+			submenu.addItem((item) => {
+				item.setTitle("Reset zoom").onClick(() => {
+					resetZoom(leaf.view);
+				});
 			});
 		});
-		submenu.addItem((item) => {
-			item.setTitle("Zoom out").onClick(() => {
-				zoomOut(leaf.view);
-			});
-		});
-		submenu.addItem((item) => {
-			item.setTitle("Reset zoom").onClick(() => {
-				resetZoom(leaf.view);
-			});
-		});
-	});
+	}
 	if (Platform.isDesktop) {
 		menu.addSeparator();
 		menu.addItem((item) => {

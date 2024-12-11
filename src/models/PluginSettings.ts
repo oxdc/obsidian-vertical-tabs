@@ -22,7 +22,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	sidebarExcludeSelf: true,
 	trimTabNames: false,
 	zenMode: false,
-	enableTabZoom: true,
+	enableTabZoom: false,
 	alwaysOpenInNewTab: false,
 	deduplicateTabs: false,
 	ephemeralTabs: false,
