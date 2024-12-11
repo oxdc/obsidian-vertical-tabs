@@ -5,7 +5,6 @@ import {
 	TabNavigationStrategy,
 	TabNavigationStrategyOptions,
 } from "./models/TabNavigation";
-import { deduplicateExistingTabs } from "./services/DeduplicateTab";
 
 export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	plugin: ObsidianVerticalTabs;
@@ -186,7 +185,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 							.getState()
 							.setSettings({ deduplicateTabs: value });
 						if (value) {
-							deduplicateExistingTabs(this.app);
+							this.app.workspace.trigger(
+								"vertical-tabs:deduplicate-tabs"
+							);
 						}
 					});
 			});

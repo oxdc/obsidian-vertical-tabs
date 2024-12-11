@@ -11,7 +11,6 @@ import {
 import { create } from "zustand";
 import { createSelectors } from "./Selectors";
 import { convertNameToStrategy, TabNavigationStrategy } from "./TabNavigation";
-import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
 
 export type SettingsContext = [Settings, (mutator: SettingsMutator) => void];
 
@@ -41,7 +40,6 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 	(set, get) => ({
 		...DEFAULT_SETTINGS,
 		plugin: null,
-		deduplicateTasks: [],
 		loadSettings: async (plugin) => {
 			set({ plugin });
 			await plugin.loadData();
@@ -159,7 +157,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			}
 			const { deduplicateTabs, ephemeralTabs } = get();
 			if (deduplicateTabs) {
-				deduplicateExistingTabs(app);
+				app.workspace.trigger("vertical-tabs:deduplicate-tabs");
 			}
 			app.workspace.trigger(
 				"vertical-tabs:ephemeral-tabs",

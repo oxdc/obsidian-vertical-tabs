@@ -14,13 +14,18 @@ import {
 	installTabHeaderHandlers,
 	uninstallTabHeaderHandlers,
 } from "src/services/EphemeralTabs";
+import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
 	const app = plugin.app;
 	const { refresh, sort } = useTabCache();
-	const { setLatestActiveLeaf, refreshToggleButtons, lockFocus } =
-		useViewState();
+	const {
+		setLatestActiveLeaf,
+		refreshToggleButtons,
+		lockFocus,
+		lockFocusOnLeaf,
+	} = useViewState();
 	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
 	const autoRefresh = () => {
@@ -28,6 +33,9 @@ export const NavigationContainer = () => {
 		refreshToggleButtons(plugin.app);
 		if (selfIsNotInTheSidebar(plugin.app)) {
 			moveSelfToDefaultLocation(plugin.app);
+		}
+		if (useSettings.getState().deduplicateTabs) {
+			app.workspace.trigger("vertical-tabs:deduplicate-tabs");
 		}
 		setTimeout(() => {
 			refresh(plugin.app);
@@ -53,9 +61,15 @@ export const NavigationContainer = () => {
 			workspace.on("vertical-tabs:update-toggle", updateToggles)
 		);
 		plugin.registerEvent(
-			workspace.on("vertical-tabs:ephemeral-tabs", (enable) => {
-				if (enable) installTabHeaderHandlers(app);
+			workspace.on("vertical-tabs:ephemeral-tabs", (enabled) => {
+				if (enabled) installTabHeaderHandlers(app);
 				else uninstallTabHeaderHandlers(app);
+			})
+		);
+		plugin.registerEvent(
+			workspace.on("vertical-tabs:deduplicate-tabs", () => {
+				const activeLeaf = deduplicateExistingTabs(app);
+				if (activeLeaf) lockFocusOnLeaf(app, activeLeaf);
 			})
 		);
 		plugin.addCommand({

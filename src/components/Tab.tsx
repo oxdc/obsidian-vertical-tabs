@@ -43,6 +43,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	const { refresh, sort } = useTabCache();
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 	const enableTabZoom = useSettings((state) => state.enableTabZoom);
+	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
 
 	useEffect(() => {
 		bindPinningEvent(leaf, setIsPinned);
@@ -166,7 +167,7 @@ export const Tab = ({ leaf }: TabProps) => {
 				workspace.duplicateLeaf(leaf, "window");
 			});
 	});
-	if (leaf.view.navigation) {
+	if (leaf.view.navigation && !alwaysOpenInNewTab) {
 		menu.addSeparator();
 		menu.addItem((item) => {
 			item.setSection("history")
@@ -257,7 +258,7 @@ export const Tab = ({ leaf }: TabProps) => {
 				});
 		});
 	}
-	if (isDeferredLeaf(leaf)) {
+	if (isDeferredLeaf(leaf) && !alwaysOpenInNewTab) {
 		menu.addSeparator();
 		menu.addItem((item) => {
 			item.setSection("history").setTitle("(Inactive)").setDisabled(true);

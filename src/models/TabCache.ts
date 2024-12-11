@@ -10,9 +10,6 @@ import {
 	sortTabs,
 } from "src/services/SortTabs";
 import { GroupType, Identifier } from "./VTWorkspace";
-import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
-import { useSettings } from "./PluginContext";
-import { useViewState } from "./ViewState";
 
 export type TabCacheEntry = {
 	groupType: GroupType;
@@ -86,9 +83,6 @@ export const useTabCache = create<TabCacheStore>()((set, get) => ({
 	clear: () =>
 		set({ content: createNewTabCache(), groupIDs: [], leaveIDs: [] }),
 	refresh: (app) => {
-		const deduplicateTabs = useSettings.getState().deduplicateTabs;
-		let activeLeaf = null;
-		if (deduplicateTabs) activeLeaf = deduplicateExistingTabs(app);
 		set((state) => {
 			const content = getTabs(app);
 			const leaveIDs = Array.from(content.values()).flatMap(
@@ -116,8 +110,6 @@ export const useTabCache = create<TabCacheStore>()((set, get) => ({
 				groupIDs: sortedGroupIDs,
 			};
 		});
-		if (activeLeaf)
-			useViewState.getState().lockFocusOnLeaf(app, activeLeaf);
 	},
 	swapGroup: (source, target) => {
 		const { groupIDs } = get();

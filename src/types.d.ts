@@ -24,7 +24,11 @@ declare module "obsidian" {
 		on(name: "vertical-tabs:update-toggle", callback: () => void): EventRef;
 		on(
 			name: "vertical-tabs:ephemeral-tabs",
-			callback: (ephemeralTabs: boolean) => void
+			callback: (enabled: boolean) => void
+		): EventRef;
+		on(
+			name: "vertical-tabs:deduplicate-tabs",
+			callback: () => void
 		): EventRef;
 	}
 
