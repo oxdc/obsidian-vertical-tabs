@@ -3,20 +3,11 @@ import { IconButton } from "./IconButton";
 import { Menu } from "obsidian";
 import { sortStrategies, useTabCache } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
-import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
 
 export const NavigationHeader = () => {
 	const plugin = usePlugin();
-	const showActiveTabs = useSettings.use.showActiveTabs();
-	const toggleTabVisibility = useSettings.use.toggleTabVisibility();
-	const hideSidebars = useSettings.use.hideSidebars();
-	const toggleSidebarVisibility = useSettings.use.toggleSidebarVisibility();
 	const zenMode = useSettings.use.zenMode();
 	const toggleZenMode = useSettings.use.toggleZenMode();
-	const alwaysOpenInNewTab = useSettings.use.alwaysOpenInNewTab();
-	const toggleAlwaysOpenInNewTab = useSettings.use.toggleAlwaysOpenInNewTab();
-	const deduplicateTabs = useSettings.use.deduplicateTabs();
-	const toggleDeduplicateTabs = useSettings.use.toggleDeduplicateTabs();
 	const sortStrategy = useTabCache((state) => state.sortStrategy);
 	const { setSortStrategy } = useTabCache();
 	const { lockFocus, setAllCollapsed, setAllExpanded } = useViewState();
@@ -72,22 +63,6 @@ export const NavigationHeader = () => {
 		<div className="nav-header">
 			<div className="nav-buttons-container">
 				<IconButton
-					icon="app-window"
-					action="toggle-tab"
-					tooltip="Show active tabs only"
-					onClick={toggleTabVisibility}
-					isActive={showActiveTabs}
-					isNavAction={true}
-				/>
-				<IconButton
-					icon="panel-left"
-					action="toggle-sidebar"
-					tooltip="Hide sidebars"
-					onClick={toggleSidebarVisibility}
-					isActive={hideSidebars}
-					isNavAction={true}
-				/>
-				<IconButton
 					icon="arrow-up-narrow-wide"
 					action="sort-tabs"
 					tooltip="Sort tabs"
@@ -118,31 +93,6 @@ export const NavigationHeader = () => {
 							? setAllExpanded()
 							: setAllCollapsed()
 					}
-					isNavAction={true}
-				/>
-				<IconButton
-					icon="copy-plus"
-					action="always-open-in-new-tab"
-					tooltip={
-						alwaysOpenInNewTab
-							? "Navigate in current tab"
-							: "Always open in new tab"
-					}
-					onClick={() => toggleAlwaysOpenInNewTab(plugin.app)}
-					isActive={alwaysOpenInNewTab}
-					isNavAction={true}
-				/>
-				<IconButton
-					icon="copy-slash"
-					action="deduplicate-tabs"
-					tooltip="Deduplicate tabs"
-					onClick={() => {
-						if (!deduplicateTabs) {
-							deduplicateExistingTabs(plugin.app);
-						}
-						toggleDeduplicateTabs();
-					}}
-					isActive={deduplicateTabs}
 					isNavAction={true}
 				/>
 			</div>

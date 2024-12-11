@@ -70,6 +70,11 @@ interface ViewState {
 	unbindPinningEvent: (leaf: WorkspaceLeaf) => void;
 	setAllCollapsed: () => void;
 	setAllExpanded: () => void;
+	executeSmartNavigation: (
+		app: App,
+		target: WorkspaceLeaf,
+		fallback: () => boolean
+	) => boolean;
 	checkIfGroupChanged: (
 		workspace: Workspace,
 		oldLeaf: WorkspaceLeaf | null,
@@ -324,5 +329,22 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	},
 	setAllExpanded() {
 		set({ globalCollapseState: false });
+	},
+	executeSmartNavigation(
+		app: App,
+		target: WorkspaceLeaf,
+		fallback: () => boolean
+	) {
+		// If the target is in the sidebar, it is not navigatable
+		if (target.getRoot() !== app.workspace.rootSplit) return false;
+		const { latestActiveLeaf } = get();
+		// if we do not know the latest active leaf, use the default handler
+		if (!latestActiveLeaf) return fallback();
+		const latestParent = latestActiveLeaf.parent;
+		const targetParent = target.parent;
+		// if the target is not in the same group, it is not navigatable
+		if (latestParent.id !== targetParent.id) return false;
+		// otherwise, use the default handler
+		return fallback();
 	},
 }));

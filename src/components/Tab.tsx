@@ -43,6 +43,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	const { refresh, sort } = useTabCache();
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 	const enableTabZoom = useSettings((state) => state.enableTabZoom);
+	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
 
 	useEffect(() => {
 		bindPinningEvent(leaf, setIsPinned);
@@ -166,7 +167,7 @@ export const Tab = ({ leaf }: TabProps) => {
 				workspace.duplicateLeaf(leaf, "window");
 			});
 	});
-	if (leaf.view.navigation) {
+	if (leaf.view.navigation && !alwaysOpenInNewTab) {
 		menu.addSeparator();
 		menu.addItem((item) => {
 			item.setSection("history")
@@ -257,7 +258,7 @@ export const Tab = ({ leaf }: TabProps) => {
 				});
 		});
 	}
-	if (isDeferredLeaf(leaf)) {
+	if (isDeferredLeaf(leaf) && !alwaysOpenInNewTab) {
 		menu.addSeparator();
 		menu.addItem((item) => {
 			item.setSection("history").setTitle("(Inactive)").setDisabled(true);
@@ -268,26 +269,28 @@ export const Tab = ({ leaf }: TabProps) => {
 				.onClick(async () => await loadDeferredLeaf(leaf));
 		});
 	}
-	menu.addSeparator();
-	menu.addItem((item) => {
-		item.setSection("zoom").setTitle("Zoom").setDisabled(!enableTabZoom);
-		const submenu = item.setSubmenu();
-		submenu.addItem((item) => {
-			item.setTitle("Zoom in").onClick(() => {
-				zoomIn(leaf.view);
+	if (enableTabZoom) {
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("zoom").setTitle("Zoom");
+			const submenu = item.setSubmenu();
+			submenu.addItem((item) => {
+				item.setTitle("Zoom in").onClick(() => {
+					zoomIn(leaf.view);
+				});
+			});
+			submenu.addItem((item) => {
+				item.setTitle("Zoom out").onClick(() => {
+					zoomOut(leaf.view);
+				});
+			});
+			submenu.addItem((item) => {
+				item.setTitle("Reset zoom").onClick(() => {
+					resetZoom(leaf.view);
+				});
 			});
 		});
-		submenu.addItem((item) => {
-			item.setTitle("Zoom out").onClick(() => {
-				zoomOut(leaf.view);
-			});
-		});
-		submenu.addItem((item) => {
-			item.setTitle("Reset zoom").onClick(() => {
-				resetZoom(leaf.view);
-			});
-		});
-	});
+	}
 	if (Platform.isDesktop) {
 		menu.addSeparator();
 		menu.addItem((item) => {

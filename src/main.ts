@@ -3,6 +3,8 @@ import { NavigationView, VIEW_TYPE } from "src/navigation";
 import { DEFAULT_SETTINGS, Settings } from "./models/PluginSettings";
 import { around } from "monkey-around";
 import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
+import { useViewState } from "./models/ViewState";
+import { ObsidianVerticalTabsSettingTab } from "./SettingTab";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -13,6 +15,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		await this.setupCommands();
 		await this.updateViewStates();
 		await this.patchViews();
+		this.addSettingTab(new ObsidianVerticalTabsSettingTab(this.app, this));
 		setTimeout(() => this.openVerticalTabs(), 10);
 	}
 
@@ -62,8 +65,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.toggle("vt-hide-sidebars", this.settings.hideSidebars);
 		this.toggle("vt-show-active-tabs", this.settings.showActiveTabs);
 		this.toggle("vt-exclude-self", this.settings.sidebarExcludeSelf);
+		this.toggle("vt-trim-tab-names", this.settings.trimTabNames);
 		this.toggle("vt-zen-mode", this.settings.zenMode);
 		this.toggle("vt-enable-tab-zoom", this.settings.enableTabZoom);
+		this.toggle("vt-ephemeral-tabs", this.settings.ephemeralTabs);
 	}
 
 	async patchViews() {
@@ -73,6 +78,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 			if (isNonUnitaryZoom) {
 				view.containerEl.setCssProps({
 					"--vt-tab-zoom-factor": zoom.toString(),
+				});
+			} else {
+				view.containerEl.setCssProps({
+					"--vt-tab-zoom-factor": "",
 				});
 			}
 			view.leaf.containerEl?.toggleClass(
@@ -103,6 +112,39 @@ export default class ObsidianVerticalTabs extends Plugin {
 					return function () {
 						old.call(this);
 						applyZoom(this, this.zoom ?? 1);
+					};
+				},
+			})
+		);
+
+		const modifyCanNavigate = (
+			target: WorkspaceLeaf,
+			fallback: () => boolean
+		): boolean => {
+			if (this.settings.alwaysOpenInNewTab) {
+				return false;
+			} else if (
+				this.settings.ephemeralTabs ||
+				this.settings.smartNavigation
+			) {
+				const ephemeralTabsecision =
+					target.isEphemeral === undefined || target.isEphemeral
+						? fallback()
+						: false;
+				const smartNavigationDecision = useViewState
+					.getState()
+					.executeSmartNavigation(this.app, target, fallback);
+				return ephemeralTabsecision && smartNavigationDecision;
+			} else {
+				return fallback();
+			}
+		};
+
+		this.register(
+			around(WorkspaceLeaf.prototype, {
+				canNavigate(old) {
+					return function () {
+						return modifyCanNavigate(this, () => old.call(this));
 					};
 				},
 			})

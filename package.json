@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && cp manifest.json dist/manifest.json",
+		"devcopy": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs nowatch && cp manifest.json dist/manifest.json",
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
 	"keywords": [],

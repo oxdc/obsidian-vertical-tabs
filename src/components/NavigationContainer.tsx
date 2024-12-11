@@ -11,22 +11,34 @@ import {
 } from "src/services/MoveTab";
 import { resetZoom, zoomIn, zoomOut } from "src/services/TabZoom";
 import { isSelfVisible } from "src/services/Visibility";
+import {
+	installTabHeaderHandlers,
+	uninstallTabHeaderHandlers,
+} from "src/services/EphemeralTabs";
+import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
+	const app = plugin.app;
 	const { refresh, sort } = useTabCache();
-	const { setLatestActiveLeaf, refreshToggleButtons, lockFocus } =
-		useViewState();
-	const loadSettings = useSettings.use.loadSettings();
-	const toggleZenMode = useSettings.use.toggleZenMode();
-	const setNavigation = useSettings.use.setNavigation();
+	const {
+		setLatestActiveLeaf,
+		refreshToggleButtons,
+		lockFocus,
+		lockFocusOnLeaf,
+	} = useViewState();
+	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
 	const autoRefresh = () => {
 		setLatestActiveLeaf(plugin);
 		if (selfIsNotInTheSidebar(plugin.app)) {
 			moveSelfToDefaultLocation(plugin.app);
 		}
+		if (useSettings.getState().deduplicateTabs) {
+			app.workspace.trigger("vertical-tabs:deduplicate-tabs");
+		}
 		setTimeout(() => {
+			updateEphemeralTabs(plugin.app);
 			setNavigation(plugin.app);
 			if (isSelfVisible(plugin.app)) {
 				refresh(plugin.app);
@@ -50,6 +62,18 @@ export const NavigationContainer = () => {
 		plugin.registerEvent(workspace.on("resize", debounce(updateToggles)));
 		plugin.registerEvent(
 			workspace.on("vertical-tabs:update-toggle", updateToggles)
+		);
+		plugin.registerEvent(
+			workspace.on("vertical-tabs:ephemeral-tabs", (enabled) => {
+				if (enabled) installTabHeaderHandlers(app);
+				else uninstallTabHeaderHandlers(app);
+			})
+		);
+		plugin.registerEvent(
+			workspace.on("vertical-tabs:deduplicate-tabs", () => {
+				const activeLeaf = deduplicateExistingTabs(app);
+				if (activeLeaf) lockFocusOnLeaf(app, activeLeaf);
+			})
 		);
 		plugin.addCommand({
 			id: "toggle-zen-mode",

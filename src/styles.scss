@@ -8,6 +8,8 @@
 @import "styles/DropIndicator.scss";
 @import "styles/SingleGroup.scss";
 @import "styles/TabZoom.scss";
+@import "styles/EphemeralTabs.scss";
+@import "styles/TrimTabNames.scss";
 
 .vertical-tabs {
 	display: flex;
@@ -120,15 +122,4 @@ body.vt-exclude-self
 
 .obsidian-vertical-tabs-container .tree-item .drag-handle {
 	touch-action: none;
-}
-
-.vertical-tabs
-	.nav-header
-	.nav-buttons-container
-	.clickable-icon[data-action="always-open-in-new-tab"],
-.vertical-tabs
-	.nav-header
-	.nav-buttons-container
-	.clickable-icon[data-action="deduplicate-tabs"] {
-	display: none;
 }

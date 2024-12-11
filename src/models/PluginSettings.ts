@@ -1,23 +1,33 @@
+import { TabNavigationStrategy } from "./TabNavigation";
+
 interface ObsidianVerticalTabsSettings {
 	showActiveTabs: boolean;
 	hideSidebars: boolean;
 	sidebarTabTypes: string[] | null;
 	sidebarExcludeSelf: boolean;
+	trimTabNames: boolean;
 	zenMode: boolean;
 	enableTabZoom: boolean;
 	alwaysOpenInNewTab: boolean;
 	deduplicateTabs: boolean;
+	ephemeralTabs: boolean;
+	smartNavigation: boolean;
+	navigationStrategy: TabNavigationStrategy;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
-	showActiveTabs: true,
+	showActiveTabs: false,
 	hideSidebars: true,
 	sidebarTabTypes: ["markdown"],
 	sidebarExcludeSelf: true,
+	trimTabNames: false,
 	zenMode: false,
-	enableTabZoom: true,
+	enableTabZoom: false,
 	alwaysOpenInNewTab: false,
 	deduplicateTabs: false,
+	ephemeralTabs: false,
+	smartNavigation: true,
+	navigationStrategy: TabNavigationStrategy.ObsidianPlus,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;

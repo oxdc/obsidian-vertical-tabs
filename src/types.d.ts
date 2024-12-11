@@ -22,6 +22,14 @@ declare module "obsidian" {
 		rightSidebarToggleButtonEl: HTMLElement;
 		floatingSplit: WorkspaceSplit;
 		on(name: "vertical-tabs:update-toggle", callback: () => void): EventRef;
+		on(
+			name: "vertical-tabs:ephemeral-tabs",
+			callback: (enabled: boolean) => void
+		): EventRef;
+		on(
+			name: "vertical-tabs:deduplicate-tabs",
+			callback: () => void
+		): EventRef;
 	}
 
 	interface WorkspaceParent {
@@ -55,12 +63,14 @@ declare module "obsidian" {
 	interface WorkspaceLeaf {
 		id: Identifier;
 		activeTime: number;
+		isEphemeral?: boolean;
 		parent: WorkspaceTabs | WorkspaceMobileDrawer;
 		setParent: (parent: WorkspaceParent) => void;
 		containerEl?: HTMLElement;
 		tabHeaderEl?: HTMLElement;
 		tabHeaderInnerTitleEl?: HTMLElement;
 		isVisible: () => boolean;
+		canNavigate(): boolean;
 		history: {
 			backHistory: HistoryState[];
 			forwardHistory: HistoryState[];
