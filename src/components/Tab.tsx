@@ -33,6 +33,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	const workspace = app.workspace;
 	const {
 		bindPinningEvent,
+		bindEphemeralToggleEvent,
 		setGroupTitle,
 		lockFocusOnLeaf,
 		toggleHiddenGroup,
@@ -40,6 +41,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	const [isPinned, setIsPinned] = useState(
 		leaf.getViewState().pinned ?? false
 	);
+	const [isEphemeral, setIsEphemeral] = useState(!!leaf.isEphemeral);
 	const { refresh, sort } = useTabCache();
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 	const enableTabZoom = useSettings((state) => state.enableTabZoom);
@@ -47,6 +49,7 @@ export const Tab = ({ leaf }: TabProps) => {
 
 	useEffect(() => {
 		bindPinningEvent(leaf, setIsPinned);
+		bindEphemeralToggleEvent(leaf, () => setIsEphemeral(false));
 	}, [leaf.id]);
 
 	const togglePinned = () => {
@@ -345,6 +348,7 @@ export const Tab = ({ leaf }: TabProps) => {
 		<NavigationTreeItem
 			id={leaf.id}
 			isTab={true}
+			isEphemeralTab={isEphemeral && !isPinned}
 			isPinned={isPinned}
 			isHighlighted={lastActiveLeaf?.id === leaf.id}
 			{...props}

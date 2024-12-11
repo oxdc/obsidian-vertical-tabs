@@ -37,11 +37,17 @@ export type PinningEventCallback = (pinned: boolean) => void;
 export const createNewPinningEvents = () =>
 	new DefaultRecord(() => null) as PinningEvents;
 
+export type EphermalToggleEvents = DefaultRecord<Identifier, EventRef | null>;
+export type EphermalToggleEventCallback = () => void;
+export const createNewEphermalToggleEvents = () =>
+	new DefaultRecord(() => null) as EphermalToggleEvents;
+
 interface ViewState {
 	groupTitles: GroupTitles;
 	hiddenGroups: Array<Identifier>;
 	latestActiveLeaf: WorkspaceLeaf | null;
 	pinningEvents: PinningEvents;
+	ephermalToggleEvents: EphermalToggleEvents;
 	globalCollapseState: boolean;
 	clear: () => void;
 	setGroupTitle: (id: Identifier, name: string) => void;
@@ -68,6 +74,11 @@ interface ViewState {
 		callback: PinningEventCallback
 	) => void;
 	unbindPinningEvent: (leaf: WorkspaceLeaf) => void;
+	bindEphemeralToggleEvent: (
+		leaf: WorkspaceLeaf,
+		callback: EphermalToggleEventCallback
+	) => void;
+	unbindEphemeralToggleEvent: (leaf: WorkspaceLeaf) => void;
 	setAllCollapsed: () => void;
 	setAllExpanded: () => void;
 	executeSmartNavigation: (
@@ -136,6 +147,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	hiddenGroups: loadHiddenGroups(),
 	latestActiveLeaf: null,
 	pinningEvents: createNewPinningEvents(),
+	ephermalToggleEvents: createNewEphermalToggleEvents(),
 	globalCollapseState: false,
 	leftButtonClone: null,
 	rightButtonClone: null,
@@ -322,6 +334,23 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			leaf.offref(event);
 			pinningEvents.set(leaf.id, null);
 			set({ pinningEvents });
+		}
+	},
+	bindEphemeralToggleEvent(leaf: WorkspaceLeaf, callback: EphermalToggleEventCallback) {
+		const { ephermalToggleEvents } = get();
+		const event = ephermalToggleEvents.get(leaf.id);
+		if (event) return;
+		const newEvent = leaf.on("ephemeral-toggle", callback);
+		ephermalToggleEvents.set(leaf.id, newEvent);
+		set({ ephermalToggleEvents });
+	},
+	unbindEphemeralToggleEvent(leaf: WorkspaceLeaf) {
+		const { ephermalToggleEvents } = get();
+		const event = ephermalToggleEvents.get(leaf.id);
+		if (event) {
+			leaf.offref(event);
+			ephermalToggleEvents.set(leaf.id, null);
+			set({ ephermalToggleEvents });
 		}
 	},
 	setAllCollapsed() {

@@ -7,6 +7,7 @@ export function installTabHeaderHandlerForLeaf(leaf: WorkspaceLeaf) {
 	leaf.tabHeaderEl.ondblclick = (event: MouseEvent) => {
 		leaf.isEphemeral = false;
 		leaf.tabHeaderEl?.toggleClass("vt-non-ephemeral", true);
+		leaf.trigger("ephemeral-toggle");
 		event.stopPropagation();
 	};
 }

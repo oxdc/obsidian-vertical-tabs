@@ -78,6 +78,7 @@ declare module "obsidian" {
 			forward: () => void;
 			go: (offset: number) => void;
 		};
+		on(name: "ephemeral-toggle", callback: () => void): EventRef;
 	}
 
 	interface WorkspaceSidedock extends WorkspaceSplit {

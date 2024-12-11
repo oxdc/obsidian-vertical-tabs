@@ -39,7 +39,6 @@ export const NavigationContainer = () => {
 		}
 		setTimeout(() => {
 			updateEphemeralTabs(plugin.app);
-			setNavigation(plugin.app);
 			if (isSelfVisible(plugin.app)) {
 				refresh(plugin.app);
 				sort();

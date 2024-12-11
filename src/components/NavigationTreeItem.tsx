@@ -10,6 +10,7 @@ interface NavigationTreeItemProps {
 	title: string | React.ReactNode;
 	icon: string;
 	isTab: boolean;
+	isEphemeralTab?: boolean;
 	isTabSlot?: boolean;
 	isGroupSlot?: boolean;
 	isSingleGroup?: boolean;
@@ -50,6 +51,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 	const itemElClasses: CssClasses = {
 		"tree-item": true,
 		"is-tab": props.isTab,
+		"is-ephemeral-tab": props.isTab && props.isEphemeralTab,
 		"is-group": !props.isTab,
 		"nav-folder": !props.isTab,
 		"is-pinned": props.isPinned,
