@@ -137,6 +137,33 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				this.displayCustomNavigationStrategy(containerEl);
 				break;
 		}
+
+		containerEl.createDiv({ cls: "vt-support" }).innerHTML = `
+			<div class="title">Enjoying Vertical Tabs?</div>
+			<div class="buttons">
+				<a id="vt-support-btn-kofi" href="https://ko-fi.com/oxdcq" target="_blank">
+					<img
+						height="16"
+						border="0"
+						style="border: 0px; height: 16px;"
+						src="https://storage.ko-fi.com/cdn/brandasset/v2/kofi_symbol.png"
+					/>
+					<span>Buy me a coffee</span>
+				</a>
+				<a id="vt-support-btn-github" href="https://github.com/oxdc/obsidian-vertical-tabs" target="_blank">
+					<img
+						height="16"
+						border="0"
+						style="border: 0px; height: 16px;"
+						src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+					/>
+					<span>Star on GitHub</span>
+				</a>
+			</div>
+			<div class="bug-report">
+				Facing issues or have suggestions? <a href="https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose" target="_blank">Submit a report</a>.
+			</div>
+		`;
 	}
 
 	private displayCustomNavigationStrategy(containerEl: HTMLElement) {
