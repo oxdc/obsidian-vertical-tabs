@@ -91,6 +91,12 @@ export const Tab = ({ leaf }: TabProps) => {
 		}
 	};
 
+	const setAsNonEphemeral = () => {
+		leaf.isEphemeral = false;
+		leaf.tabHeaderEl?.toggleClass("vt-non-ephemeral", true);
+		setIsEphemeral(false);
+	}
+
 	const menu = new Menu();
 
 	menu.addItem((item) => {
@@ -356,7 +362,7 @@ export const Tab = ({ leaf }: TabProps) => {
 			toolbar={toolbar}
 			onClick={activeOrCloseTab}
 			onAuxClick={midClickCloseTab}
-			onDoubleClick={closeTab}
+			onDoubleClick={setAsNonEphemeral}
 			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
 			dataType={leaf.getViewState().type}
 			dataId={leaf.id}
