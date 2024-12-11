@@ -2,6 +2,7 @@
 	.tree-item.is-tab {
 		&.is-highlighted .tree-item-self {
 			background-color: var(--background-modifier-active-hover);
+			font-weight: bold;
 		}
 	}
 }

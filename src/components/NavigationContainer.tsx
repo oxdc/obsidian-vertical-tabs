@@ -29,6 +29,10 @@ export const NavigationContainer = () => {
 	} = useViewState();
 	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
+	useEffect(() => {
+		updateEphemeralTabs(plugin.app);
+	}, []);
+
 	const autoRefresh = () => {
 		setLatestActiveLeaf(plugin);
 		if (selfIsNotInTheSidebar(plugin.app)) {

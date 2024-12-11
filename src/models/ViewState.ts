@@ -199,6 +199,8 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		if (oldLeaf === null && newLeaf === null) return;
 		if (oldLeaf === null || newLeaf === null) {
 			workspace.trigger("vertical-tabs:update-toggle");
+		} else if (oldLeaf.parent === null || newLeaf.parent === null) {
+			workspace.trigger("vertical-tabs:update-toggle");
 		} else if (oldLeaf.parent.id !== newLeaf.parent.id) {
 			workspace.trigger("vertical-tabs:update-toggle");
 		}
@@ -336,7 +338,10 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			set({ pinningEvents });
 		}
 	},
-	bindEphemeralToggleEvent(leaf: WorkspaceLeaf, callback: EphermalToggleEventCallback) {
+	bindEphemeralToggleEvent(
+		leaf: WorkspaceLeaf,
+		callback: EphermalToggleEventCallback
+	) {
 		const { ephermalToggleEvents } = get();
 		const event = ephermalToggleEvents.get(leaf.id);
 		if (event) return;
