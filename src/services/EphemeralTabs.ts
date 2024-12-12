@@ -33,6 +33,7 @@ export function makeLeafEphemeralOnEditorChange(
 export function installTabHeaderHandlerForLeaf(leaf: WorkspaceLeaf) {
 	if (leaf.isEphemeral !== undefined) return;
 	leaf.isEphemeral = true;
+	leaf.tabHeaderEl?.toggleClass("vt-non-ephemeral", false);
 	leaf.trigger("ephemeral-toggle", true);
 	if (!leaf.tabHeaderEl) return;
 	leaf.tabHeaderEl.ondblclick = (event: MouseEvent) => {

@@ -405,13 +405,17 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		target: WorkspaceLeaf,
 		fallback: () => boolean
 	) {
+		const root = target.getRoot();
 		// If the target is in the sidebar, it is not navigatable
-		if (target.getRoot() !== app.workspace.rootSplit) return false;
+		if (root === app.workspace.leftSplit || root === app.workspace.rightSplit)
+			return false;
 		const { latestActiveLeaf } = get();
-		// if we do not know the latest active leaf, use the default handler
+		// If we do not know the latest active leaf, use the default handler
 		if (!latestActiveLeaf) return fallback();
 		const latestParent = latestActiveLeaf.parent;
 		const targetParent = target.parent;
+		// If one of the parent is not found, use the default handler
+		if (latestParent === null || targetParent === null) return fallback();
 		// if the target is not in the same group, it is not navigatable
 		if (latestParent.id !== targetParent.id) return false;
 		// otherwise, use the default handler
