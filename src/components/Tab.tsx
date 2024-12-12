@@ -22,6 +22,7 @@ import {
 } from "src/services/LoadDeferredLeaf";
 import { useTouchSensor } from "src/services/TouchSeneor";
 import { zoomIn, zoomOut, resetZoom } from "src/services/TabZoom";
+import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -49,7 +50,9 @@ export const Tab = ({ leaf }: TabProps) => {
 
 	useEffect(() => {
 		bindPinningEvent(leaf, setIsPinned);
-		bindEphemeralToggleEvent(leaf, () => setIsEphemeral(false));
+		bindEphemeralToggleEvent(app, leaf, (isEphemeral) => {
+			setIsEphemeral(isEphemeral);
+		});
 	}, [leaf.id]);
 
 	const togglePinned = () => {
@@ -90,12 +93,6 @@ export const Tab = ({ leaf }: TabProps) => {
 			openTab();
 		}
 	};
-
-	const setAsNonEphemeral = () => {
-		leaf.isEphemeral = false;
-		leaf.tabHeaderEl?.toggleClass("vt-non-ephemeral", true);
-		setIsEphemeral(false);
-	}
 
 	const menu = new Menu();
 
@@ -362,7 +359,7 @@ export const Tab = ({ leaf }: TabProps) => {
 			toolbar={toolbar}
 			onClick={activeOrCloseTab}
 			onAuxClick={midClickCloseTab}
-			onDoubleClick={setAsNonEphemeral}
+			onDoubleClick={() => makeLeafNonEphemeral(leaf)}
 			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
 			dataType={leaf.getViewState().type}
 			dataId={leaf.id}

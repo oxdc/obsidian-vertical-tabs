@@ -38,13 +38,14 @@ export const createNewPinningEvents = () =>
 	new DefaultRecord(() => null) as PinningEvents;
 
 export type EphermalToggleEvents = DefaultRecord<Identifier, EventRef | null>;
-export type EphermalToggleEventCallback = () => void;
+export type EphermalToggleEventCallback = (isEphemeral: boolean) => void;
 export const createNewEphermalToggleEvents = () =>
 	new DefaultRecord(() => null) as EphermalToggleEvents;
 
 interface ViewState {
 	groupTitles: GroupTitles;
 	hiddenGroups: Array<Identifier>;
+	nonEphemeralTabs: Array<Identifier>;
 	latestActiveLeaf: WorkspaceLeaf | null;
 	pinningEvents: PinningEvents;
 	ephermalToggleEvents: EphermalToggleEvents;
@@ -52,6 +53,7 @@ interface ViewState {
 	clear: () => void;
 	setGroupTitle: (id: Identifier, name: string) => void;
 	toggleHiddenGroup: (id: Identifier, isHidden: boolean) => void;
+	rememberNonephemeralTab: (app: App, id: Identifier) => void;
 	setLatestActiveLeaf: (
 		plugin: ObsidianVerticalTabs,
 		leaf?: WorkspaceLeaf | null
@@ -75,6 +77,7 @@ interface ViewState {
 	) => void;
 	unbindPinningEvent: (leaf: WorkspaceLeaf) => void;
 	bindEphemeralToggleEvent: (
+		app: App,
 		leaf: WorkspaceLeaf,
 		callback: EphermalToggleEventCallback
 	) => void;
@@ -115,6 +118,16 @@ const loadHiddenGroups = (): Array<Identifier> => {
 	return JSON.parse(data);
 };
 
+const saveNonEphemeralTabs = (tabs: Array<Identifier>) => {
+	localStorage.setItem("nonephemeral-tabs", JSON.stringify(Array.from(tabs)));
+};
+
+const loadNonEphemeralTabs = (): Array<Identifier> => {
+	const data = localStorage.getItem("nonephemeral-tabs");
+	if (!data) return [];
+	return JSON.parse(data);
+};
+
 const getCornerContainers = (tabContainers: Array<Element>) => {
 	const visibleTabContainers = tabContainers.filter(
 		(tabContainer) =>
@@ -145,6 +158,7 @@ const getCornerContainers = (tabContainers: Array<Element>) => {
 export const useViewState = create<ViewState>()((set, get) => ({
 	groupTitles: loadViewState() ?? createNewGroupTitles(),
 	hiddenGroups: loadHiddenGroups(),
+	nonEphemeralTabs: loadNonEphemeralTabs(),
 	latestActiveLeaf: null,
 	pinningEvents: createNewPinningEvents(),
 	ephermalToggleEvents: createNewEphermalToggleEvents(),
@@ -170,6 +184,15 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			}));
 		}
 		saveHiddenGroups(get().hiddenGroups);
+	},
+	rememberNonephemeralTab(app: App, id: Identifier) {
+		const { nonEphemeralTabs } = get();
+		if (nonEphemeralTabs.contains(id)) return;
+		const newList = nonEphemeralTabs.filter(
+			(id) => app.workspace.getLeafById(id) !== null
+		);
+		set({ nonEphemeralTabs: [...newList, id] });
+		saveNonEphemeralTabs(get().nonEphemeralTabs);
 	},
 	setLatestActiveLeaf(plugin: ObsidianVerticalTabs) {
 		const oldActiveLeaf = get().latestActiveLeaf;
@@ -339,13 +362,17 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		}
 	},
 	bindEphemeralToggleEvent(
+		app: App,
 		leaf: WorkspaceLeaf,
 		callback: EphermalToggleEventCallback
 	) {
 		const { ephermalToggleEvents } = get();
 		const event = ephermalToggleEvents.get(leaf.id);
 		if (event) return;
-		const newEvent = leaf.on("ephemeral-toggle", callback);
+		const newEvent = leaf.on("ephemeral-toggle", (isEphemeral) => {
+			if (!isEphemeral) get().rememberNonephemeralTab(app, leaf.id);
+			callback(isEphemeral);
+		});
 		ephermalToggleEvents.set(leaf.id, newEvent);
 		set({ ephermalToggleEvents });
 	},
