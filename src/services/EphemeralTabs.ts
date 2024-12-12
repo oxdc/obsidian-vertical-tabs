@@ -1,13 +1,25 @@
-import { App, WorkspaceLeaf } from "obsidian";
+import { App, MarkdownFileInfo, MarkdownView, WorkspaceLeaf } from "obsidian";
+
+export function makeLeafNonEphemeral(leaf: WorkspaceLeaf) {
+	leaf.isEphemeral = false;
+	leaf.tabHeaderEl?.toggleClass("vt-non-ephemeral", true);
+	leaf.trigger("ephemeral-toggle");
+}
+
+export function makeLeafEphemeralOnEditorChange(
+	info: MarkdownView | MarkdownFileInfo
+) {
+	if (info instanceof MarkdownView) {
+		makeLeafNonEphemeral(info.leaf);
+	}
+}
 
 export function installTabHeaderHandlerForLeaf(leaf: WorkspaceLeaf) {
 	if (leaf.isEphemeral !== undefined) return;
 	leaf.isEphemeral = true;
 	if (!leaf.tabHeaderEl) return;
 	leaf.tabHeaderEl.ondblclick = (event: MouseEvent) => {
-		leaf.isEphemeral = false;
-		leaf.tabHeaderEl?.toggleClass("vt-non-ephemeral", true);
-		leaf.trigger("ephemeral-toggle");
+		makeLeafNonEphemeral(leaf);
 		event.stopPropagation();
 	};
 }

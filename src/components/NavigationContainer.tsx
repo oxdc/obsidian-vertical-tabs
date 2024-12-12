@@ -13,6 +13,7 @@ import { resetZoom, zoomIn, zoomOut } from "src/services/TabZoom";
 import { isSelfVisible } from "src/services/Visibility";
 import {
 	installTabHeaderHandlers,
+	makeLeafEphemeralOnEditorChange,
 	uninstallTabHeaderHandlers,
 } from "src/services/EphemeralTabs";
 import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
@@ -70,6 +71,13 @@ export const NavigationContainer = () => {
 			workspace.on("vertical-tabs:ephemeral-tabs", (enabled) => {
 				if (enabled) installTabHeaderHandlers(app);
 				else uninstallTabHeaderHandlers(app);
+			})
+		);
+		plugin.registerEvent(
+			workspace.on("editor-change", (_, info) => {
+				if (useSettings.getState().ephemeralTabs) {
+					makeLeafEphemeralOnEditorChange(info);
+				}
 			})
 		);
 		plugin.registerEvent(
