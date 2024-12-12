@@ -31,10 +31,6 @@ export const NavigationContainer = () => {
 	} = useViewState();
 	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
-	useEffect(() => {
-		updateEphemeralTabs(plugin.app);
-	}, []);
-
 	const autoRefresh = () => {
 		setLatestActiveLeaf(plugin);
 		if (selfIsNotInTheSidebar(plugin.app)) {
@@ -60,7 +56,7 @@ export const NavigationContainer = () => {
 
 	useEffect(() => {
 		const workspace = plugin.app.workspace;
-		loadSettings(plugin);
+		loadSettings(plugin).then(() => updateEphemeralTabs(plugin.app));
 		autoRefresh();
 		plugin.registerEvent(workspace.on("layout-change", autoRefresh));
 		plugin.registerEvent(workspace.on("active-leaf-change", autoRefresh));
