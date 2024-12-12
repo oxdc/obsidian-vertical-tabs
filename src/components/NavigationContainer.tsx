@@ -56,16 +56,10 @@ export const NavigationContainer = () => {
 		}, REFRESH_TIMEOUT);
 	};
 
-	const ephemeralCountCallback = (count: number) => {
-		if (count > 10) {
-			console.info(`Vertical Tabs: ${count} ephemeral tabs detected.`);
-		}
-	};
-
 	useEffect(() => {
 		const workspace = plugin.app.workspace;
 		loadSettings(plugin).then(() =>
-			initEphemeralTabs(app, ephemeralCountCallback)
+			initEphemeralTabs(app)
 		);
 		autoRefresh();
 		plugin.registerEvent(workspace.on("layout-change", autoRefresh));
@@ -76,7 +70,7 @@ export const NavigationContainer = () => {
 		);
 		plugin.registerEvent(
 			workspace.on("vertical-tabs:ephemeral-tabs-init", () => {
-				initEphemeralTabs(app, ephemeralCountCallback);
+				initEphemeralTabs(app);
 			})
 		);
 		plugin.registerEvent(

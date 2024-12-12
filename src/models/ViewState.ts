@@ -54,6 +54,7 @@ interface ViewState {
 	setGroupTitle: (id: Identifier, name: string) => void;
 	toggleHiddenGroup: (id: Identifier, isHidden: boolean) => void;
 	rememberNonephemeralTab: (app: App, id: Identifier) => void;
+	forgetNonephemeralTabs: () => void;
 	setLatestActiveLeaf: (
 		plugin: ObsidianVerticalTabs,
 		leaf?: WorkspaceLeaf | null
@@ -128,6 +129,10 @@ const loadNonEphemeralTabs = (): Array<Identifier> => {
 	return JSON.parse(data);
 };
 
+const clearNonEphemeralTabs = () => {
+	localStorage.removeItem("nonephemeral-tabs");
+}
+
 const getCornerContainers = (tabContainers: Array<Element>) => {
 	const visibleTabContainers = tabContainers.filter(
 		(tabContainer) =>
@@ -193,6 +198,10 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		);
 		set({ nonEphemeralTabs: [...newList, id] });
 		saveNonEphemeralTabs(get().nonEphemeralTabs);
+	},
+	forgetNonephemeralTabs() {
+		clearNonEphemeralTabs();
+		set({ nonEphemeralTabs: [] });
 	},
 	setLatestActiveLeaf(plugin: ObsidianVerticalTabs) {
 		const oldActiveLeaf = get().latestActiveLeaf;

@@ -2,6 +2,7 @@ import { App, MarkdownFileInfo, MarkdownView, WorkspaceLeaf } from "obsidian";
 import { iterateRootOrFloatingLeaves } from "./GetTabs";
 import { useViewState } from "src/models/ViewState";
 import { useSettings } from "src/models/PluginContext";
+import { Identifier } from "src/models/VTWorkspace";
 
 export function makeLeafNonEphemeralByID(app: App, leafID: string) {
 	const leaf = app.workspace.getLeafById(leafID);
@@ -56,21 +57,45 @@ export function uninstallTabHeaderHandlers(app: App) {
 	app.workspace.iterateRootLeaves((leaf) => {
 		uninstallTabHeaderHandlerForLeaf(leaf);
 	});
+	useViewState.getState().forgetNonephemeralTabs();
 }
 
-export function countEphemeralTabs(app: App): number {
-	let count = 0;
+export function makeTabNonEphemeralAutomatically(app: App) {
+	const processedGroups = new Set<Identifier>();
 	iterateRootOrFloatingLeaves(app, (leaf) => {
-		if (leaf.isEphemeral) count++;
+		const group = leaf.parent;
+		const groupID = group.id;
+		if (processedGroups.has(groupID)) return;
+		processedGroups.add(groupID);
+		// We keep the latest active tab ephemeral and make the rest non-ephemeral
+		const children = group.children;
+		const activeTimes = children.map((child) => child.activeTime);
+		const latestActiveTime = Math.max(...activeTimes);
+		if (latestActiveTime > 0) {
+			// We have that information
+			children.forEach((child) => {
+				if (child.activeTime !== latestActiveTime) {
+					makeLeafNonEphemeral(child);
+				}
+			});
+		} else {
+			// Otherwise, we keep the last tab ephemeral
+			children.slice(0, -1).forEach((child) => {
+				makeLeafNonEphemeral(child);
+			});
+		}
 	});
-	return count;
 }
 
-export function initEphemeralTabs(app: App, callback: (count: number) => void) {
+export function initEphemeralTabs(app: App) {
 	if (!useSettings.getState().ephemeralTabs) return;
+	// We try to recover the saved state
 	const nonEphemeralTabs = useViewState.getState().nonEphemeralTabs;
-	makeTabsNonEphemeralByList(app, nonEphemeralTabs);
+	if (nonEphemeralTabs.length > 0) {
+		makeTabsNonEphemeralByList(app, nonEphemeralTabs);
+	} else {
+		// if we dont have that information, use a heuristic
+		makeTabNonEphemeralAutomatically(app);
+	}
 	installTabHeaderHandlers(app);
-	const count = countEphemeralTabs(app);
-	callback(count);
 }
