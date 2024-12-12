@@ -165,6 +165,8 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			);
 			if (ephemeralTabs) {
 				app.workspace.trigger("vertical-tabs:ephemeral-tabs-init");
+			} else {
+				app.workspace.trigger("vertical-tabs:ephemeral-tabs-deinit");
 			}
 		},
 	})

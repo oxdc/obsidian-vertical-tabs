@@ -30,6 +30,7 @@ export const NavigationContainer = () => {
 		refreshToggleButtons,
 		lockFocus,
 		lockFocusOnLeaf,
+		forgetNonephemeralTabs,
 	} = useViewState();
 	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
@@ -58,9 +59,7 @@ export const NavigationContainer = () => {
 
 	useEffect(() => {
 		const workspace = plugin.app.workspace;
-		loadSettings(plugin).then(() =>
-			initEphemeralTabs(app)
-		);
+		loadSettings(plugin).then(() => initEphemeralTabs(app));
 		autoRefresh();
 		plugin.registerEvent(workspace.on("layout-change", autoRefresh));
 		plugin.registerEvent(workspace.on("active-leaf-change", autoRefresh));
@@ -69,9 +68,14 @@ export const NavigationContainer = () => {
 			workspace.on("vertical-tabs:update-toggle", updateToggles)
 		);
 		plugin.registerEvent(
-			workspace.on("vertical-tabs:ephemeral-tabs-init", () => {
-				initEphemeralTabs(app);
-			})
+			workspace.on("vertical-tabs:ephemeral-tabs-init", () =>
+				initEphemeralTabs(app)
+			)
+		);
+		plugin.registerEvent(
+			workspace.on("vertical-tabs:ephemeral-tabs-deinit", () =>
+				forgetNonephemeralTabs()
+			)
 		);
 		plugin.registerEvent(
 			workspace.on("vertical-tabs:ephemeral-tabs", (enabled) => {

@@ -57,7 +57,6 @@ export function uninstallTabHeaderHandlers(app: App) {
 	app.workspace.iterateRootLeaves((leaf) => {
 		uninstallTabHeaderHandlerForLeaf(leaf);
 	});
-	useViewState.getState().forgetNonephemeralTabs();
 }
 
 export function makeTabNonEphemeralAutomatically(app: App) {

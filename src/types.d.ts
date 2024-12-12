@@ -27,6 +27,10 @@ declare module "obsidian" {
 			callback: () => void
 		): EventRef;
 		on(
+			name: "vertical-tabs:ephemeral-tabs-deinit",
+			callback: () => void
+		): EventRef;
+		on(
 			name: "vertical-tabs:ephemeral-tabs",
 			callback: (enabled: boolean) => void
 		): EventRef;

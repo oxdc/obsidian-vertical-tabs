@@ -131,7 +131,7 @@ const loadNonEphemeralTabs = (): Array<Identifier> => {
 
 const clearNonEphemeralTabs = () => {
 	localStorage.removeItem("nonephemeral-tabs");
-}
+};
 
 const getCornerContainers = (tabContainers: Array<Element>) => {
 	const visibleTabContainers = tabContainers.filter(
