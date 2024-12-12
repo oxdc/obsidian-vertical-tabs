@@ -12,7 +12,7 @@ export function sortTabs(group: WorkspaceParent, sortStrategy: SortStrategy) {
 	group.children.sort(sortStrategy.compareFn);
 	if (sortStrategy.reverse) group.children.reverse();
 	group.recomputeChildrenDimensions();
-	group.selectTab(activeLeaf);
+	if (group.selectTab) group.selectTab(activeLeaf);
 	return group.children;
 }
 
