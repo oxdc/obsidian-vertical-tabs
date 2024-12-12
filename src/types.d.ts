@@ -23,6 +23,10 @@ declare module "obsidian" {
 		floatingSplit: WorkspaceSplit;
 		on(name: "vertical-tabs:update-toggle", callback: () => void): EventRef;
 		on(
+			name: "vertical-tabs:ephemeral-tabs-init",
+			callback: () => void
+		): EventRef;
+		on(
 			name: "vertical-tabs:ephemeral-tabs",
 			callback: (enabled: boolean) => void
 		): EventRef;
@@ -80,7 +84,7 @@ declare module "obsidian" {
 		};
 		on(
 			name: "ephemeral-toggle",
-			callback: (isEphemeral: boolean) => void,
+			callback: (isEphemeral: boolean) => void
 		): EventRef;
 	}
 

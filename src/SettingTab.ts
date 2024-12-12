@@ -210,6 +210,11 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 								"vertical-tabs:ephemeral-tabs",
 								value
 							);
+							if (value) {
+								this.app.workspace.trigger(
+									"vertical-tabs:ephemeral-tabs-init"
+								);
+							}
 						});
 				});
 		}

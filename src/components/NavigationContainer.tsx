@@ -12,7 +12,7 @@ import {
 import { resetZoom, zoomIn, zoomOut } from "src/services/TabZoom";
 import { isSelfVisible } from "src/services/Visibility";
 import {
-	initNonEphemeralTabs,
+	initEphemeralTabs,
 	installTabHeaderHandlers,
 	makeLeafEphemeralOnEditorChange,
 	makeLeafNonEphemeral,
@@ -56,9 +56,17 @@ export const NavigationContainer = () => {
 		}, REFRESH_TIMEOUT);
 	};
 
+	const ephemeralCountCallback = (count: number) => {
+		if (count > 10) {
+			console.info(`Vertical Tabs: ${count} ephemeral tabs detected.`);
+		}
+	};
+
 	useEffect(() => {
 		const workspace = plugin.app.workspace;
-		loadSettings(plugin).then(() => updateEphemeralTabs(plugin.app));
+		loadSettings(plugin).then(() =>
+			initEphemeralTabs(app, ephemeralCountCallback)
+		);
 		autoRefresh();
 		plugin.registerEvent(workspace.on("layout-change", autoRefresh));
 		plugin.registerEvent(workspace.on("active-leaf-change", autoRefresh));
@@ -67,15 +75,14 @@ export const NavigationContainer = () => {
 			workspace.on("vertical-tabs:update-toggle", updateToggles)
 		);
 		plugin.registerEvent(
+			workspace.on("vertical-tabs:ephemeral-tabs-init", () => {
+				initEphemeralTabs(app, ephemeralCountCallback);
+			})
+		);
+		plugin.registerEvent(
 			workspace.on("vertical-tabs:ephemeral-tabs", (enabled) => {
-				if (enabled) {
-					installTabHeaderHandlers(app);
-					const nonEphemeralTabs =
-						useViewState.getState().nonEphemeralTabs;
-					initNonEphemeralTabs(app, nonEphemeralTabs);
-				} else {
-					uninstallTabHeaderHandlers(app);
-				}
+				if (enabled) installTabHeaderHandlers(app);
+				else uninstallTabHeaderHandlers(app);
 			})
 		);
 		plugin.registerEvent(

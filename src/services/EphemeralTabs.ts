@@ -1,4 +1,7 @@
 import { App, MarkdownFileInfo, MarkdownView, WorkspaceLeaf } from "obsidian";
+import { iterateRootOrFloatingLeaves } from "./GetTabs";
+import { useViewState } from "src/models/ViewState";
+import { useSettings } from "src/models/PluginContext";
 
 export function makeLeafNonEphemeralByID(app: App, leafID: string) {
 	const leaf = app.workspace.getLeafById(leafID);
@@ -6,7 +9,7 @@ export function makeLeafNonEphemeralByID(app: App, leafID: string) {
 	makeLeafNonEphemeral(leaf);
 }
 
-export function initNonEphemeralTabs(app: App, leafIDs: string[]) {
+export function makeTabsNonEphemeralByList(app: App, leafIDs: string[]) {
 	leafIDs.forEach((leafID) => {
 		makeLeafNonEphemeralByID(app, leafID);
 	});
@@ -53,4 +56,21 @@ export function uninstallTabHeaderHandlers(app: App) {
 	app.workspace.iterateRootLeaves((leaf) => {
 		uninstallTabHeaderHandlerForLeaf(leaf);
 	});
+}
+
+export function countEphemeralTabs(app: App): number {
+	let count = 0;
+	iterateRootOrFloatingLeaves(app, (leaf) => {
+		if (leaf.isEphemeral) count++;
+	});
+	return count;
+}
+
+export function initEphemeralTabs(app: App, callback: (count: number) => void) {
+	if (!useSettings.getState().ephemeralTabs) return;
+	const nonEphemeralTabs = useViewState.getState().nonEphemeralTabs;
+	makeTabsNonEphemeralByList(app, nonEphemeralTabs);
+	installTabHeaderHandlers(app);
+	const count = countEphemeralTabs(app);
+	callback(count);
 }
