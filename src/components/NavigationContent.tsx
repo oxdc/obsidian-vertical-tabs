@@ -12,7 +12,7 @@ import {
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
-import { useApp } from "src/models/PluginContext";
+import { useApp, useSettings } from "src/models/PluginContext";
 import { useState } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
 import { SortableContext } from "@dnd-kit/sortable";
@@ -21,6 +21,8 @@ import { moveTab, moveTabToEnd, moveTabToNewGroup } from "src/services/MoveTab";
 import { TabSlot } from "./TabSlot";
 import { GroupSlot } from "./GroupSlot";
 import { Identifier } from "src/models/VTWorkspace";
+import { WorkspaceLeaf } from "obsidian";
+import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
 
 export const NavigationContent = () => {
 	const { groupIDs, content, swapGroup, moveGroupToEnd } = useTabCache();
@@ -40,7 +42,7 @@ export const NavigationContent = () => {
 		const isActiveTab = (active.data.current as any).isTab;
 		setIsDraggingGroup(!isActiveTab);
 	};
-	const handleDragEnd = (event: DragEndEvent) => {
+	const handleDragEnd = async (event: DragEndEvent) => {
 		setIsDragging(false);
 		setIsDraggingGroup(false);
 		const { active, over } = event;
@@ -51,18 +53,22 @@ export const NavigationContent = () => {
 		const isOverTab = (over.data.current as any).isTab;
 
 		if (isActiveTab) {
+			let movedTab : WorkspaceLeaf | null = null;
 			if (isOverTab) {
-				moveTab(app, activeID, overID);
+				movedTab = moveTab(app, activeID, overID);
 			} else {
 				const groupID = overID.startsWith("slot")
 					? overID.slice(5)
 					: overID;
 				if (groupID === "new") {
-					moveTabToNewGroup(app, activeID);
+					movedTab = await moveTabToNewGroup(app, activeID);
 				} else {
 					const parent = content.get(groupID).group;
-					if (parent) moveTabToEnd(app, activeID, parent);
+					if (parent) movedTab = moveTabToEnd(app, activeID, parent);
 				}
+			}
+			if (movedTab && useSettings.getState().ephemeralTabs) {
+				makeLeafNonEphemeral(movedTab);
 			}
 		} else {
 			if (isOverTab) {

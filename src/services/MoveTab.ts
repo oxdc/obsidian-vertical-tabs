@@ -37,12 +37,12 @@ export function moveTab(
 	app: App,
 	sourceID: Identifier,
 	targetID: Identifier | null
-) {
-	if (!targetID) return;
-	if (sourceID === targetID) return;
+): WorkspaceLeaf | null {
+	if (!targetID) return null;
+	if (sourceID === targetID) return null;
 	const sourceLeaf = app.workspace.getLeafById(sourceID);
 	const targetLeaf = app.workspace.getLeafById(targetID);
-	if (!sourceLeaf || !targetLeaf) return;
+	if (!sourceLeaf || !targetLeaf) return null;
 	const sourceParent = sourceLeaf.parent;
 	const targetParent = targetLeaf.parent;
 	const sourceIndex = sourceParent.children.indexOf(sourceLeaf);
@@ -54,25 +54,30 @@ export function moveTab(
 	removeChild(sourceParent, sourceIndex);
 	insertChild(targetParent, sourceLeaf, insertIndex);
 	app.workspace.onLayoutChange();
+	return sourceLeaf;
 }
 
 export function moveTabToEnd(
 	app: App,
 	sourceID: Identifier,
 	targetParent: WorkspaceParent
-) {
+): WorkspaceLeaf | null {
 	const sourceLeaf = app.workspace.getLeafById(sourceID);
-	if (!sourceLeaf) return;
+	if (!sourceLeaf) return null;
 	const sourceParent = sourceLeaf.parent;
 	const sourceIndex = sourceParent.children.indexOf(sourceLeaf);
 	removeChild(sourceParent, sourceIndex);
 	insertChild(targetParent, sourceLeaf);
 	app.workspace.onLayoutChange();
+	return sourceLeaf;
 }
 
-export async function moveTabToNewGroup(app: App, sourceID: Identifier) {
+export async function moveTabToNewGroup(
+	app: App,
+	sourceID: Identifier
+): Promise<WorkspaceLeaf | null> {
 	const sourceLeaf = app.workspace.getLeafById(sourceID);
-	if (!sourceLeaf) return;
+	if (!sourceLeaf) return null;
 	const sourceParent = sourceLeaf.parent;
 	const height = sourceParent.containerEl.clientHeight;
 	const width = sourceParent.containerEl.clientWidth;
