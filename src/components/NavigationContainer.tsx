@@ -15,9 +15,11 @@ import {
 	initNonEphemeralTabs,
 	installTabHeaderHandlers,
 	makeLeafEphemeralOnEditorChange,
+	makeLeafNonEphemeral,
 	uninstallTabHeaderHandlers,
 } from "src/services/EphemeralTabs";
 import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
+import { iterateRootOrFloatingLeaves } from "src/services/GetTabs";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
@@ -120,6 +122,16 @@ export const NavigationContainer = () => {
 			callback: () => {
 				const view = workspace.getActiveViewOfType(ItemView);
 				if (view) resetZoom(view);
+			},
+		});
+		plugin.addCommand({
+			id: "set-all-tabs-nonephemeral",
+			name: "Set all tabs non-ephemeral",
+			callback: () => {
+				if (!useSettings.getState().ephemeralTabs) return;
+				iterateRootOrFloatingLeaves(app, (leaf) =>
+					makeLeafNonEphemeral(leaf)
+				);
 			},
 		});
 	}, []);

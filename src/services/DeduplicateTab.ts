@@ -1,15 +1,6 @@
 import { App, FileView, TFile, WorkspaceLeaf } from "obsidian";
 import { loadDeferredLeaf } from "./LoadDeferredLeaf";
-
-function iterateRootOrFloatingLeaves(
-	app: App,
-	callback: (leaf: WorkspaceLeaf) => void
-) {
-	const workspace = app.workspace;
-	const { rootSplit, floatingSplit } = workspace;
-	workspace.iterateLeaves(rootSplit, callback);
-	workspace.iterateLeaves(floatingSplit, callback);
-}
+import { iterateRootOrFloatingLeaves } from "./GetTabs";
 
 export function deduplicateTab(
 	app: App,

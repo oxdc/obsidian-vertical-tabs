@@ -32,3 +32,13 @@ export function getTabs(app: App): TabCache {
 	});
 	return content;
 }
+
+export function iterateRootOrFloatingLeaves(
+	app: App,
+	callback: (leaf: WorkspaceLeaf) => void
+) {
+	const workspace = app.workspace;
+	const { rootSplit, floatingSplit } = workspace;
+	workspace.iterateLeaves(rootSplit, callback);
+	workspace.iterateLeaves(floatingSplit, callback);
+}
