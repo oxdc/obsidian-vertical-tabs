@@ -203,13 +203,14 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					toggle
 						.setValue(this.plugin.settings.ephemeralTabs)
 						.onChange(async (value) => {
-							useSettings
-								.getState()
-								.setSettings({ ephemeralTabs: value });
+							useSettings.getState().setSettings({
+								ephemeralTabs: value,
+								autoCloseEphemeralTabs: true,
+							});
 							this.app.workspace.trigger(
 								"vertical-tabs:ephemeral-tabs",
 								value,
-								this.plugin.settings.autoCloseEphemeralTabs
+								true
 							);
 							this.app.workspace.trigger(
 								value
@@ -223,7 +224,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			if (this.plugin.settings.ephemeralTabs) {
 				new Setting(containerEl)
 					.setName("Auto close ephemeral tabs")
-					.setDesc("Close inactive ephemeral tabs automatically.")
+					.setDesc("Close inactive ephemeral tabs automatically and merge their history.")
 					.addToggle((toggle) => {
 						toggle
 							.setValue(
@@ -250,9 +251,10 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				toggle
 					.setValue(this.plugin.settings.deduplicateTabs)
 					.onChange(async (value) => {
-						useSettings
-							.getState()
-							.setSettings({ deduplicateTabs: value });
+						useSettings.getState().setSettings({
+							deduplicateTabs: value,
+							deduplicateSidebarTabs: false,
+						});
 						if (value) {
 							this.app.workspace.trigger(
 								"vertical-tabs:deduplicate-tabs"
