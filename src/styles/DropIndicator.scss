@@ -37,7 +37,9 @@
 				background: var(--interactive-accent);
 			}
 
-			background: hsla(var(--interactive-accent-hsl), 0.1);
+			& {
+				background: hsla(var(--interactive-accent-hsl), 0.1);
+			}
 		}
 	}
 }

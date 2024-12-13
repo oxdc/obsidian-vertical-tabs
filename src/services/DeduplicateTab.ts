@@ -1,6 +1,29 @@
 import { App, FileView, TFile, WorkspaceLeaf } from "obsidian";
 import { loadDeferredLeaf } from "./LoadDeferredLeaf";
 import { iterateRootOrFloatingLeaves } from "./GetTabs";
+import { useSettings } from "src/models/PluginContext";
+
+const EXCLUSION_LIST = new Set([
+	"file-explorer",
+	"search",
+	"bookmarks",
+	"tag",
+	"backlink",
+	"outgoing-link",
+	"outline",
+	"file-properties",
+	"sync",
+	"all-properties",
+]);
+
+function iterateTabs(
+	app: App,
+	includeSidebar = false,
+	callback: (leaf: WorkspaceLeaf) => void
+) {
+	if (includeSidebar) app.workspace.iterateAllLeaves(callback);
+	else iterateRootOrFloatingLeaves(app, callback);
+}
 
 export function deduplicateTab(
 	app: App,
@@ -9,7 +32,10 @@ export function deduplicateTab(
 ): WorkspaceLeaf | null {
 	if (!file) return null;
 	const targetLeaves: WorkspaceLeaf[] = [];
-	iterateRootOrFloatingLeaves(app, (leaf) => {
+	const includeSidebar = useSettings.getState().deduplicateSidebarTabs;
+	iterateTabs(app, includeSidebar, (leaf) => {
+		const viewType = leaf.view.getViewType();
+		if (EXCLUSION_LIST.has(viewType)) return;
 		if (leaf.view instanceof FileView && leaf.view.file === file) {
 			targetLeaves.push(leaf);
 		} else if (leaf.getViewState().state?.file === file.path) {

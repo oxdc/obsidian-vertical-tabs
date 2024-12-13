@@ -138,6 +138,27 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				break;
 		}
 
+		if (this.plugin.settings.deduplicateTabs) {
+			new Setting(containerEl)
+				.setName("Deduplicate sidebar tabs")
+				.setDesc(
+					"Prevent reopening sidebar tabs in the main workspace."
+				)
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.deduplicateSidebarTabs)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setSettings({ deduplicateSidebarTabs: value });
+							if (value)
+								this.app.workspace.trigger(
+									"vertical-tabs:deduplicate-tabs"
+								);
+						});
+				});
+		}
+
 		containerEl.createDiv({ cls: "vt-support" }).innerHTML = `
 			<div class="title">Enjoying Vertical Tabs?</div>
 			<div class="buttons">
@@ -238,6 +259,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 								"vertical-tabs:deduplicate-tabs"
 							);
 						}
+						this.display();
 					});
 			});
 	}

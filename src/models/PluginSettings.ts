@@ -13,6 +13,8 @@ interface ObsidianVerticalTabsSettings {
 	ephemeralTabs: boolean;
 	smartNavigation: boolean;
 	navigationStrategy: TabNavigationStrategy;
+	autoCloseEphemeralTabs: boolean;
+	deduplicateSidebarTabs: boolean;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -28,6 +30,8 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	ephemeralTabs: false,
 	smartNavigation: true,
 	navigationStrategy: TabNavigationStrategy.ObsidianPlus,
+	autoCloseEphemeralTabs: true,
+	deduplicateSidebarTabs: false,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;
