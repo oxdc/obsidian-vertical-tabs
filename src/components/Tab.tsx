@@ -204,7 +204,7 @@ export const Tab = ({ leaf }: TabProps) => {
 			submenu.addItem((item) => {
 				item.setTitle(DeduplicatedTitle(app, leaf)).setChecked(true);
 			});
-			forwardHistory.forEach((state, index) => {
+			forwardHistory.slice().reverse().forEach((state, index) => {
 				submenu.addItem((item) => {
 					item.setTitle(state.title).setChecked(false);
 					item.onClick(() => leaf.history.go(index + 1));

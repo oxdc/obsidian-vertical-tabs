@@ -112,7 +112,7 @@ export function mergeHistory(from: WorkspaceLeaf[], to: WorkspaceLeaf) {
 			...acc,
 			...leaf.history.backHistory,
 			leaf.getHistoryState(),
-			...leaf.history.forwardHistory.reverse(),
+			...leaf.history.forwardHistory.slice().reverse()
 		];
 	}, []);
 	to.history.backHistory = [...mergedHistory, ...to.history.backHistory];
