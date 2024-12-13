@@ -121,7 +121,10 @@ export const Tab = ({ leaf }: TabProps) => {
 	menu.addItem((item) => {
 		item.setSection("close")
 			.setTitle("Close Others")
-			.onClick(() => closeOthersInGroup(app, leaf));
+			.onClick(() => {
+				closeOthersInGroup(app, leaf);
+				makeLeafNonEphemeral(leaf);
+			});
 	});
 	menu.addItem((item) => {
 		item.setSection("close")
