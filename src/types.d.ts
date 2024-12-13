@@ -32,7 +32,7 @@ declare module "obsidian" {
 		): EventRef;
 		on(
 			name: "vertical-tabs:ephemeral-tabs",
-			callback: (enabled: boolean) => void
+			callback: (enabled: boolean, autoClose: boolean) => void
 		): EventRef;
 		on(
 			name: "vertical-tabs:deduplicate-tabs",
@@ -79,6 +79,7 @@ declare module "obsidian" {
 		tabHeaderInnerTitleEl?: HTMLElement;
 		isVisible: () => boolean;
 		canNavigate(): boolean;
+		getHistoryState: () => HistoryState;
 		history: {
 			backHistory: HistoryState[];
 			forwardHistory: HistoryState[];

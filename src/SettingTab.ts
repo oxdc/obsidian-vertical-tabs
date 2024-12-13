@@ -138,27 +138,6 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				break;
 		}
 
-		if (this.plugin.settings.deduplicateTabs) {
-			new Setting(containerEl)
-				.setName("Deduplicate sidebar tabs")
-				.setDesc(
-					"Prevent reopening sidebar tabs in the main workspace."
-				)
-				.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.deduplicateSidebarTabs)
-						.onChange(async (value) => {
-							useSettings
-								.getState()
-								.setSettings({ deduplicateSidebarTabs: value });
-							if (value)
-								this.app.workspace.trigger(
-									"vertical-tabs:deduplicate-tabs"
-								);
-						});
-				});
-		}
-
 		containerEl.createDiv({ cls: "vt-support" }).innerHTML = `
 			<div class="title">Enjoying Vertical Tabs?</div>
 			<div class="buttons">
@@ -229,19 +208,39 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 								.setSettings({ ephemeralTabs: value });
 							this.app.workspace.trigger(
 								"vertical-tabs:ephemeral-tabs",
-								value
+								value,
+								this.plugin.settings.autoCloseEphemeralTabs
 							);
-							if (value) {
-								this.app.workspace.trigger(
-									"vertical-tabs:ephemeral-tabs-init"
-								);
-							} else {
-								this.app.workspace.trigger(
-									"vertical-tabs:ephemeral-tabs-deinit"
-								);
-							}
+							this.app.workspace.trigger(
+								value
+									? "vertical-tabs:ephemeral-tabs-init"
+									: "vertical-tabs:ephemeral-tabs-deinit"
+							);
+							this.display();
 						});
 				});
+
+			if (this.plugin.settings.ephemeralTabs) {
+				new Setting(containerEl)
+					.setName("Auto close ephemeral tabs")
+					.setDesc("Close inactive ephemeral tabs automatically.")
+					.addToggle((toggle) => {
+						toggle
+							.setValue(
+								this.plugin.settings.autoCloseEphemeralTabs
+							)
+							.onChange(async (value) => {
+								useSettings.getState().setSettings({
+									autoCloseEphemeralTabs: value,
+								});
+								this.app.workspace.trigger(
+									"vertical-tabs:ephemeral-tabs",
+									true,
+									value
+								);
+							});
+					});
+			}
 		}
 
 		new Setting(containerEl)
@@ -262,5 +261,26 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 						this.display();
 					});
 			});
+
+		if (this.plugin.settings.deduplicateTabs) {
+			new Setting(containerEl)
+				.setName("Deduplicate sidebar tabs")
+				.setDesc(
+					"Prevent reopening sidebar tabs in the main workspace."
+				)
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.deduplicateSidebarTabs)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setSettings({ deduplicateSidebarTabs: value });
+							if (value)
+								this.app.workspace.trigger(
+									"vertical-tabs:deduplicate-tabs"
+								);
+						});
+				});
+		}
 	}
 }

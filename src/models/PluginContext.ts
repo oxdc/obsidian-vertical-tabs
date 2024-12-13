@@ -82,10 +82,11 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			}
 		},
 		updateEphemeralTabs(app: App) {
-			const { ephemeralTabs } = get();
+			const { ephemeralTabs, autoCloseEphemeralTabs } = get();
 			app.workspace.trigger(
 				"vertical-tabs:ephemeral-tabs",
-				ephemeralTabs
+				ephemeralTabs,
+				autoCloseEphemeralTabs
 			);
 		},
 		setTabNavigationStrategy(app: App, name: string) {
@@ -96,7 +97,9 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 						navigationStrategy: strategy,
 						alwaysOpenInNewTab: false,
 						deduplicateTabs: false,
+						deduplicateSidebarTabs: false,
 						ephemeralTabs: false,
+						autoCloseEphemeralTabs: false,
 						smartNavigation: false,
 					});
 					break;
@@ -105,7 +108,9 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 						navigationStrategy: strategy,
 						alwaysOpenInNewTab: false,
 						deduplicateTabs: false,
+						deduplicateSidebarTabs: false,
 						ephemeralTabs: false,
+						autoCloseEphemeralTabs: false,
 						smartNavigation: true,
 					});
 					break;
@@ -114,7 +119,9 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 						navigationStrategy: strategy,
 						alwaysOpenInNewTab: false,
 						deduplicateTabs: true,
+						deduplicateSidebarTabs: false,
 						ephemeralTabs: true,
+						autoCloseEphemeralTabs: true,
 						smartNavigation: true,
 					});
 					break;
@@ -123,7 +130,9 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 						navigationStrategy: strategy,
 						alwaysOpenInNewTab: false,
 						deduplicateTabs: false,
+						deduplicateSidebarTabs: false,
 						ephemeralTabs: true,
+						autoCloseEphemeralTabs: true,
 						smartNavigation: false,
 					});
 					break;
@@ -132,7 +141,9 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 						navigationStrategy: strategy,
 						alwaysOpenInNewTab: false,
 						deduplicateTabs: true,
+						deduplicateSidebarTabs: false,
 						ephemeralTabs: false,
+						autoCloseEphemeralTabs: false,
 						smartNavigation: true,
 					});
 					break;
@@ -141,7 +152,9 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 						navigationStrategy: strategy,
 						alwaysOpenInNewTab: true,
 						deduplicateTabs: false,
+						deduplicateSidebarTabs: false,
 						ephemeralTabs: false,
+						autoCloseEphemeralTabs: false,
 						smartNavigation: false,
 					});
 					break;
@@ -150,18 +163,22 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 						navigationStrategy: strategy,
 						alwaysOpenInNewTab: false,
 						deduplicateTabs: false,
+						deduplicateSidebarTabs: false,
 						ephemeralTabs: false,
+						autoCloseEphemeralTabs: false,
 						smartNavigation: true,
 					});
 					break;
 			}
-			const { deduplicateTabs, ephemeralTabs } = get();
+			const { deduplicateTabs, ephemeralTabs, autoCloseEphemeralTabs } =
+				get();
 			if (deduplicateTabs) {
 				app.workspace.trigger("vertical-tabs:deduplicate-tabs");
 			}
 			app.workspace.trigger(
 				"vertical-tabs:ephemeral-tabs",
-				ephemeralTabs
+				ephemeralTabs,
+				autoCloseEphemeralTabs
 			);
 			if (ephemeralTabs) {
 				app.workspace.trigger("vertical-tabs:ephemeral-tabs-init");

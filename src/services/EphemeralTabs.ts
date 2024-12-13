@@ -1,4 +1,10 @@
-import { App, MarkdownFileInfo, MarkdownView, WorkspaceLeaf } from "obsidian";
+import {
+	App,
+	MarkdownFileInfo,
+	MarkdownView,
+	WorkspaceLeaf,
+	WorkspaceParent,
+} from "obsidian";
 import { iterateRootOrFloatingLeaves } from "./GetTabs";
 import { useViewState } from "src/models/ViewState";
 import { useSettings } from "src/models/PluginContext";
@@ -49,13 +55,13 @@ export function uninstallTabHeaderHandlerForLeaf(leaf: WorkspaceLeaf) {
 }
 
 export function installTabHeaderHandlers(app: App) {
-	app.workspace.iterateRootLeaves((leaf) => {
+	iterateRootOrFloatingLeaves(app, (leaf) => {
 		installTabHeaderHandlerForLeaf(leaf);
 	});
 }
 
 export function uninstallTabHeaderHandlers(app: App) {
-	app.workspace.iterateRootLeaves((leaf) => {
+	iterateRootOrFloatingLeaves(app, (leaf) => {
 		uninstallTabHeaderHandlerForLeaf(leaf);
 	});
 }
@@ -98,4 +104,43 @@ export function initEphemeralTabs(app: App) {
 		makeTabNonEphemeralAutomatically(app);
 	}
 	installTabHeaderHandlers(app);
+}
+
+export function mergeHistory(from: WorkspaceLeaf[], to: WorkspaceLeaf) {
+	const mergedHistory = from.reduce((acc, leaf) => {
+		return [
+			...acc,
+			...leaf.history.backHistory,
+			leaf.getHistoryState(),
+			...leaf.history.forwardHistory.reverse(),
+		];
+	}, []);
+	to.history.backHistory = [...mergedHistory, ...to.history.backHistory];
+}
+
+export function autoCloseOldEphemeralTabsForGroup(group: WorkspaceParent) {
+	const ephemeralTabs = group.children.filter((child) => child.isEphemeral);
+	if (ephemeralTabs.length <= 1) return;
+	const activeTimes = ephemeralTabs.map((tab) => tab.activeTime);
+	const latestActiveTime = Math.max(...activeTimes);
+	if (latestActiveTime <= 0) {
+		const lastEphemeralTab = ephemeralTabs.pop();
+		if (!lastEphemeralTab) return;
+		mergeHistory(ephemeralTabs, lastEphemeralTab);
+		ephemeralTabs.forEach((tab) => tab.detach());
+	} else {
+		const sortedEphemeralTabs = ephemeralTabs.sort(
+			(a, b) => a.activeTime - b.activeTime
+		);
+		const lastEphemeralTab = sortedEphemeralTabs.pop();
+		if (!lastEphemeralTab) return;
+		mergeHistory(sortedEphemeralTabs, lastEphemeralTab);
+		sortedEphemeralTabs.forEach((tab) => tab.detach());
+	}
+}
+
+export function autoCloseOldEphemeralTabs(app: App) {
+	const groups = new Set<WorkspaceParent>();
+	iterateRootOrFloatingLeaves(app, (leaf) => groups.add(leaf.parent));
+	groups.forEach((group) => autoCloseOldEphemeralTabsForGroup(group));
 }
