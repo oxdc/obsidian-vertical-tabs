@@ -97,10 +97,14 @@ export function makeTabNonEphemeralAutomatically(app: App) {
 }
 
 export function initEphemeralTabs(app: App) {
-	if (!useSettings.getState().ephemeralTabs) return;
+	const { ephemeralTabs, autoCloseEphemeralTabs } = useSettings.getState();
+	if (!ephemeralTabs) return;
 	// We try to recover the saved state
 	const nonEphemeralTabs = useViewState.getState().nonEphemeralTabs;
 	if (nonEphemeralTabs.length > 0) {
+		// If auto close is enabled, we prefer only one ephemeral tab per group
+		if (autoCloseEphemeralTabs) makeTabNonEphemeralAutomatically(app);
+		// Then we recover the saved state
 		makeTabsNonEphemeralByList(app, nonEphemeralTabs);
 	} else {
 		// if we dont have that information, use a heuristic
