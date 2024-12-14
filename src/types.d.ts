@@ -151,6 +151,16 @@ declare module "obsidian" {
 				};
 			};
 		};
+		plugins: {
+			enabledPlugins: Set<string>;
+			plugins: {
+				"obsidian-hover-editor": {
+					activePopovers: {
+						rootSplit?: WorkspaceSplit;
+					}[];
+				};
+			};
+		};
 	}
 
 	interface Menu {

@@ -2,6 +2,7 @@ import { App, FileView, TFile, WorkspaceLeaf } from "obsidian";
 import { loadDeferredLeaf } from "./LoadDeferredLeaf";
 import { iterateRootOrFloatingLeaves } from "./GetTabs";
 import { useSettings } from "src/models/PluginContext";
+import { getLeaveIDsControlledByHoverEditor } from "./HoverEditorTabs";
 
 const EXCLUSION_LIST = new Set([
 	"file-explorer",
@@ -33,7 +34,9 @@ export function deduplicateTab(
 	if (!file) return null;
 	const targetLeaves: WorkspaceLeaf[] = [];
 	const includeSidebar = useSettings.getState().deduplicateSidebarTabs;
+	const skipLeaves = getLeaveIDsControlledByHoverEditor(app);
 	iterateTabs(app, includeSidebar, (leaf) => {
+		if (skipLeaves.includes(leaf.id)) return;
 		const viewType = leaf.view.getViewType();
 		if (EXCLUSION_LIST.has(viewType)) return;
 		if (leaf.view instanceof FileView && leaf.view.file === file) {

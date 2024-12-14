@@ -9,6 +9,7 @@ import { iterateRootOrFloatingLeaves, iterateSidebarLeaves } from "./GetTabs";
 import { useViewState } from "src/models/ViewState";
 import { useSettings } from "src/models/PluginContext";
 import { Identifier } from "src/models/VTWorkspace";
+import { iterateLeavesControlledByHoverEditor } from "./HoverEditorTabs";
 
 export function makeLeafNonEphemeralByID(app: App, leafID: string) {
 	const leaf = app.workspace.getLeafById(leafID);
@@ -59,6 +60,9 @@ export function installTabHeaderHandlers(app: App) {
 		installTabHeaderHandlerForLeaf(leaf);
 	});
 	iterateSidebarLeaves(app, (leaf) => {
+		makeLeafNonEphemeral(leaf);
+	});
+	iterateLeavesControlledByHoverEditor(app, (leaf) => {
 		makeLeafNonEphemeral(leaf);
 	});
 }
