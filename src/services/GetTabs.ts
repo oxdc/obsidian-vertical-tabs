@@ -42,3 +42,13 @@ export function iterateRootOrFloatingLeaves(
 	workspace.iterateLeaves(rootSplit, callback);
 	workspace.iterateLeaves(floatingSplit, callback);
 }
+
+export function iterateSidebarLeaves(
+	app: App,
+	callback: (leaf: WorkspaceLeaf) => void
+) {
+	const workspace = app.workspace;
+	const { leftSplit, rightSplit } = workspace;
+	workspace.iterateLeaves(leftSplit, callback);
+	workspace.iterateLeaves(rightSplit, callback);
+}

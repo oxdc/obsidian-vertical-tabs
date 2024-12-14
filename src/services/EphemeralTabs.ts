@@ -5,7 +5,7 @@ import {
 	WorkspaceLeaf,
 	WorkspaceParent,
 } from "obsidian";
-import { iterateRootOrFloatingLeaves } from "./GetTabs";
+import { iterateRootOrFloatingLeaves, iterateSidebarLeaves } from "./GetTabs";
 import { useViewState } from "src/models/ViewState";
 import { useSettings } from "src/models/PluginContext";
 import { Identifier } from "src/models/VTWorkspace";
@@ -57,6 +57,9 @@ export function uninstallTabHeaderHandlerForLeaf(leaf: WorkspaceLeaf) {
 export function installTabHeaderHandlers(app: App) {
 	iterateRootOrFloatingLeaves(app, (leaf) => {
 		installTabHeaderHandlerForLeaf(leaf);
+	});
+	iterateSidebarLeaves(app, (leaf) => {
+		makeLeafNonEphemeral(leaf);
 	});
 }
 
@@ -112,7 +115,7 @@ export function mergeHistory(from: WorkspaceLeaf[], to: WorkspaceLeaf) {
 			...acc,
 			...leaf.history.backHistory,
 			leaf.getHistoryState(),
-			...leaf.history.forwardHistory.slice().reverse()
+			...leaf.history.forwardHistory.slice().reverse(),
 		];
 	}, []);
 	to.history.backHistory = [...mergedHistory, ...to.history.backHistory];
