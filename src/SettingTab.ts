@@ -216,16 +216,16 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 								ephemeralTabs: value,
 								autoCloseEphemeralTabs: true,
 							});
-							this.app.workspace.trigger(
-								"vertical-tabs:ephemeral-tabs",
-								value,
-								true
-							);
-							this.app.workspace.trigger(
-								value
-									? "vertical-tabs:ephemeral-tabs-init"
-									: "vertical-tabs:ephemeral-tabs-deinit"
-							);
+							if (value) {
+								this.app.workspace.trigger(
+									"vertical-tabs:ephemeral-tabs-init",
+									true
+								);
+							} else {
+								this.app.workspace.trigger(
+									"vertical-tabs:ephemeral-tabs-deinit"
+								);
+							}
 							this.display();
 						});
 				});
@@ -246,7 +246,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 									autoCloseEphemeralTabs: value,
 								});
 								this.app.workspace.trigger(
-									"vertical-tabs:ephemeral-tabs",
+									"vertical-tabs:ephemeral-tabs-update",
 									true,
 									value
 								);

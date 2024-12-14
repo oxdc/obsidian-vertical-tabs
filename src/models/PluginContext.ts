@@ -85,7 +85,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 		updateEphemeralTabs(app: App) {
 			const { ephemeralTabs, autoCloseEphemeralTabs } = get();
 			app.workspace.trigger(
-				"vertical-tabs:ephemeral-tabs",
+				"vertical-tabs:ephemeral-tabs-update",
 				ephemeralTabs,
 				autoCloseEphemeralTabs
 			);
@@ -176,13 +176,11 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			if (deduplicateTabs) {
 				app.workspace.trigger("vertical-tabs:deduplicate-tabs");
 			}
-			app.workspace.trigger(
-				"vertical-tabs:ephemeral-tabs",
-				ephemeralTabs,
-				autoCloseEphemeralTabs
-			);
 			if (ephemeralTabs) {
-				app.workspace.trigger("vertical-tabs:ephemeral-tabs-init");
+				app.workspace.trigger(
+					"vertical-tabs:ephemeral-tabs-init",
+					autoCloseEphemeralTabs
+				);
 			} else {
 				app.workspace.trigger("vertical-tabs:ephemeral-tabs-deinit");
 			}

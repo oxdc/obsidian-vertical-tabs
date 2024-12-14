@@ -69,18 +69,21 @@ export const NavigationContainer = () => {
 			workspace.on("vertical-tabs:update-toggle", updateToggles)
 		);
 		plugin.registerEvent(
-			workspace.on("vertical-tabs:ephemeral-tabs-init", () =>
-				initEphemeralTabs(app)
-			)
+			workspace.on("vertical-tabs:ephemeral-tabs-init", (autoClose) => {
+				initEphemeralTabs(app);
+				installTabHeaderHandlers(app);
+				if (autoClose) autoCloseOldEphemeralTabs(app);
+			})
 		);
 		plugin.registerEvent(
-			workspace.on("vertical-tabs:ephemeral-tabs-deinit", () =>
-				forgetNonephemeralTabs()
-			)
+			workspace.on("vertical-tabs:ephemeral-tabs-deinit", () => {
+				forgetNonephemeralTabs();
+				uninstallTabHeaderHandlers(app);
+			})
 		);
 		plugin.registerEvent(
 			workspace.on(
-				"vertical-tabs:ephemeral-tabs",
+				"vertical-tabs:ephemeral-tabs-update",
 				(enabled, autoClose) => {
 					if (enabled) {
 						installTabHeaderHandlers(app);
