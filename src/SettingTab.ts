@@ -93,44 +93,53 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			case TabNavigationStrategy.Obsidian:
 				containerEl.createDiv({
 					cls: "vt-setting-description",
-					text:
-						"Use the default navigation strategy of Obsidian. " +
-						"When working with multiple tab groups, " +
-						"new tabs may appear in unexpected locations.",
+					text: `
+						Use the default navigation strategy of Obsidian.
+						When working with multiple tab groups, 
+						new tabs may appear in unexpected locations.
+					`,
 				});
 				break;
 			case TabNavigationStrategy.ObsidianPlus:
 				containerEl.createDiv({
 					cls: "vt-setting-description",
-					text:
-						"Use enhanced navigation strategy implemented by Vertical Tabs. " +
-						"New tabs will be opened in a consistent and intuitive manner.",
+					text: `
+						Use enhanced navigation strategy implemented by Vertical Tabs. 
+						New tabs will be opened in a consistent and intuitive manner.
+					`,
 				});
 				break;
 			case TabNavigationStrategy.IDE:
 				containerEl.createDiv({
 					cls: "vt-setting-description",
-					text:
-						"Use IDE-like navigation strategy. " +
-						"Recommended for users familiar with VSCode, Xcode, or other IDEs.",
+					text: `
+						Use IDE-like navigation strategy. 
+						Recommended for users familiar with VSCode, Xcode, or other IDEs.
+					`,
 				});
 				break;
 			case TabNavigationStrategy.Explorer:
 				containerEl.createDiv({
 					cls: "vt-setting-description",
-					text: "Explorer mode uses ephemeral tabs to avoid opening too many tabs.",
+					text: `
+						Explorer mode uses ephemeral tabs to avoid opening too many tabs.
+					`,
 				});
 				break;
 			case TabNavigationStrategy.Notebook:
 				containerEl.createDiv({
 					cls: "vt-setting-description",
-					text: "Notebook mode ensures consistent navigation behavior while avoiding duplication.",
+					text: `
+						Notebook mode ensures consistent navigation behavior while avoiding duplication.
+					`,
 				});
 				break;
 			case TabNavigationStrategy.PreferNewTab:
 				containerEl.createDiv({
 					cls: "vt-setting-description",
-					text: "Always open the new note in a new tab.",
+					text: `
+						Always open the new note in a new tab.
+					`,
 				});
 				break;
 			case TabNavigationStrategy.Custom:
@@ -224,7 +233,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			if (this.plugin.settings.ephemeralTabs) {
 				new Setting(containerEl)
 					.setName("Auto close ephemeral tabs")
-					.setDesc("Close inactive ephemeral tabs automatically and merge their history.")
+					.setDesc(
+						"Close inactive ephemeral tabs automatically and merge their history."
+					)
 					.addToggle((toggle) => {
 						toggle
 							.setValue(
