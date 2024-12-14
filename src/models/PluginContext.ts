@@ -44,6 +44,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			set({ plugin });
 			await plugin.loadData();
 			const settings = plugin.settings;
+			plugin.saveSettings();
 			set(settings);
 		},
 		setSettings: (mutator: SettingsMutator) => {
