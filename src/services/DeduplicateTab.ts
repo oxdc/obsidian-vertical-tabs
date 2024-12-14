@@ -6,6 +6,7 @@ import {
 	getLeaveIDsControlledByHoverEditor,
 	isHoverEditorEnabled,
 } from "./HoverEditorTabs";
+import { makeLeafNonEphemeral } from "./EphemeralTabs";
 
 const EXCLUSION_LIST = new Set([
 	"file-explorer",
@@ -49,12 +50,23 @@ export function deduplicateTab(
 		}
 	});
 	const sortedLeaves = targetLeaves.sort(
-		(leaf, another) => leaf.activeTime - another.activeTime
+		(a, b) => b.activeTime - a.activeTime
 	);
-	const leafToKeep = sortedLeaves.first();
+	const latestOldLeaf = sortedLeaves
+		.filter((leaf) => leaf.activeTime > 0)
+		.last();
+	const leafToKeep = sortedLeaves.pop();
 	if (!leafToKeep) return null;
-	const leavesToClose = sortedLeaves.slice(1);
-	leavesToClose.forEach((leaf) => leaf.detach());
+	// We don't close the newly created leaf, otherwise Obsidian will try to unload partially loaded view.
+	// We therefore treat the newly created leaf as the oldest leaf, whose active time (0) is the smallest.
+	// But we migrate the ephemeral status and history to it.
+	if (latestOldLeaf && latestOldLeaf.id != leafToKeep.id) {
+		if (!latestOldLeaf.isEphemeral) makeLeafNonEphemeral(leafToKeep);
+		const { backHistory, forwardHistory } = latestOldLeaf.history;
+		leafToKeep.history.backHistory = backHistory;
+		leafToKeep.history.forwardHistory = forwardHistory;
+	}
+	sortedLeaves.forEach((leaf) => leaf.detach());
 	loadDeferredLeaf(leafToKeep);
 	// If Hover Editor is enabled, we let Hover Editor take care of the focus.
 	// Otherwise, Hover Editor will be closed when we set the focus.
