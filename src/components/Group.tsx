@@ -32,24 +32,24 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	const hideSidebars = useSettings((state) => state.hideSidebars);
 	const isSingleGroup =
 		hasOnlyOneGroup() && hideSidebars && !isSidebar && !!group;
-	const globalCollpaseState = useViewState(
-		(state) => state.globalCollapseState
-	);
-	const [isCollapsed, setIsCollapsed] = useState(
-		isSidebar ? true : globalCollpaseState
-	);
-
-	useEffect(() => {
-		if (isSidebar) return;
-		setIsCollapsed(globalCollpaseState);
-	}, [globalCollpaseState]);
-
+	const { toggleCollapsedGroup } = useViewState();
+	const isCollapsed = useViewState((state) => {
+		if (group === null) return false;
+		const { collapsedGroups } = state;
+		const collapsed = collapsedGroups.includes(group.id);
+		return collapsed || (isSidebar && collapsedGroups.includes(type));
+	});
 	const { groupTitles, setGroupTitle, toggleHiddenGroup } = useViewState();
 	const isHidden = useViewState((state) =>
 		group ? state.hiddenGroups.includes(group.id) : false
 	);
 	const [isEditing, setIsEditing] = useState(false);
-	const toggleCollapsed = () => setIsCollapsed(!isCollapsed);
+	const toggleCollapsed = () => {
+		if (group) {
+			const modifiedID = isSidebar ? type : group.id;
+			toggleCollapsedGroup(modifiedID, !isCollapsed);
+		}
+	};
 	const toggleHidden = () => {
 		if (isSidebar) return;
 		if (group) toggleHiddenGroup(group.id, !isHidden);

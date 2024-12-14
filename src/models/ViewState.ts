@@ -24,6 +24,7 @@ import {
 	insertRightSidebarToggle,
 } from "src/services/SidebarToggles";
 import { Identifier } from "./VTWorkspace";
+import { useTabCache } from "./TabCache";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -45,6 +46,7 @@ export const createNewEphermalToggleEvents = () =>
 interface ViewState {
 	groupTitles: GroupTitles;
 	hiddenGroups: Array<Identifier>;
+	collapsedGroups: Array<Identifier>;
 	nonEphemeralTabs: Array<Identifier>;
 	latestActiveLeaf: WorkspaceLeaf | null;
 	pinningEvents: PinningEvents;
@@ -52,6 +54,7 @@ interface ViewState {
 	globalCollapseState: boolean;
 	clear: () => void;
 	setGroupTitle: (id: Identifier, name: string) => void;
+	toggleCollapsedGroup: (id: Identifier, isCollapsed: boolean) => void;
 	toggleHiddenGroup: (id: Identifier, isHidden: boolean) => void;
 	rememberNonephemeralTab: (app: App, id: Identifier) => void;
 	forgetNonephemeralTabs: () => void;
@@ -119,6 +122,16 @@ const loadHiddenGroups = (): Array<Identifier> => {
 	return JSON.parse(data);
 };
 
+const saveCollapsedGroups = (collapsedGroups: Array<Identifier>) => {
+	localStorage.setItem("collapsed-groups", JSON.stringify(collapsedGroups));
+};
+
+const loadCollapsedGroups = (): Array<Identifier> => {
+	const data = localStorage.getItem("collapsed-groups");
+	if (!data) return [];
+	return JSON.parse(data);
+};
+
 const saveNonEphemeralTabs = (tabs: Array<Identifier>) => {
 	localStorage.setItem("nonephemeral-tabs", JSON.stringify(Array.from(tabs)));
 };
@@ -163,6 +176,7 @@ const getCornerContainers = (tabContainers: Array<Element>) => {
 export const useViewState = create<ViewState>()((set, get) => ({
 	groupTitles: loadViewState() ?? createNewGroupTitles(),
 	hiddenGroups: loadHiddenGroups(),
+	collapsedGroups: loadCollapsedGroups(),
 	nonEphemeralTabs: loadNonEphemeralTabs(),
 	latestActiveLeaf: null,
 	pinningEvents: createNewPinningEvents(),
@@ -189,6 +203,20 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			}));
 		}
 		saveHiddenGroups(get().hiddenGroups);
+	},
+	toggleCollapsedGroup: (id: Identifier, isCollapsed: boolean) => {
+		if (isCollapsed) {
+			set((state) => ({
+				collapsedGroups: [...state.collapsedGroups, id],
+			}));
+		} else {
+			set((state) => ({
+				collapsedGroups: state.collapsedGroups.filter(
+					(gid) => gid !== id
+				),
+			}));
+		}
+		saveCollapsedGroups(get().collapsedGroups);
 	},
 	rememberNonephemeralTab(app: App, id: Identifier) {
 		const { nonEphemeralTabs } = get();
@@ -395,10 +423,13 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		}
 	},
 	setAllCollapsed() {
-		set({ globalCollapseState: true });
+		const ids = useTabCache.getState().groupIDs;
+		set({ globalCollapseState: true, collapsedGroups: ids });
+		saveCollapsedGroups(ids);
 	},
 	setAllExpanded() {
-		set({ globalCollapseState: false });
+		set({ globalCollapseState: false, collapsedGroups: [] });
+		saveCollapsedGroups([]);
 	},
 	executeSmartNavigation(
 		app: App,
@@ -407,7 +438,10 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	) {
 		const root = target.getRoot();
 		// If the target is in the sidebar, it is not navigatable
-		if (root === app.workspace.leftSplit || root === app.workspace.rightSplit)
+		if (
+			root === app.workspace.leftSplit ||
+			root === app.workspace.rightSplit
+		)
 			return false;
 		const { latestActiveLeaf } = get();
 		// If we do not know the latest active leaf, use the default handler
