@@ -125,16 +125,28 @@ export function autoCloseOldEphemeralTabsForGroup(group: WorkspaceParent) {
 	const ephemeralTabs = group.children.filter((child) => child.isEphemeral);
 	if (ephemeralTabs.length <= 1) return;
 	const activeTimes = ephemeralTabs.map((tab) => tab.activeTime);
+	const earliestActiveTime = Math.min(...activeTimes);
 	const latestActiveTime = Math.max(...activeTimes);
-	if (latestActiveTime <= 0) {
+	// If both are non-positive, all tabs are new or not fully loaded.
+	// We sort the tabs by their index, assuming that the last tab is the most recent one.
+	if (latestActiveTime <= 0 && earliestActiveTime <= 0) {
 		const lastEphemeralTab = ephemeralTabs.pop();
 		if (!lastEphemeralTab) return;
 		mergeHistory(ephemeralTabs, lastEphemeralTab);
 		ephemeralTabs.forEach((tab) => tab.detach());
 	} else {
-		const sortedEphemeralTabs = ephemeralTabs.sort(
-			(a, b) => a.activeTime - b.activeTime
-		);
+		// If we have active times, we sort the tabs as follows:
+		// First, we assume the tabs with non-positive active time are new, i.e., the latest active ones.
+		// Second, we sort the tabs by their active time, with the latest active tab being the last one.
+		// Third, for tabs with the same active time, we sort them by their index.
+		const sortedEphemeralTabs = ephemeralTabs.sort((a, b) => {
+			if (a.activeTime <= 0) return 1;
+			if (b.activeTime <= 0) return -1;
+			if (a.activeTime === b.activeTime) {
+				return group.children.indexOf(a) - group.children.indexOf(b);
+			}
+			return a.activeTime - b.activeTime;
+		});
 		const lastEphemeralTab = sortedEphemeralTabs.pop();
 		if (!lastEphemeralTab) return;
 		mergeHistory(sortedEphemeralTabs, lastEphemeralTab);
