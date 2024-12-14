@@ -2,7 +2,10 @@ import { App, FileView, TFile, WorkspaceLeaf } from "obsidian";
 import { loadDeferredLeaf } from "./LoadDeferredLeaf";
 import { iterateRootOrFloatingLeaves } from "./GetTabs";
 import { useSettings } from "src/models/PluginContext";
-import { getLeaveIDsControlledByHoverEditor } from "./HoverEditorTabs";
+import {
+	getLeaveIDsControlledByHoverEditor,
+	isHoverEditorEnabled,
+} from "./HoverEditorTabs";
 
 const EXCLUSION_LIST = new Set([
 	"file-explorer",
@@ -53,7 +56,9 @@ export function deduplicateTab(
 	const leavesToClose = sortedLeaves.slice(1);
 	leavesToClose.forEach((leaf) => leaf.detach());
 	loadDeferredLeaf(leafToKeep);
-	if (focus) {
+	// If Hover Editor is enabled, we let Hover Editor take care of the focus.
+	// Otherwise, Hover Editor will be closed when we set the focus.
+	if (focus && !isHoverEditorEnabled(app)) {
 		app.workspace.setActiveLeaf(leafToKeep, { focus: true });
 		return leafToKeep;
 	}
