@@ -48,8 +48,13 @@ export const Tab = ({ leaf }: TabProps) => {
 	const enableTabZoom = useSettings((state) => state.enableTabZoom);
 	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
 
+	const changePinnedState = (pinned: boolean) => {
+		setIsPinned(pinned);
+		if (pinned && leaf.isEphemeral) makeLeafNonEphemeral(leaf);
+	};
+
 	useEffect(() => {
-		bindPinningEvent(leaf, setIsPinned);
+		bindPinningEvent(leaf, changePinnedState);
 		bindEphemeralToggleEvent(app, leaf, (isEphemeral) => {
 			setIsEphemeral(isEphemeral);
 		});
@@ -57,13 +62,13 @@ export const Tab = ({ leaf }: TabProps) => {
 
 	const togglePinned = () => {
 		leaf.togglePinned();
-		setIsPinned(leaf.getViewState().pinned ?? false);
+		changePinnedState(leaf.getViewState().pinned ?? false);
 		sort();
 	};
 
 	const unPin = () => {
 		leaf.setPinned(false);
-		setIsPinned(false);
+		changePinnedState(false);
 		sort();
 	};
 
@@ -204,12 +209,15 @@ export const Tab = ({ leaf }: TabProps) => {
 			submenu.addItem((item) => {
 				item.setTitle(DeduplicatedTitle(app, leaf)).setChecked(true);
 			});
-			forwardHistory.slice().reverse().forEach((state, index) => {
-				submenu.addItem((item) => {
-					item.setTitle(state.title).setChecked(false);
-					item.onClick(() => leaf.history.go(index + 1));
+			forwardHistory
+				.slice()
+				.reverse()
+				.forEach((state, index) => {
+					submenu.addItem((item) => {
+						item.setTitle(state.title).setChecked(false);
+						item.onClick(() => leaf.history.go(index + 1));
+					});
 				});
-			});
 		});
 		const historyLength =
 			leaf.history.backHistory.length +
