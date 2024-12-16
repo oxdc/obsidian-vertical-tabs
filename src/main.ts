@@ -5,6 +5,7 @@ import { around } from "monkey-around";
 import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
 import { useViewState } from "./models/ViewState";
 import { ObsidianVerticalTabsSettingTab } from "./SettingTab";
+import { useSettings } from "./models/PluginContext";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -27,7 +28,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.addCommand({
 			id: "open-vertical-tabs",
 			name: "Open vertical tabs",
-			callback: () => this.openVerticalTabs(),
+			callback: () => {
+				this.openVerticalTabs();
+				useSettings.getState().toggleBackgroundMode(false);
+			},
 		});
 	}
 
@@ -69,6 +73,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.toggle("vt-zen-mode", this.settings.zenMode);
 		this.toggle("vt-enable-tab-zoom", this.settings.enableTabZoom);
 		this.toggle("vt-ephemeral-tabs", this.settings.ephemeralTabs);
+		this.toggle("vt-background-mode", this.settings.backgroundMode);
 	}
 
 	async patchViews() {

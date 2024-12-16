@@ -12,6 +12,14 @@ import { create } from "zustand";
 import { createSelectors } from "./Selectors";
 import { convertNameToStrategy, TabNavigationStrategy } from "./TabNavigation";
 
+function saveShowActiveTabs(showActiveTabs: boolean) {
+	localStorage.setItem("vt-show-active-tabs", showActiveTabs.toString());
+}
+
+function loadShowActiveTabs() {
+	return localStorage.getItem("vt-show-active-tabs") === "true";
+}
+
 export type SettingsContext = [Settings, (mutator: SettingsMutator) => void];
 
 export const PluginContext = createContext<ObsidianVerticalTabs | null>(null);
@@ -34,6 +42,7 @@ interface SettingsActions {
 	toggleZenMode: () => void;
 	updateEphemeralTabs: (app: App) => void;
 	setTabNavigationStrategy: (app: App, name: string) => void;
+	toggleBackgroundMode: (enable?: boolean) => void;
 }
 
 export const useSettingsBase = create<Settings & SettingsActions>(
@@ -71,14 +80,10 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 		toggleZenMode() {
 			const { zenMode, showActiveTabs } = get();
 			if (zenMode) {
-				const showActiveTabs =
-					localStorage.getItem("vt-show-active-tabs") === "true";
+				const showActiveTabs = loadShowActiveTabs();
 				get().setSettings({ zenMode: false, showActiveTabs });
 			} else {
-				localStorage.setItem(
-					"vt-show-active-tabs",
-					showActiveTabs.toString()
-				);
+				saveShowActiveTabs(showActiveTabs);
 				get().setSettings({ zenMode: true, showActiveTabs: true });
 			}
 		},
@@ -183,6 +188,21 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				);
 			} else {
 				app.workspace.trigger("vertical-tabs:ephemeral-tabs-deinit");
+			}
+		},
+		toggleBackgroundMode(enable?: boolean) {
+			const { backgroundMode, showActiveTabs } = get();
+			const toEnable = enable ?? !backgroundMode;
+			if (toEnable) {
+				saveShowActiveTabs(showActiveTabs);
+				get().setSettings({
+					backgroundMode: true,
+					showActiveTabs: false, // ensure access to all horizontal tabs
+					zenMode: false, // ensure access to all splits
+				});
+			} else {
+				const showActiveTabs = loadShowActiveTabs();
+				get().setSettings({ backgroundMode: false, showActiveTabs });
 			}
 		},
 	})

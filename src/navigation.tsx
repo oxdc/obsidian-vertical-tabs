@@ -16,6 +16,8 @@ export class NavigationView extends ItemView {
 		this.navigation = false;
 		this.plugin = plugin;
 		this.icon = "gallery-vertical";
+		this.leaf.containerEl?.addClass("obsidian-vertical-tabs-tab-content");
+		this.leaf.tabHeaderEl?.addClass("obsidian-vertical-tabs-tab-header");
 	}
 
 	getViewType() {

@@ -18,44 +18,67 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		new Setting(containerEl)
-			.setName("Show active tabs only")
-			.setDesc("Hide inactive horizontal tabs to make workspace cleaner.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.showActiveTabs)
-					.onChange(async (value) => {
-						useSettings
-							.getState()
-							.setSettings({ showActiveTabs: value });
-					});
+		if (this.plugin.settings.backgroundMode) {
+			const warning = containerEl.createDiv({
+				cls: "vt-background-mode-warning",
 			});
+			warning.appendText(`
+				* Warning: Background mode is enabled.
+				To see Vertical Tabs and access its core features,
+				you must first 
+			`);
+			const linkButton = warning.createEl("a", {
+				text: "disable",
+			});
+			linkButton.onclick = () => {
+				useSettings.getState().toggleBackgroundMode(false);
+				this.display();
+			};
+			warning.appendText(" it.");
+		}
 
-		new Setting(containerEl)
-			.setName("Hide sidebar tabs")
-			.setDesc("Don't show sidebar tabs in Vertical Tabs.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.hideSidebars)
-					.onChange(async (value) => {
-						useSettings
-							.getState()
-							.setSettings({ hideSidebars: value });
-					});
-			});
+		if (!this.plugin.settings.backgroundMode) {
+			new Setting(containerEl)
+				.setName("Show active tabs only")
+				.setDesc(
+					"Hide inactive horizontal tabs to make workspace cleaner."
+				)
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.showActiveTabs)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setSettings({ showActiveTabs: value });
+						});
+				});
 
-		new Setting(containerEl)
-			.setName("Trim tab names")
-			.setDesc("Use ellipsis to fit tab names on a single line.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.trimTabNames)
-					.onChange(async (value) => {
-						useSettings
-							.getState()
-							.setSettings({ trimTabNames: value });
-					});
-			});
+			new Setting(containerEl)
+				.setName("Hide sidebar tabs")
+				.setDesc("Don't show sidebar tabs in Vertical Tabs.")
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.hideSidebars)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setSettings({ hideSidebars: value });
+						});
+				});
+
+			new Setting(containerEl)
+				.setName("Trim tab names")
+				.setDesc("Use ellipsis to fit tab names on a single line.")
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.trimTabNames)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setSettings({ trimTabNames: value });
+						});
+				});
+		}
 
 		new Setting(containerEl)
 			.setName("Enable tab zoom")
@@ -92,7 +115,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		switch (this.plugin.settings.navigationStrategy) {
 			case TabNavigationStrategy.Obsidian:
 				containerEl.createDiv({
-					cls: "vt-setting-description",
+					cls: "vt-navigation-description",
 					text: `
 						Use the default navigation strategy of Obsidian.
 						When working with multiple tab groups, 
@@ -102,7 +125,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				break;
 			case TabNavigationStrategy.ObsidianPlus:
 				containerEl.createDiv({
-					cls: "vt-setting-description",
+					cls: "vt-navigation-description",
 					text: `
 						Use enhanced navigation strategy implemented by Vertical Tabs. 
 						New tabs will be opened in a consistent and intuitive manner.
@@ -111,7 +134,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				break;
 			case TabNavigationStrategy.IDE:
 				containerEl.createDiv({
-					cls: "vt-setting-description",
+					cls: "vt-navigation-description",
 					text: `
 						Use IDE-like navigation strategy. 
 						Recommended for users familiar with VSCode, Xcode, or other IDEs.
@@ -120,7 +143,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				break;
 			case TabNavigationStrategy.Explorer:
 				containerEl.createDiv({
-					cls: "vt-setting-description",
+					cls: "vt-navigation-description",
 					text: `
 						Explorer mode uses ephemeral tabs to avoid opening too many tabs.
 					`,
@@ -128,7 +151,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				break;
 			case TabNavigationStrategy.Notebook:
 				containerEl.createDiv({
-					cls: "vt-setting-description",
+					cls: "vt-navigation-description",
 					text: `
 						Notebook mode ensures consistent navigation behavior while avoiding duplication.
 					`,
@@ -136,7 +159,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				break;
 			case TabNavigationStrategy.PreferNewTab:
 				containerEl.createDiv({
-					cls: "vt-setting-description",
+					cls: "vt-navigation-description",
 					text: `
 						Always open the new note in a new tab.
 					`,
@@ -146,6 +169,23 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				this.displayCustomNavigationStrategy(containerEl);
 				break;
 		}
+
+		new Setting(containerEl).setName("Miscellaneous").setHeading();
+
+		new Setting(containerEl)
+			.setName("Background mode")
+			.setDesc(
+				`Enable to keep features like tab navigation without showing vertical tabs.
+				This will disable Zen Mode and reset your workspace to the default layout.`
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.backgroundMode)
+					.onChange(async () => {
+						useSettings.getState().toggleBackgroundMode();
+						this.display();
+					});
+			});
 
 		containerEl.createDiv({ cls: "vt-support" }).innerHTML = `
 			<div class="title">Enjoying Vertical Tabs?</div>

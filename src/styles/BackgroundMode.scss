@@ -1,0 +1,23 @@
+body.vt-background-mode {
+	.workspace-tab-header.obsidian-vertical-tabs-tab-header,
+	.workspace-leaf.obsidian-vertical-tabs-tab-content {
+		display: none !important;
+	}
+}
+
+.vt-background-mode-warning {
+	font-size: var(--font-ui-small);
+	color: var(--text-warning);
+	font-weight: bold;
+	padding-bottom: 0.4em;
+
+	& + .setting-item {
+		border-top: none !important;
+	}
+
+	a {
+		font-size: var(--font-ui-small);
+		color: var(--text-warning);
+		font-weight: bold;
+	}
+}
