@@ -11,6 +11,10 @@ import {
 import { create } from "zustand";
 import { createSelectors } from "./Selectors";
 import { convertNameToStrategy, TabNavigationStrategy } from "./TabNavigation";
+import {
+	moveSelfToDefaultLocation,
+	moveSelfToNewGroupAndHide,
+} from "src/services/MoveTab";
 
 function saveShowActiveTabs(showActiveTabs: boolean) {
 	localStorage.setItem("vt-show-active-tabs", showActiveTabs.toString());
@@ -42,7 +46,7 @@ interface SettingsActions {
 	toggleZenMode: () => void;
 	updateEphemeralTabs: (app: App) => void;
 	setTabNavigationStrategy: (app: App, name: string) => void;
-	toggleBackgroundMode: (enable?: boolean) => void;
+	toggleBackgroundMode: (app: App, enable?: boolean) => void;
 }
 
 export const useSettingsBase = create<Settings & SettingsActions>(
@@ -190,7 +194,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				app.workspace.trigger("vertical-tabs:ephemeral-tabs-deinit");
 			}
 		},
-		toggleBackgroundMode(enable?: boolean) {
+		toggleBackgroundMode(app: App, enable?: boolean) {
 			const { backgroundMode, showActiveTabs } = get();
 			const toEnable = enable ?? !backgroundMode;
 			if (toEnable) {
@@ -200,9 +204,11 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 					showActiveTabs: false, // ensure access to all horizontal tabs
 					zenMode: false, // ensure access to all splits
 				});
+				moveSelfToNewGroupAndHide(app);
 			} else {
 				const showActiveTabs = loadShowActiveTabs();
 				get().setSettings({ backgroundMode: false, showActiveTabs });
+				moveSelfToDefaultLocation(app);
 			}
 		},
 	})

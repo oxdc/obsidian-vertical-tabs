@@ -30,7 +30,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 			name: "Open vertical tabs",
 			callback: () => {
 				this.openVerticalTabs();
-				useSettings.getState().toggleBackgroundMode(false);
+				useSettings.getState().toggleBackgroundMode(this.app, false);
 			},
 		});
 	}

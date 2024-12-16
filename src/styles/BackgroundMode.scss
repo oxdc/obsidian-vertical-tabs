@@ -3,6 +3,18 @@ body.vt-background-mode {
 	.workspace-leaf.obsidian-vertical-tabs-tab-content {
 		display: none !important;
 	}
+
+	.workspace-split.mod-sidedock {
+		.workspace-tabs.is-hidden {
+			display: none !important;
+		}
+	}
+
+	.workspace-split.mod-root {
+		.workspace-tabs.is-hidden {
+			display: flex !important;
+		}
+	}
 }
 
 .vt-background-mode-warning {

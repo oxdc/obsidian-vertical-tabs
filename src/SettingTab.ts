@@ -31,7 +31,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				text: "disable",
 			});
 			linkButton.onclick = () => {
-				useSettings.getState().toggleBackgroundMode(false);
+				useSettings.getState().toggleBackgroundMode(this.app, false);
 				this.display();
 			};
 			warning.appendText(" it.");
@@ -182,7 +182,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				toggle
 					.setValue(this.plugin.settings.backgroundMode)
 					.onChange(async () => {
-						useSettings.getState().toggleBackgroundMode();
+						useSettings.getState().toggleBackgroundMode(this.app);
 						this.display();
 					});
 			});

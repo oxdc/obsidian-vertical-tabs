@@ -92,6 +92,15 @@ export async function moveTabToNewGroup(
 	return targetLeaf;
 }
 
+export async function moveSelfToNewGroupAndHide(app: App) {
+	const workspace = app.workspace;
+	const self = workspace.getLeavesOfType(VIEW_TYPE).first();
+	if (!self) return;
+	const newSelf = await moveTabToNewGroup(app, self.id);
+	if (!newSelf) return;
+	newSelf.parent.containerEl.addClass("is-hidden");
+}
+
 export function selfIsClosed(app: App) {
 	const workspace = app.workspace;
 	const self = workspace.getLeavesOfType(VIEW_TYPE).first();
