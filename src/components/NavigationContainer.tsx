@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useViewState } from "src/models/ViewState";
 import { debounce, ItemView } from "obsidian";
 import {
+	ensureSelfIsOpen,
 	moveSelfToDefaultLocation,
 	selfIsNotInTheSidebar,
 } from "src/services/MoveTab";
@@ -37,6 +38,7 @@ export const NavigationContainer = () => {
 
 	const autoRefresh = () => {
 		setLatestActiveLeaf(plugin);
+		ensureSelfIsOpen(plugin.app);
 		if (selfIsNotInTheSidebar(plugin.app)) {
 			moveSelfToDefaultLocation(plugin.app);
 		}

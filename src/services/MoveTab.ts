@@ -92,6 +92,19 @@ export async function moveTabToNewGroup(
 	return targetLeaf;
 }
 
+export function selfIsClosed(app: App) {
+	const workspace = app.workspace;
+	const self = workspace.getLeavesOfType(VIEW_TYPE).first();
+	return !self;
+}
+
+export function ensureSelfIsOpen(app: App) {
+	if (selfIsClosed(app)) {
+		const leaf = this.app.workspace.getLeftLeaf(false);
+		leaf.setViewState({ type: VIEW_TYPE, active: true });
+	}
+}
+
 export function selfIsNotInTheSidebar(app: App) {
 	const workspace = app.workspace;
 	const self = workspace.getLeavesOfType(VIEW_TYPE).first();
