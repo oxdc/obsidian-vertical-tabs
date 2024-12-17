@@ -29,13 +29,14 @@ body:
       - label: Android
       - label: iOS
       - label: iPadOS
-- type: input
+- type: textarea
   id: description
   attributes:
     label: Bug Description
     description: |-
       Please provide a clear and concise description of the bug. What is the expected behavior? What is the actual behavior?
-      Note: If English is not your first language, please consider use ChatGPT or similar AI tools to translate your text.
+      
+      **Note:** If English is not your first language, please consider use ChatGPT or similar AI tools to translate your text.
     placeholder: Describe the bug here...
   validations:
     required: true
@@ -54,6 +55,7 @@ body:
     label: Debug Information
     description: |-
       Please copy and paste Obsidian's Debug Information here. You may follow these steps:
+      
       1. Press `Ctrl+P` (or `Cmd+P` on macOS) to open the "Command palette". On mobile, you can pull down from the top of the screen to open the "Command palette".
       2. Type "Show debug info".
       3. Select the highlighted "Show debug info" option.
@@ -68,21 +70,24 @@ body:
     label: Can you reproduce the bug in the "Sandbox vault"?
     description: |-
       You can access the "Sandbox vault" by following these steps:
+      
       1. Press `Ctrl+P` (or `Cmd+P` on macOS) to open the "Command palette". On mobile, you can pull down from the top of the screen to open the "Command palette".
       2. Type "Open sandbox vault".
       3. Select the highlighted "Open sandbox vault" option.
+      
       In the "Sandbox vault", you can install the Vertical Tabs plugin and test if the bug can be reproduced.
     options:
       - "Yes"
       - "No"
   validations:
     required: true
-- type: markdown
+- type: textarea
+  id: screenshots
   attributes:
-    value: |
-      ### Screenshots
-      If applicable, add screenshots to help explain your problem.
-      You can drag and drop images here.
+    label: Screenshots
+    description: |-
+      If applicable, please provide screenshots or screen recordings that demonstrate the bug.
+    placeholder: Drag and drop your screenshots here...
 - type: textarea
   id: additional-info
   attributes:
