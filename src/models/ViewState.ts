@@ -23,7 +23,7 @@ import {
 	insertLeftSidebarToggle,
 	insertRightSidebarToggle,
 } from "src/services/SidebarToggles";
-import { Identifier } from "./VTWorkspace";
+import { getGroupType, GroupType, Identifier } from "./VTWorkspace";
 import { useTabCache } from "./TabCache";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
@@ -88,6 +88,7 @@ interface ViewState {
 	unbindEphemeralToggleEvent: (leaf: WorkspaceLeaf) => void;
 	setAllCollapsed: () => void;
 	setAllExpanded: () => void;
+	uncollapseActiveGroup: (app: App) => void;
 	executeSmartNavigation: (
 		app: App,
 		target: WorkspaceLeaf,
@@ -430,6 +431,18 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	setAllExpanded() {
 		set({ globalCollapseState: false, collapsedGroups: [] });
 		saveCollapsedGroups([]);
+	},
+	uncollapseActiveGroup(app: App) {
+		const { latestActiveLeaf } = get();
+		if (!latestActiveLeaf) return;
+		const group = latestActiveLeaf.parent;
+		if (!group) return;
+		const type = getGroupType(app, group);
+		const isSidebar =
+			type === GroupType.LeftSidebar || type === GroupType.RightSidebar;
+		if (isSidebar) return;
+		if (!group.id) return;
+		get().toggleCollapsedGroup(group.id, false);
 	},
 	executeSmartNavigation(
 		app: App,

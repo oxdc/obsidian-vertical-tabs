@@ -33,22 +33,23 @@ export const NavigationContainer = () => {
 		lockFocus,
 		lockFocusOnLeaf,
 		forgetNonephemeralTabs,
+		uncollapseActiveGroup,
 	} = useViewState();
 	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
 	const autoRefresh = () => {
 		setLatestActiveLeaf(plugin);
-		ensureSelfIsOpen(plugin.app);
-		if (selfIsNotInTheSidebar(plugin.app)) {
-			moveSelfToDefaultLocation(plugin.app);
+		ensureSelfIsOpen(app);
+		if (selfIsNotInTheSidebar(app)) {
+			moveSelfToDefaultLocation(app);
 		}
 		if (useSettings.getState().deduplicateTabs) {
 			app.workspace.trigger("vertical-tabs:deduplicate-tabs");
 		}
 		setTimeout(() => {
-			updateEphemeralTabs(plugin.app);
-			if (isSelfVisible(plugin.app)) {
-				refresh(plugin.app);
+			updateEphemeralTabs(app);
+			if (isSelfVisible(app)) {
+				refresh(app);
 				sort();
 			}
 		}, REFRESH_TIMEOUT);
@@ -56,16 +57,25 @@ export const NavigationContainer = () => {
 
 	const updateToggles = () => {
 		setTimeout(() => {
-			refreshToggleButtons(plugin.app);
+			refreshToggleButtons(app);
 		}, REFRESH_TIMEOUT);
 	};
 
+	const autoUncollapseGroup = () => {
+		if (useSettings.getState().autoUncollapseGroup && isSelfVisible(app)) {
+			uncollapseActiveGroup(app);
+		}
+	};
+
 	useEffect(() => {
-		const workspace = plugin.app.workspace;
+		const workspace = app.workspace;
 		loadSettings(plugin).then(() => initEphemeralTabs(app));
 		autoRefresh();
 		plugin.registerEvent(workspace.on("layout-change", autoRefresh));
 		plugin.registerEvent(workspace.on("active-leaf-change", autoRefresh));
+		plugin.registerEvent(
+			workspace.on("active-leaf-change", autoUncollapseGroup)
+		);
 		plugin.registerEvent(workspace.on("resize", debounce(updateToggles)));
 		plugin.registerEvent(
 			workspace.on("vertical-tabs:update-toggle", updateToggles)

@@ -54,6 +54,21 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				});
 
 			new Setting(containerEl)
+				.setName("Auto uncollapse active group")
+				.setDesc(
+					"Automatically uncollapse the active groups when switching tabs."
+				)
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.autoUncollapseGroup)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setSettings({ autoUncollapseGroup: value });
+						});
+				});
+
+			new Setting(containerEl)
 				.setName("Hide sidebar tabs")
 				.setDesc("Don't show sidebar tabs in Vertical Tabs.")
 				.addToggle((toggle) => {

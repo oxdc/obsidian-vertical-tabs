@@ -2,6 +2,7 @@ import { TabNavigationStrategy } from "./TabNavigation";
 
 interface ObsidianVerticalTabsSettings {
 	showActiveTabs: boolean;
+	autoUncollapseGroup: boolean;
 	hideSidebars: boolean;
 	sidebarTabTypes: string[] | null;
 	sidebarExcludeSelf: boolean;
@@ -20,6 +21,7 @@ interface ObsidianVerticalTabsSettings {
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	showActiveTabs: false,
+	autoUncollapseGroup: false,
 	hideSidebars: true,
 	sidebarTabTypes: ["markdown"],
 	sidebarExcludeSelf: true,
