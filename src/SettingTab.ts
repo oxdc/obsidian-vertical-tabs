@@ -93,6 +93,19 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 								.setSettings({ trimTabNames: value });
 						});
 				});
+
+			new Setting(containerEl)
+				.setName("Show more actions")
+				.setDesc("Show more control buttons in the toolbar.")
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.showMoreButtons)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setSettings({ showMoreButtons: value });
+						});
+				});
 		}
 
 		new Setting(containerEl)

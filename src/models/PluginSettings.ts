@@ -7,6 +7,7 @@ interface ObsidianVerticalTabsSettings {
 	sidebarTabTypes: string[] | null;
 	sidebarExcludeSelf: boolean;
 	trimTabNames: boolean;
+	showMoreButtons: boolean;
 	zenMode: boolean;
 	enableTabZoom: boolean;
 	alwaysOpenInNewTab: boolean;
@@ -26,6 +27,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	sidebarTabTypes: ["markdown"],
 	sidebarExcludeSelf: true,
 	trimTabNames: false,
+	showMoreButtons: false,
 	zenMode: false,
 	enableTabZoom: false,
 	alwaysOpenInNewTab: false,

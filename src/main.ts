@@ -70,6 +70,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.toggle("vt-show-active-tabs", this.settings.showActiveTabs);
 		this.toggle("vt-exclude-self", this.settings.sidebarExcludeSelf);
 		this.toggle("vt-trim-tab-names", this.settings.trimTabNames);
+		this.toggle("vt-show-more-buttons", this.settings.showMoreButtons);
 		this.toggle("vt-zen-mode", this.settings.zenMode);
 		this.toggle("vt-enable-tab-zoom", this.settings.enableTabZoom);
 		this.toggle("vt-ephemeral-tabs", this.settings.ephemeralTabs);

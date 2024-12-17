@@ -1,0 +1,10 @@
+body:not(.vt-show-more-buttons) {
+	.obsidian-vertical-tabs-toolbar {
+		.nav-action-button {
+			&[data-action="toggle-tab"],
+			&[data-action="toggle-sidebar"] {
+				display: none;
+			}
+		}
+	}
+}

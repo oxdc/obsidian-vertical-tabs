@@ -6,6 +6,9 @@ import { useViewState } from "src/models/ViewState";
 
 export const NavigationHeader = () => {
 	const plugin = usePlugin();
+	const { setSettings } = useSettings();
+	const showActiveTabs = useSettings.use.showActiveTabs();
+	const hideSidebars = useSettings.use.hideSidebars();
 	const zenMode = useSettings.use.zenMode();
 	const toggleZenMode = useSettings.use.toggleZenMode();
 	const sortStrategy = useTabCache((state) => state.sortStrategy);
@@ -14,6 +17,12 @@ export const NavigationHeader = () => {
 	const globalCollapseState = useViewState(
 		(state) => state.globalCollapseState
 	);
+	const { uncollapseActiveGroup } = useViewState();
+
+	const toggleTabVisibility = () =>
+		setSettings({ showActiveTabs: !showActiveTabs });
+	const toggleSidebarVisibility = () =>
+		setSettings({ hideSidebars: !hideSidebars });
 
 	const toggleZenModeAndLockFocus = () => {
 		toggleZenMode();
@@ -60,8 +69,31 @@ export const NavigationHeader = () => {
 	});
 
 	return (
-		<div className="nav-header">
+		<div className="nav-header obsidian-vertical-tabs-toolbar">
 			<div className="nav-buttons-container">
+				<IconButton
+					icon="app-window"
+					action="toggle-tab"
+					tooltip="Show active tabs only"
+					onClick={toggleTabVisibility}
+					isActive={showActiveTabs}
+					isNavAction={true}
+				/>
+				<IconButton
+					icon="panel-left"
+					action="toggle-sidebar"
+					tooltip="Hide sidebars"
+					onClick={toggleSidebarVisibility}
+					isActive={hideSidebars}
+					isNavAction={true}
+				/>
+				<IconButton
+					icon="crosshair"
+					action="reveal-tab"
+					tooltip="Reveal active tab"
+					onClick={() => uncollapseActiveGroup(plugin.app)}
+					isNavAction={true}
+				/>
 				<IconButton
 					icon="arrow-up-narrow-wide"
 					action="sort-tabs"
