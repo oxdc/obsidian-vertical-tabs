@@ -67,7 +67,7 @@ body:
 - type: dropdown
   id: sandbox
   attributes:
-    label: Can you reproduce the bug in the "Sandbox vault"? Please skip this for mobile platforms.
+    label: Can you reproduce the bug in the "Sandbox vault"? Please skip this for mobile platforms by selecting "Not applicable".
     description: |-
       You can access the "Sandbox vault" by following these steps:
       
@@ -79,6 +79,7 @@ body:
     options:
       - "Yes"
       - "No"
+      - "Not applicable"
   validations:
     required: true
 - type: textarea

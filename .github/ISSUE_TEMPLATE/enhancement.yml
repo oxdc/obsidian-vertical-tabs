@@ -1,5 +1,5 @@
 name: Enhancement
-description: I want to suggest an improvement for Vertical Tabs. For new features, please create a new "Ideas" discussion in the Discussions tab.
+description: I want to suggest an improvement for Vertical Tabs. For new features, please create a new "Idea" discussion in the "Discussions" tab.
 labels:
   - enhancement
 projects:
@@ -26,6 +26,8 @@ body:
       - "Design"
       - "Capability with other plugins"
       - "Other"
+  validations:
+    required: true
 - type: textarea
   id: description
   attributes:
