@@ -1,0 +1,62 @@
+name: Enhancement
+description: I want to suggest an improvement for Vertical Tabs. For new features, please create a new "Ideas" discussion in the Discussions tab.
+labels:
+  - enhancement
+projects:
+  - Obsidian Vertical Tabs
+body:
+- type: checkboxes
+  id: checklist
+  attributes:
+    label: Enhancement Checklist
+    options:
+      - label: I have searched existing issues and this is not a duplicate
+        required: true
+      - label: I am reporting a simple enhancement or improvement, not new features
+        required: true
+- type: dropdown
+  id: type
+  attributes:
+    label: Enhancement Type
+    description: Please select the type of enhancement you are suggesting.
+    options:
+      - "Usability"
+      - "Performance"
+      - "Accessibility"
+      - "Design"
+      - "Capability with other plugins"
+      - "Other"
+- type: textarea
+  id: description
+  attributes:
+    label: Enhancement Description
+    description: |-
+      Please provide a clear and concise description of the enhancement you are suggesting. What do you want to achieve?
+      
+      **Note:** If English is not your first language, please consider use ChatGPT or similar AI tools to translate your text.
+    placeholder: Describe the enhancement here...
+  validations:
+    required: true
+- type: textarea
+  id: motivation
+  attributes:
+    label: Motivation
+    description: |-
+      Please explain why this enhancement is important. How does it benefit the users of Vertical Tabs?
+      
+      The best way to describe this is to show your own use case. What have you tried to do that you couldn't because of the current limitations? Why is this important to you?
+    placeholder: Explain the motivation here...
+  validations:
+    required: true
+- type: textarea
+  id: alternatives
+  attributes:
+    label: Alternatives
+    description: If you have considered any alternative solutions or workarounds, please describe them here.
+    placeholder: Describe alternatives here...
+- type: textarea
+  id: additional-info
+  attributes:
+    label: Additional Information
+    description: Please provide any additional information that you think would be helpful for the maintainers to understand your suggestion. You can include screenshots, mockups, or any other relevant information.
+    placeholder: Provide additional information here...

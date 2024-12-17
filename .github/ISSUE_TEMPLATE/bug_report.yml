@@ -67,11 +67,11 @@ body:
 - type: dropdown
   id: sandbox
   attributes:
-    label: Can you reproduce the bug in the "Sandbox vault"?
+    label: Can you reproduce the bug in the "Sandbox vault"? Please skip this for mobile platforms.
     description: |-
       You can access the "Sandbox vault" by following these steps:
       
-      1. Press `Ctrl+P` (or `Cmd+P` on macOS) to open the "Command palette". On mobile, you can pull down from the top of the screen to open the "Command palette".
+      1. Press `Ctrl+P` (or `Cmd+P` on macOS) to open the "Command palette".
       2. Type "Open sandbox vault".
       3. Select the highlighted "Open sandbox vault" option.
       
