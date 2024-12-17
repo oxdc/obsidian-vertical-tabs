@@ -215,6 +215,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 				collapsedGroups: state.collapsedGroups.filter(
 					(gid) => gid !== id
 				),
+				globalCollapseState: false,
 			}));
 		}
 		saveCollapsedGroups(get().collapsedGroups);
@@ -443,6 +444,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		if (isSidebar) return;
 		if (!group.id) return;
 		get().toggleCollapsedGroup(group.id, false);
+		set({ globalCollapseState: false });
 	},
 	executeSmartNavigation(
 		app: App,
