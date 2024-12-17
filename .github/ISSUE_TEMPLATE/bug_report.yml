@@ -1,0 +1,92 @@
+name: Bug Report
+description: I want to report something that is not working as expected in Vertical Tabs.
+labels:
+  - bug
+projects:
+  - Obsidian Vertical Tabs
+body:
+- type: checkboxes
+  id: checklist
+  attributes:
+    label: Bug Report Checklist
+    options:
+      - label: I have searched existing issues and this is not a duplicate
+        required: true
+      - label: I have updated to the latest version of the plugin
+        required: true
+      - label: I have disabled all other plugins and themes to ensure the issue is with Vertical Tabs
+        required: true
+      - label: I have restarted Obsidian after disabling other plugins and themes, and the issue persists
+        required: true
+- type: checkboxes
+  id: environment
+  attributes:
+    label: Environment
+    options:
+      - label: Windows
+      - label: macOS
+      - label: Linux
+      - label: Android
+      - label: iOS
+      - label: iPadOS
+- type: input
+  id: description
+  attributes:
+    label: Bug Description
+    description: |-
+      Please provide a clear and concise description of the bug. What is the expected behavior? What is the actual behavior?
+      Note: If English is not your first language, please consider use ChatGPT or similar AI tools to translate your text.
+    placeholder: Describe the bug here...
+  validations:
+    required: true
+- type: textarea
+  id: reproduction
+  attributes:
+    label: Steps to Reproduce
+    description: |-
+      Please provide detailed steps to reproduce the bug. Please make sure you didn't miss or skip any steps.
+    placeholder: 1. Open Obsidian
+  validations:
+    required: true
+- type: textarea
+  id: debug-info
+  attributes:
+    label: Debug Information
+    description: |-
+      Please copy and paste Obsidian's Debug Information here. You may follow these steps:
+      1. Press `Ctrl+P` (or `Cmd+P` on macOS) to open the "Command palette". On mobile, you can pull down from the top of the screen to open the "Command palette".
+      2. Type "Show debug info".
+      3. Select the highlighted "Show debug info" option.
+      4. Click "Copy to clipboard".
+      5. Paste the copied text here.
+    placeholder: Paste the debug information here...
+  validations:
+    required: true
+- type: dropdown
+  id: sandbox
+  attributes:
+    label: Can you reproduce the bug in the "Sandbox vault"?
+    description: |-
+      You can access the "Sandbox vault" by following these steps:
+      1. Press `Ctrl+P` (or `Cmd+P` on macOS) to open the "Command palette". On mobile, you can pull down from the top of the screen to open the "Command palette".
+      2. Type "Open sandbox vault".
+      3. Select the highlighted "Open sandbox vault" option.
+      In the "Sandbox vault", you can install the Vertical Tabs plugin and test if the bug can be reproduced.
+    options:
+      - "Yes"
+      - "No"
+  validations:
+    required: true
+- type: markdown
+  attributes:
+    value: |
+      ### Screenshots
+      If applicable, add screenshots to help explain your problem.
+      You can drag and drop images here.
+- type: textarea
+  id: additional-info
+  attributes:
+    label: Additional Information
+    description: |-
+      Please provide any additional information that you think might be helpful in solving the bug.
+    placeholder: Add any additional information here...
