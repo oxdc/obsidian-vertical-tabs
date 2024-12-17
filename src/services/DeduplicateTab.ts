@@ -71,7 +71,7 @@ export function deduplicateTab(
 	// If Hover Editor is enabled, we let Hover Editor take care of the focus.
 	// Otherwise, Hover Editor will be closed when we set the focus.
 	if (focus && !isHoverEditorEnabled(app)) {
-		app.workspace.setActiveLeaf(leafToKeep, { focus: true });
+		app.workspace.setActiveLeaf(leafToKeep, { focus: false });
 		return leafToKeep;
 	}
 	return null;
