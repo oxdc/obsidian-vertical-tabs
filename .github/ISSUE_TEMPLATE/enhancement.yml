@@ -3,7 +3,7 @@ description: I want to suggest an improvement for Vertical Tabs. For new feature
 labels:
   - enhancement
 projects:
-  - Obsidian Vertical Tabs
+  - oxdc/1
 body:
 - type: checkboxes
   id: checklist
@@ -53,12 +53,12 @@ body:
 - type: textarea
   id: alternatives
   attributes:
-    label: Alternatives
+    label: Alternatives (Optional)
     description: If you have considered any alternative solutions or workarounds, please describe them here.
     placeholder: Describe alternatives here...
 - type: textarea
   id: additional-info
   attributes:
-    label: Additional Information
+    label: Additional Information (Optional)
     description: Please provide any additional information that you think would be helpful for the maintainers to understand your suggestion. You can include screenshots, mockups, or any other relevant information.
     placeholder: Provide additional information here...
