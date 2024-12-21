@@ -36,6 +36,8 @@ body.vt-zen-mode:not(.is-popout-window) .workspace-split.mod-root {
 
 	.workspace-tabs > .workspace-tab-header-container {
 		.workspace-tab-header {
+			container-type: unset;  // fix tab width from Obsidian 1.8.0
+
 			&.is-active {
 				max-width: unset;
 				width: unset;
