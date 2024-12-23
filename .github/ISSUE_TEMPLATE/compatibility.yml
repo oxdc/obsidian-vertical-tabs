@@ -30,6 +30,7 @@ body:
     label: Compatibility Issue Type
     description: Please select the type of compatibility issue you are facing.
     options:
+      - "--- Select an option ---"
       - "Conflict"
       - "Feature Request"
       - "Performance Issue"
@@ -60,7 +61,7 @@ body:
     description: |-
       Please confirm whether the plugin you’re experiencing compatibility issues with meets the following requirements. Due to limited time and resources, I can only provide support for plugins that fulfill these criteria:
     options:
-      - label: The plugin is actively maintained, with ongoing updates in the past three months, including issues, commits, pull requests, and releases.
+      - label: The plugin is actively maintained, with ongoing updates in the past three months, including issues, commits, pull requests, and releases
         required: true
       - label: The plugin is compatible with the latest version of Obsidian
         required: true

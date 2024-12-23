@@ -24,6 +24,7 @@ body:
     label: Enhancement Type
     description: Please select the type of enhancement you are suggesting.
     options:
+      - "--- Select an option ---"
       - "Usability"
       - "Performance"
       - "Accessibility"
