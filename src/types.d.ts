@@ -172,10 +172,14 @@ declare module "obsidian" {
 		section?: string;
 	}
 
-	interface Webview extends ItemView {
+	interface WebviewView extends ItemView {
 		toggleReaderMode: () => void;
+		saveAsMarkdown: () => Promise<TFile | null>;
 		zoomIn: () => void;
 		zoomOut: () => void;
 		zoomReset: () => void;
+		webview: {
+			addEventListener: (type: string, listener: unknown) => void;
+		};
 	}
 }

@@ -3,7 +3,7 @@ import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useState } from "react";
 import { usePlugin, useSettings } from "src/models/PluginContext";
-import { Menu, Platform, Webview, WorkspaceLeaf } from "obsidian";
+import { Menu, Platform, WebviewView, WorkspaceLeaf } from "obsidian";
 import {
 	closeOthersInGroup,
 	closeTabsToBottomInGroup,
@@ -47,6 +47,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 	const enableTabZoom = useSettings((state) => state.enableTabZoom);
 	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
+	const [title, setTitle] = useState(DeduplicatedTitle(app, leaf));
 	const isWebViewer = leaf.view.getViewType() === "webviewer";
 
 	const changePinnedState = (pinned: boolean) => {
@@ -309,13 +310,25 @@ export const Tab = ({ leaf }: TabProps) => {
 			});
 		});
 	}
-	if (isWebViewer) {
-		const webview = leaf.view as Webview;
+	if (Platform.isDesktop && isWebViewer) {
+		const webview = leaf.view as WebviewView;
+		webview.webview.addEventListener(
+			"page-title-updated",
+			(title: { title: string }) => setTitle(title.title)
+		);
 		menu.addSeparator();
 		menu.addItem((item) => {
 			item.setSection("webview")
 				.setTitle("Toggle reader mode")
 				.onClick(() => webview.toggleReaderMode());
+		});
+		menu.addItem((item) => {
+			item.setSection("webview")
+				.setTitle("Save to vault")
+				.onClick(async () => {
+					const file = await webview.saveAsMarkdown();
+					if (file) workspace.getLeaf("tab").openFile(file);
+				});
 		});
 		menu.addSeparator();
 		menu.addItem((item) => {
@@ -370,7 +383,6 @@ export const Tab = ({ leaf }: TabProps) => {
 	);
 
 	const props = {
-		title: DeduplicatedTitle(app, leaf),
 		icon: leaf.getIcon(),
 		isActive: leaf.tabHeaderEl?.classList.contains("is-active"),
 	};
@@ -385,6 +397,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	return (
 		<NavigationTreeItem
 			id={leaf.id}
+			title={title}
 			isTab={true}
 			isEphemeralTab={isEphemeral && !isPinned}
 			isPinned={isPinned}
