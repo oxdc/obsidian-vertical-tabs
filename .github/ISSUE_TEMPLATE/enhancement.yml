@@ -12,7 +12,11 @@ body:
     options:
       - label: I have searched existing issues and this is not a duplicate
         required: true
-      - label: I am reporting a simple enhancement or improvement, not new features
+      - label: I am reporting a simple enhancement or improvement within Vertical Tabs, not requesting new features or addressing compatibility issues with other plugins
+        required: true
+      - label: I understand that proposals for new features should be discussed in the ‘Discussions’ tab
+        required: true
+      - label: I understand that compatibility issues with other plugins should be posted as a ‘Compatibility’ issue
         required: true
 - type: dropdown
   id: type
@@ -24,7 +28,6 @@ body:
       - "Performance"
       - "Accessibility"
       - "Design"
-      - "Capability with other plugins"
       - "Other"
   validations:
     required: true

@@ -1,0 +1,111 @@
+name: Compatibility With Other Plugins
+description: I want to report a compatibility issue between Vertical Tabs and another community plugin.
+labels:
+  - compatibility
+projects:
+  - oxdc/1
+body:
+- type: checkboxes
+  id: checklist
+  attributes:
+    label: Compatibility Checklist
+    options:
+      - label: I am reporting a compatibility issue between Vertical Tabs and another community plugin
+        required: true
+      - label: I have searched existing issues of both plugins and this is not a duplicate
+        required: true
+      - label: I have tested with the latest versions of both plugins
+        required: true
+      - label: I have checked the documentation of both plugins and could not find a solution
+        required: true
+      - label: I have disabled all other plugins and themes to confirm that the issue is with Vertical Tabs and the other plugin
+        required: true
+      - label: I have restarted Obsidian after disabling other plugins and themes, and the issue persists
+        required: true
+      - label: I think the issue should be addressed by Vertical Tabs
+        required: true
+- type: dropdown
+  id: type
+  attributes:
+    label: Compatibility Issue Type
+    description: Please select the type of compatibility issue you are facing.
+    options:
+      - "Conflict"
+      - "Feature Request"
+      - "Performance Issue"
+      - "UI/UX Issue"
+      - "Other"
+  validations:
+    required: true
+- type: input
+  id: plugin-name
+  attributes:
+    label: Plugin Name
+    description: Please provide the name of the plugin that you are having compatibility issues with.
+    placeholder: Enter the name of the plugin...
+  validations:
+    required: true
+- type: input
+  id: plugin-repo
+  attributes:
+    label: Plugin Repository
+    description: Please provide the repository URL of the plugin that you are having compatibility issues with.
+    placeholder: https://github.com/someone/some-plugin
+  validations:
+    required: true
+- type: checkboxes
+  id: plugin-requirements
+  attributes:
+    label: Plugin Requirements
+    description: |-
+      Please confirm whether the plugin you’re experiencing compatibility issues with meets the following requirements. Due to limited time and resources, I can only provide support for plugins that fulfill these criteria:
+    options:
+      - label: The plugin is actively maintained, with ongoing updates in the past three months, including issues, commits, pull requests, and releases.
+        required: true
+      - label: The plugin is compatible with the latest version of Obsidian
+        required: true
+      - label: The plugin does not break or change Obsidian's core functionality
+        required: true
+      - label: The broken functionality of the plugin is not a duplicate of a feature already offered by Vertical Tabs
+        required: true
+      - label: The plugin is available in the community plugin store
+        required: true
+      - label: The plugin has a reasonably sized community, with more than 1000 downloads (you can check this in the community plugin store)
+        required: true
+      - label: The plugin is open-source, fostering transparency and community-driven development
+        required: true
+- type: checkboxes
+  id: environment
+  attributes:
+    label: Environment (Optional)
+    options:
+      - label: Windows
+      - label: macOS
+      - label: Linux
+      - label: Android
+      - label: iOS
+      - label: iPadOS
+- type: textarea
+  id: description
+  attributes:
+    label: Compatibility Issue Description
+    description: |-
+      Please provide a clear and concise description of the compatibility issue you are facing. What is the problem you are experiencing?
+      
+      **Note:** If English is not your first language, please consider using ChatGPT or similar AI tools to translate your text.
+    placeholder: Describe the compatibility issue here...
+  validations:
+    required: true
+- type: textarea
+  id: steps
+  attributes:
+    label: Steps to Reproduce (Optional)
+    description: |-
+      Please provide detailed steps to reproduce the compatibility issue. This will help in diagnosing the problem and finding a solution.
+    placeholder: Describe the steps to reproduce the issue...
+- type: textarea
+  id: additional-info
+  attributes:
+    label: Additional Information (Optional)
+    description: If you have any additional information that you think might be helpful, please provide it here.
+    placeholder: Provide additional information here...
