@@ -171,4 +171,11 @@ declare module "obsidian" {
 		setSubmenu: () => Menu;
 		section?: string;
 	}
+
+	interface Webview extends ItemView {
+		toggleReaderMode: () => void;
+		zoomIn: () => void;
+		zoomOut: () => void;
+		zoomReset: () => void;
+	}
 }

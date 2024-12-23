@@ -3,7 +3,7 @@ import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useState } from "react";
 import { usePlugin, useSettings } from "src/models/PluginContext";
-import { Menu, Platform, WorkspaceLeaf } from "obsidian";
+import { Menu, Platform, Webview, WorkspaceLeaf } from "obsidian";
 import {
 	closeOthersInGroup,
 	closeTabsToBottomInGroup,
@@ -47,6 +47,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 	const enableTabZoom = useSettings((state) => state.enableTabZoom);
 	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
+	const isWebViewer = leaf.view.getViewType() === "webviewer";
 
 	const changePinnedState = (pinned: boolean) => {
 		setIsPinned(pinned);
@@ -286,7 +287,7 @@ export const Tab = ({ leaf }: TabProps) => {
 				.onClick(async () => await loadDeferredLeaf(leaf));
 		});
 	}
-	if (enableTabZoom) {
+	if (enableTabZoom && !isWebViewer) {
 		menu.addSeparator();
 		menu.addItem((item) => {
 			item.setSection("zoom").setTitle("Zoom");
@@ -308,7 +309,30 @@ export const Tab = ({ leaf }: TabProps) => {
 			});
 		});
 	}
-	if (Platform.isDesktop) {
+	if (isWebViewer) {
+		const webview = leaf.view as Webview;
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("webview")
+				.setTitle("Toggle reader mode")
+				.onClick(() => webview.toggleReaderMode());
+		});
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("zoom").setTitle("Zoom");
+			const submenu = item.setSubmenu();
+			submenu.addItem((item) => {
+				item.setTitle("Zoom in").onClick(() => webview.zoomIn());
+			});
+			submenu.addItem((item) => {
+				item.setTitle("Zoom out").onClick(() => webview.zoomOut());
+			});
+			submenu.addItem((item) => {
+				item.setTitle("Reset zoom").onClick(() => webview.zoomReset());
+			});
+		});
+	}
+	if (Platform.isDesktop && !isWebViewer) {
 		menu.addSeparator();
 		menu.addItem((item) => {
 			item.setSection("more").setTitle("More options");
