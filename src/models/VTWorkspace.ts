@@ -8,6 +8,12 @@ export enum GroupType {
 	RootSplit = "root-split",
 }
 
+export enum GroupViewType {
+	Default = "default",
+	ContinuousView = "continuous-view",
+	MissionControlView = "mission-control-view",
+}
+
 export function getGroupType(app: App, group: WorkspaceParent): GroupType {
 	const root = group.getRoot();
 	const { leftSplit, rightSplit } = app.workspace;

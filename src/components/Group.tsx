@@ -3,7 +3,7 @@ import { Fragment, useEffect, useState } from "react";
 import { IconButton } from "./IconButton";
 import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
 import { useApp, useSettings } from "src/models/PluginContext";
-import { GroupType } from "src/models/VTWorkspace";
+import { GroupType, GroupViewType } from "src/models/VTWorkspace";
 import { Menu, WorkspaceParent } from "obsidian";
 import {
 	createBookmarkForGroup,
@@ -126,6 +126,23 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		</Fragment>
 	);
 
+	const [viewType, setViewType] = useState(GroupViewType.Default);
+
+	const toggleViewClass = (name: string, enable: boolean) => {
+		if (!group) return;
+		const viewClass = `vt-${name}`;
+		group.containerEl.toggleClass(viewClass, enable);
+	};
+
+	const enableView = (viewType: GroupViewType) => {
+		if (!group) return;
+		Object.values(GroupViewType).forEach((key) =>
+			toggleViewClass(key, false)
+		);
+		toggleViewClass(viewType, true);
+		setViewType(viewType);
+	};
+
 	const menu = new Menu();
 
 	menu.addItem((item) => {
@@ -133,6 +150,22 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	});
 	menu.addItem((item) => {
 		item.setTitle("Rename").onClick(handleTitleChange);
+	});
+	menu.addSeparator();
+	menu.addItem((item) => {
+		item.setTitle("Default view")
+			.setDisabled(viewType === GroupViewType.Default)
+			.onClick(() => enableView(GroupViewType.Default));
+	});
+	menu.addItem((item) => {
+		item.setTitle("Continuous view")
+			.setDisabled(viewType === GroupViewType.ContinuousView)
+			.onClick(() => enableView(GroupViewType.ContinuousView));
+	});
+	menu.addItem((item) => {
+		item.setTitle("Mission control view")
+			.setDisabled(viewType === GroupViewType.MissionControlView)
+			.onClick(() => enableView(GroupViewType.MissionControlView));
 	});
 	menu.addSeparator();
 	menu.addItem((item) => {

@@ -87,6 +87,10 @@ export const Tab = ({ leaf }: TabProps) => {
 		workspace.onLayoutChange();
 		toggleHiddenGroup(leaf.parent.id, false);
 		lockFocusOnLeaf(app, leaf);
+		leaf.containerEl?.scrollIntoView({
+			behavior: "smooth",
+			block: "start",
+		});
 	};
 
 	const activeOrCloseTab = (
