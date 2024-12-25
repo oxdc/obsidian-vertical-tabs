@@ -18,6 +18,7 @@ import {
 	installTabHeaderHandlers,
 	makeLeafEphemeralOnEditorChange,
 	makeLeafNonEphemeral,
+	makeTabNonEphemeralAutomatically,
 	uninstallTabHeaderHandlers,
 } from "src/services/EphemeralTabs";
 import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
@@ -100,6 +101,7 @@ export const NavigationContainer = () => {
 					if (enabled) {
 						installTabHeaderHandlers(app);
 						if (autoClose) autoCloseOldEphemeralTabs(app);
+						makeTabNonEphemeralAutomatically(app);
 					} else {
 						uninstallTabHeaderHandlers(app);
 					}
