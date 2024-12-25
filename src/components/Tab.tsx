@@ -50,6 +50,10 @@ export const Tab = ({ leaf }: TabProps) => {
 	const [title, setTitle] = useState(DeduplicatedTitle(app, leaf));
 	const isWebViewer = leaf.view.getViewType() === "webviewer";
 
+	useEffect(() => {
+		setTitle(DeduplicatedTitle(app, leaf));
+	}, [leaf.view]);
+
 	const changePinnedState = (pinned: boolean) => {
 		setIsPinned(pinned);
 		if (pinned && leaf.isEphemeral) makeLeafNonEphemeral(leaf);
