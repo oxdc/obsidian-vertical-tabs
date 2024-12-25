@@ -312,10 +312,12 @@ export const Tab = ({ leaf }: TabProps) => {
 	}
 	if (Platform.isDesktop && isWebViewer) {
 		const webview = leaf.view as WebviewView;
-		webview.webview.addEventListener(
-			"page-title-updated",
-			(title: { title: string }) => setTitle(title.title)
-		);
+		if (webview.webview) {
+			webview.webview.addEventListener(
+				"page-title-updated",
+				(data: { title: string }) => setTitle(data.title)
+			);
+		}
 		menu.addSeparator();
 		menu.addItem((item) => {
 			item.setSection("webview")
