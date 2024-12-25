@@ -376,7 +376,7 @@ export const Tab = ({ leaf }: TabProps) => {
 					onClick={unPin}
 				/>
 			)}
-			{!isPinned && Platform.isDesktop && (
+			{!isPinned && (
 				<IconButton
 					icon="x"
 					action="close"

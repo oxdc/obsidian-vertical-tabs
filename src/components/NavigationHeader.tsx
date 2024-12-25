@@ -1,11 +1,17 @@
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { IconButton } from "./IconButton";
-import { Menu } from "obsidian";
+import { Menu, Platform } from "obsidian";
 import { sortStrategies, useTabCache } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
+import { useState } from "react";
 
-export const NavigationHeader = () => {
+interface NavigationHeaderProps {
+	container: HTMLElement | null;
+}
+
+export const NavigationHeader = (props: NavigationHeaderProps) => {
 	const plugin = usePlugin();
+	const { hasOnlyOneGroup } = useTabCache();
 	const { setSettings } = useSettings();
 	const showActiveTabs = useSettings.use.showActiveTabs();
 	const hideSidebars = useSettings.use.hideSidebars();
@@ -18,6 +24,7 @@ export const NavigationHeader = () => {
 		(state) => state.globalCollapseState
 	);
 	const { uncollapseActiveGroup } = useViewState();
+	const isSingleGroup = hasOnlyOneGroup() && hideSidebars;
 
 	const toggleTabVisibility = () =>
 		setSettings({ showActiveTabs: !showActiveTabs });
@@ -29,6 +36,13 @@ export const NavigationHeader = () => {
 		lockFocus(plugin);
 		const workspace = plugin.app.workspace;
 		workspace.trigger("vertical-tabs:update-toggle");
+	};
+
+	const [isEditingTabs, setIsEditingTabs] = useState(false);
+
+	const toggleEditingTabs = () => {
+		setIsEditingTabs(!isEditingTabs);
+		props.container?.toggleClass("editing-tabs", !isEditingTabs);
 	};
 
 	const sortMenu = new Menu();
@@ -87,13 +101,15 @@ export const NavigationHeader = () => {
 					isActive={hideSidebars}
 					isNavAction={true}
 				/>
-				<IconButton
-					icon="crosshair"
-					action="reveal-tab"
-					tooltip="Reveal active tab"
-					onClick={() => uncollapseActiveGroup(plugin.app)}
-					isNavAction={true}
-				/>
+				{!isSingleGroup && (
+					<IconButton
+						icon="crosshair"
+						action="reveal-tab"
+						tooltip="Reveal active tab"
+						onClick={() => uncollapseActiveGroup(plugin.app)}
+						isNavAction={true}
+					/>
+				)}
 				<IconButton
 					icon="arrow-up-narrow-wide"
 					action="sort-tabs"
@@ -110,23 +126,35 @@ export const NavigationHeader = () => {
 					isActive={zenMode}
 					isNavAction={true}
 				/>
-				<IconButton
-					icon={
-						globalCollapseState
-							? "chevrons-up-down"
-							: "chevrons-down-up"
-					}
-					action="global-collapse"
-					tooltip={
-						globalCollapseState ? "Expand all" : "Collapse all"
-					}
-					onClick={() =>
-						globalCollapseState
-							? setAllExpanded()
-							: setAllCollapsed()
-					}
-					isNavAction={true}
-				/>
+				{!isSingleGroup && (
+					<IconButton
+						icon={
+							globalCollapseState
+								? "chevrons-up-down"
+								: "chevrons-down-up"
+						}
+						action="global-collapse"
+						tooltip={
+							globalCollapseState ? "Expand all" : "Collapse all"
+						}
+						onClick={() =>
+							globalCollapseState
+								? setAllExpanded()
+								: setAllCollapsed()
+						}
+						isNavAction={true}
+					/>
+				)}
+				{Platform.isMobile && (
+					<IconButton
+						icon="copy-check"
+						action="editing-tabs"
+						tooltip="Edit tabs"
+						onClick={toggleEditingTabs}
+						isActive={isEditingTabs}
+						isNavAction={true}
+					/>
+				)}
 			</div>
 		</div>
 	);
