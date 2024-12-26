@@ -32,7 +32,6 @@ export const NavigationContainer = () => {
 		setLatestActiveLeaf,
 		refreshToggleButtons,
 		lockFocus,
-		lockFocusOnLeaf,
 		forgetNonephemeralTabs,
 		uncollapseActiveGroup,
 	} = useViewState();
@@ -118,7 +117,9 @@ export const NavigationContainer = () => {
 		plugin.registerEvent(
 			workspace.on("vertical-tabs:deduplicate-tabs", () => {
 				const activeLeaf = deduplicateExistingTabs(app);
-				if (activeLeaf) lockFocusOnLeaf(app, activeLeaf);
+				if (activeLeaf) {
+					app.workspace.setActiveLeaf(activeLeaf, { focus: false });
+				}
 			})
 		);
 		plugin.addCommand({
