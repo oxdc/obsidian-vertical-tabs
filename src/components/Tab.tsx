@@ -293,25 +293,43 @@ export const Tab = ({ leaf }: TabProps) => {
 	}
 	if (enableTabZoom && !isWebViewer) {
 		menu.addSeparator();
-		menu.addItem((item) => {
-			item.setSection("zoom").setTitle("Zoom");
-			const submenu = item.setSubmenu();
-			submenu.addItem((item) => {
+		if (Platform.isDesktop) {
+			menu.addItem((item) => {
+				item.setSection("zoom").setTitle("Zoom");
+				const submenu = item.setSubmenu();
+				submenu.addItem((item) => {
+					item.setTitle("Zoom in").onClick(() => {
+						zoomIn(leaf.view);
+					});
+				});
+				submenu.addItem((item) => {
+					item.setTitle("Zoom out").onClick(() => {
+						zoomOut(leaf.view);
+					});
+				});
+				submenu.addItem((item) => {
+					item.setTitle("Reset zoom").onClick(() => {
+						resetZoom(leaf.view);
+					});
+				});
+			});
+		} else {
+			menu.addItem((item) => {
 				item.setTitle("Zoom in").onClick(() => {
 					zoomIn(leaf.view);
 				});
 			});
-			submenu.addItem((item) => {
+			menu.addItem((item) => {
 				item.setTitle("Zoom out").onClick(() => {
 					zoomOut(leaf.view);
 				});
 			});
-			submenu.addItem((item) => {
+			menu.addItem((item) => {
 				item.setTitle("Reset zoom").onClick(() => {
 					resetZoom(leaf.view);
 				});
 			});
-		});
+		}
 	}
 	if (Platform.isDesktop && isWebViewer) {
 		const webview = leaf.view as WebviewView;
