@@ -4,7 +4,7 @@ import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect, useRef } from "react";
 import { useViewState } from "src/models/ViewState";
-import { debounce, ItemView } from "obsidian";
+import { debounce, ItemView, Platform } from "obsidian";
 import {
 	ensureSelfIsOpen,
 	moveSelfToDefaultLocation,
@@ -48,7 +48,7 @@ export const NavigationContainer = () => {
 		}
 		setTimeout(() => {
 			updateEphemeralTabs(app);
-			if (isSelfVisible(app)) {
+			if (isSelfVisible(app) || Platform.isMobile) {
 				refresh(app);
 				sort();
 			}
