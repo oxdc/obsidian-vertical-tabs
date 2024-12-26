@@ -47,12 +47,8 @@ export const Tab = ({ leaf }: TabProps) => {
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 	const enableTabZoom = useSettings((state) => state.enableTabZoom);
 	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
-	const [title, setTitle] = useState(DeduplicatedTitle(app, leaf));
+	const [volatileTitle, setVolatileTitle] = useState<string | null>(null);
 	const isWebViewer = leaf.view.getViewType() === "webviewer";
-
-	useEffect(() => {
-		setTitle(DeduplicatedTitle(app, leaf));
-	}, [leaf.view]);
 
 	const changePinnedState = (pinned: boolean) => {
 		setIsPinned(pinned);
@@ -319,7 +315,7 @@ export const Tab = ({ leaf }: TabProps) => {
 		if (webview.webview) {
 			webview.webview.addEventListener(
 				"page-title-updated",
-				(data: { title: string }) => setTitle(data.title)
+				(data: { title: string }) => setVolatileTitle(data.title)
 			);
 		}
 		menu.addSeparator();
@@ -403,7 +399,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	return (
 		<NavigationTreeItem
 			id={leaf.id}
-			title={title}
+			title={volatileTitle ?? DeduplicatedTitle(app, leaf)}
 			isTab={true}
 			isEphemeralTab={isEphemeral && !isPinned}
 			isPinned={isPinned}
