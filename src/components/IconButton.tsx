@@ -20,6 +20,7 @@ export const IconButton = (props: IconButtonProps) => {
 		"nav-action-button": props.isNavAction,
 		[`action-${props.icon}`]: true,
 		"is-active": props.isActive,
+		"is-disabled": props.disabled,
 	};
 
 	useEffect(() => {

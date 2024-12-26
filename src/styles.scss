@@ -127,3 +127,9 @@ body.vt-exclude-self
 .obsidian-vertical-tabs-container .tree-item .drag-handle {
 	touch-action: none;
 }
+
+.clickable-icon.is-disabled {
+	color: var(--text-faint);
+	cursor: not-allowed;
+	opacity: var(--icon-opacity);
+}

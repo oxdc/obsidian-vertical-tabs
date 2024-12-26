@@ -6,6 +6,7 @@ import { useViewState } from "src/models/ViewState";
 
 export const NavigationHeader = () => {
 	const plugin = usePlugin();
+	const { hasOnlyOneGroup } = useTabCache();
 	const { setSettings } = useSettings();
 	const showActiveTabs = useSettings.use.showActiveTabs();
 	const hideSidebars = useSettings.use.hideSidebars();
@@ -18,6 +19,7 @@ export const NavigationHeader = () => {
 		(state) => state.globalCollapseState
 	);
 	const { uncollapseActiveGroup } = useViewState();
+	const isSingleGroup = hasOnlyOneGroup() && hideSidebars;
 
 	const toggleTabVisibility = () =>
 		setSettings({ showActiveTabs: !showActiveTabs });
@@ -88,13 +90,6 @@ export const NavigationHeader = () => {
 					isNavAction={true}
 				/>
 				<IconButton
-					icon="crosshair"
-					action="reveal-tab"
-					tooltip="Reveal active tab"
-					onClick={() => uncollapseActiveGroup(plugin.app)}
-					isNavAction={true}
-				/>
-				<IconButton
 					icon="arrow-up-narrow-wide"
 					action="sort-tabs"
 					tooltip="Sort tabs"
@@ -111,6 +106,14 @@ export const NavigationHeader = () => {
 					isNavAction={true}
 				/>
 				<IconButton
+					icon="crosshair"
+					action="reveal-tab"
+					tooltip="Reveal active tab"
+					disabled={isSingleGroup}
+					onClick={() => uncollapseActiveGroup(plugin.app)}
+					isNavAction={true}
+				/>
+				<IconButton
 					icon={
 						globalCollapseState
 							? "chevrons-up-down"
@@ -120,6 +123,7 @@ export const NavigationHeader = () => {
 					tooltip={
 						globalCollapseState ? "Expand all" : "Collapse all"
 					}
+					disabled={isSingleGroup}
 					onClick={() =>
 						globalCollapseState
 							? setAllExpanded()
