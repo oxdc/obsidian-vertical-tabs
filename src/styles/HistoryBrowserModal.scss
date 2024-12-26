@@ -1,0 +1,16 @@
+.vt-suggestion-content {
+	display: flex;
+
+	.suggestion-icon {
+		--icon-size: var(--icon-s);
+
+		height: var(--icon-size);
+		width: var(--icon-size);
+		margin-right: var(--size-4-2);
+
+		svg {
+			width: var(--icon-size);
+			height: var(--icon-size);
+		}
+	}
+}

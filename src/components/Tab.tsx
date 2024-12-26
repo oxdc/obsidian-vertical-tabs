@@ -23,6 +23,7 @@ import {
 import { useTouchSensor } from "src/services/TouchSeneor";
 import { zoomIn, zoomOut, resetZoom } from "src/services/TabZoom";
 import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
+import { HistoryBrowserModal } from "src/HistoryBrowserModal";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -187,6 +188,9 @@ export const Tab = ({ leaf }: TabProps) => {
 			});
 	});
 	if (leaf.view.navigation && !alwaysOpenInNewTab) {
+		const historyLength =
+			leaf.history.backHistory.length +
+			leaf.history.forwardHistory.length;
 		menu.addSeparator();
 		menu.addItem((item) => {
 			item.setSection("history")
@@ -202,31 +206,35 @@ export const Tab = ({ leaf }: TabProps) => {
 		});
 		menu.addItem((item) => {
 			item.setSection("history").setTitle("Browse history");
-			const submenu = item.setSubmenu();
-			const { backHistory, forwardHistory } = leaf.history;
-			const { length } = backHistory;
-			backHistory.forEach((state, index) => {
-				submenu.addItem((item) => {
-					item.setTitle(state.title).setChecked(false);
-					item.onClick(() => leaf.history.go(index - length));
-				});
-			});
-			submenu.addItem((item) => {
-				item.setTitle(DeduplicatedTitle(app, leaf)).setChecked(true);
-			});
-			forwardHistory
-				.slice()
-				.reverse()
-				.forEach((state, index) => {
+			if (Platform.isDesktop) {
+				const submenu = item.setSubmenu();
+				const { backHistory, forwardHistory } = leaf.history;
+				const { length } = backHistory;
+				backHistory.forEach((state, index) => {
 					submenu.addItem((item) => {
 						item.setTitle(state.title).setChecked(false);
-						item.onClick(() => leaf.history.go(index + 1));
+						item.onClick(() => leaf.history.go(index - length));
 					});
 				});
+				submenu.addItem((item) => {
+					item.setTitle(DeduplicatedTitle(app, leaf)).setChecked(
+						true
+					);
+				});
+				forwardHistory
+					.slice()
+					.reverse()
+					.forEach((state, index) => {
+						submenu.addItem((item) => {
+							item.setTitle(state.title).setChecked(false);
+							item.onClick(() => leaf.history.go(index + 1));
+						});
+					});
+			} else {
+				item.setDisabled(historyLength === 0);
+				item.onClick(() => new HistoryBrowserModal(app, leaf).open());
+			}
 		});
-		const historyLength =
-			leaf.history.backHistory.length +
-			leaf.history.forwardHistory.length;
 		menu.addItem((item) => {
 			item.setSection("history")
 				.setTitle("Bookmark history")

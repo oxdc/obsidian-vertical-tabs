@@ -182,4 +182,11 @@ declare module "obsidian" {
 			addEventListener: (type: string, listener: unknown) => void;
 		};
 	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	interface SuggestModal<T> {
+		chooser: {
+			setSelectedItem: (index: number) => void;
+		};
+	}
 }
