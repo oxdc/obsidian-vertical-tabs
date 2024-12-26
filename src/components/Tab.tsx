@@ -1,7 +1,7 @@
 import { NavigationTreeItem } from "./NavigationTreeItem";
 import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { Menu, Platform, WebviewView, WorkspaceLeaf } from "obsidian";
 import {
@@ -38,6 +38,7 @@ export const Tab = ({ leaf }: TabProps) => {
 		setGroupTitle,
 		lockFocusOnLeaf,
 		toggleHiddenGroup,
+		hookLatestActiveTab,
 	} = useViewState();
 	const [isPinned, setIsPinned] = useState(
 		leaf.getViewState().pinned ?? false
@@ -396,14 +397,24 @@ export const Tab = ({ leaf }: TabProps) => {
 		},
 	});
 
+	const isActiveTab = lastActiveLeaf?.id === leaf.id;
+	const ref = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		if (isActiveTab) {
+			hookLatestActiveTab(ref.current);
+		}
+	}, [isActiveTab, ref]);
+
 	return (
 		<NavigationTreeItem
+			ref={ref}
 			id={leaf.id}
 			title={volatileTitle ?? DeduplicatedTitle(app, leaf)}
 			isTab={true}
 			isEphemeralTab={isEphemeral && !isPinned}
 			isPinned={isPinned}
-			isHighlighted={lastActiveLeaf?.id === leaf.id}
+			isHighlighted={isActiveTab}
 			{...props}
 			{...listeners}
 			toolbar={toolbar}

@@ -7,6 +7,7 @@ import { Identifier } from "src/models/VTWorkspace";
 
 interface NavigationTreeItemProps {
 	id: Identifier | null;
+	ref?: React.RefObject<HTMLDivElement | null>;
 	title: string | React.ReactNode;
 	icon: string;
 	isTab: boolean;
@@ -90,6 +91,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				data-type={props.dataType}
 				data-id={props.dataId}
 				style={{ minHeight: props.isCollapsed ? 0 : height }}
+				ref={props.ref}
 			>
 				<div
 					className={toClassName(selfElClasses)}
@@ -111,7 +113,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 						{props.toolbar}
 						<div
 							className="drag-handle"
-							ref={props.id && setNodeRef}
+							ref={props.id ? setNodeRef : null}
 							{...attributes}
 							{...listeners}
 						>
@@ -134,6 +136,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				data-type={props.dataType}
 				data-id={props.dataId}
 				style={{ minHeight: props.isCollapsed ? 0 : height }}
+				ref={props.ref}
 			>
 				<div
 					className={toClassName(selfElClasses)}
@@ -141,7 +144,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 					onAuxClick={props.onAuxClick}
 					onDoubleClick={props.onDoubleClick}
 					onContextMenu={props.onContextMenu}
-					ref={props.id && setNodeRef}
+					ref={props.id ? setNodeRef : null}
 					{...attributes}
 					{...listeners}
 				>

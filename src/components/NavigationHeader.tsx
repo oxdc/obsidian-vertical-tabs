@@ -1,7 +1,11 @@
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { IconButton } from "./IconButton";
 import { Menu } from "obsidian";
-import { sortStrategies, useTabCache } from "src/models/TabCache";
+import {
+	REFRESH_TIMEOUT_LONG,
+	sortStrategies,
+	useTabCache,
+} from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
 
 export const NavigationHeader = () => {
@@ -14,7 +18,8 @@ export const NavigationHeader = () => {
 	const toggleZenMode = useSettings.use.toggleZenMode();
 	const sortStrategy = useTabCache((state) => state.sortStrategy);
 	const { setSortStrategy } = useTabCache();
-	const { lockFocus, setAllCollapsed, setAllExpanded } = useViewState();
+	const { lockFocus, setAllCollapsed, setAllExpanded, scorllToActiveTab } =
+		useViewState();
 	const globalCollapseState = useViewState(
 		(state) => state.globalCollapseState
 	);
@@ -31,6 +36,13 @@ export const NavigationHeader = () => {
 		lockFocus(plugin);
 		const workspace = plugin.app.workspace;
 		workspace.trigger("vertical-tabs:update-toggle");
+	};
+
+	const revealActiveTab = () => {
+		uncollapseActiveGroup(plugin.app);
+		setTimeout(() => {
+			scorllToActiveTab();
+		}, REFRESH_TIMEOUT_LONG);
 	};
 
 	const sortMenu = new Menu();
@@ -110,7 +122,7 @@ export const NavigationHeader = () => {
 					action="reveal-tab"
 					tooltip="Reveal active tab"
 					disabled={isSingleGroup}
-					onClick={() => uncollapseActiveGroup(plugin.app)}
+					onClick={revealActiveTab}
 					isNavAction={true}
 				/>
 				<IconButton

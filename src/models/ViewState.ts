@@ -49,6 +49,7 @@ interface ViewState {
 	collapsedGroups: Array<Identifier>;
 	nonEphemeralTabs: Array<Identifier>;
 	latestActiveLeaf: WorkspaceLeaf | null;
+	latestActiveTab: HTMLElement | null;
 	pinningEvents: PinningEvents;
 	ephermalToggleEvents: EphermalToggleEvents;
 	globalCollapseState: boolean;
@@ -65,6 +66,8 @@ interface ViewState {
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
 	lockFocusOnLeaf: (app: App, leaf: WorkspaceLeaf) => void;
 	resetFocusFlags: () => void;
+	hookLatestActiveTab: (tab: HTMLElement | null) => void;
+	scorllToActiveTab: () => void;
 	leftButtonClone: HTMLElement | null;
 	rightButtonClone: HTMLElement | null;
 	topLeftContainer: Element | null;
@@ -180,6 +183,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	collapsedGroups: loadCollapsedGroups(),
 	nonEphemeralTabs: loadNonEphemeralTabs(),
 	latestActiveLeaf: null,
+	latestActiveTab: null,
 	pinningEvents: createNewPinningEvents(),
 	ephermalToggleEvents: createNewEphermalToggleEvents(),
 	globalCollapseState: false,
@@ -307,6 +311,22 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	resetFocusFlags() {
 		document.querySelectorAll(".vt-mod-active").forEach((el) => {
 			el.classList.remove("vt-mod-active");
+		});
+	},
+	hookLatestActiveTab(tab: HTMLElement | null) {
+		if (tab && get().latestActiveLeaf) {
+			set({ latestActiveTab: tab });
+		} else {
+			set({ latestActiveTab: null });
+		}
+	},
+	scorllToActiveTab() {
+		const { latestActiveTab } = get();
+		if (!latestActiveTab) return;
+		latestActiveTab.scrollIntoView({
+			behavior: "smooth",
+			block: "center",
+			inline: "nearest",
 		});
 	},
 	cloneToggleButtons(app: App) {
