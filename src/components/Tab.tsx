@@ -50,6 +50,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
 	const [volatileTitle, setVolatileTitle] = useState<string | null>(null);
 	const isWebViewer = leaf.view.getViewType() === "webviewer";
+	const isEditingTabs = useViewState((state) => state.isEditingTabs);
 
 	const changePinnedState = (pinned: boolean) => {
 		setIsPinned(pinned);
@@ -86,6 +87,7 @@ export const Tab = ({ leaf }: TabProps) => {
 	};
 
 	const openTab = () => {
+		if (Platform.isMobile && isEditingTabs) return;
 		workspace.setActiveLeaf(leaf, { focus: true });
 		workspace.onLayoutChange();
 		toggleHiddenGroup(leaf.parent.id, false);

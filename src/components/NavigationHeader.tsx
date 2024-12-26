@@ -7,7 +7,6 @@ import {
 	useTabCache,
 } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
-import { useState } from "react";
 
 interface NavigationHeaderProps {
 	container: HTMLElement | null;
@@ -15,6 +14,7 @@ interface NavigationHeaderProps {
 
 export const NavigationHeader = (props: NavigationHeaderProps) => {
 	const plugin = usePlugin();
+	const app = plugin.app;
 	const { hasOnlyOneGroup } = useTabCache();
 	const { setSettings } = useSettings();
 	const showActiveTabs = useSettings.use.showActiveTabs();
@@ -28,8 +28,9 @@ export const NavigationHeader = (props: NavigationHeaderProps) => {
 	const globalCollapseState = useViewState(
 		(state) => state.globalCollapseState
 	);
-	const { uncollapseActiveGroup } = useViewState();
+	const { uncollapseActiveGroup, setIsEditingTabs } = useViewState();
 	const isSingleGroup = hasOnlyOneGroup() && hideSidebars;
+	const isEditingTabs = useViewState((state) => state.isEditingTabs);
 
 	const toggleTabVisibility = () =>
 		setSettings({ showActiveTabs: !showActiveTabs });
@@ -39,19 +40,17 @@ export const NavigationHeader = (props: NavigationHeaderProps) => {
 	const toggleZenModeAndLockFocus = () => {
 		toggleZenMode();
 		lockFocus(plugin);
-		const workspace = plugin.app.workspace;
+		const workspace = app.workspace;
 		workspace.trigger("vertical-tabs:update-toggle");
 	};
 
-	const [isEditingTabs, setIsEditingTabs] = useState(false);
-
 	const toggleEditingTabs = () => {
-		setIsEditingTabs(!isEditingTabs);
+		setIsEditingTabs(app, !isEditingTabs);
 		props.container?.toggleClass("editing-tabs", !isEditingTabs);
 	};
 
 	const revealActiveTab = () => {
-		uncollapseActiveGroup(plugin.app);
+		uncollapseActiveGroup(app);
 		setTimeout(() => {
 			scorllToActiveTab();
 		}, REFRESH_TIMEOUT_LONG);

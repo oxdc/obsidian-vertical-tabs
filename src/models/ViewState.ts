@@ -25,6 +25,7 @@ import {
 } from "src/services/SidebarToggles";
 import { getGroupType, GroupType, Identifier } from "./VTWorkspace";
 import { useTabCache } from "./TabCache";
+import { pinDrawer, unpinDrawer } from "src/services/MobileDrawer";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -53,6 +54,7 @@ interface ViewState {
 	pinningEvents: PinningEvents;
 	ephermalToggleEvents: EphermalToggleEvents;
 	globalCollapseState: boolean;
+	isEditingTabs: boolean;
 	clear: () => void;
 	setGroupTitle: (id: Identifier, name: string) => void;
 	toggleCollapsedGroup: (id: Identifier, isCollapsed: boolean) => void;
@@ -102,6 +104,7 @@ interface ViewState {
 		oldLeaf: WorkspaceLeaf | null,
 		newLeaf: WorkspaceLeaf | null
 	) => void;
+	setIsEditingTabs: (app: App, isEditing: boolean) => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -187,6 +190,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	pinningEvents: createNewPinningEvents(),
 	ephermalToggleEvents: createNewEphermalToggleEvents(),
 	globalCollapseState: false,
+	isEditingTabs: false,
 	leftButtonClone: null,
 	rightButtonClone: null,
 	topLeftContainer: null,
@@ -489,5 +493,15 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		if (latestParent.id !== targetParent.id) return false;
 		// otherwise, use the default handler
 		return fallback();
+	},
+	setIsEditingTabs(app: App, isEditing: boolean) {
+		if (Platform.isMobile) {
+			if (isEditing) {
+				pinDrawer(app);
+			} else {
+				unpinDrawer(app);
+			}
+		}
+		set({ isEditingTabs: isEditing });
 	},
 }));
