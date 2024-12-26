@@ -1,14 +1,19 @@
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { IconButton } from "./IconButton";
-import { Menu } from "obsidian";
+import { Menu, Platform } from "obsidian";
 import {
 	REFRESH_TIMEOUT_LONG,
 	sortStrategies,
 	useTabCache,
 } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
+import { useState } from "react";
 
-export const NavigationHeader = () => {
+interface NavigationHeaderProps {
+	container: HTMLElement | null;
+}
+
+export const NavigationHeader = (props: NavigationHeaderProps) => {
 	const plugin = usePlugin();
 	const { hasOnlyOneGroup } = useTabCache();
 	const { setSettings } = useSettings();
@@ -36,6 +41,13 @@ export const NavigationHeader = () => {
 		lockFocus(plugin);
 		const workspace = plugin.app.workspace;
 		workspace.trigger("vertical-tabs:update-toggle");
+	};
+
+	const [isEditingTabs, setIsEditingTabs] = useState(false);
+
+	const toggleEditingTabs = () => {
+		setIsEditingTabs(!isEditingTabs);
+		props.container?.toggleClass("editing-tabs", !isEditingTabs);
 	};
 
 	const revealActiveTab = () => {
@@ -143,6 +155,16 @@ export const NavigationHeader = () => {
 					}
 					isNavAction={true}
 				/>
+				{Platform.isMobile && (
+					<IconButton
+						icon="copy-check"
+						action="editing-tabs"
+						tooltip="Edit tabs"
+						onClick={toggleEditingTabs}
+						isActive={isEditingTabs}
+						isNavAction={true}
+					/>
+				)}
 			</div>
 		</div>
 	);

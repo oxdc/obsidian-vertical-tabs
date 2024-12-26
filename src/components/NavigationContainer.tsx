@@ -2,7 +2,7 @@ import { NavigationContent } from "./NavigationContent";
 import { NavigationHeader } from "./NavigationHeader";
 import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
 import { usePlugin, useSettings } from "src/models/PluginContext";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useViewState } from "src/models/ViewState";
 import { debounce, ItemView } from "obsidian";
 import {
@@ -171,12 +171,15 @@ export const NavigationContainer = () => {
 		if (event.button === 1) event.preventDefault();
 	};
 
+	const ref = useRef<HTMLDivElement>(null);
+
 	return (
 		<div
 			className="vertical-tabs"
 			onMouseDown={disableMiddleClickScrolling}
+			ref={ref}
 		>
-			<NavigationHeader />
+			<NavigationHeader container={ref.current} />
 			<NavigationContent />
 		</div>
 	);
