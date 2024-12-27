@@ -4,6 +4,17 @@
 		contain: unset !important;
 		height: unset !important;
 		flex-grow: 1 !important;
+
+		.view-header {
+			display: none;
+		}
+	}
+
+	.workspace-tab-header-container {
+		.workspace-tab-header-new-tab,
+		.workspace-tab-header-tab-list {
+			display: none;
+		}
 	}
 
 	.workspace-tab-container {
