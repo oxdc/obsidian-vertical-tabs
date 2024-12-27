@@ -53,6 +53,10 @@ export const Tab = ({ leaf }: TabProps) => {
 	const isWebViewer = leaf.view.getViewType() === "webviewer";
 	const isEditingTabs = useViewState((state) => state.isEditingTabs);
 
+	useEffect(() => {
+		if (!isWebViewer) setVolatileTitle(null);
+	}, [isWebViewer]);
+
 	const changePinnedState = (pinned: boolean) => {
 		setIsPinned(pinned);
 		if (pinned && leaf.isEphemeral) makeLeafNonEphemeral(leaf);
