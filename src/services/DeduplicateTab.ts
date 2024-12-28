@@ -19,6 +19,7 @@ const EXCLUSION_LIST = new Set([
 	"file-properties",
 	"sync",
 	"all-properties",
+	"localgraph",
 ]);
 
 function iterateTabs(
