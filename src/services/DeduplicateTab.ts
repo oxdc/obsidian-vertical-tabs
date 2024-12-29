@@ -7,6 +7,7 @@ import {
 	isHoverEditorEnabled,
 } from "./HoverEditorTabs";
 import { makeLeafNonEphemeral } from "./EphemeralTabs";
+import { useViewState } from "src/models/ViewState";
 
 const EXCLUSION_LIST = new Set([
 	"file-explorer",
@@ -31,6 +32,16 @@ function iterateTabs(
 	else iterateRootOrFloatingLeaves(app, callback);
 }
 
+function getOpenFileOfLeaf(app: App, leaf: WorkspaceLeaf): TFile | null {
+	if (leaf.view instanceof FileView) return leaf.view.file;
+	const path = leaf.getViewState().state?.file as string | undefined;
+	if (path) {
+		const file = app.vault.getAbstractFileByPath(path);
+		if (file instanceof TFile) return file;
+	}
+	return null;
+}
+
 export function deduplicateTab(
 	app: App,
 	file: TFile | null,
@@ -44,11 +55,8 @@ export function deduplicateTab(
 		if (skipLeaves.includes(leaf.id)) return;
 		const viewType = leaf.view.getViewType();
 		if (EXCLUSION_LIST.has(viewType)) return;
-		if (leaf.view instanceof FileView && leaf.view.file === file) {
-			targetLeaves.push(leaf);
-		} else if (leaf.getViewState().state?.file === file.path) {
-			targetLeaves.push(leaf);
-		}
+		const openFile = getOpenFileOfLeaf(app, leaf);
+		if (openFile === file) targetLeaves.push(leaf);
 	});
 	const sortedLeaves = targetLeaves.sort(
 		(a, b) => b.activeTime - a.activeTime
@@ -97,7 +105,12 @@ export function deduplicateExistingTabs(app: App): WorkspaceLeaf | null {
 	}
 	uniqueFiles.forEach((file) => deduplicateTab(app, file, false));
 	if (activeFile instanceof TFile) {
-		return deduplicateTab(app, activeFile, true);
+		const latestActiveLeaf = useViewState.getState().latestActiveLeaf;
+		// Only focus on the deduplicated tab if the active file is still open.
+		const focus =
+			!!latestActiveLeaf &&
+			getOpenFileOfLeaf(app, latestActiveLeaf) === activeFile;
+		return deduplicateTab(app, activeFile, focus);
 	}
 	return null;
 }
