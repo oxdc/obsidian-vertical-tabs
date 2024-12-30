@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { DefaultRecord } from "src/utils/DefaultRecord";
 import {
 	App,
+	debounce,
 	EventRef,
 	ItemView,
 	Platform,
@@ -24,8 +25,9 @@ import {
 	insertRightSidebarToggle,
 } from "src/services/SidebarToggles";
 import { getGroupType, GroupType, Identifier } from "./VTWorkspace";
-import { useTabCache } from "./TabCache";
+import { REFRESH_TIMEOUT_LONG, useTabCache } from "./TabCache";
 import { pinDrawer, unpinDrawer } from "src/services/MobileDrawer";
+import { CommandCheckCallback, getCommandByName } from "src/services/Commands";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -44,6 +46,13 @@ export type EphermalToggleEventCallback = (isEphemeral: boolean) => void;
 export const createNewEphermalToggleEvents = () =>
 	new DefaultRecord(() => null) as EphermalToggleEvents;
 
+export type ViewCueIndex = number | string | undefined;
+export const MIN_INDEX_KEY = 1;
+export const MAX_INDEX_KEY = 8;
+export const LAST_INDEX_KEY = 9;
+export type ViewCueNativeCallback = CommandCheckCallback;
+export type ViewCueNativeCallbackMap = Map<number, ViewCueNativeCallback>;
+
 interface ViewState {
 	groupTitles: GroupTitles;
 	hiddenGroups: Array<Identifier>;
@@ -55,6 +64,9 @@ interface ViewState {
 	ephermalToggleEvents: EphermalToggleEvents;
 	globalCollapseState: boolean;
 	isEditingTabs: boolean;
+	hasCtrlKeyPressed: boolean;
+	viewCueOffset: number;
+	viewCueNativeCallbacks: ViewCueNativeCallbackMap;
 	clear: () => void;
 	setGroupTitle: (id: Identifier, name: string) => void;
 	toggleCollapsedGroup: (id: Identifier, isCollapsed: boolean) => void;
@@ -105,6 +117,22 @@ interface ViewState {
 		newLeaf: WorkspaceLeaf | null
 	) => void;
 	setIsEditingTabs: (app: App, isEditing: boolean) => void;
+	setCtrlKeyState: (isPressed: boolean) => void;
+	increaseViewCueOffset: () => void;
+	decreaseViewCueOffset: () => void;
+	resetViewCueOffset: () => void;
+	mapViewCueIndex(realIndex?: number, isLast?: boolean): ViewCueIndex;
+	convertBackToRealIndex(
+		userIndex: number,
+		numOfLeaves: number
+	): number | null;
+	revealTabOfUserIndex: (
+		app: App,
+		userIndex: number,
+		checking: boolean
+	) => boolean | void;
+	modifyViewCueCallback: (app: App) => void;
+	resetViewCueCallback: (app: App) => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -191,6 +219,9 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	ephermalToggleEvents: createNewEphermalToggleEvents(),
 	globalCollapseState: false,
 	isEditingTabs: false,
+	hasCtrlKeyPressed: false,
+	viewCueOffset: 0,
+	viewCueNativeCallbacks: new Map(),
 	leftButtonClone: null,
 	rightButtonClone: null,
 	topLeftContainer: null,
@@ -503,5 +534,102 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			}
 		}
 		set({ isEditingTabs: isEditing });
+	},
+	setCtrlKeyState(isPressed: boolean) {
+		set({ hasCtrlKeyPressed: isPressed });
+		if (!isPressed) get().resetViewCueOffset();
+	},
+	increaseViewCueOffset: debounce(() => {
+		const { viewCueOffset, latestActiveLeaf } = get();
+		if (latestActiveLeaf) {
+			const latestParent = latestActiveLeaf.parent;
+			const numOfLeaves = latestParent.children.length;
+			const maxOffset = Math.floor((numOfLeaves - 1) / MAX_INDEX_KEY);
+			set({ viewCueOffset: Math.min(maxOffset, viewCueOffset + 1) });
+		} else {
+			set({ viewCueOffset: viewCueOffset + 1 });
+		}
+	}, REFRESH_TIMEOUT_LONG),
+	decreaseViewCueOffset: debounce(() => {
+		const { viewCueOffset } = get();
+		set({ viewCueOffset: Math.max(0, viewCueOffset - 1) });
+	}, REFRESH_TIMEOUT_LONG),
+	resetViewCueOffset() {
+		set({ viewCueOffset: 0 });
+	},
+	mapViewCueIndex(realIndex?: number, isLast?: boolean): ViewCueIndex {
+		if (realIndex === undefined) return undefined;
+		const { viewCueOffset } = get();
+		const userIndex = realIndex - viewCueOffset * MAX_INDEX_KEY;
+		if (MIN_INDEX_KEY <= userIndex && userIndex <= MAX_INDEX_KEY) {
+			return userIndex;
+		} else if (isLast) {
+			return LAST_INDEX_KEY;
+		} else if (userIndex === MAX_INDEX_KEY + 1) {
+			return "→";
+		} else if (userIndex === MIN_INDEX_KEY - 1) {
+			return "←";
+		}
+	},
+	convertBackToRealIndex(
+		userIndex: number,
+		numOfLeaves: number
+	): number | null {
+		const { viewCueOffset } = get();
+		const realIndex = userIndex + viewCueOffset * MAX_INDEX_KEY;
+		if (MIN_INDEX_KEY <= realIndex && realIndex <= numOfLeaves) {
+			return realIndex;
+		} else {
+			return null;
+		}
+	},
+	revealTabOfUserIndex(
+		app: App,
+		userIndex: number,
+		checking: boolean
+	): boolean | void {
+		const { latestActiveLeaf, viewCueNativeCallbacks } = get();
+		if (latestActiveLeaf) {
+			const latestParent = latestActiveLeaf.parent;
+			const numOfLeaves = latestParent.children.length;
+			const realIndex = get().convertBackToRealIndex(
+				userIndex,
+				numOfLeaves
+			);
+			if (!realIndex) return;
+			const target = latestParent.children[realIndex - 1];
+			if (!target) return;
+			if (checking) return true;
+			set({ latestActiveLeaf: target });
+			app.workspace.setActiveLeaf(target, { focus: true });
+		} else {
+			const defaultCallback = viewCueNativeCallbacks.get(userIndex);
+			if (defaultCallback) return defaultCallback(checking);
+		}
+	},
+	modifyViewCueCallback(app: App) {
+		const nativeCallbacks: ViewCueNativeCallbackMap = new Map();
+		for (let index = 1; index < MAX_INDEX_KEY; index++) {
+			const commandName = `workspace:goto-tab-${index}`;
+			const command = getCommandByName(app, commandName);
+			const callback = command?.checkCallback;
+			if (command && callback) {
+				nativeCallbacks.set(index, callback);
+				command.checkCallback = (checking: boolean) => {
+					return get().revealTabOfUserIndex(app, index, checking);
+				};
+			}
+		}
+		set({ viewCueNativeCallbacks: nativeCallbacks });
+	},
+	resetViewCueCallback(app: App) {
+		const { viewCueNativeCallbacks } = get();
+		for (const [index, callback] of viewCueNativeCallbacks) {
+			const commandName = `workspace:goto-tab-${index}`;
+			const command = getCommandByName(app, commandName);
+			if (command) {
+				command.checkCallback = callback;
+			}
+		}
 	},
 }));

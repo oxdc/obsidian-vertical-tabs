@@ -35,6 +35,9 @@ export const NavigationContainer = () => {
 		lockFocus,
 		forgetNonephemeralTabs,
 		uncollapseActiveGroup,
+		setCtrlKeyState,
+		increaseViewCueOffset,
+		decreaseViewCueOffset,
 	} = useViewState();
 	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
@@ -125,12 +128,24 @@ export const NavigationContainer = () => {
 		);
 		plugin.registerDomEvent(window, "keydown", (event) => {
 			if (event.ctrlKey || event.metaKey) {
+				setCtrlKeyState(true);
+				if (event.key === "ArrowRight") {
+					increaseViewCueOffset();
+				} else if (event.key === "ArrowLeft") {
+					decreaseViewCueOffset();
+				} else if (
+					event.key.length === 1 &&
+					!isNaN(parseInt(event.key))
+				) {
+					event.preventDefault();
+				}
 				if (ref.current) {
 					ref.current.toggleClass("tab-index-view-cue", true);
 				}
 			}
 		});
 		plugin.registerDomEvent(window, "keyup", () => {
+			setCtrlKeyState(false);
 			if (ref.current) {
 				ref.current.toggleClass("tab-index-view-cue", false);
 			}

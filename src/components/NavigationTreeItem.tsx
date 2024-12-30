@@ -4,10 +4,11 @@ import { CssClasses, toClassName } from "src/utils/CssClasses";
 import { useSortable } from "@dnd-kit/sortable";
 import { IconButton } from "./IconButton";
 import { Identifier } from "src/models/VTWorkspace";
+import { ViewCueIndex } from "src/models/ViewState";
 
 interface NavigationTreeItemProps {
 	id: Identifier | null;
-	index?: number;
+	index?: ViewCueIndex;
 	ref?: React.RefObject<HTMLDivElement | null>;
 	title: string | React.ReactNode;
 	icon: string;
@@ -23,7 +24,6 @@ interface NavigationTreeItemProps {
 	isCollapsed?: boolean;
 	isSidebar?: boolean;
 	isHighlighted?: boolean;
-	isLast?: boolean;
 	children?: React.ReactNode;
 	toolbar?: React.ReactNode;
 	onClick?: (event?: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
@@ -39,13 +39,6 @@ interface NavigationTreeItemProps {
 	) => void;
 	dataType?: string;
 	dataId?: string;
-}
-
-function mapIndex(index?: number, isLast?: boolean): number | undefined {
-	if (index === undefined) return undefined;
-	const userIndex = index + 1;
-	if (0 <= userIndex && userIndex <= 8) return userIndex;
-	if (isLast) return 9;
 }
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
@@ -155,7 +148,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 					onAuxClick={props.onAuxClick}
 					onDoubleClick={props.onDoubleClick}
 					onContextMenu={props.onContextMenu}
-					data-index={mapIndex(props.index, props.isLast)}
+					data-index={props.index}
 					ref={props.id ? setNodeRef : null}
 					{...attributes}
 					{...listeners}

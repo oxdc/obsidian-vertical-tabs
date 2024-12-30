@@ -130,7 +130,7 @@ export const NavigationContent = () => {
 												<Tab
 													key={leaf.id}
 													leaf={leaf}
-													index={index}
+													index={index + 1}
 													isLast={isLast}
 												/>
 											);

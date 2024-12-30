@@ -161,6 +161,9 @@ declare module "obsidian" {
 				};
 			};
 		};
+		commands: {
+			commands: Record<string, Command>;
+		};
 	}
 
 	interface Menu {

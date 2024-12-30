@@ -42,6 +42,7 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 		lockFocusOnLeaf,
 		toggleHiddenGroup,
 		hookLatestActiveTab,
+		mapViewCueIndex,
 	} = useViewState();
 	const [isPinned, setIsPinned] = useState(
 		leaf.getViewState().pinned ?? false
@@ -440,12 +441,13 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 		}
 	}, [isActiveTab, ref]);
 
+	const viewCueIndex = mapViewCueIndex(index, isLast);
+
 	return (
 		<NavigationTreeItem
 			ref={ref}
 			id={leaf.id}
-			index={index}
-			isLast={isLast}
+			index={viewCueIndex}
 			title={volatileTitle ?? DeduplicatedTitle(app, leaf)}
 			isTab={true}
 			isEphemeralTab={isEphemeral && !isPinned}
