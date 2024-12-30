@@ -1,0 +1,21 @@
+.vertical-tabs.tab-index-view-cue {
+	.obsidian-vertical-tabs-container {
+		.tree-item.is-group.is-active-group {
+			.tree-item.is-tab:not(.is-tab-slot) {
+				.tree-item-self[data-index]::before {
+					content: attr(data-index);
+					position: absolute;
+					width: var(--size-4-4);
+					height: var(--size-4-4);
+					line-height: var(--size-4-4);
+					background: var(--background-primary);
+					border-radius: var(--radius-s);
+					border: var(--border-width) solid;
+					text-align: center;
+					left: var(--size-2-1);
+					z-index: var(--layer-tooltip);
+				}
+			}
+		}
+	}
+}

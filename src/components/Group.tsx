@@ -99,12 +99,18 @@ export const Group = ({ type, children, group }: GroupProps) => {
 			onBlur={handleTitleChange}
 		/>
 	);
+
+	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
+	const isActiveGroup = group?.id === lastActiveLeaf?.parent.id;
+
 	const props = {
 		icon: "right-triangle",
 		isCollapsed: isCollapsed && !isSingleGroup, // Single group should not be collapsed
 		isSidebar,
 		isSingleGroup,
+		isActiveGroup,
 	};
+
 	const toolbar = (
 		<Fragment>
 			{!isSidebar && !isEditing && (

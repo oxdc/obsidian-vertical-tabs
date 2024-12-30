@@ -53,7 +53,7 @@ export const NavigationContent = () => {
 		const isOverTab = (over.data.current as any).isTab;
 
 		if (isActiveTab) {
-			let movedTab : WorkspaceLeaf | null = null;
+			let movedTab: WorkspaceLeaf | null = null;
 			if (isOverTab) {
 				movedTab = moveTab(app, activeID, overID);
 			} else {
@@ -122,9 +122,20 @@ export const NavigationContent = () => {
 								group={entryOf(groupID).group}
 							>
 								<SortableContext items={getLeaveIDs(groupID)}>
-									{entryOf(groupID).leaves.map((leaf) => (
-										<Tab key={leaf.id} leaf={leaf} />
-									))}
+									{entryOf(groupID).leaves.map(
+										(leaf, index, array) => {
+											const isLast =
+												index === array.length - 1;
+											return (
+												<Tab
+													key={leaf.id}
+													leaf={leaf}
+													index={index}
+													isLast={isLast}
+												/>
+											);
+										}
+									)}
 									<TabSlot groupID={groupID} />
 								</SortableContext>
 							</Group>

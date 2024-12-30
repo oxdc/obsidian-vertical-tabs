@@ -27,9 +27,11 @@ import { HistoryBrowserModal } from "src/HistoryBrowserModal";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
+	index: number;
+	isLast: boolean;
 }
 
-export const Tab = ({ leaf }: TabProps) => {
+export const Tab = ({ leaf, index, isLast }: TabProps) => {
 	const plugin = usePlugin();
 	const app = plugin.app;
 	const workspace = app.workspace;
@@ -442,6 +444,8 @@ export const Tab = ({ leaf }: TabProps) => {
 		<NavigationTreeItem
 			ref={ref}
 			id={leaf.id}
+			index={index}
+			isLast={isLast}
 			title={volatileTitle ?? DeduplicatedTitle(app, leaf)}
 			isTab={true}
 			isEphemeralTab={isEphemeral && !isPinned}

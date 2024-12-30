@@ -7,6 +7,7 @@ import { Identifier } from "src/models/VTWorkspace";
 
 interface NavigationTreeItemProps {
 	id: Identifier | null;
+	index?: number;
 	ref?: React.RefObject<HTMLDivElement | null>;
 	title: string | React.ReactNode;
 	icon: string;
@@ -16,11 +17,13 @@ interface NavigationTreeItemProps {
 	isGroupSlot?: boolean;
 	isSingleGroup?: boolean;
 	isActive?: boolean;
+	isActiveGroup?: boolean;
 	isRenaming?: boolean;
 	isPinned?: boolean;
 	isCollapsed?: boolean;
 	isSidebar?: boolean;
 	isHighlighted?: boolean;
+	isLast?: boolean;
 	children?: React.ReactNode;
 	toolbar?: React.ReactNode;
 	onClick?: (event?: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
@@ -36,6 +39,13 @@ interface NavigationTreeItemProps {
 	) => void;
 	dataType?: string;
 	dataId?: string;
+}
+
+function mapIndex(index?: number, isLast?: boolean): number | undefined {
+	if (index === undefined) return undefined;
+	const userIndex = index + 1;
+	if (0 <= userIndex && userIndex <= 8) return userIndex;
+	if (isLast) return 9;
 }
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
@@ -63,6 +73,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-tab-slot": props.isTabSlot,
 		"is-group-slot": props.isGroupSlot,
 		"is-single-group": props.isSingleGroup,
+		"is-active-group": props.isActiveGroup,
 		"is-slot": props.isTabSlot || props.isGroupSlot,
 		"is-highlighted": props.isHighlighted,
 	};
@@ -144,6 +155,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 					onAuxClick={props.onAuxClick}
 					onDoubleClick={props.onDoubleClick}
 					onContextMenu={props.onContextMenu}
+					data-index={mapIndex(props.index, props.isLast)}
 					ref={props.id ? setNodeRef : null}
 					{...attributes}
 					{...listeners}

@@ -27,6 +27,7 @@ import { iterateRootOrFloatingLeaves } from "src/services/GetTabs";
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
 	const app = plugin.app;
+	const ref = useRef<HTMLDivElement>(null);
 	const { refresh, sort } = useTabCache();
 	const {
 		setLatestActiveLeaf,
@@ -122,6 +123,18 @@ export const NavigationContainer = () => {
 				}
 			})
 		);
+		plugin.registerDomEvent(window, "keydown", (event) => {
+			if (event.ctrlKey || event.metaKey) {
+				if (ref.current) {
+					ref.current.toggleClass("tab-index-view-cue", true);
+				}
+			}
+		});
+		plugin.registerDomEvent(window, "keyup", () => {
+			if (ref.current) {
+				ref.current.toggleClass("tab-index-view-cue", false);
+			}
+		});
 		plugin.addCommand({
 			id: "toggle-zen-mode",
 			name: "Toggle zen mode",
@@ -170,8 +183,6 @@ export const NavigationContainer = () => {
 	const disableMiddleClickScrolling = (event: React.MouseEvent) => {
 		if (event.button === 1) event.preventDefault();
 	};
-
-	const ref = useRef<HTMLDivElement>(null);
 
 	return (
 		<div
