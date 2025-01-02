@@ -38,6 +38,14 @@ declare module "obsidian" {
 			name: "vertical-tabs:deduplicate-tabs",
 			callback: () => void
 		): EventRef;
+		on(
+			name: "vertical-tabs:enhanced-keyboard-tab-switch",
+			callback: () => void
+		): EventRef;
+		on(
+			name: "vertical-tabs:reset-keyboard-tab-switch",
+			callback: () => void
+		): EventRef;
 	}
 
 	interface WorkspaceParent {

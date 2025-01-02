@@ -38,6 +38,8 @@ export const NavigationContainer = () => {
 		setCtrlKeyState,
 		increaseViewCueOffset,
 		decreaseViewCueOffset,
+		modifyViewCueCallback,
+		resetViewCueCallback,
 	} = useViewState();
 	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
@@ -73,7 +75,10 @@ export const NavigationContainer = () => {
 
 	useEffect(() => {
 		const workspace = app.workspace;
-		loadSettings(plugin).then(() => initEphemeralTabs(app));
+		loadSettings(plugin).then((settings) => {
+			if (settings.ephemeralTabs) initEphemeralTabs(app);
+			if (settings.enhancedKeyboardTabSwitch) modifyViewCueCallback(app);
+		});
 		autoRefresh();
 		plugin.registerEvent(workspace.on("layout-change", autoRefresh));
 		plugin.registerEvent(workspace.on("active-leaf-change", autoRefresh));
@@ -126,7 +131,19 @@ export const NavigationContainer = () => {
 				}
 			})
 		);
+		plugin.registerEvent(
+			workspace.on("vertical-tabs:enhanced-keyboard-tab-switch", () => {
+				modifyViewCueCallback(app);
+			})
+		);
+		plugin.registerEvent(
+			workspace.on("vertical-tabs:reset-keyboard-tab-switch", () => {
+				resetViewCueCallback(app);
+			})
+		);
 		plugin.registerDomEvent(window, "keydown", (event) => {
+			const { enhancedKeyboardTabSwitch } = useSettings.getState();
+			if (!enhancedKeyboardTabSwitch) return;
 			if (event.ctrlKey || event.metaKey) {
 				setCtrlKeyState(true);
 				if (event.key === "ArrowRight") {

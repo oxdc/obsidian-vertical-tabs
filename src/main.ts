@@ -33,7 +33,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 				useSettings.getState().toggleBackgroundMode(this.app, false);
 			},
 		});
-		useViewState.getState().modifyViewCueCallback(this.app);
 	}
 
 	async openVerticalTabs() {
@@ -49,7 +48,9 @@ export default class ObsidianVerticalTabs extends Plugin {
 	}
 
 	onunload() {
-		useViewState.getState().resetViewCueCallback(this.app);
+		if (this.settings.enhancedKeyboardTabSwitch) {
+			useViewState.getState().resetViewCueCallback(this.app);
+		}
 	}
 
 	async loadSettings() {

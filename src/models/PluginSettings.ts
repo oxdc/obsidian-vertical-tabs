@@ -10,6 +10,7 @@ interface ObsidianVerticalTabsSettings {
 	showMoreButtons: boolean;
 	zenMode: boolean;
 	enableTabZoom: boolean;
+	enhancedKeyboardTabSwitch: boolean;
 	alwaysOpenInNewTab: boolean;
 	deduplicateTabs: boolean;
 	ephemeralTabs: boolean;
@@ -30,6 +31,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	showMoreButtons: false,
 	zenMode: false,
 	enableTabZoom: false,
+	enhancedKeyboardTabSwitch: false,
 	alwaysOpenInNewTab: false,
 	deduplicateTabs: false,
 	ephemeralTabs: false,

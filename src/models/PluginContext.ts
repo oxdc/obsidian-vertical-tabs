@@ -41,12 +41,13 @@ export const useApp = (): App => {
 
 interface SettingsActions {
 	plugin: ObsidianVerticalTabs | null;
-	loadSettings: (plugin: ObsidianVerticalTabs) => Promise<void>;
+	loadSettings: (plugin: ObsidianVerticalTabs) => Promise<Settings>;
 	setSettings: (mutator: SettingsMutator) => void;
 	toggleZenMode: () => void;
 	updateEphemeralTabs: (app: App) => void;
 	setTabNavigationStrategy: (app: App, name: string) => void;
 	toggleBackgroundMode: (app: App, enable?: boolean) => void;
+	toggleEnhancedKeyboardTabSwitch: (app: App, enable?: boolean) => void;
 }
 
 export const useSettingsBase = create<Settings & SettingsActions>(
@@ -59,6 +60,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			const settings = plugin.settings;
 			plugin.saveSettings();
 			set(settings);
+			return settings;
 		},
 		setSettings: (mutator: SettingsMutator) => {
 			const { plugin } = get();
@@ -211,6 +213,16 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				moveSelfToDefaultLocation(app);
 			}
 		},
+		toggleEnhancedKeyboardTabSwitch(app: App, enable?: boolean) {
+			const { enhancedKeyboardTabSwitch } = get();
+			const toEnable = enable ?? !enhancedKeyboardTabSwitch;
+			if (toEnable) {
+				app.workspace.trigger("vertical-tabs:enhanced-keyboard-tab-switch");
+			} else {
+				app.workspace.trigger("vertical-tabs:reset-keyboard-tab-switch");
+			}
+			get().setSettings({ enhancedKeyboardTabSwitch: toEnable });
+		}
 	})
 );
 
