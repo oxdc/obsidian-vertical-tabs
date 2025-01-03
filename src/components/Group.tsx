@@ -101,7 +101,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	);
 
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
-	const isActiveGroup = group?.id === lastActiveLeaf?.parent.id;
+	const isActiveGroup = group?.id === lastActiveLeaf?.parent?.id;
 
 	const props = {
 		icon: "right-triangle",
