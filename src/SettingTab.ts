@@ -128,9 +128,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			.setDesc("Use Ctrl/Cmd + 1-9 to switch between tabs.")
 			.addToggle((toggle) => {
 				toggle
-					.setValue(
-						this.plugin.settings.enhancedKeyboardTabSwitch
-					)
+					.setValue(this.plugin.settings.enhancedKeyboardTabSwitch)
 					.onChange(async (value) => {
 						useSettings
 							.getState()
@@ -350,6 +348,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 						useSettings.getState().setSettings({
 							deduplicateTabs: value,
 							deduplicateSidebarTabs: false,
+							deduplicatePopupTabs: false,
 						});
 						if (value) {
 							this.app.workspace.trigger(
@@ -363,9 +362,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		if (this.plugin.settings.deduplicateTabs) {
 			new Setting(containerEl)
 				.setName("Deduplicate sidebar tabs")
-				.setDesc(
-					"Prevent reopening sidebar tabs in the main workspace."
-				)
+				.setDesc("Prevent duplicated tabs in the sidebars.")
 				.addToggle((toggle) => {
 					toggle
 						.setValue(this.plugin.settings.deduplicateSidebarTabs)
@@ -373,6 +370,23 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 							useSettings
 								.getState()
 								.setSettings({ deduplicateSidebarTabs: value });
+							if (value)
+								this.app.workspace.trigger(
+									"vertical-tabs:deduplicate-tabs"
+								);
+						});
+				});
+
+			new Setting(containerEl)
+				.setName("Deduplicate popup tabs")
+				.setDesc("Prevent duplicated tabs in popup windows.")
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.deduplicatePopupTabs)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setSettings({ deduplicatePopupTabs: value });
 							if (value)
 								this.app.workspace.trigger(
 									"vertical-tabs:deduplicate-tabs"

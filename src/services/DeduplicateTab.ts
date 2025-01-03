@@ -1,6 +1,5 @@
 import { App, FileView, TFile, WorkspaceLeaf } from "obsidian";
 import { loadDeferredLeaf } from "./LoadDeferredLeaf";
-import { iterateRootOrFloatingLeaves } from "./GetTabs";
 import { useSettings } from "src/models/PluginContext";
 import {
 	getLeaveIDsControlledByHoverEditor,
@@ -23,13 +22,26 @@ const EXCLUSION_LIST = new Set([
 	"localgraph",
 ]);
 
+interface DeduplicateOptions {
+	deduplicateSidebarTabs: boolean;
+	deduplicatePopupTabs: boolean;
+}
+
 function iterateTabs(
 	app: App,
-	includeSidebar = false,
+	options: DeduplicateOptions,
 	callback: (leaf: WorkspaceLeaf) => void
 ) {
-	if (includeSidebar) app.workspace.iterateAllLeaves(callback);
-	else iterateRootOrFloatingLeaves(app, callback);
+	const workspace = app.workspace;
+	const { rootSplit, leftSplit, rightSplit, floatingSplit } = workspace;
+	workspace.iterateLeaves(rootSplit, callback);
+	if (options.deduplicateSidebarTabs) {
+		workspace.iterateLeaves(leftSplit, callback);
+		workspace.iterateLeaves(rightSplit, callback);
+	}
+	if (options.deduplicatePopupTabs) {
+		workspace.iterateLeaves(floatingSplit, callback);
+	}
 }
 
 function getOpenFileOfLeaf(app: App, leaf: WorkspaceLeaf): TFile | null {
@@ -49,9 +61,9 @@ export function deduplicateTab(
 ): WorkspaceLeaf | null {
 	if (!file) return null;
 	const targetLeaves: WorkspaceLeaf[] = [];
-	const includeSidebar = useSettings.getState().deduplicateSidebarTabs;
+	const options = useSettings.getState();
 	const skipLeaves = getLeaveIDsControlledByHoverEditor(app);
-	iterateTabs(app, includeSidebar, (leaf) => {
+	iterateTabs(app, options, (leaf) => {
 		if (skipLeaves.includes(leaf.id)) return;
 		const viewType = leaf.view.getViewType();
 		if (EXCLUSION_LIST.has(viewType)) return;
