@@ -1,6 +1,7 @@
 import { TabNavigationStrategy } from "./TabNavigation";
 
 interface ObsidianVerticalTabsSettings {
+	installationID?: string;
 	showActiveTabs: boolean;
 	autoUncollapseGroup: boolean;
 	hideSidebars: boolean;

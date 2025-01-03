@@ -6,6 +6,7 @@ import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
 import { useViewState } from "./models/ViewState";
 import { ObsidianVerticalTabsSettingTab } from "./SettingTab";
 import { useSettings } from "./models/PluginContext";
+import { nanoid } from "nanoid";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -59,6 +60,8 @@ export default class ObsidianVerticalTabs extends Plugin {
 			DEFAULT_SETTINGS,
 			await this.loadData()
 		);
+		if (!this.settings.installationID)
+			this.settings.installationID = nanoid();
 	}
 
 	async saveSettings() {

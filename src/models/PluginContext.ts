@@ -224,12 +224,16 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			const { enhancedKeyboardTabSwitch } = get();
 			const toEnable = enable ?? !enhancedKeyboardTabSwitch;
 			if (toEnable) {
-				app.workspace.trigger("vertical-tabs:enhanced-keyboard-tab-switch");
+				app.workspace.trigger(
+					"vertical-tabs:enhanced-keyboard-tab-switch"
+				);
 			} else {
-				app.workspace.trigger("vertical-tabs:reset-keyboard-tab-switch");
+				app.workspace.trigger(
+					"vertical-tabs:reset-keyboard-tab-switch"
+				);
 			}
 			get().setSettings({ enhancedKeyboardTabSwitch: toEnable });
-		}
+		},
 	})
 );
 
