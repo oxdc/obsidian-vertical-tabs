@@ -7,6 +7,7 @@ import {
 } from "./HoverEditorTabs";
 import { makeLeafNonEphemeral } from "./EphemeralTabs";
 import { useViewState } from "src/models/ViewState";
+import { getOpenFileOfLeaf } from "./GetTabs";
 
 const EXCLUSION_LIST = new Set([
 	"file-explorer",
@@ -42,16 +43,6 @@ function iterateTabs(
 	if (options.deduplicatePopupTabs) {
 		workspace.iterateLeaves(floatingSplit, callback);
 	}
-}
-
-function getOpenFileOfLeaf(app: App, leaf: WorkspaceLeaf): TFile | null {
-	if (leaf.view instanceof FileView) return leaf.view.file;
-	const path = leaf.getViewState().state?.file as string | undefined;
-	if (path) {
-		const file = app.vault.getAbstractFileByPath(path);
-		if (file instanceof TFile) return file;
-	}
-	return null;
 }
 
 export function deduplicateTab(

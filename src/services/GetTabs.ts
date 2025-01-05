@@ -1,4 +1,4 @@
-import { App, WorkspaceLeaf, WorkspaceParent } from "obsidian";
+import { App, FileView, TFile, WorkspaceLeaf, WorkspaceParent } from "obsidian";
 import { createNewTabCache, TabCache } from "src/models/TabCache";
 import { GroupType } from "src/models/VTWorkspace";
 
@@ -51,4 +51,14 @@ export function iterateSidebarLeaves(
 	const { leftSplit, rightSplit } = workspace;
 	workspace.iterateLeaves(leftSplit, callback);
 	workspace.iterateLeaves(rightSplit, callback);
+}
+
+export function getOpenFileOfLeaf(app: App, leaf: WorkspaceLeaf): TFile | null {
+	if (leaf.view instanceof FileView) return leaf.view.file;
+	const path = leaf.getViewState().state?.file as string | undefined;
+	if (path) {
+		const file = app.vault.getAbstractFileByPath(path);
+		if (file instanceof TFile) return file;
+	}
+	return null;
 }
