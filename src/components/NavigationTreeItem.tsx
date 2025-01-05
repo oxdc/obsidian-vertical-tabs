@@ -113,7 +113,10 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 							{props.title}
 						</div>
 					</div>
-					<div className="tree-item-flair-outer">
+					<div
+						className="tree-item-flair-outer"
+						onClick={(e) => e.stopPropagation()}
+					>
 						{props.toolbar}
 						<div
 							className="drag-handle"
@@ -159,7 +162,12 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 							{props.title}
 						</div>
 					</div>
-					<div className="tree-item-flair-outer">{props.toolbar}</div>
+					<div
+						className="tree-item-flair-outer"
+						onClick={(e) => e.stopPropagation()}
+					>
+						{props.toolbar}
+					</div>
 				</div>
 				{!props.isCollapsed && !isDragging && (
 					<div className="tree-item-children">{props.children}</div>
