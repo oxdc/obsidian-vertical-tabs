@@ -37,6 +37,7 @@ interface NavigationTreeItemProps {
 	onContextMenu?: (
 		event: React.MouseEvent<HTMLDivElement, MouseEvent>
 	) => void;
+	onMouseOver?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 	dataType?: string;
 	dataId?: string;
 }
@@ -151,6 +152,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 					onAuxClick={props.onAuxClick}
 					onDoubleClick={props.onDoubleClick}
 					onContextMenu={props.onContextMenu}
+					onMouseOver={props.onMouseOver}
 					data-index={props.index}
 					ref={props.id ? setNodeRef : null}
 					{...attributes}

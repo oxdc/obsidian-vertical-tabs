@@ -24,6 +24,7 @@ import { useTouchSensor } from "src/services/TouchSeneor";
 import { zoomIn, zoomOut, resetZoom } from "src/services/TabZoom";
 import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
 import { HistoryBrowserModal } from "src/HistoryBrowserModal";
+import { getOpenFileOfLeaf } from "src/services/GetTabs";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -443,6 +444,21 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 
 	const viewCueIndex = mapViewCueIndex(index, isLast);
 
+	const previewTab = (
+		event: React.MouseEvent<HTMLDivElement, MouseEvent>
+	) => {
+		const file = getOpenFileOfLeaf(app, leaf);
+		if (file && ref.current) {
+			workspace.trigger("hover-link", {
+				event: event.nativeEvent,
+				source: "tab-header",
+				hoverParent: leaf,
+				targetEl: ref.current,
+				linktext: file.path,
+			});
+		}
+	};
+
 	return (
 		<NavigationTreeItem
 			ref={ref}
@@ -460,6 +476,7 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 			onAuxClick={midClickCloseTab}
 			onDoubleClick={() => makeLeafNonEphemeral(leaf)}
 			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
+			onMouseOver={previewTab}
 			dataType={leaf.getViewState().type}
 			dataId={leaf.id}
 		/>
