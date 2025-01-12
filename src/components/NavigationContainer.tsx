@@ -8,6 +8,7 @@ import { debounce, ItemView, Platform } from "obsidian";
 import {
 	ensureSelfIsOpen,
 	moveSelfToDefaultLocation,
+	moveSelfToNewGroupAndHide,
 	selfIsNotInTheSidebar,
 } from "src/services/MoveTab";
 import { resetZoom, zoomIn, zoomOut } from "src/services/TabZoom";
@@ -78,6 +79,7 @@ export const NavigationContainer = () => {
 		loadSettings(plugin).then((settings) => {
 			if (settings.ephemeralTabs) initEphemeralTabs(app);
 			if (settings.enhancedKeyboardTabSwitch) modifyViewCueCallback(app);
+			if (settings.backgroundMode) moveSelfToNewGroupAndHide(app);
 		});
 		autoRefresh();
 		plugin.registerEvent(workspace.on("layout-change", autoRefresh));
