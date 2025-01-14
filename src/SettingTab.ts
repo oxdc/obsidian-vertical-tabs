@@ -121,20 +121,27 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					});
 			});
 
-		new Setting(containerEl).setName("Tab switching").setHeading();
+		if (!this.plugin.settings.backgroundMode) {
+			new Setting(containerEl).setName("Tab switching").setHeading();
 
-		new Setting(containerEl)
-			.setName("Enhanced keyboard tab switch")
-			.setDesc("Use Ctrl/Cmd + 1-9 to switch between tabs.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.enhancedKeyboardTabSwitch)
-					.onChange(async (value) => {
-						useSettings
-							.getState()
-							.toggleEnhancedKeyboardTabSwitch(this.app, value);
-					});
-			});
+			new Setting(containerEl)
+				.setName("Enhanced keyboard tab switch")
+				.setDesc("Use Ctrl/Cmd + 1-9 to switch between tabs.")
+				.addToggle((toggle) => {
+					toggle
+						.setValue(
+							this.plugin.settings.enhancedKeyboardTabSwitch
+						)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.toggleEnhancedKeyboardTabSwitch(
+									this.app,
+									value
+								);
+						});
+				});
+		}
 
 		new Setting(containerEl).setName("Tab navigation").setHeading();
 
