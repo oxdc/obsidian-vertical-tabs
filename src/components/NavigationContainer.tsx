@@ -4,7 +4,7 @@ import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect } from "react";
 import { useViewState } from "src/models/ViewState";
-import { debounce, ItemView } from "obsidian";
+import { debounce, ItemView, TFolder } from "obsidian";
 import {
 	ensureSelfIsOpen,
 	moveSelfToDefaultLocation,
@@ -22,6 +22,7 @@ import {
 } from "src/services/EphemeralTabs";
 import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
 import { iterateRootOrFloatingLeaves } from "src/services/GetTabs";
+import { addMenuItemsToFolderContextMenu } from "src/services/OpenFolder";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
@@ -117,6 +118,14 @@ export const NavigationContainer = () => {
 			workspace.on("vertical-tabs:deduplicate-tabs", () => {
 				const activeLeaf = deduplicateExistingTabs(app);
 				if (activeLeaf) lockFocusOnLeaf(app, activeLeaf);
+			})
+		);
+		plugin.registerEvent(
+			workspace.on("file-menu", (menu, fileOrFolder) => {
+				if (fileOrFolder instanceof TFolder) {
+					const folder = fileOrFolder;
+					addMenuItemsToFolderContextMenu(app, menu, folder);
+				}
 			})
 		);
 		plugin.addCommand({

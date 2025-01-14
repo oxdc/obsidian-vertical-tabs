@@ -25,6 +25,7 @@ import {
 } from "src/services/SidebarToggles";
 import { getGroupType, GroupType, Identifier } from "./VTWorkspace";
 import { useTabCache } from "./TabCache";
+import { BindedFolder } from "src/services/OpenFolder";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -42,6 +43,10 @@ export type EphermalToggleEvents = DefaultRecord<Identifier, EventRef | null>;
 export type EphermalToggleEventCallback = (isEphemeral: boolean) => void;
 export const createNewEphermalToggleEvents = () =>
 	new DefaultRecord(() => null) as EphermalToggleEvents;
+
+export type BindedGroups = DefaultRecord<Identifier, BindedFolder | null>;
+export const createNewBindedGroups = () =>
+	new DefaultRecord(() => null) as BindedGroups;
 
 interface ViewState {
 	groupTitles: GroupTitles;
@@ -64,6 +69,7 @@ interface ViewState {
 	) => void;
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
 	lockFocusOnLeaf: (app: App, leaf: WorkspaceLeaf) => void;
+	bindedGroups: BindedGroups;
 	resetFocusFlags: () => void;
 	leftButtonClone: HTMLElement | null;
 	rightButtonClone: HTMLElement | null;
@@ -99,6 +105,9 @@ interface ViewState {
 		oldLeaf: WorkspaceLeaf | null,
 		newLeaf: WorkspaceLeaf | null
 	) => void;
+	addBindedGroup: (groupID: Identifier, bindedFolder: BindedFolder) => void;
+	removeBindedGroup: (groupID: Identifier) => void;
+	getBindedFolder: (groupID: Identifier) => BindedFolder | null;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -183,6 +192,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	pinningEvents: createNewPinningEvents(),
 	ephermalToggleEvents: createNewEphermalToggleEvents(),
 	globalCollapseState: false,
+	bindedGroups: createNewBindedGroups(),
 	leftButtonClone: null,
 	rightButtonClone: null,
 	topLeftContainer: null,
@@ -469,5 +479,19 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		if (latestParent.id !== targetParent.id) return false;
 		// otherwise, use the default handler
 		return fallback();
+	},
+	addBindedGroup(groupID: Identifier, bindedFolder: BindedFolder) {
+		const { bindedGroups } = get();
+		bindedGroups.set(groupID, bindedFolder);
+		set({ bindedGroups });
+	},
+	removeBindedGroup(groupID: Identifier) {
+		const { bindedGroups } = get();
+		bindedGroups.set(groupID, null);
+		set({ bindedGroups });
+	},
+	getBindedFolder(groupID: Identifier) {
+		const { bindedGroups } = get();
+		return bindedGroups.get(groupID);
 	},
 }));
