@@ -10,6 +10,8 @@ import {
 	loadNameFromBookmark,
 } from "src/models/VTBookmark";
 import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
+import { LinkedFolder } from "src/services/OpenFolder";
+import { LinkedGroupButton } from "./LinkedGroupButton";
 
 interface GroupProps {
 	type: GroupType;
@@ -202,10 +204,36 @@ export const Group = ({ type, children, group }: GroupProps) => {
 			.onClick(() => group?.detach());
 	});
 
+	const { getLinkedFolder, removeLinkedGroup } = useViewState();
+	const [linkedFolder, setLinkedFolder] = useState<LinkedFolder | null>(null);
+	useEffect(() => {
+		if (!group) return;
+		const linkedFolder = getLinkedFolder(group.id);
+		setLinkedFolder(linkedFolder);
+	}, [group]);
+
+	const unlinkGroup = () => {
+		if (group) {
+			removeLinkedGroup(group.id);
+			setLinkedFolder(null);
+		}
+	};
+
+	const loadMore = async () => {
+		if (linkedFolder) {
+			const hasMore = await linkedFolder.openNextFiles(false);
+			if (!hasMore) unlinkGroup();
+		}
+	};
+
+	const showLinkedGroupButtons =
+		linkedFolder && linkedFolder.files.length > linkedFolder.offset;
+
 	return (
 		<NavigationTreeItem
 			id={isSidebar ? null : group?.id ?? null}
 			isTab={false}
+			isLinkedGroup={!!linkedFolder}
 			title={isEditing ? titleEditor : title}
 			isRenaming={isEditing}
 			{...props}
@@ -214,7 +242,21 @@ export const Group = ({ type, children, group }: GroupProps) => {
 			dataType={type}
 			toolbar={toolbar}
 		>
+			{showLinkedGroupButtons && (
+				<LinkedGroupButton
+					title={`Unlink "${linkedFolder.folder.path}"`}
+					icon="unlink"
+					onClick={unlinkGroup}
+				/>
+			)}
 			{children && children(isSingleGroup, viewType, enableView)}
+			{showLinkedGroupButtons && (
+				<LinkedGroupButton
+					title="Load more"
+					icon="ellipsis"
+					onClick={loadMore}
+				/>
+			)}
 		</NavigationTreeItem>
 	);
 };

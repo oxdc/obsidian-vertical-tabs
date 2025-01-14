@@ -25,7 +25,7 @@ import {
 } from "src/services/SidebarToggles";
 import { getGroupType, GroupType, Identifier } from "./VTWorkspace";
 import { useTabCache } from "./TabCache";
-import { BindedFolder } from "src/services/OpenFolder";
+import { LinkedFolder } from "src/services/OpenFolder";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -44,9 +44,9 @@ export type EphermalToggleEventCallback = (isEphemeral: boolean) => void;
 export const createNewEphermalToggleEvents = () =>
 	new DefaultRecord(() => null) as EphermalToggleEvents;
 
-export type BindedGroups = DefaultRecord<Identifier, BindedFolder | null>;
-export const createNewBindedGroups = () =>
-	new DefaultRecord(() => null) as BindedGroups;
+export type LinkedGroups = DefaultRecord<Identifier, LinkedFolder | null>;
+export const createNewLinkedGroups = () =>
+	new DefaultRecord(() => null) as LinkedGroups;
 
 interface ViewState {
 	groupTitles: GroupTitles;
@@ -69,7 +69,7 @@ interface ViewState {
 	) => void;
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
 	lockFocusOnLeaf: (app: App, leaf: WorkspaceLeaf) => void;
-	bindedGroups: BindedGroups;
+	linkedGroups: LinkedGroups;
 	resetFocusFlags: () => void;
 	leftButtonClone: HTMLElement | null;
 	rightButtonClone: HTMLElement | null;
@@ -105,9 +105,9 @@ interface ViewState {
 		oldLeaf: WorkspaceLeaf | null,
 		newLeaf: WorkspaceLeaf | null
 	) => void;
-	addBindedGroup: (groupID: Identifier, bindedFolder: BindedFolder) => void;
-	removeBindedGroup: (groupID: Identifier) => void;
-	getBindedFolder: (groupID: Identifier) => BindedFolder | null;
+	addLinkedGroup: (groupID: Identifier, linkedFolder: LinkedFolder) => void;
+	removeLinkedGroup: (groupID: Identifier) => void;
+	getLinkedFolder: (groupID: Identifier) => LinkedFolder | null;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -192,7 +192,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	pinningEvents: createNewPinningEvents(),
 	ephermalToggleEvents: createNewEphermalToggleEvents(),
 	globalCollapseState: false,
-	bindedGroups: createNewBindedGroups(),
+	linkedGroups: createNewLinkedGroups(),
 	leftButtonClone: null,
 	rightButtonClone: null,
 	topLeftContainer: null,
@@ -480,18 +480,18 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		// otherwise, use the default handler
 		return fallback();
 	},
-	addBindedGroup(groupID: Identifier, bindedFolder: BindedFolder) {
-		const { bindedGroups } = get();
-		bindedGroups.set(groupID, bindedFolder);
-		set({ bindedGroups });
+	addLinkedGroup(groupID: Identifier, linkedFolder: LinkedFolder) {
+		const { linkedGroups } = get();
+		linkedGroups.set(groupID, linkedFolder);
+		set({ linkedGroups: linkedGroups });
 	},
-	removeBindedGroup(groupID: Identifier) {
-		const { bindedGroups } = get();
-		bindedGroups.set(groupID, null);
-		set({ bindedGroups });
+	removeLinkedGroup(groupID: Identifier) {
+		const { linkedGroups } = get();
+		linkedGroups.set(groupID, null);
+		set({ linkedGroups: linkedGroups });
 	},
-	getBindedFolder(groupID: Identifier) {
-		const { bindedGroups } = get();
-		return bindedGroups.get(groupID);
+	getLinkedFolder(groupID: Identifier) {
+		const { linkedGroups: linkedGroups } = get();
+		return linkedGroups.get(groupID);
 	},
 }));

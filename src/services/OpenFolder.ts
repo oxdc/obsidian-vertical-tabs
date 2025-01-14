@@ -30,21 +30,21 @@ export function getFilesRecursivelyInFolder(folder: TFolder): TFile[] {
 	}, files) as TFile[];
 }
 
-export interface BindedFolderOptions {
+export interface LinkedFolderOptions {
 	recursive?: boolean;
 	limits?: number;
 }
 
-export class BindedFolder {
+export class LinkedFolder {
 	app: App;
 	folder: TFolder;
 	files: TFile[];
 	offset = 0;
-	limits = 10;
+	limits = 5;
 	newLeaf: WorkspaceLeaf | null = null;
 	group: WorkspaceParent | null = null;
 
-	constructor(app: App, folder: TFolder, options: BindedFolderOptions = {}) {
+	constructor(app: App, folder: TFolder, options: LinkedFolderOptions = {}) {
 		this.app = app;
 		this.folder = folder;
 		this.files = options.recursive
@@ -67,19 +67,31 @@ export class BindedFolder {
 		return group.id;
 	}
 
-	async openNextFiles(): Promise<boolean> {
+	async openNextFiles(replace: boolean): Promise<boolean> {
 		if (!this.group) return false;
 		const files = this.files.slice(this.offset, this.offset + this.limits);
 		if (files.length === 0) return false;
 		this.offset += this.limits;
 		files.forEach(async (file, index) => {
-			const leaf = this.app.workspace.createLeafInParent(
-				this.group as WorkspaceSplit,
-				index
-			);
+			let leaf = null;
+			const split = this.group as WorkspaceSplit;
+			const tabIndex = replace ? index : split.children.length;
+			leaf =
+				replace && split && split.children.length > index
+					? split.children[index]
+					: this.app.workspace.createLeafInParent(split, tabIndex);
 			await leaf.openFile(file);
 			makeLeafNonEphemeral(leaf);
 		});
+		if (
+			replace &&
+			this.group &&
+			this.group.children.length > files.length
+		) {
+			this.group.children.slice(files.length).forEach((leaf) => {
+				leaf.detach();
+			});
+		}
 		this.newLeaf?.detach();
 		return true;
 	}
@@ -89,11 +101,11 @@ async function handleOpenFolder(app: App, folder: TFolder, recursive: boolean) {
 	const options = {
 		recursive,
 	};
-	const bindedFolder = new BindedFolder(app, folder, options);
-	const groupID = await bindedFolder.createNewGroup();
+	const linkedFolder = new LinkedFolder(app, folder, options);
+	const groupID = await linkedFolder.createNewGroup();
 	if (!groupID) return;
-	useViewState.getState().addBindedGroup(groupID, bindedFolder);
-	bindedFolder.openNextFiles();
+	useViewState.getState().addLinkedGroup(groupID, linkedFolder);
+	linkedFolder.openNextFiles(false);
 }
 
 export function addMenuItemsToFolderContextMenu(
