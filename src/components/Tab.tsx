@@ -23,12 +23,21 @@ import {
 import { useTouchSensor } from "src/services/TouchSeneor";
 import { zoomIn, zoomOut, resetZoom } from "src/services/TabZoom";
 import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
+import { GroupViewType } from "src/models/VTWorkspace";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
+	isSingleGroup?: boolean;
+	viewType?: GroupViewType;
+	enableView?: (viewType: GroupViewType) => void;
 }
 
-export const Tab = ({ leaf }: TabProps) => {
+export const Tab = ({
+	leaf,
+	isSingleGroup,
+	viewType,
+	enableView,
+}: TabProps) => {
 	const plugin = usePlugin();
 	const app = plugin.app;
 	const workspace = app.workspace;
@@ -120,6 +129,27 @@ export const Tab = ({ leaf }: TabProps) => {
 				leaf.detach();
 			});
 	});
+	if (isSingleGroup && viewType && enableView) {
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("group-view")
+				.setTitle("Default view")
+				.setDisabled(viewType === GroupViewType.Default)
+				.onClick(() => enableView(GroupViewType.Default));
+		});
+		menu.addItem((item) => {
+			item.setSection("group-view")
+				.setTitle("Continuous view")
+				.setDisabled(viewType === GroupViewType.ContinuousView)
+				.onClick(() => enableView(GroupViewType.ContinuousView));
+		});
+		menu.addItem((item) => {
+			item.setSection("group-view")
+				.setTitle("Mission control view")
+				.setDisabled(viewType === GroupViewType.MissionControlView)
+				.onClick(() => enableView(GroupViewType.MissionControlView));
+		});
+	}
 	menu.addSeparator();
 	menu.addItem((item) => {
 		item.setSection("close")

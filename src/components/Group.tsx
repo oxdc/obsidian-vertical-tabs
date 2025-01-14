@@ -14,7 +14,11 @@ import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
 interface GroupProps {
 	type: GroupType;
 	group: WorkspaceParent | null;
-	children?: React.ReactNode;
+	children?: (
+		isSingleGroup: boolean,
+		viewType: GroupViewType,
+		enableView: (viewType: GroupViewType) => void
+	) => React.ReactNode;
 }
 
 const titleMap: Record<GroupType, string> = {
@@ -146,43 +150,56 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	const menu = new Menu();
 
 	menu.addItem((item) => {
-		item.setTitle(isHidden ? "Show" : "Hide").onClick(toggleHidden);
+		item.setSection("editing")
+			.setTitle(isHidden ? "Show" : "Hide")
+			.onClick(toggleHidden);
 	});
 	menu.addItem((item) => {
-		item.setTitle("Rename").onClick(handleTitleChange);
+		item.setSection("editing")
+			.setTitle("Rename")
+			.onClick(handleTitleChange);
 	});
 	menu.addSeparator();
 	menu.addItem((item) => {
-		item.setTitle("Default view")
+		item.setSection("group-view")
+			.setTitle("Default view")
 			.setDisabled(viewType === GroupViewType.Default)
 			.onClick(() => enableView(GroupViewType.Default));
 	});
 	menu.addItem((item) => {
-		item.setTitle("Continuous view")
+		item.setSection("group-view")
+			.setTitle("Continuous view")
 			.setDisabled(viewType === GroupViewType.ContinuousView)
 			.onClick(() => enableView(GroupViewType.ContinuousView));
 	});
 	menu.addItem((item) => {
-		item.setTitle("Mission control view")
+		item.setSection("group-view")
+			.setTitle("Mission control view")
 			.setDisabled(viewType === GroupViewType.MissionControlView)
 			.onClick(() => enableView(GroupViewType.MissionControlView));
 	});
 	menu.addSeparator();
 	menu.addItem((item) => {
-		item.setTitle("Bookmark all").onClick(() => {
-			if (group) createBookmarkForGroup(app, group, getTitle());
-		});
+		item.setSection("control")
+			.setTitle("Bookmark all")
+			.onClick(() => {
+				if (group) createBookmarkForGroup(app, group, getTitle());
+			});
 	});
 	menu.addItem((item) => {
-		item.setTitle("Bookmark and close all").onClick(async () => {
-			if (group) {
-				await createBookmarkForGroup(app, group, getTitle());
-				group.detach();
-			}
-		});
+		item.setSection("control")
+			.setTitle("Bookmark and close all")
+			.onClick(async () => {
+				if (group) {
+					await createBookmarkForGroup(app, group, getTitle());
+					group.detach();
+				}
+			});
 	});
 	menu.addItem((item) => {
-		item.setTitle("Close all").onClick(() => group?.detach());
+		item.setSection("control")
+			.setTitle("Close all")
+			.onClick(() => group?.detach());
 	});
 
 	return (
@@ -197,7 +214,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 			dataType={type}
 			toolbar={toolbar}
 		>
-			{children}
+			{children && children(isSingleGroup, viewType, enableView)}
 		</NavigationTreeItem>
 	);
 };
