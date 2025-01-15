@@ -82,6 +82,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			plugin.saveSettings();
 			plugin.updateViewStates();
 			set({ ...plugin.settings });
+			saveShowActiveTabs(plugin.settings.showActiveTabs);
 		},
 		toggleZenMode() {
 			const { zenMode, showActiveTabs } = get();
