@@ -50,8 +50,13 @@ export type ViewCueIndex = number | string | undefined;
 export const MIN_INDEX_KEY = 1;
 export const MAX_INDEX_KEY = 8;
 export const LAST_INDEX_KEY = 9;
+export const VIEW_CUE_NEXT = "→";
+export const VIEW_CUE_PREV = "←";
 export type ViewCueNativeCallback = CommandCheckCallback;
 export type ViewCueNativeCallbackMap = Map<number, ViewCueNativeCallback>;
+export type ViewCueFirstTabs = DefaultRecord<Identifier, HTMLElement | null>;
+export const createNewViewCueFirstTabs = () =>
+	new DefaultRecord(() => null) as ViewCueFirstTabs;
 
 interface ViewState {
 	groupTitles: GroupTitles;
@@ -67,6 +72,7 @@ interface ViewState {
 	hasCtrlKeyPressed: boolean;
 	viewCueOffset: number;
 	viewCueNativeCallbacks: ViewCueNativeCallbackMap;
+	viewCueFirstTabs: ViewCueFirstTabs;
 	clear: () => void;
 	setGroupTitle: (id: Identifier, name: string) => void;
 	toggleCollapsedGroup: (id: Identifier, isCollapsed: boolean) => void;
@@ -133,6 +139,12 @@ interface ViewState {
 	) => boolean | void;
 	modifyViewCueCallback: (app: App) => void;
 	resetViewCueCallback: (app: App) => void;
+	registerViewCueTab: (
+		leaf: WorkspaceLeaf,
+		tab: HTMLElement | null,
+		isFirst: boolean
+	) => void;
+	scorllToViewCueFirstTab: (app: App) => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -222,6 +234,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	hasCtrlKeyPressed: false,
 	viewCueOffset: 0,
 	viewCueNativeCallbacks: new Map(),
+	viewCueFirstTabs: createNewViewCueFirstTabs(),
 	leftButtonClone: null,
 	rightButtonClone: null,
 	topLeftContainer: null,
@@ -566,9 +579,9 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		} else if (isLast) {
 			return LAST_INDEX_KEY;
 		} else if (userIndex === MAX_INDEX_KEY + 1) {
-			return "→";
+			return VIEW_CUE_NEXT;
 		} else if (userIndex === MIN_INDEX_KEY - 1) {
-			return "←";
+			return VIEW_CUE_PREV;
 		}
 	},
 	convertBackToRealIndex(
@@ -630,6 +643,45 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			if (command) {
 				command.checkCallback = callback;
 			}
+		}
+	},
+	registerViewCueTab(
+		leaf: WorkspaceLeaf,
+		tab: HTMLElement | null,
+		isFirst: boolean
+	) {
+		const { viewCueFirstTabs } = get();
+		if (isFirst && tab) viewCueFirstTabs.set(leaf.id, tab);
+		else viewCueFirstTabs.delete(leaf.id);
+		set({ viewCueFirstTabs });
+	},
+	scorllToViewCueFirstTab(app: App) {
+		const { latestActiveLeaf, viewCueFirstTabs } = get();
+		let targetTab: HTMLElement | null = null;
+		if (!latestActiveLeaf && viewCueFirstTabs.size === 1) {
+			// If latestActiveLeaf is not set and viewCueFirstTabs has only one entry,
+			// we should scroll to that tab
+			targetTab = viewCueFirstTabs.values().next().value;
+		} else if (latestActiveLeaf) {
+			// If latestActiveLeaf is set, we should scroll to the tab that has the
+			// same parent as the latestActiveLeaf
+			const activeGroup = latestActiveLeaf.parent;
+			if (!activeGroup) return;
+			for (const [id, tab] of viewCueFirstTabs) {
+				const leaf = app.workspace.getLeafById(id);
+				if (!leaf || !tab || !leaf.parent) continue;
+				if (activeGroup.id === leaf.parent.id) {
+					targetTab = tab;
+					break;
+				}
+			}
+		}
+		if (targetTab) {
+			targetTab.scrollIntoView({
+				behavior: "smooth",
+				block: "start",
+				inline: "nearest",
+			});
 		}
 	},
 }));

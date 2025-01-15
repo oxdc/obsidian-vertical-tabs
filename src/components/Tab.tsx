@@ -10,7 +10,7 @@ import {
 	closeTabsToTopInGroup,
 } from "src/services/CloseTabs";
 import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
-import { useViewState } from "src/models/ViewState";
+import { useViewState, VIEW_CUE_PREV } from "src/models/ViewState";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 import {
 	createBookmarkForLeaf,
@@ -44,6 +44,7 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 		toggleHiddenGroup,
 		hookLatestActiveTab,
 		mapViewCueIndex,
+		registerViewCueTab,
 	} = useViewState();
 	const [isPinned, setIsPinned] = useState(
 		leaf.getViewState().pinned ?? false
@@ -443,6 +444,13 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 	}, [isActiveTab, ref]);
 
 	const viewCueIndex = mapViewCueIndex(index, isLast);
+
+	useEffect(() => {
+		const isFirstTab =
+			viewCueIndex === VIEW_CUE_PREV ||
+			(viewCueIndex === index && index === 1);
+		registerViewCueTab(leaf, ref.current, isFirstTab);
+	}, [viewCueIndex, ref]);
 
 	const previewTab = (
 		event: React.MouseEvent<HTMLDivElement, MouseEvent>

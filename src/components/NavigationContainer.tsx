@@ -1,6 +1,10 @@
 import { NavigationContent } from "./NavigationContent";
 import { NavigationHeader } from "./NavigationHeader";
-import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
+import {
+	REFRESH_TIMEOUT,
+	REFRESH_TIMEOUT_LONG,
+	useTabCache,
+} from "src/models/TabCache";
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect, useRef } from "react";
 import { useViewState } from "src/models/ViewState";
@@ -41,6 +45,7 @@ export const NavigationContainer = () => {
 		decreaseViewCueOffset,
 		modifyViewCueCallback,
 		resetViewCueCallback,
+		scorllToViewCueFirstTab,
 	} = useViewState();
 	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
@@ -161,6 +166,10 @@ export const NavigationContainer = () => {
 				if (ref.current) {
 					ref.current.toggleClass("tab-index-view-cue", true);
 				}
+				setTimeout(
+					() => scorllToViewCueFirstTab(app),
+					REFRESH_TIMEOUT_LONG
+				);
 			}
 		});
 		plugin.registerDomEvent(window, "keyup", () => {
