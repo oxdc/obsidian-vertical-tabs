@@ -398,7 +398,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		rightButtonClone?.remove();
 	},
 	insertCloneButtons() {
-		if (!Platform.isDesktop) return;
+		if (!Platform.isDesktop && !Platform.isTablet) return;
 		const isFrameHidden = getFrameStyle() === WindowFrameStyle.Hidden;
 		if (
 			!isRibbonVisible() ||
