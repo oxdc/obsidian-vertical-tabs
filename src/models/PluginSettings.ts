@@ -9,6 +9,7 @@ interface ObsidianVerticalTabsSettings {
 	sidebarExcludeSelf: boolean;
 	trimTabNames: boolean;
 	showMoreButtons: boolean;
+	useTabEditing: boolean;
 	zenMode: boolean;
 	enableTabZoom: boolean;
 	enhancedKeyboardTabSwitch: boolean;
@@ -31,6 +32,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	sidebarExcludeSelf: true,
 	trimTabNames: false,
 	showMoreButtons: false,
+	useTabEditing: true,
 	zenMode: false,
 	enableTabZoom: false,
 	enhancedKeyboardTabSwitch: false,

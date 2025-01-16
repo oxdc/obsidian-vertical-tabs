@@ -25,13 +25,23 @@ body {
 	}
 
 	&.is-mobile {
-		.vertical-tabs {
-			.obsidian-vertical-tabs-container
-				.tree-item.is-tab-slot
-				.drag-handle {
+		.obsidian-vertical-tabs-container .tree-item.is-tab-slot {
+			.drag-handle {
 				display: none !important;
 			}
 
+			.tree-item-self {
+				height: unset;
+
+				div {
+					display: initial;
+				}
+			}
+		}
+	}
+
+	&.is-mobile.vt-use-tab-editing {
+		.vertical-tabs {
 			&:not(.editing-tabs) {
 				.obsidian-vertical-tabs-container
 					.tree-item.is-tab-slot

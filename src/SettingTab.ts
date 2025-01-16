@@ -1,4 +1,4 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, Platform, PluginSettingTab, Setting } from "obsidian";
 import ObsidianVerticalTabs from "./main";
 import { useSettings } from "./models/PluginContext";
 import {
@@ -106,6 +106,32 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 								.setSettings({ showMoreButtons: value });
 						});
 				});
+
+			if (Platform.isMobile) {
+				new Setting(containerEl)
+					.setName("Mobile action preference")
+					.setDesc(
+						this.plugin.settings.useTabEditing
+							? "Enable tab editing mode to show control buttons on mobile."
+							: "Show control buttons such as new-tab buttons and close icons on mobile."
+					)
+					.addDropdown((dropdown) =>
+						dropdown
+							.addOption("show-all", "Show all buttons")
+							.addOption("tab-editing", "Enable tab editing mode")
+							.setValue(
+								this.plugin.settings.useTabEditing
+									? "tab-editing"
+									: "show-all"
+							)
+							.onChange(async (value) => {
+								useSettings.getState().setSettings({
+									useTabEditing: value === "tab-editing",
+								});
+								this.display();
+							})
+					);
+			}
 		}
 
 		new Setting(containerEl)

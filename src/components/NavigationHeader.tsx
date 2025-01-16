@@ -21,6 +21,7 @@ export const NavigationHeader = (props: NavigationHeaderProps) => {
 	const hideSidebars = useSettings.use.hideSidebars();
 	const zenMode = useSettings.use.zenMode();
 	const toggleZenMode = useSettings.use.toggleZenMode();
+	const useTabEditing = useSettings.use.useTabEditing();
 	const sortStrategy = useTabCache((state) => state.sortStrategy);
 	const { setSortStrategy } = useTabCache();
 	const { lockFocus, setAllCollapsed, setAllExpanded, scorllToActiveTab } =
@@ -154,7 +155,7 @@ export const NavigationHeader = (props: NavigationHeaderProps) => {
 					}
 					isNavAction={true}
 				/>
-				{Platform.isMobile && (
+				{Platform.isMobile && useTabEditing && (
 					<IconButton
 						icon="copy-check"
 						action="editing-tabs"
