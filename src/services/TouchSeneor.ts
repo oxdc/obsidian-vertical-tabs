@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-enum SweepDirection {
+export enum SwipeDirection {
 	Up = "up",
 	Down = "down",
 	Left = "left",
@@ -10,7 +10,7 @@ enum SweepDirection {
 
 interface TouchSensorOptions {
 	minDistance: number;
-	callback: (moved: boolean, sweepDirection: SweepDirection) => void;
+	callback: (moved: boolean, direction: SwipeDirection) => void;
 }
 
 export const useTouchSensor = (options: TouchSensorOptions) => {
@@ -19,7 +19,7 @@ export const useTouchSensor = (options: TouchSensorOptions) => {
 	const [startX, setStartX] = useState(0);
 	const [startY, setStartY] = useState(0);
 	const [moved, setMoved] = useState(false);
-	const [sweepDirection, setDirection] = useState(SweepDirection.None);
+	const [direction, setDirection] = useState(SwipeDirection.None);
 
 	const onTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
 		setStartX(event.touches[0].clientX);
@@ -34,16 +34,16 @@ export const useTouchSensor = (options: TouchSensorOptions) => {
 			setMoved(true);
 		}
 		if (Math.abs(dx) < minDistance && Math.abs(dy) > minDistance) {
-			setDirection(dy > 0 ? SweepDirection.Down : SweepDirection.Up);
+			setDirection(dy > 0 ? SwipeDirection.Down : SwipeDirection.Up);
 		} else if (Math.abs(dy) < minDistance && Math.abs(dx) > minDistance) {
-			setDirection(dx > 0 ? SweepDirection.Right : SweepDirection.Left);
+			setDirection(dx > 0 ? SwipeDirection.Right : SwipeDirection.Left);
 		} else {
-			setDirection(SweepDirection.None);
+			setDirection(SwipeDirection.None);
 		}
 	};
 
 	const onTouchEnd = () => {
-		callback(moved, sweepDirection);
+		callback(moved, direction);
 	};
 
 	const listeners = {

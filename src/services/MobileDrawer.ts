@@ -1,7 +1,7 @@
 import { App, Platform, WorkspaceMobileDrawer } from "obsidian";
 import { VIEW_TYPE } from "src/navigation";
 
-function getDrawer(app: App): WorkspaceMobileDrawer | null {
+export function getDrawer(app: App): WorkspaceMobileDrawer | null {
 	if (!Platform.isMobile) return null;
 	const workspace = app.workspace;
 	const self = workspace.getLeavesOfType(VIEW_TYPE).first();

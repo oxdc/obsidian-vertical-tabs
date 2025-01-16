@@ -29,6 +29,8 @@ import {
 } from "src/services/EphemeralTabs";
 import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
 import { iterateRootOrFloatingLeaves } from "src/services/GetTabs";
+import { SwipeDirection, useTouchSensor } from "src/services/TouchSeneor";
+import { getDrawer } from "src/services/MobileDrawer";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
@@ -47,6 +49,7 @@ export const NavigationContainer = () => {
 		modifyViewCueCallback,
 		resetViewCueCallback,
 		scorllToViewCueFirstTab,
+		setIsEditingTabs,
 	} = useViewState();
 	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
@@ -231,11 +234,37 @@ export const NavigationContainer = () => {
 		if (event.button === 1) event.preventDefault();
 	};
 
+	const disableEditingMode = () => {
+		setIsEditingTabs(app, false);
+		ref.current?.toggleClass("editing-tabs", false);
+	};
+
+	const { listeners } = useTouchSensor({
+		minDistance: 20,
+		callback: (moved, direction) => {
+			if (Platform.isMobile && moved) {
+				const drawer = getDrawer(app);
+				const { leftSplit, rightSplit } = app.workspace;
+				if (leftSplit === drawer && direction === SwipeDirection.Left) {
+					disableEditingMode();
+					setTimeout(() => leftSplit.collapse(), REFRESH_TIMEOUT);
+				} else if (
+					rightSplit === drawer &&
+					direction === SwipeDirection.Right
+				) {
+					disableEditingMode();
+					setTimeout(() => rightSplit.collapse(), REFRESH_TIMEOUT);
+				}
+			}
+		},
+	});
+
 	return (
 		<div
 			className="vertical-tabs"
 			onMouseDown={disableMiddleClickScrolling}
 			ref={ref}
+			{...listeners}
 		>
 			<NavigationHeader container={ref.current} />
 			<NavigationContent />
