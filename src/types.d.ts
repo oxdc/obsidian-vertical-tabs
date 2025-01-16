@@ -141,6 +141,11 @@ declare module "obsidian" {
 		url: string;
 	}
 
+	interface QuickSwitcherItem {
+		type: "file" | unknown;
+		file?: TFile;
+	}
+
 	interface App {
 		internalPlugins: {
 			plugins: {
@@ -155,6 +160,12 @@ declare module "obsidian" {
 						editItem: (item: BookmarkItem) => void;
 						removeItem: (item: BookmarkItem) => void;
 						saveData: () => void;
+					};
+				};
+				switcher: {
+					enabled: boolean;
+					instance: {
+						QuickSwitcherModal: typeof SuggestModal<QuickSwitcherItem>;
 					};
 				};
 			};

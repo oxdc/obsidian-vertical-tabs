@@ -2,6 +2,9 @@ import {
 	App,
 	MarkdownFileInfo,
 	MarkdownView,
+	QuickSwitcherItem,
+	TAbstractFile,
+	TFile,
 	WorkspaceLeaf,
 	WorkspaceParent,
 } from "obsidian";
@@ -14,6 +17,7 @@ import { useViewState } from "src/models/ViewState";
 import { useSettings } from "src/models/PluginContext";
 import { Identifier } from "src/models/VTWorkspace";
 import { iterateLeavesControlledByHoverEditor } from "./HoverEditorTabs";
+import { REFRESH_TIMEOUT_LONG } from "src/models/TabCache";
 
 export function makeLeafNonEphemeralByID(app: App, leafID: string) {
 	const leaf = app.workspace.getLeafById(leafID);
@@ -172,14 +176,12 @@ export function autoCloseOldEphemeralTabs(app: App) {
 	groups.forEach((group) => autoCloseOldEphemeralTabsForGroup(group));
 }
 
-export function makeDblclickedFileNonEphemeral(app: App, event: MouseEvent) {
-	const target = event.target as HTMLElement;
-	const fileTitleEl = target.matchParent(".nav-file-title");
-	if (!fileTitleEl) return;
-	const path = fileTitleEl.getAttribute("data-path");
-	if (!path) return;
-	const file = app.vault.getAbstractFileByPath(path);
+export function makeTheLatestFileNonEphemeral(
+	app: App,
+	file: TAbstractFile | null
+) {
 	if (!file) return;
+	if (!(file instanceof TFile)) return;
 	let activeTime = 0;
 	let targetLeaf: WorkspaceLeaf | null = null;
 	app.workspace.iterateAllLeaves((leaf) => {
@@ -193,4 +195,24 @@ export function makeDblclickedFileNonEphemeral(app: App, event: MouseEvent) {
 	if (targetLeaf) {
 		makeLeafNonEphemeral(targetLeaf);
 	}
+}
+
+export function makeDblclickedFileNonEphemeral(app: App, event: MouseEvent) {
+	const target = event.target as HTMLElement;
+	const fileTitleEl = target.matchParent(".nav-file-title");
+	const path = fileTitleEl?.getAttribute("data-path");
+	if (!path) return;
+	const file = app.vault.getAbstractFileByPath(path);
+	makeTheLatestFileNonEphemeral(app, file);
+}
+
+export function makeQuickSwitcherFileNonEphemeral(
+	app: App,
+	item: QuickSwitcherItem
+) {
+	setTimeout(() => {
+		if (item.type === "file" && item.file) {
+			makeTheLatestFileNonEphemeral(app, item.file);
+		}
+	}, REFRESH_TIMEOUT_LONG);
 }

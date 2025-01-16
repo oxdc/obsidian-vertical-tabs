@@ -1,4 +1,11 @@
-import { ItemView, MarkdownView, Plugin, View, WorkspaceLeaf } from "obsidian";
+import {
+	ItemView,
+	MarkdownView,
+	Plugin,
+	QuickSwitcherItem,
+	View,
+	WorkspaceLeaf,
+} from "obsidian";
 import { NavigationView, VIEW_TYPE } from "src/navigation";
 import { DEFAULT_SETTINGS, Settings } from "./models/PluginSettings";
 import { around } from "monkey-around";
@@ -7,6 +14,7 @@ import { useViewState } from "./models/ViewState";
 import { ObsidianVerticalTabsSettingTab } from "./SettingTab";
 import { useSettings } from "./models/PluginContext";
 import { nanoid } from "nanoid";
+import { makeQuickSwitcherFileNonEphemeral } from "./services/EphemeralTabs";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -170,6 +178,29 @@ export default class ObsidianVerticalTabs extends Plugin {
 						const syncViewState = old.call(this);
 						delete syncViewState.eState.zoom;
 						return syncViewState;
+					};
+				},
+			})
+		);
+
+		const modifyOpenFromQuickSwitcher = (item: QuickSwitcherItem) => {
+			if (this.settings.ephemeralTabs) {
+				makeQuickSwitcherFileNonEphemeral(this.app, item);
+			}
+		};
+
+		const quickSwitcher =
+			this.app.internalPlugins.plugins.switcher.instance;
+
+		this.register(
+			around(quickSwitcher.QuickSwitcherModal.prototype, {
+				onChooseSuggestion(old) {
+					return function (
+						item: QuickSwitcherItem,
+						evt: MouseEvent | KeyboardEvent
+					) {
+						old.call(this, item, evt);
+						modifyOpenFromQuickSwitcher(item);
 					};
 				},
 			})
