@@ -15,6 +15,7 @@ import { ObsidianVerticalTabsSettingTab } from "./SettingTab";
 import { useSettings } from "./models/PluginContext";
 import { nanoid } from "nanoid";
 import { makeQuickSwitcherFileNonEphemeral } from "./services/EphemeralTabs";
+import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "./models/TabCache";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -26,7 +27,13 @@ export default class ObsidianVerticalTabs extends Plugin {
 		await this.updateViewStates();
 		await this.patchViews();
 		this.addSettingTab(new ObsidianVerticalTabsSettingTab(this.app, this));
-		setTimeout(() => this.openVerticalTabs(), 10);
+		setTimeout(() => this.openVerticalTabs(), REFRESH_TIMEOUT);
+		this.app.workspace.onLayoutReady(() => {
+			setTimeout(
+				() => useViewState.getState().refreshToggleButtons(this.app),
+				REFRESH_TIMEOUT_LONG
+			);
+		});
 	}
 
 	async registerEventsAndViews() {
