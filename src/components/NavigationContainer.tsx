@@ -21,6 +21,7 @@ import {
 	autoCloseOldEphemeralTabs,
 	initEphemeralTabs,
 	installTabHeaderHandlers,
+	makeDblclickedFileNonEphemeral,
 	makeLeafEphemeralOnEditorChange,
 	makeLeafNonEphemeral,
 	makeTabNonEphemeralAutomatically,
@@ -177,6 +178,9 @@ export const NavigationContainer = () => {
 			if (ref.current) {
 				ref.current.toggleClass("tab-index-view-cue", false);
 			}
+		});
+		plugin.registerDomEvent(document, "dblclick", (event) => {
+			makeDblclickedFileNonEphemeral(app, event);
 		});
 		plugin.addCommand({
 			id: "toggle-zen-mode",

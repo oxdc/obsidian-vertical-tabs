@@ -5,7 +5,11 @@ import {
 	WorkspaceLeaf,
 	WorkspaceParent,
 } from "obsidian";
-import { iterateRootOrFloatingLeaves, iterateSidebarLeaves } from "./GetTabs";
+import {
+	getOpenFileOfLeaf,
+	iterateRootOrFloatingLeaves,
+	iterateSidebarLeaves,
+} from "./GetTabs";
 import { useViewState } from "src/models/ViewState";
 import { useSettings } from "src/models/PluginContext";
 import { Identifier } from "src/models/VTWorkspace";
@@ -166,4 +170,27 @@ export function autoCloseOldEphemeralTabs(app: App) {
 	const groups = new Set<WorkspaceParent>();
 	iterateRootOrFloatingLeaves(app, (leaf) => groups.add(leaf.parent));
 	groups.forEach((group) => autoCloseOldEphemeralTabsForGroup(group));
+}
+
+export function makeDblclickedFileNonEphemeral(app: App, event: MouseEvent) {
+	const target = event.target as HTMLElement;
+	const fileTitleEl = target.matchParent(".nav-file-title");
+	if (!fileTitleEl) return;
+	const path = fileTitleEl.getAttribute("data-path");
+	if (!path) return;
+	const file = app.vault.getAbstractFileByPath(path);
+	if (!file) return;
+	let activeTime = 0;
+	let targetLeaf: WorkspaceLeaf | null = null;
+	app.workspace.iterateAllLeaves((leaf) => {
+		const leafFile = getOpenFileOfLeaf(app, leaf);
+		if (!leafFile || leafFile.path !== file.path) return;
+		if (leaf.activeTime >= activeTime) {
+			activeTime = leaf.activeTime;
+			targetLeaf = leaf;
+		}
+	});
+	if (targetLeaf) {
+		makeLeafNonEphemeral(targetLeaf);
+	}
 }
