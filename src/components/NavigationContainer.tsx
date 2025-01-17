@@ -241,22 +241,26 @@ export const NavigationContainer = () => {
 
 	const { listeners } = useTouchSensor({
 		minDistance: 20,
-		callback: (moved, direction) => {
+		callback: debounce((moved, direction) => {
+			if (!useViewState.getState().isEditingTabs) return;
 			if (Platform.isMobile && moved) {
 				const drawer = getDrawer(app);
 				const { leftSplit, rightSplit } = app.workspace;
-				if (leftSplit === drawer && direction === SwipeDirection.Left) {
+				if (
+					leftSplit === drawer.contained &&
+					direction === SwipeDirection.Left
+				) {
 					disableEditingMode();
 					setTimeout(() => leftSplit.collapse(), REFRESH_TIMEOUT);
 				} else if (
-					rightSplit === drawer &&
+					rightSplit === drawer.contained &&
 					direction === SwipeDirection.Right
 				) {
 					disableEditingMode();
 					setTimeout(() => rightSplit.collapse(), REFRESH_TIMEOUT);
 				}
 			}
-		},
+		}),
 	});
 
 	return (
