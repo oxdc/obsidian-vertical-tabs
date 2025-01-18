@@ -33,20 +33,12 @@
 	overflow-y: auto;
 }
 
-.obsidian-vertical-tabs-container .tree-item-self {
-	align-items: stretch;
-}
-
 .obsidian-vertical-tabs-container .is-tab {
 	margin-left: 0.5em;
 }
 
 .obsidian-vertical-tabs-container > div {
 	width: 100%;
-}
-
-.obsidian-vertical-tabs-container .tree-item .action-button {
-	padding: var(--size-2-1);
 }
 
 .obsidian-vertical-tabs-container

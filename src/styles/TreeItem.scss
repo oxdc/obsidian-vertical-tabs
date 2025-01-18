@@ -1,4 +1,8 @@
 .obsidian-vertical-tabs-container .tree-item {
+	.tree-item-self {
+		align-items: stretch;
+	}
+
 	.tree-item-inner {
 		flex-grow: 1;
 		padding-right: var(--size-4-1);
@@ -7,5 +11,10 @@
 	.tree-item-flair-outer {
 		margin: calc(-1 * var(--size-4-1));
 		padding: var(--size-4-1) 0 var(--size-4-1) var(--size-4-1);
+
+		.action-button {
+			--icon-size: var(--icon-xs);
+			padding: var(--size-2-1);
+		}
 	}
 }
