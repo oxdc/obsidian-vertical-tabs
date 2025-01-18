@@ -8,6 +8,14 @@ import {
 import { Identifier } from "src/models/VTWorkspace";
 import { VIEW_TYPE } from "src/navigation";
 
+export function reapplyEphemeralState(
+	leaf: WorkspaceLeaf,
+	state: unknown = null
+) {
+	const ephemeralState = state ?? leaf.getEphemeralState();
+	leaf.setEphemeralState(ephemeralState);
+}
+
 function removeChild(parent: WorkspaceParent, index: number) {
 	parent.children.splice(index, 1);
 	if (parent.children.length === 0) {
@@ -54,6 +62,7 @@ export function moveTab(
 	removeChild(sourceParent, sourceIndex);
 	insertChild(targetParent, sourceLeaf, insertIndex);
 	app.workspace.onLayoutChange();
+	reapplyEphemeralState(sourceLeaf);
 	return sourceLeaf;
 }
 
@@ -69,6 +78,7 @@ export function moveTabToEnd(
 	removeChild(sourceParent, sourceIndex);
 	insertChild(targetParent, sourceLeaf);
 	app.workspace.onLayoutChange();
+	reapplyEphemeralState(sourceLeaf);
 	return sourceLeaf;
 }
 
@@ -88,6 +98,7 @@ export async function moveTabToNewGroup(
 		preferredDirection
 	);
 	targetLeaf.setPinned(!!sourceLeaf.getViewState().pinned);
+	reapplyEphemeralState(targetLeaf, sourceLeaf.getEphemeralState());
 	sourceLeaf.detach();
 	return targetLeaf;
 }
