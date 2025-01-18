@@ -73,12 +73,8 @@ export function deduplicateTabForTargets(
 		const { backHistory, forwardHistory } = latestOldLeaf.history;
 		leafToKeep.history.backHistory = backHistory;
 		leafToKeep.history.forwardHistory = forwardHistory;
+		moveTab(app, leafToKeep.id, latestOldLeaf.id);
 		reapplyEphemeralState(leafToKeep, latestOldLeaf.getEphemeralState());
-		const sourceParent = latestOldLeaf.parent;
-		const targetParent = leafToKeep.parent;
-		if (sourceParent?.id === targetParent?.id) {
-			moveTab(app, leafToKeep.id, latestOldLeaf.id);
-		}
 	}
 	sortedLeaves.forEach((leaf) => leaf.detach());
 	loadDeferredLeaf(leafToKeep);
