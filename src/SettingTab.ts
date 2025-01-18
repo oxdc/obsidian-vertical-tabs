@@ -16,6 +16,12 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
+	private refresh() {
+		const scorllTop = this.containerEl.scrollTop;
+		this.display();
+		this.containerEl.scrollTop = scorllTop;
+	}
+
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
@@ -34,7 +40,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			});
 			linkButton.onclick = () => {
 				useSettings.getState().toggleBackgroundMode(this.app, false);
-				this.display();
+				this.refresh();
 			};
 			warning.appendText(" it.");
 		}
@@ -130,7 +136,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 								useSettings.getState().setSettings({
 									useTabEditing: value === "tab-editing",
 								});
-								this.display();
+								this.refresh();
 							})
 					);
 			}
@@ -186,7 +192,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 						useSettings
 							.getState()
 							.setTabNavigationStrategy(this.app, value);
-						this.display();
+						this.refresh();
 					})
 			);
 
@@ -261,7 +267,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.backgroundMode)
 					.onChange(async () => {
 						useSettings.getState().toggleBackgroundMode(this.app);
-						this.display();
+						this.refresh();
 					});
 			});
 
@@ -310,7 +316,21 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 								TabNavigationStrategy.Custom,
 								TabNavigationPresets[preset]
 							);
-						this.display();
+						this.refresh();
+					})
+			)
+			.addExtraButton((button) =>
+				button
+					.setIcon("reset")
+					.setTooltip("Reset to default")
+					.onClick(async () => {
+						useSettings
+							.getState()
+							.setTabNavigationStrategy(
+								this.app,
+								TabNavigationStrategy.Custom
+							);
+						this.refresh();
 					})
 			);
 
@@ -323,7 +343,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 						useSettings
 							.getState()
 							.setSettings({ alwaysOpenInNewTab: value });
-						this.display();
+						this.refresh();
 					});
 			});
 
@@ -364,7 +384,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 									"vertical-tabs:ephemeral-tabs-deinit"
 								);
 							}
-							this.display();
+							this.refresh();
 						});
 				});
 
@@ -411,7 +431,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 								"vertical-tabs:deduplicate-tabs"
 							);
 						}
-						this.display();
+						this.refresh();
 					});
 			});
 
