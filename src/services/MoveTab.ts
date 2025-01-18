@@ -5,6 +5,7 @@ import {
 	WorkspaceParent,
 	WorkspaceSidedock,
 } from "obsidian";
+import { REFRESH_TIMEOUT_LONG } from "src/models/TabCache";
 import { Identifier } from "src/models/VTWorkspace";
 import { VIEW_TYPE } from "src/navigation";
 
@@ -12,8 +13,10 @@ export function reapplyEphemeralState(
 	leaf: WorkspaceLeaf,
 	state: unknown = null
 ) {
-	const ephemeralState = state ?? leaf.getEphemeralState();
-	leaf.setEphemeralState(ephemeralState);
+	setTimeout(() => {
+		const ephemeralState = state ?? leaf.getEphemeralState();
+		leaf.setEphemeralState(ephemeralState);
+	}, REFRESH_TIMEOUT_LONG);
 }
 
 function removeChild(parent: WorkspaceParent, index: number) {
