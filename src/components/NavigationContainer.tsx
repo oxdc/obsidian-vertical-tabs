@@ -137,6 +137,7 @@ export const NavigationContainer = () => {
 		plugin.registerEvent(
 			workspace.on("vertical-tabs:deduplicate-tabs", () => {
 				deduplicateExistingTabs(app);
+				uncollapseActiveGroup(app);
 			})
 		);
 		plugin.registerEvent(
@@ -228,7 +229,10 @@ export const NavigationContainer = () => {
 		plugin.addCommand({
 			id: "deduplicate-existing-tabs",
 			name: "Deduplicate all existing tabs",
-			callback: () => deduplicateExistingTabs(app, true),
+			callback: () => {
+				deduplicateExistingTabs(app, true);
+				uncollapseActiveGroup(app);
+			},
 		});
 	}, []);
 
