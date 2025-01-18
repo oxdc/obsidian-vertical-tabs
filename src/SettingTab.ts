@@ -380,6 +380,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						useSettings.getState().setSettings({
 							deduplicateTabs: value,
+							deduplicateSameGroupTabs: false,
 							deduplicateSidebarTabs: false,
 							deduplicatePopupTabs: false,
 						});
@@ -393,6 +394,27 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			});
 
 		if (this.plugin.settings.deduplicateTabs) {
+			new Setting(containerEl)
+				.setName("Deduplicate only same-group tabs")
+				.setDesc(
+					"Perform deduplication only within the same tab group."
+				)
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.deduplicateSameGroupTabs)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setSettings({
+									deduplicateSameGroupTabs: value,
+								});
+							if (value)
+								this.app.workspace.trigger(
+									"vertical-tabs:deduplicate-tabs"
+								);
+						});
+				});
+
 			new Setting(containerEl)
 				.setName("Deduplicate sidebar tabs")
 				.setDesc("Prevent duplicated tabs in the sidebars.")

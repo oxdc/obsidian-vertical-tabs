@@ -8,6 +8,8 @@ import {
 import { makeLeafNonEphemeral } from "./EphemeralTabs";
 import { useViewState } from "src/models/ViewState";
 import { getOpenFileOfLeaf } from "./GetTabs";
+import { Identifier } from "src/models/VTWorkspace";
+import { DefaultRecord } from "src/utils/DefaultRecord";
 
 const EXCLUSION_LIST = new Set([
 	"file-explorer",
@@ -24,9 +26,14 @@ const EXCLUSION_LIST = new Set([
 ]);
 
 interface DeduplicateOptions {
+	deduplicateSameGroupTabs: boolean;
 	deduplicateSidebarTabs: boolean;
 	deduplicatePopupTabs: boolean;
 }
+
+type TargetLeavesRecord = DefaultRecord<Identifier, WorkspaceLeaf[]>;
+const createNewTargetLeavesRecord = () =>
+	new DefaultRecord(() => []) as TargetLeavesRecord;
 
 function iterateTabs(
 	app: App,
@@ -45,22 +52,11 @@ function iterateTabs(
 	}
 }
 
-export function deduplicateTab(
+export function deduplicateTabForTargets(
 	app: App,
-	file: TFile | null,
+	targetLeaves: WorkspaceLeaf[],
 	focus = true
 ): WorkspaceLeaf | null {
-	if (!file) return null;
-	const targetLeaves: WorkspaceLeaf[] = [];
-	const options = useSettings.getState();
-	const skipLeaves = getLeaveIDsControlledByHoverEditor(app);
-	iterateTabs(app, options, (leaf) => {
-		if (skipLeaves.includes(leaf.id)) return;
-		const viewType = leaf.view.getViewType();
-		if (EXCLUSION_LIST.has(viewType)) return;
-		const openFile = getOpenFileOfLeaf(app, leaf);
-		if (openFile === file) targetLeaves.push(leaf);
-	});
 	const sortedLeaves = targetLeaves.sort(
 		(a, b) => b.activeTime - a.activeTime
 	);
@@ -87,6 +83,42 @@ export function deduplicateTab(
 		return leafToKeep;
 	}
 	return null;
+}
+
+export function deduplicateTab(
+	app: App,
+	file: TFile | null,
+	focus = true
+): WorkspaceLeaf | null {
+	if (!file) return null;
+	const targetLeaves: WorkspaceLeaf[] = [];
+	const options = useSettings.getState();
+	const skipLeaves = getLeaveIDsControlledByHoverEditor(app);
+	iterateTabs(app, options, (leaf) => {
+		if (skipLeaves.includes(leaf.id)) return;
+		const viewType = leaf.view.getViewType();
+		if (EXCLUSION_LIST.has(viewType)) return;
+		const openFile = getOpenFileOfLeaf(app, leaf);
+		if (openFile === file) targetLeaves.push(leaf);
+	});
+	if (options.deduplicateSameGroupTabs) {
+		const targetLeavesByGroups = createNewTargetLeavesRecord();
+		targetLeaves.forEach((leaf) => {
+			const group = leaf.parent;
+			if (!group) return;
+			const leaves = targetLeavesByGroups.get(group.id);
+			leaves.push(leaf);
+			targetLeavesByGroups.set(group.id, leaves);
+		});
+		const possibleActiveLeaves: WorkspaceLeaf[] = [];
+		for (const leaves of targetLeavesByGroups.values()) {
+			const candidates = deduplicateTabForTargets(app, leaves, focus);
+			if (candidates) possibleActiveLeaves.push(candidates);
+		}
+		return possibleActiveLeaves.last() ?? null;
+	} else {
+		return deduplicateTabForTargets(app, targetLeaves, focus);
+	}
 }
 
 export function deduplicateExistingTabs(app: App) {
