@@ -164,11 +164,11 @@ export const Group = ({ type, children, group }: GroupProps) => {
 			isTab={false}
 			title={isEditing ? titleEditor : title}
 			isRenaming={isEditing}
-			{...props}
 			onClick={toggleCollapsed}
 			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
 			dataType={type}
 			toolbar={toolbar}
+			{...props}
 		>
 			{children}
 		</NavigationTreeItem>

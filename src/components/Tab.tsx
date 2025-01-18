@@ -477,8 +477,6 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 			isEphemeralTab={isEphemeral && !isPinned}
 			isPinned={isPinned}
 			isHighlighted={isActiveTab}
-			{...props}
-			{...listeners}
 			toolbar={toolbar}
 			onClick={activeOrCloseTab}
 			onAuxClick={midClickCloseTab}
@@ -487,6 +485,8 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 			onMouseOver={previewTab}
 			dataType={leaf.getViewState().type}
 			dataId={leaf.id}
+			{...props}
+			{...listeners}
 		/>
 	);
 };
