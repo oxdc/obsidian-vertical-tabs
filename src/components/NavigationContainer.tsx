@@ -7,7 +7,7 @@ import {
 } from "src/models/TabCache";
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect, useRef } from "react";
-import { useViewState } from "src/models/ViewState";
+import { useViewState, VIEW_CUE_DELAY } from "src/models/ViewState";
 import { debounce, ItemView, Platform } from "obsidian";
 import {
 	ensureSelfIsOpen,
@@ -165,20 +165,22 @@ export const NavigationContainer = () => {
 				) {
 					event.preventDefault();
 				}
-				if (ref.current) {
-					ref.current.toggleClass("tab-index-view-cue", true);
-				}
-				setTimeout(
-					() => scorllToViewCueFirstTab(app),
-					REFRESH_TIMEOUT_LONG
-				);
+				setTimeout(() => {
+					if (useViewState.getState().hasCtrlKeyPressed) {
+						ref.current?.toggleClass("tab-index-view-cue", true);
+						scorllToViewCueFirstTab(app);
+					}
+				}, VIEW_CUE_DELAY);
+				setTimeout(() => {
+					if (ref.current?.hasClass("tab-index-view-cue")) {
+						scorllToViewCueFirstTab(app);
+					}
+				}, REFRESH_TIMEOUT_LONG);
 			}
 		});
 		plugin.registerDomEvent(window, "keyup", () => {
 			setCtrlKeyState(false);
-			if (ref.current) {
-				ref.current.toggleClass("tab-index-view-cue", false);
-			}
+			ref.current?.toggleClass("tab-index-view-cue", false);
 		});
 		plugin.registerDomEvent(document, "dblclick", (event) => {
 			makeDblclickedFileNonEphemeral(app, event);

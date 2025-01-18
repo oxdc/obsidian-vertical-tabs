@@ -52,6 +52,7 @@ export const MAX_INDEX_KEY = 8;
 export const LAST_INDEX_KEY = 9;
 export const VIEW_CUE_NEXT = "→";
 export const VIEW_CUE_PREV = "←";
+export const VIEW_CUE_DELAY = 600;
 export type ViewCueNativeCallback = CommandCheckCallback;
 export type ViewCueNativeCallbackMap = Map<number, ViewCueNativeCallback>;
 export type ViewCueFirstTabs = DefaultRecord<Identifier, HTMLElement | null>;
