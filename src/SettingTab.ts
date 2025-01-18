@@ -159,7 +159,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			new Setting(containerEl).setName("Tab switching").setHeading();
 
 			new Setting(containerEl)
-				.setName("Enhanced keyboard tab switch")
+				.setName("Enhanced keyboard tab switching")
 				.setDesc("Use Ctrl/Cmd + 1-9 to switch between tabs.")
 				.addToggle((toggle) => {
 					toggle
