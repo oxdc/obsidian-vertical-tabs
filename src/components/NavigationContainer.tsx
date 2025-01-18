@@ -136,10 +136,7 @@ export const NavigationContainer = () => {
 		);
 		plugin.registerEvent(
 			workspace.on("vertical-tabs:deduplicate-tabs", () => {
-				const activeLeaf = deduplicateExistingTabs(app);
-				if (activeLeaf) {
-					app.workspace.setActiveLeaf(activeLeaf, { focus: false });
-				}
+				deduplicateExistingTabs(app);
 			})
 		);
 		plugin.registerEvent(
@@ -227,6 +224,11 @@ export const NavigationContainer = () => {
 					makeLeafNonEphemeral(leaf)
 				);
 			},
+		});
+		plugin.addCommand({
+			id: "deduplicate-existing-tabs",
+			name: "Deduplicate all existing tabs",
+			callback: () => deduplicateExistingTabs(app),
 		});
 	}, []);
 

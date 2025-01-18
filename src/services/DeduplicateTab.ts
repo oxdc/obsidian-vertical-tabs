@@ -89,7 +89,7 @@ export function deduplicateTab(
 	return null;
 }
 
-export function deduplicateExistingTabs(app: App): WorkspaceLeaf | null {
+export function deduplicateExistingTabs(app: App) {
 	const openFiles: TFile[] = [];
 	app.workspace.iterateAllLeaves((leaf) => {
 		const path = leaf.getViewState().state?.file as string | undefined;
@@ -113,7 +113,9 @@ export function deduplicateExistingTabs(app: App): WorkspaceLeaf | null {
 		const focus =
 			!!latestActiveLeaf &&
 			getOpenFileOfLeaf(app, latestActiveLeaf) === activeFile;
-		return deduplicateTab(app, activeFile, focus);
+		const activeLeaf = deduplicateTab(app, activeFile, focus);
+		if (activeLeaf) {
+			app.workspace.setActiveLeaf(activeLeaf, { focus: false });
+		}
 	}
-	return null;
 }
