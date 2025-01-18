@@ -448,10 +448,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 							useSettings.getState().setSettings({
 								deduplicateSameGroupTabs: value,
 							});
-							if (value)
-								this.app.workspace.trigger(
-									"vertical-tabs:deduplicate-tabs"
-								);
+							this.app.workspace.trigger(
+								"vertical-tabs:deduplicate-tabs"
+							);
 						});
 				});
 
@@ -465,10 +464,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 							useSettings
 								.getState()
 								.setSettings({ deduplicateSidebarTabs: value });
-							if (value)
-								this.app.workspace.trigger(
-									"vertical-tabs:deduplicate-tabs"
-								);
+							this.app.workspace.trigger(
+								"vertical-tabs:deduplicate-tabs"
+							);
 						});
 				});
 
@@ -482,10 +480,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 							useSettings
 								.getState()
 								.setSettings({ deduplicatePopupTabs: value });
-							if (value)
-								this.app.workspace.trigger(
-									"vertical-tabs:deduplicate-tabs"
-								);
+							this.app.workspace.trigger(
+								"vertical-tabs:deduplicate-tabs"
+							);
 						});
 				});
 		}
