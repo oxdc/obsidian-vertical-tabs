@@ -228,7 +228,7 @@ export const NavigationContainer = () => {
 		plugin.addCommand({
 			id: "deduplicate-existing-tabs",
 			name: "Deduplicate all existing tabs",
-			callback: () => deduplicateExistingTabs(app),
+			callback: () => deduplicateExistingTabs(app, true),
 		});
 	}, []);
 

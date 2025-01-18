@@ -26,7 +26,6 @@ const EXCLUSION_LIST = new Set([
 ]);
 
 interface DeduplicateOptions {
-	deduplicateSameGroupTabs: boolean;
 	deduplicateSidebarTabs: boolean;
 	deduplicatePopupTabs: boolean;
 }
@@ -88,11 +87,12 @@ export function deduplicateTabForTargets(
 export function deduplicateTab(
 	app: App,
 	file: TFile | null,
+	deduplicateSameGroupTabs: boolean,
 	focus = true
 ): WorkspaceLeaf | null {
 	if (!file) return null;
 	const targetLeaves: WorkspaceLeaf[] = [];
-	const options = useSettings.getState();
+	const options = useSettings.getState() as DeduplicateOptions;
 	const skipLeaves = getLeaveIDsControlledByHoverEditor(app);
 	iterateTabs(app, options, (leaf) => {
 		if (skipLeaves.includes(leaf.id)) return;
@@ -101,7 +101,7 @@ export function deduplicateTab(
 		const openFile = getOpenFileOfLeaf(app, leaf);
 		if (openFile === file) targetLeaves.push(leaf);
 	});
-	if (options.deduplicateSameGroupTabs) {
+	if (deduplicateSameGroupTabs) {
 		const targetLeavesByGroups = createNewTargetLeavesRecord();
 		targetLeaves.forEach((leaf) => {
 			const group = leaf.parent;
@@ -121,7 +121,10 @@ export function deduplicateTab(
 	}
 }
 
-export function deduplicateExistingTabs(app: App) {
+export function deduplicateExistingTabs(
+	app: App,
+	overrideSameGroupPolicy = false
+) {
 	const openFiles: TFile[] = [];
 	app.workspace.iterateAllLeaves((leaf) => {
 		const path = leaf.getViewState().state?.file as string | undefined;
@@ -138,14 +141,26 @@ export function deduplicateExistingTabs(app: App) {
 	if (activeFile instanceof TFile) {
 		uniqueFiles.delete(activeFile);
 	}
-	uniqueFiles.forEach((file) => deduplicateTab(app, file, false));
+	const deduplicateSameGroupTabs = overrideSameGroupPolicy
+		? false
+		: useSettings.getState().deduplicateSameGroupTabs;
+	uniqueFiles.forEach((file) =>
+		deduplicateTab(app, file, deduplicateSameGroupTabs, false)
+	);
 	if (activeFile instanceof TFile) {
 		const latestActiveLeaf = useViewState.getState().latestActiveLeaf;
-		// Only focus on the deduplicated tab if the active file is still open.
+		// Only focus on the deduplicated tab if the active file is still open
+		// and we are deduplicating different-group tabs.
 		const focus =
 			!!latestActiveLeaf &&
+			!deduplicateSameGroupTabs &&
 			getOpenFileOfLeaf(app, latestActiveLeaf) === activeFile;
-		const activeLeaf = deduplicateTab(app, activeFile, focus);
+		const activeLeaf = deduplicateTab(
+			app,
+			activeFile,
+			deduplicateSameGroupTabs,
+			focus
+		);
 		if (activeLeaf) {
 			app.workspace.setActiveLeaf(activeLeaf, { focus: false });
 		}
