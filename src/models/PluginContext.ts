@@ -10,7 +10,11 @@ import {
 } from "./PluginSettings";
 import { create } from "zustand";
 import { createSelectors } from "./Selectors";
-import { convertNameToStrategy, TabNavigationStrategy } from "./TabNavigation";
+import {
+	convertNameToStrategy,
+	TabNavigationPresets,
+	TabNavigationStrategySettings,
+} from "./TabNavigation";
 import {
 	moveSelfToDefaultLocation,
 	moveSelfToNewGroupAndHide,
@@ -45,7 +49,11 @@ interface SettingsActions {
 	setSettings: (mutator: SettingsMutator) => void;
 	toggleZenMode: () => void;
 	updateEphemeralTabs: (app: App) => void;
-	setTabNavigationStrategy: (app: App, name: string) => void;
+	setTabNavigationStrategy: (
+		app: App,
+		name: string,
+		preset?: TabNavigationStrategySettings
+	) => void;
 	toggleBackgroundMode: (app: App, enable?: boolean) => void;
 	toggleEnhancedKeyboardTabSwitch: (app: App, enable?: boolean) => void;
 }
@@ -102,101 +110,17 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				autoCloseEphemeralTabs
 			);
 		},
-		setTabNavigationStrategy(app: App, name: string) {
+		setTabNavigationStrategy(
+			app: App,
+			name: string,
+			preset?: TabNavigationStrategySettings
+		) {
 			const strategy = convertNameToStrategy(name);
-			switch (strategy) {
-				case TabNavigationStrategy.Obsidian:
-					get().setSettings({
-						navigationStrategy: strategy,
-						alwaysOpenInNewTab: false,
-						deduplicateTabs: false,
-						deduplicateSameGroupTabs: false,
-						deduplicateSidebarTabs: false,
-						deduplicatePopupTabs: false,
-						ephemeralTabs: false,
-						autoCloseEphemeralTabs: false,
-						smartNavigation: false,
-					});
-					break;
-				case TabNavigationStrategy.ObsidianPlus:
-					get().setSettings({
-						navigationStrategy: strategy,
-						alwaysOpenInNewTab: false,
-						deduplicateTabs: false,
-						deduplicateSameGroupTabs: false,
-						deduplicateSidebarTabs: false,
-						deduplicatePopupTabs: false,
-						ephemeralTabs: false,
-						autoCloseEphemeralTabs: false,
-						smartNavigation: true,
-					});
-					break;
-				case TabNavigationStrategy.IDE:
-					get().setSettings({
-						navigationStrategy: strategy,
-						alwaysOpenInNewTab: false,
-						deduplicateTabs: true,
-						deduplicateSameGroupTabs: false,
-						deduplicateSidebarTabs: false,
-						deduplicatePopupTabs: false,
-						ephemeralTabs: true,
-						autoCloseEphemeralTabs: true,
-						smartNavigation: true,
-					});
-					break;
-				case TabNavigationStrategy.Explorer:
-					get().setSettings({
-						navigationStrategy: strategy,
-						alwaysOpenInNewTab: false,
-						deduplicateTabs: false,
-						deduplicateSameGroupTabs: false,
-						deduplicateSidebarTabs: false,
-						deduplicatePopupTabs: false,
-						ephemeralTabs: true,
-						autoCloseEphemeralTabs: true,
-						smartNavigation: false,
-					});
-					break;
-				case TabNavigationStrategy.Notebook:
-					get().setSettings({
-						navigationStrategy: strategy,
-						alwaysOpenInNewTab: false,
-						deduplicateTabs: true,
-						deduplicateSameGroupTabs: false,
-						deduplicateSidebarTabs: false,
-						deduplicatePopupTabs: false,
-						ephemeralTabs: false,
-						autoCloseEphemeralTabs: false,
-						smartNavigation: true,
-					});
-					break;
-				case TabNavigationStrategy.PreferNewTab:
-					get().setSettings({
-						navigationStrategy: strategy,
-						alwaysOpenInNewTab: true,
-						deduplicateTabs: false,
-						deduplicateSameGroupTabs: false,
-						deduplicateSidebarTabs: false,
-						deduplicatePopupTabs: false,
-						ephemeralTabs: false,
-						autoCloseEphemeralTabs: false,
-						smartNavigation: false,
-					});
-					break;
-				case TabNavigationStrategy.Custom:
-					get().setSettings({
-						navigationStrategy: strategy,
-						alwaysOpenInNewTab: false,
-						deduplicateTabs: false,
-						deduplicateSameGroupTabs: false,
-						deduplicateSidebarTabs: false,
-						deduplicatePopupTabs: false,
-						ephemeralTabs: false,
-						autoCloseEphemeralTabs: false,
-						smartNavigation: true,
-					});
-					break;
-			}
+			const settings = preset ?? TabNavigationPresets[strategy];
+			get().setSettings({
+				navigationStrategy: strategy,
+				...settings,
+			});
 			const { deduplicateTabs, ephemeralTabs, autoCloseEphemeralTabs } =
 				get();
 			if (deduplicateTabs) {

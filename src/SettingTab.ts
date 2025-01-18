@@ -2,8 +2,10 @@ import { App, Platform, PluginSettingTab, Setting } from "obsidian";
 import ObsidianVerticalTabs from "./main";
 import { useSettings } from "./models/PluginContext";
 import {
+	TabNavigationPresets,
 	TabNavigationStrategy,
 	TabNavigationStrategyOptions,
+	TabNavigationCopyOptions,
 } from "./models/TabNavigation";
 
 export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
@@ -293,6 +295,26 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 
 	private displayCustomNavigationStrategy(containerEl: HTMLElement) {
 		new Setting(containerEl)
+			.setName("Copy from existing strategy")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOptions(TabNavigationCopyOptions)
+					.setValue("--copy--")
+					.onChange(async (value) => {
+						if (value === "--copy--") return;
+						const preset = value as TabNavigationStrategy;
+						useSettings
+							.getState()
+							.setTabNavigationStrategy(
+								this.app,
+								TabNavigationStrategy.Custom,
+								TabNavigationPresets[preset]
+							);
+						this.display();
+					})
+			);
+
+		new Setting(containerEl)
 			.setName("Always open in new tab")
 			.addToggle((toggle) => {
 				toggle
@@ -403,11 +425,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					toggle
 						.setValue(this.plugin.settings.deduplicateSameGroupTabs)
 						.onChange(async (value) => {
-							useSettings
-								.getState()
-								.setSettings({
-									deduplicateSameGroupTabs: value,
-								});
+							useSettings.getState().setSettings({
+								deduplicateSameGroupTabs: value,
+							});
 							if (value)
 								this.app.workspace.trigger(
 									"vertical-tabs:deduplicate-tabs"
