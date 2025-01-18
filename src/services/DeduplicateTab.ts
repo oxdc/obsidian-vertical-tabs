@@ -10,6 +10,7 @@ import { useViewState } from "src/models/ViewState";
 import { getOpenFileOfLeaf } from "./GetTabs";
 import { Identifier } from "src/models/VTWorkspace";
 import { DefaultRecord } from "src/utils/DefaultRecord";
+import { moveTab, reapplyEphemeralState } from "./MoveTab";
 
 const EXCLUSION_LIST = new Set([
 	"file-explorer",
@@ -72,6 +73,12 @@ export function deduplicateTabForTargets(
 		const { backHistory, forwardHistory } = latestOldLeaf.history;
 		leafToKeep.history.backHistory = backHistory;
 		leafToKeep.history.forwardHistory = forwardHistory;
+		reapplyEphemeralState(leafToKeep, latestOldLeaf.getEphemeralState());
+		const sourceParent = latestOldLeaf.parent;
+		const targetParent = leafToKeep.parent;
+		if (sourceParent?.id === targetParent?.id) {
+			moveTab(app, leafToKeep.id, latestOldLeaf.id);
+		}
 	}
 	sortedLeaves.forEach((leaf) => leaf.detach());
 	loadDeferredLeaf(leafToKeep);
