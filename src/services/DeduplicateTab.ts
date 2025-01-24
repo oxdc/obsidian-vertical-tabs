@@ -69,7 +69,8 @@ export function deduplicateTabForTargets(
 	// We therefore treat the newly created leaf as the oldest leaf, whose active time (0) is the smallest.
 	// But we migrate the ephemeral status and history to it.
 	if (latestOldLeaf && latestOldLeaf.id != leafToKeep.id) {
-		if (!latestOldLeaf.isEphemeral) makeLeafNonEphemeral(leafToKeep);
+		if (!latestOldLeaf.isEphemeral)
+			makeLeafNonEphemeral(leafToKeep, "deduplicate");
 		const { backHistory, forwardHistory } = latestOldLeaf.history;
 		leafToKeep.history.backHistory = backHistory;
 		leafToKeep.history.forwardHistory = forwardHistory;

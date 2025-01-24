@@ -19,19 +19,31 @@ import { Identifier } from "src/models/VTWorkspace";
 import { iterateLeavesControlledByHoverEditor } from "./HoverEditorTabs";
 import { REFRESH_TIMEOUT_LONG } from "src/models/TabCache";
 
-export function makeLeafNonEphemeralByID(app: App, leafID: string) {
+export function makeLeafNonEphemeralByID(
+	app: App,
+	leafID: string,
+	reason: string
+) {
 	const leaf = app.workspace.getLeafById(leafID);
 	if (!leaf) return;
-	makeLeafNonEphemeral(leaf);
+	makeLeafNonEphemeral(leaf, reason);
 }
 
-export function makeTabsNonEphemeralByList(app: App, leafIDs: string[]) {
+export function makeTabsNonEphemeralByList(
+	app: App,
+	leafIDs: string[],
+	reason: string
+) {
 	leafIDs.forEach((leafID) => {
-		makeLeafNonEphemeralByID(app, leafID);
+		makeLeafNonEphemeralByID(app, leafID, reason);
 	});
 }
 
-export function makeLeafNonEphemeral(leaf: WorkspaceLeaf) {
+export function makeLeafNonEphemeral(leaf: WorkspaceLeaf, reason: string) {
+	if (leaf.isEphemeral !== false)
+		console.debug(
+			`making "${leaf.getDisplayText()}" non-epehemeral: ${reason}`
+		);
 	leaf.isEphemeral = false;
 	leaf.tabHeaderEl?.toggleClass("vt-non-ephemeral", true);
 	leaf.trigger("ephemeral-toggle", false);
@@ -41,7 +53,7 @@ export function makeLeafEphemeralOnEditorChange(
 	info: MarkdownView | MarkdownFileInfo
 ) {
 	if (info instanceof MarkdownView) {
-		makeLeafNonEphemeral(info.leaf);
+		makeLeafNonEphemeral(info.leaf, "editor change event");
 	}
 }
 
@@ -52,7 +64,7 @@ export function installTabHeaderHandlerForLeaf(leaf: WorkspaceLeaf) {
 	leaf.trigger("ephemeral-toggle", true);
 	if (!leaf.tabHeaderEl) return;
 	leaf.tabHeaderEl.ondblclick = (event: MouseEvent) => {
-		makeLeafNonEphemeral(leaf);
+		makeLeafNonEphemeral(leaf, "double click");
 		event.stopPropagation();
 	};
 }
@@ -68,10 +80,10 @@ export function installTabHeaderHandlers(app: App) {
 		installTabHeaderHandlerForLeaf(leaf);
 	});
 	iterateSidebarLeaves(app, (leaf) => {
-		makeLeafNonEphemeral(leaf);
+		makeLeafNonEphemeral(leaf, "sidebar tab");
 	});
 	iterateLeavesControlledByHoverEditor(app, (leaf) => {
-		makeLeafNonEphemeral(leaf);
+		makeLeafNonEphemeral(leaf, "hover editor tab");
 	});
 }
 
@@ -99,13 +111,16 @@ export function makeTabNonEphemeralAutomatically(app: App) {
 			// We have that information
 			children.forEach((child) => {
 				if (child.activeTime !== latestActiveTime) {
-					makeLeafNonEphemeral(child);
+					makeLeafNonEphemeral(
+						child,
+						"keep the latest (with active time info)"
+					);
 				}
 			});
 		} else {
 			// Otherwise, we keep the last tab ephemeral
 			children.slice(0, -1).forEach((child) => {
-				makeLeafNonEphemeral(child);
+				makeLeafNonEphemeral(child, "keep the latest (best guess)");
 			});
 		}
 	});
@@ -120,7 +135,7 @@ export function initEphemeralTabs(app: App) {
 		// If auto close is enabled, we prefer only one ephemeral tab per group
 		if (autoCloseEphemeralTabs) makeTabNonEphemeralAutomatically(app);
 		// Then we recover the saved state
-		makeTabsNonEphemeralByList(app, nonEphemeralTabs);
+		makeTabsNonEphemeralByList(app, nonEphemeralTabs, "recover");
 	} else {
 		// if we dont have that information, use a heuristic
 		makeTabNonEphemeralAutomatically(app);
@@ -196,7 +211,7 @@ export function makeTheLatestFileNonEphemeral(
 		}
 	});
 	if (targetLeaf) {
-		makeLeafNonEphemeral(targetLeaf);
+		makeLeafNonEphemeral(targetLeaf, "the latest file");
 	}
 }
 

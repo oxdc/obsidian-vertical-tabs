@@ -224,7 +224,7 @@ export const NavigationContainer = () => {
 			callback: () => {
 				if (!useSettings.getState().ephemeralTabs) return;
 				iterateRootOrFloatingLeaves(app, (leaf) =>
-					makeLeafNonEphemeral(leaf)
+					makeLeafNonEphemeral(leaf, "command")
 				);
 			},
 		});

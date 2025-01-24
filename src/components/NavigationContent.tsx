@@ -68,7 +68,7 @@ export const NavigationContent = () => {
 				}
 			}
 			if (movedTab && useSettings.getState().ephemeralTabs) {
-				makeLeafNonEphemeral(movedTab);
+				makeLeafNonEphemeral(movedTab, "move tab");
 			}
 		} else {
 			if (isOverTab) {

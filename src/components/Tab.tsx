@@ -64,7 +64,7 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 
 	const changePinnedState = (pinned: boolean) => {
 		setIsPinned(pinned);
-		if (pinned && leaf.isEphemeral) makeLeafNonEphemeral(leaf);
+		if (pinned && leaf.isEphemeral) makeLeafNonEphemeral(leaf, "pinned");
 	};
 
 	useEffect(() => {
@@ -143,7 +143,7 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 			.setTitle("Close Others")
 			.onClick(() => {
 				closeOthersInGroup(app, leaf);
-				makeLeafNonEphemeral(leaf);
+				makeLeafNonEphemeral(leaf, "close others");
 			});
 	});
 	menu.addItem((item) => {
@@ -480,7 +480,7 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 			toolbar={toolbar}
 			onClick={activeOrCloseTab}
 			onAuxClick={midClickCloseTab}
-			onDoubleClick={() => makeLeafNonEphemeral(leaf)}
+			onDoubleClick={() => makeLeafNonEphemeral(leaf, "double click")}
 			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
 			onMouseOver={previewTab}
 			dataType={leaf.getViewState().type}
