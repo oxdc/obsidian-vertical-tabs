@@ -88,8 +88,11 @@ export function makeTabNonEphemeralAutomatically(app: App) {
 		const groupID = group.id;
 		if (processedGroups.has(groupID)) return;
 		processedGroups.add(groupID);
-		// We keep the latest active tab ephemeral and make the rest non-ephemeral
 		const children = group.children;
+		// If there are only one ephemeral tab, we skip this group
+		const count = children.filter((child) => child.isEphemeral);
+		if (count.length <= 1) return;
+		// Otherwise, we keep the latest active tab ephemeral and make the rest non-ephemeral
 		const activeTimes = children.map((child) => child.activeTime);
 		const latestActiveTime = Math.max(...activeTimes);
 		if (latestActiveTime > 0) {
