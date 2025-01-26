@@ -108,6 +108,7 @@ interface ViewState {
 	addLinkedGroup: (groupID: Identifier, linkedFolder: LinkedFolder) => void;
 	removeLinkedGroup: (groupID: Identifier) => void;
 	getLinkedFolder: (groupID: Identifier) => LinkedFolder | null;
+	isLinkedGroup: (groupID: Identifier) => boolean;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -493,5 +494,10 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	getLinkedFolder(groupID: Identifier) {
 		const { linkedGroups: linkedGroups } = get();
 		return linkedGroups.get(groupID);
+	},
+	isLinkedGroup(groupID: Identifier | null) {
+		if (!groupID) return false;
+		const { linkedGroups } = get();
+		return linkedGroups.get(groupID) !== null;
 	},
 }));
