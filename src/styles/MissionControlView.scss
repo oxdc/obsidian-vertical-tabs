@@ -11,6 +11,10 @@
 		max-width: var(--vt-mission-control-view-leaf-width);
 		zoom: var(--vt-mission-control-view-leaf-zoom-factor);
 		pointer-events: none;
+
+		&.mod-active {
+			outline: 5px solid var(--color-accent);
+		}
 	}
 
 	.workspace-tab-container {
@@ -23,6 +27,7 @@
 		overflow-y: scroll !important;
 		position: relative;
 		height: 0;
+		padding: var(--size-4-3) 0;
 	}
 
 	.workspace-tab-header-container-inner {
