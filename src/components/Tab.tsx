@@ -92,13 +92,17 @@ export const Tab = ({
 	};
 
 	const openTab = () => {
-		workspace.setActiveLeaf(leaf, { focus: true });
+		const positioning =
+			viewType === GroupViewType.MissionControlView ? "center" : "start";
+		const focus = viewType !== GroupViewType.MissionControlView;
+		workspace.setActiveLeaf(leaf, { focus });
 		workspace.onLayoutChange();
 		toggleHiddenGroup(leaf.parent.id, false);
 		lockFocusOnLeaf(app, leaf);
 		leaf.containerEl?.scrollIntoView({
 			behavior: "smooth",
-			block: "start",
+			block: positioning,
+			inline: "center",
 		});
 	};
 

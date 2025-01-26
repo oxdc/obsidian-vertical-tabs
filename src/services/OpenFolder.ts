@@ -114,14 +114,16 @@ export function addMenuItemsToFolderContextMenu(
 	folder: TFolder
 ) {
 	if (checkIfMenuIsAlreadyAdded(menu)) return;
-	menu.addItem((item) => {
-		item.setSection("folder-navigation")
+	menu.addItem((item) =>
+		item
+			.setSection("folder-navigation")
 			.setTitle("Open folder in new group")
-			.onClick(() => handleOpenFolder(app, folder, false));
-	});
-	menu.addItem((item) => {
-		item.setSection("folder-navigation")
+			.onClick(() => handleOpenFolder(app, folder, false))
+	);
+	menu.addItem((item) =>
+		item
+			.setSection("folder-navigation")
 			.setTitle("Open folder recursively in new group")
-			.onClick(() => handleOpenFolder(app, folder, true));
-	});
+			.onClick(() => handleOpenFolder(app, folder, true))
+	);
 }
