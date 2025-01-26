@@ -122,7 +122,7 @@ interface ViewState {
 		workspace: Workspace,
 		oldLeaf: WorkspaceLeaf | null,
 		newLeaf: WorkspaceLeaf | null
-	) => void;
+	) => boolean;
 	setIsEditingTabs: (app: App, isEditing: boolean) => void;
 	setCtrlKeyState: (isPressed: boolean) => void;
 	increaseViewCueOffset: () => void;
@@ -304,21 +304,30 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			get().lockFocus(plugin);
 		}
 		const newActiveLeaf = get().latestActiveLeaf;
-		get().checkIfGroupChanged(workspace, oldActiveLeaf, newActiveLeaf);
+		const groupChanged = get().checkIfGroupChanged(
+			workspace,
+			oldActiveLeaf,
+			newActiveLeaf
+		);
+		// Focus has been moved to another group, we lock on the new group
+		if (groupChanged) get().lockFocus(plugin);
 	},
 	checkIfGroupChanged(
 		workspace: Workspace,
 		oldLeaf: WorkspaceLeaf | null,
 		newLeaf: WorkspaceLeaf | null
 	) {
-		if (oldLeaf === null && newLeaf === null) return;
+		let changed = false;
+		if (oldLeaf === null && newLeaf === null) return false;
 		if (oldLeaf === null || newLeaf === null) {
-			workspace.trigger("vertical-tabs:update-toggle");
+			changed = true;
 		} else if (oldLeaf.parent === null || newLeaf.parent === null) {
-			workspace.trigger("vertical-tabs:update-toggle");
+			changed = true;
 		} else if (oldLeaf.parent.id !== newLeaf.parent.id) {
-			workspace.trigger("vertical-tabs:update-toggle");
+			changed = true;
 		}
+		if (changed) workspace.trigger("vertical-tabs:update-toggle");
+		return changed;
 	},
 	lockFocus(plugin: ObsidianVerticalTabs) {
 		// We only need to force focus on the most recent leaf when Zen mode is enabled
