@@ -126,8 +126,8 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 	menu.addItem((item) => {
 		item.setSection("bookmark")
 			.setTitle("Bookmark and close")
-			.onClick(() => {
-				createBookmarkForLeaf(app, leaf, leaf.getDisplayText());
+			.onClick(async () => {
+				await createBookmarkForLeaf(app, leaf, leaf.getDisplayText());
 				leaf.detach();
 			});
 	});
