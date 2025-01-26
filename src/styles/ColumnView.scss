@@ -1,0 +1,24 @@
+.workspace-tabs.vt-column-view {
+	.workspace-leaf {
+		display: block !important;
+		contain: unset !important;
+		height: unset !important;
+		flex-grow: 1 !important;
+		min-width: 300px !important;
+		max-width: 50% !important;
+	}
+
+	.workspace-tab-header-container {
+		.workspace-tab-header-new-tab,
+		.workspace-tab-header-tab-list {
+			display: none;
+		}
+	}
+
+	.workspace-tab-container {
+		display: flex !important;
+		flex-direction: row !important;
+		overflow-x: scroll;
+		overflow-y: hidden;
+	}
+}

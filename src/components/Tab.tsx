@@ -149,6 +149,12 @@ export const Tab = ({
 		});
 		menu.addItem((item) => {
 			item.setSection("group-view")
+				.setTitle("Column view")
+				.setDisabled(viewType === GroupViewType.ColumnView)
+				.onClick(() => enableView(GroupViewType.ColumnView));
+		});
+		menu.addItem((item) => {
+			item.setSection("group-view")
 				.setTitle("Mission control view")
 				.setDisabled(viewType === GroupViewType.MissionControlView)
 				.onClick(() => enableView(GroupViewType.MissionControlView));

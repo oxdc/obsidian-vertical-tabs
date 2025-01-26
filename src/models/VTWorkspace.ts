@@ -11,6 +11,7 @@ export enum GroupType {
 export enum GroupViewType {
 	Default = "default",
 	ContinuousView = "continuous-view",
+	ColumnView = "column-view",
 	MissionControlView = "mission-control-view",
 }
 
