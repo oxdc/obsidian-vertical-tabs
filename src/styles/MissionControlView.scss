@@ -10,7 +10,10 @@
 		min-width: var(--vt-mission-control-view-leaf-width);
 		max-width: var(--vt-mission-control-view-leaf-width);
 		zoom: var(--vt-mission-control-view-leaf-zoom-factor);
-		pointer-events: none;
+
+		.workspace-leaf-content {
+			pointer-events: none;
+		}
 
 		&.mod-active {
 			outline: 5px solid var(--color-accent);

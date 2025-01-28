@@ -140,13 +140,28 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		group.containerEl.toggleClass(viewClass, enable);
 	};
 
-	const enableView = (viewType: GroupViewType) => {
+	const setView = (viewType: GroupViewType) => {
 		if (!group) return;
 		Object.values(GroupViewType).forEach((key) =>
 			toggleViewClass(key, false)
 		);
 		toggleViewClass(viewType, true);
 		setViewType(viewType);
+	};
+
+	const enableView = (viewType: GroupViewType) => {
+		setView(viewType);
+		if (viewType === GroupViewType.MissionControlView) {
+			const autoExit = (event: MouseEvent) => {
+				const targetEl = event.target as HTMLElement;
+				const leafEl = targetEl.matchParent(".workspace-leaf");
+				if (!leafEl) return;
+				setView(GroupViewType.Default);
+			};
+			group?.containerEl.addEventListener("dblclick", autoExit, {
+				once: true,
+			});
+		}
 	};
 
 	const menu = new Menu();
