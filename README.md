@@ -1,4 +1,8 @@
-# Obsidian Vertical Tabs
+# Vertical Tabs *for Obsidian*
+
+Productive users of Obsidian often find themselves juggling a large number of open notes, and the default horizontal tab layout can make it challenging to locate and switch between them. As more notes are opened, tabs become narrower, making titles harder to read. *Vertical Tabs* offers a solution by introducing a vertical tab view, allowing users to group and organize tabs for more efficient navigation.
+
+As **THE** workspace manager for Obsidian, it provides many handy features like *Per-Tab Zooming*, *Zen Mode*, *Tab History Browser*, and an *Extended Keyboard Tab Switcher*. Additionally, it supports *Advanced Tab Navigation* with customizable presets, such as IDE mode, which delivers a VSCode-like experience with ephemeral tabs and automatic tab deduplication. Users can also create personalized tab navigation strategies for finer control.
 
 <p align="center" style="text-align: center;">
   <a href="https://obsidian.md/plugins?id=vertical-tabs" style="text-decoration: none;">
@@ -26,6 +30,3 @@
 
 ![Screenshot](./images/hero.png)
 
-## Vertical Tabs *for Obsidian*
-
-Productive users of Obsidian may find themselves with a large number of open notes. The default horizontal tab layout can make it difficult to quickly find and switch between notes. The tabs are becoming narrower and narrower as more notes are opened, making it difficult to read the note titles. This plugin provides an alternative vertical tab layout that is more space-efficient and easier to navigate.
