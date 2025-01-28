@@ -122,6 +122,7 @@ export const NavigationContainer = () => {
 		);
 		plugin.registerEvent(
 			workspace.on("file-menu", (menu, fileOrFolder) => {
+				if (useSettings.getState().backgroundMode) return;
 				if (fileOrFolder instanceof TFolder) {
 					const folder = fileOrFolder;
 					addMenuItemsToFolderContextMenu(app, menu, folder);
