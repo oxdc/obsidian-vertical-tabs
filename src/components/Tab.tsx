@@ -459,7 +459,7 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 		if (file && ref.current) {
 			workspace.trigger("hover-link", {
 				event: event.nativeEvent,
-				source: "tab-header",
+				source: "vertical-tabs",
 				hoverParent: leaf,
 				targetEl: ref.current,
 				linktext: file.path,

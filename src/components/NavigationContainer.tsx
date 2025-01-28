@@ -236,6 +236,10 @@ export const NavigationContainer = () => {
 				uncollapseActiveGroup(app);
 			},
 		});
+		plugin.registerHoverLinkSource("vertical-tabs", {
+			defaultMod: true,
+			display: "Vertical Tabs",
+		});
 	}, []);
 
 	const disableMiddleClickScrolling = (event: React.MouseEvent) => {
