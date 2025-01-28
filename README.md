@@ -12,6 +12,13 @@ As **THE** workspace manager for Obsidian, it provides many handy features like 
       style="display: inline-block;"
     />
   </a>
+  <a href="https://oxdc.github.io/obsidian-vertical-tabs-docs" style="text-decoration: none;">
+    <img
+      alt="Documentation"
+      src="https://img.shields.io/badge/Documentation-darkviolet?style=for-the-badge&logo=readthedocs&logoColor=white"
+      style="display: inline-block;"
+    >
+  </a>
   <a href="https://github.com/oxdc/obsidian-vertical-tabs" style="text-decoration: none;">
     <img
       alt="Github Repo"
