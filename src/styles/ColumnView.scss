@@ -1,11 +1,13 @@
 .workspace-tabs.vt-column-view {
+	--vt-column-view-min-width: 300px;
+
 	.workspace-leaf {
 		display: block !important;
 		contain: unset !important;
 		height: unset !important;
 		flex-grow: 1 !important;
-		min-width: 300px !important;
-		max-width: 50% !important;
+		min-width: var(--vt-column-view-min-width) !important;
+		max-width: 100% !important;
 	}
 
 	.workspace-tab-header-container {
@@ -13,6 +15,10 @@
 		.workspace-tab-header-tab-list {
 			display: none;
 		}
+	}
+
+	.workspace-tab-header-container-inner {
+		display: none;
 	}
 
 	.workspace-tab-container {
