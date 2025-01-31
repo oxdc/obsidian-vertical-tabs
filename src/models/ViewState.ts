@@ -26,7 +26,11 @@ import {
 import { getGroupType, GroupType, Identifier } from "./VTWorkspace";
 import { useTabCache } from "./TabCache";
 import { LinkedFolder } from "src/services/OpenFolder";
-import { GroupViewType, setGroupViewType } from "./VTGroupView";
+import {
+	GroupViewType,
+	identifyGroupViewType,
+	setGroupViewType,
+} from "./VTGroupView";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -122,6 +126,7 @@ interface ViewState {
 	getLinkedFolder: (groupID: Identifier) => LinkedFolder | null;
 	isLinkedGroup: (groupID: Identifier) => boolean;
 	setGroupViewTypeForCurrentGroup: (viewType: GroupViewType) => void;
+	exitMissionControlForCurrentGroup: () => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -540,5 +545,14 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		const { latestActiveLeaf } = get();
 		if (!latestActiveLeaf) return;
 		setGroupViewType(latestActiveLeaf.parent, viewType);
+	},
+	exitMissionControlForCurrentGroup() {
+		const { latestActiveLeaf } = get();
+		if (!latestActiveLeaf) return;
+		const group = latestActiveLeaf.parent;
+		const viewType = identifyGroupViewType(group);
+		if (viewType === GroupViewType.MissionControlView) {
+			setGroupViewType(group, GroupViewType.Default);
+		}
 	},
 }));

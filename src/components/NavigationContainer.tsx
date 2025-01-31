@@ -37,6 +37,7 @@ export const NavigationContainer = () => {
 		forgetNonephemeralTabs,
 		uncollapseActiveGroup,
 		setGroupViewTypeForCurrentGroup,
+		exitMissionControlForCurrentGroup,
 	} = useViewState();
 	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
@@ -131,6 +132,11 @@ export const NavigationContainer = () => {
 				}
 			})
 		);
+		plugin.registerDomEvent(document, "keydown", (event) => {
+			if (event.key === "Escape") {
+				exitMissionControlForCurrentGroup();
+			}
+		});
 		plugin.addCommand({
 			id: "toggle-zen-mode",
 			name: "Toggle zen mode",
