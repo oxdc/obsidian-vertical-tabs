@@ -88,6 +88,16 @@
 		display: none;
 	}
 
+	&.vt-continuous-view-show-metadata {
+		.metadata-container {
+			display: var(--metadata-display-editing) !important;
+		}
+
+		.metadata-container[data-property-count="0"] {
+			display: none !important;
+		}
+	}
+
 	&.vt-continuous-view-show-backlinks {
 		.embedded-backlinks {
 			display: block !important;
@@ -96,16 +106,6 @@
 
 		.cm-contentContainer > div {
 			padding-bottom: 50px !important;
-		}
-	}
-
-	&.vt-continuous-view-show-metadata {
-		.metadata-container {
-			display: var(--metadata-display-editing) !important;
-		}
-
-		.metadata-container[data-property-count="0"] {
-			display: none !important;
 		}
 	}
 }

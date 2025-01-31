@@ -198,6 +198,32 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				break;
 		}
 
+		new Setting(containerEl).setName("Group View").setHeading();
+
+		new Setting(containerEl)
+			.setName("Show metadata in continuous view")
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.continuousViewShowMetadata)
+					.onChange(async (value) => {
+						useSettings.getState().setGroupViewOptions(this.app, {
+							continuousViewShowMetadata: value,
+						});
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Show backlinks in continuous view")
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.continuousViewShowBacklinks)
+					.onChange(async (value) => {
+						useSettings.getState().setGroupViewOptions(this.app, {
+							continuousViewShowBacklinks: value,
+						});
+					});
+			});
+
 		new Setting(containerEl).setName("Miscellaneous").setHeading();
 
 		new Setting(containerEl)

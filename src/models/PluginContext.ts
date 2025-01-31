@@ -15,6 +15,7 @@ import {
 	moveSelfToDefaultLocation,
 	moveSelfToNewGroupAndHide,
 } from "src/services/MoveTab";
+import { refreshGroupViewTypes } from "./VTGroupView";
 
 function saveShowActiveTabs(showActiveTabs: boolean) {
 	localStorage.setItem("vt-show-active-tabs", showActiveTabs.toString());
@@ -39,6 +40,11 @@ export const useApp = (): App => {
 	return plugin.app;
 };
 
+export type GroupViewOptions = {
+	continuousViewShowMetadata?: boolean;
+	continuousViewShowBacklinks?: boolean;
+};
+
 interface SettingsActions {
 	plugin: ObsidianVerticalTabs | null;
 	loadSettings: (plugin: ObsidianVerticalTabs) => Promise<void>;
@@ -47,6 +53,7 @@ interface SettingsActions {
 	updateEphemeralTabs: (app: App) => void;
 	setTabNavigationStrategy: (app: App, name: string) => void;
 	toggleBackgroundMode: (app: App, enable?: boolean) => void;
+	setGroupViewOptions: (app: App, options: GroupViewOptions) => void;
 }
 
 export const useSettingsBase = create<Settings & SettingsActions>(
@@ -210,6 +217,10 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				get().setSettings({ backgroundMode: false, showActiveTabs });
 				moveSelfToDefaultLocation(app);
 			}
+		},
+		setGroupViewOptions(app: App, options: GroupViewOptions) {
+			get().setSettings(options);
+			refreshGroupViewTypes(app);
 		},
 	})
 );

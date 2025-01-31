@@ -17,6 +17,8 @@ interface ObsidianVerticalTabsSettings {
 	navigationStrategy: TabNavigationStrategy;
 	autoCloseEphemeralTabs: boolean;
 	deduplicateSidebarTabs: boolean;
+	continuousViewShowMetadata: boolean;
+	continuousViewShowBacklinks: boolean;
 	backgroundMode: boolean;
 }
 
@@ -37,6 +39,8 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	navigationStrategy: TabNavigationStrategy.ObsidianPlus,
 	autoCloseEphemeralTabs: true,
 	deduplicateSidebarTabs: false,
+	continuousViewShowMetadata: false,
+	continuousViewShowBacklinks: false,
 	backgroundMode: false,
 };
 

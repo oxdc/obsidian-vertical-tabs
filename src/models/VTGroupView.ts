@@ -1,4 +1,6 @@
-import { WorkspaceParent } from "obsidian";
+import { App, WorkspaceParent } from "obsidian";
+import { useSettings } from "./PluginContext";
+import { Identifier } from "./VTWorkspace";
 
 export enum GroupViewType {
 	Default = "vt-default-view",
@@ -16,6 +18,21 @@ function normalizeGroupViewType(
 	Object.values(GroupViewType).forEach((targetType) => {
 		if (targetType !== viewType) el.classList.remove(targetType);
 	});
+	if (viewType === GroupViewType.ContinuousView) {
+		el.classList.toggle(
+			"vt-continuous-view-show-metadata",
+			useSettings.getState().continuousViewShowMetadata
+		);
+		el.classList.toggle(
+			"vt-continuous-view-show-backlinks",
+			useSettings.getState().continuousViewShowBacklinks
+		);
+	} else {
+		el.classList.remove(
+			"vt-continuous-view-show-metadata",
+			"vt-continuous-view-show-backlinks"
+		);
+	}
 }
 
 export function identifyGroupViewType(
@@ -52,4 +69,15 @@ export function setGroupViewType(
 			once: true,
 		});
 	}
+}
+
+export function refreshGroupViewTypes(app: App) {
+	const processedGroups = new Set<Identifier>();
+	app.workspace.iterateAllLeaves((leaf) => {
+		const group = leaf.parent;
+		if (!group || processedGroups.has(group.id)) return;
+		const viewType = identifyGroupViewType(group);
+		normalizeGroupViewType(group.containerEl, viewType);
+		processedGroups.add(group.id);
+	});
 }
