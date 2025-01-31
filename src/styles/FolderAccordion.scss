@@ -1,0 +1,18 @@
+/* prettier-ignore */
+
+body.vt-folder-accordion .obsidian-vertical-tabs-container {
+  .tree-item.nav-folder:not(.is-single-group) .tree-item-children.is-folded {
+    overflow: auto;
+    max-height: 200px;
+    background:
+      /* Shadow covers */
+      linear-gradient(var(--tab-container-background), var(--tab-container-background)),
+      linear-gradient(var(--tab-container-background), var(--tab-container-background)) 0 100%,    
+      /* Shadows */
+      linear-gradient(var(--nav-indentation-guide-color), var(--nav-indentation-guide-color)),
+      linear-gradient(var(--nav-indentation-guide-color), var(--nav-indentation-guide-color)) 0 100%;
+    background-repeat: no-repeat;
+    background-size: 100% 10px, 100% 10px, 100% 5px, 100% 5px;
+    background-attachment: local, local, scroll, scroll;
+  }
+}
