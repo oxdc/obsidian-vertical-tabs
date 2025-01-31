@@ -5,6 +5,7 @@ import {
 	WorkspaceParent,
 	WorkspaceSidedock,
 } from "obsidian";
+import { syncUIForGroupView } from "src/models/VTGroupView";
 import { Identifier } from "src/models/VTWorkspace";
 import { VIEW_TYPE } from "src/navigation";
 
@@ -54,6 +55,8 @@ export function moveTab(
 	removeChild(sourceParent, sourceIndex);
 	insertChild(targetParent, sourceLeaf, insertIndex);
 	app.workspace.onLayoutChange();
+	syncUIForGroupView(sourceParent);
+	syncUIForGroupView(targetParent);
 	return sourceLeaf;
 }
 

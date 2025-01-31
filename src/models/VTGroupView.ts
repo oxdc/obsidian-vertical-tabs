@@ -1,6 +1,7 @@
 import { App, WorkspaceParent } from "obsidian";
 import { useSettings } from "./PluginContext";
 import { Identifier } from "./VTWorkspace";
+import { sortLeafDomsInGroup } from "src/services/SortTabDom";
 
 export enum GroupViewType {
 	Default = "vt-default-view",
@@ -80,4 +81,15 @@ export function refreshGroupViewTypes(app: App) {
 		normalizeGroupViewType(group.containerEl, viewType);
 		processedGroups.add(group.id);
 	});
+}
+
+export function syncUIForGroupView(group: WorkspaceParent | null) {
+	if (!group) return;
+	const viewType = identifyGroupViewType(group);
+	if (
+		viewType === GroupViewType.ContinuousView ||
+		viewType === GroupViewType.ColumnView
+	) {
+		sortLeafDomsInGroup(group);
+	}
 }

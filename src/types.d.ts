@@ -44,6 +44,7 @@ declare module "obsidian" {
 	interface WorkspaceParent {
 		id: Identifier;
 		containerEl: HTMLElement;
+		tabsContainerEl: HTMLElement;
 		currentTab: number;
 		children: WorkspaceLeaf[];
 		selectTab: (leaf: WorkspaceLeaf) => void;
