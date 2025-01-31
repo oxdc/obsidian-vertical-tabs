@@ -55,15 +55,21 @@ export function byExtension(a: TFile, b: TFile) {
 }
 
 export function byFileCreatedTime(a: TFile, b: TFile) {
-	return a.stat.ctime - b.stat.ctime;
+	const resultOfCreatedTime = a.stat.ctime - b.stat.ctime;
+	const resultOfFileName = byFileName(a, b);
+	return resultOfCreatedTime === 0 ? resultOfFileName : resultOfCreatedTime;
 }
 
 export function byFileModifiedTime(a: TFile, b: TFile) {
-	return a.stat.mtime - b.stat.mtime;
+	const resultOfModifiedTime = a.stat.mtime - b.stat.mtime;
+	const resultOfFileName = byFileName(a, b);
+	return resultOfModifiedTime === 0 ? resultOfFileName : resultOfModifiedTime;
 }
 
 export function byFileSize(a: TFile, b: TFile) {
-	return a.stat.size - b.stat.size;
+	const resultOfFileSize = a.stat.size - b.stat.size;
+	const resultOfFileName = byFileName(a, b);
+	return resultOfFileSize === 0 ? resultOfFileName : resultOfFileSize;
 }
 
 export const linkedFolderSortStrategies: Record<string, FileSortStrategy> = {
