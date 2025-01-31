@@ -1,4 +1,4 @@
-import { App, WorkspaceParent } from "obsidian";
+import { App, debounce, WorkspaceParent } from "obsidian";
 import { useSettings } from "./PluginContext";
 import { Identifier } from "./VTWorkspace";
 import { sortLeafDomsInGroup } from "src/services/SortTabDom";
@@ -93,3 +93,7 @@ export function syncUIForGroupView(group: WorkspaceParent | null) {
 		sortLeafDomsInGroup(group);
 	}
 }
+
+export const setColumnViewMinWidth = debounce((value: number) => {
+	document.body.style.setProperty("--vt-column-view-min-width", `${value}px`);
+}, 100);

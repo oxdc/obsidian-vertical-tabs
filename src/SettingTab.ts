@@ -250,6 +250,32 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					});
 			});
 
+		new Setting(containerEl)
+			.setName("Column view tab width")
+			.setDesc("Minimum width of each tab in the column view in pixels.")
+			.addExtraButton((button) => {
+				button
+					.setIcon("reset")
+					.setTooltip("Reset to default")
+					.onClick(async () => {
+						useSettings.getState().setGroupViewOptions(this.app, {
+							columnViewMinWidth: 300,
+						});
+						this.display();
+					});
+			})
+			.addSlider((slider) => {
+				slider
+					.setLimits(200, 1000, 10)
+					.setValue(this.plugin.settings.columnViewMinWidth)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						useSettings.getState().setGroupViewOptions(this.app, {
+							columnViewMinWidth: value,
+						});
+					});
+			});
+
 		new Setting(containerEl).setName("Miscellaneous").setHeading();
 
 		new Setting(containerEl)

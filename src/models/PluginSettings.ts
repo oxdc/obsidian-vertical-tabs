@@ -20,6 +20,7 @@ interface ObsidianVerticalTabsSettings {
 	linkedFolderLimit: number;
 	continuousViewShowMetadata: boolean;
 	continuousViewShowBacklinks: boolean;
+	columnViewMinWidth: number;
 	backgroundMode: boolean;
 }
 
@@ -41,6 +42,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	autoCloseEphemeralTabs: true,
 	deduplicateSidebarTabs: false,
 	linkedFolderLimit: 5,
+	columnViewMinWidth: 300,
 	continuousViewShowMetadata: false,
 	continuousViewShowBacklinks: false,
 	backgroundMode: false,

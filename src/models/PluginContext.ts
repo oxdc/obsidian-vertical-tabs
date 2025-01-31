@@ -15,7 +15,7 @@ import {
 	moveSelfToDefaultLocation,
 	moveSelfToNewGroupAndHide,
 } from "src/services/MoveTab";
-import { refreshGroupViewTypes } from "./VTGroupView";
+import { refreshGroupViewTypes, setColumnViewMinWidth } from "./VTGroupView";
 
 function saveShowActiveTabs(showActiveTabs: boolean) {
 	localStorage.setItem("vt-show-active-tabs", showActiveTabs.toString());
@@ -43,6 +43,7 @@ export const useApp = (): App => {
 export type GroupViewOptions = {
 	continuousViewShowMetadata?: boolean;
 	continuousViewShowBacklinks?: boolean;
+	columnViewMinWidth?: number;
 };
 
 interface SettingsActions {
@@ -221,6 +222,10 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 		setGroupViewOptions(app: App, options: GroupViewOptions) {
 			get().setSettings(options);
 			refreshGroupViewTypes(app);
+			const { columnViewMinWidth } = options;
+			if (columnViewMinWidth) {
+				setColumnViewMinWidth(columnViewMinWidth);
+			}
 		},
 	})
 );
