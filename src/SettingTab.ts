@@ -201,6 +201,32 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		new Setting(containerEl).setName("Group View").setHeading();
 
 		new Setting(containerEl)
+			.setName("Files per load")
+			.setDesc("Files loaded per click when opening a folder as a group.")
+			.addExtraButton((button) => {
+				button
+					.setIcon("reset")
+					.setTooltip("Reset to default")
+					.onClick(async () => {
+						useSettings.getState().setSettings({
+							linkedFolderLimit: 5,
+						});
+						this.display();
+					});
+			})
+			.addSlider((slider) => {
+				slider
+					.setLimits(5, 50, 1)
+					.setValue(this.plugin.settings.linkedFolderLimit)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						useSettings.getState().setSettings({
+							linkedFolderLimit: value,
+						});
+					});
+			});
+
+		new Setting(containerEl)
 			.setName("Show metadata in continuous view")
 			.addToggle((toggle) => {
 				toggle

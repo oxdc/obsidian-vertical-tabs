@@ -11,6 +11,7 @@ import { moveTabToNewGroup } from "./MoveTab";
 import { Identifier } from "src/models/VTWorkspace";
 import { makeLeafNonEphemeral } from "./EphemeralTabs";
 import { useViewState } from "src/models/ViewState";
+import { useSettings } from "src/models/PluginContext";
 
 const MENU_SECTION = "folder-navigation";
 
@@ -32,7 +33,7 @@ export function getFilesRecursivelyInFolder(folder: TFolder): TFile[] {
 
 export interface LinkedFolderOptions {
 	recursive?: boolean;
-	limits?: number;
+	limit?: number;
 }
 
 export class LinkedFolder {
@@ -40,7 +41,7 @@ export class LinkedFolder {
 	folder: TFolder;
 	files: TFile[];
 	offset = 0;
-	limits = 5;
+	limit = 5;
 	newLeaf: WorkspaceLeaf | null = null;
 	group: WorkspaceParent | null = null;
 
@@ -50,7 +51,7 @@ export class LinkedFolder {
 		this.files = options.recursive
 			? getFilesRecursivelyInFolder(folder)
 			: getFilesInFolder(folder);
-		this.limits = options.limits || this.limits;
+		this.limit = options.limit || this.limit;
 	}
 
 	async createNewGroup(): Promise<Identifier | null> {
@@ -69,9 +70,9 @@ export class LinkedFolder {
 
 	async openNextFiles(replace: boolean): Promise<boolean> {
 		if (!this.group) return false;
-		const files = this.files.slice(this.offset, this.offset + this.limits);
+		const files = this.files.slice(this.offset, this.offset + this.limit);
 		if (files.length === 0) return false;
-		this.offset += this.limits;
+		this.offset += this.limit;
 		files.forEach(async (file, index) => {
 			let leaf = null;
 			const split = this.group as WorkspaceSplit;
@@ -97,10 +98,11 @@ export class LinkedFolder {
 	}
 }
 
-async function handleOpenFolder(app: App, folder: TFolder, recursive: boolean) {
-	const options = {
-		recursive,
-	};
+async function handleOpenFolder(
+	app: App,
+	folder: TFolder,
+	options: LinkedFolderOptions
+) {
 	const linkedFolder = new LinkedFolder(app, folder, options);
 	const groupID = await linkedFolder.createNewGroup();
 	if (!groupID) return;
@@ -114,16 +116,21 @@ export function addMenuItemsToFolderContextMenu(
 	folder: TFolder
 ) {
 	if (checkIfMenuIsAlreadyAdded(menu)) return;
+	const limit = useSettings.getState().linkedFolderLimit;
 	menu.addItem((item) =>
 		item
 			.setSection("folder-navigation")
 			.setTitle("Open folder in new group")
-			.onClick(() => handleOpenFolder(app, folder, false))
+			.onClick(() =>
+				handleOpenFolder(app, folder, { recursive: false, limit })
+			)
 	);
 	menu.addItem((item) =>
 		item
 			.setSection("folder-navigation")
 			.setTitle("Open folder recursively in new group")
-			.onClick(() => handleOpenFolder(app, folder, true))
+			.onClick(() =>
+				handleOpenFolder(app, folder, { recursive: true, limit })
+			)
 	);
 }
