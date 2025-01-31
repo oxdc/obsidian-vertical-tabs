@@ -3,7 +3,7 @@ import { Fragment, useEffect, useState } from "react";
 import { IconButton } from "./IconButton";
 import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
 import { useApp, useSettings } from "src/models/PluginContext";
-import { GroupType, GroupViewType } from "src/models/VTWorkspace";
+import { GroupType } from "src/models/VTWorkspace";
 import { Menu, WorkspaceParent } from "obsidian";
 import {
 	createBookmarkForGroup,
@@ -12,14 +12,18 @@ import {
 import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
 import { LinkedFolder } from "src/services/OpenFolder";
 import { LinkedGroupButton } from "./LinkedGroupButton";
+import {
+	GroupViewType,
+	identifyGroupViewType,
+	setGroupViewType,
+} from "src/models/VTGroupView";
 
 interface GroupProps {
 	type: GroupType;
 	group: WorkspaceParent | null;
 	children?: (
 		isSingleGroup: boolean,
-		viewType: GroupViewType,
-		enableView: (viewType: GroupViewType) => void
+		viewType: GroupViewType
 	) => React.ReactNode;
 }
 
@@ -132,37 +136,14 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		</Fragment>
 	);
 
-	const [viewType, setViewType] = useState(GroupViewType.Default);
+	const { bindGroupViewToggleEvent } = useViewState();
+	const [viewType, setViewType] = useState<GroupViewType>(() =>
+		identifyGroupViewType(group)
+	);
 
-	const toggleViewClass = (name: string, enable: boolean) => {
-		if (!group) return;
-		const viewClass = `vt-${name}`;
-		group.containerEl.toggleClass(viewClass, enable);
-	};
-
-	const setView = (viewType: GroupViewType) => {
-		if (!group) return;
-		Object.values(GroupViewType).forEach((key) =>
-			toggleViewClass(key, false)
-		);
-		toggleViewClass(viewType, true);
-		setViewType(viewType);
-	};
-
-	const enableView = (viewType: GroupViewType) => {
-		setView(viewType);
-		if (viewType === GroupViewType.MissionControlView) {
-			const autoExit = (event: MouseEvent) => {
-				const targetEl = event.target as HTMLElement;
-				const leafEl = targetEl.matchParent(".workspace-leaf");
-				if (!leafEl) return;
-				setView(GroupViewType.Default);
-			};
-			group?.containerEl.addEventListener("dblclick", autoExit, {
-				once: true,
-			});
-		}
-	};
+	useEffect(() => {
+		bindGroupViewToggleEvent(group, setViewType);
+	}, [group]);
 
 	const menu = new Menu();
 
@@ -181,25 +162,29 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		item.setSection("group-view")
 			.setTitle("Default view")
 			.setDisabled(viewType === GroupViewType.Default)
-			.onClick(() => enableView(GroupViewType.Default));
+			.onClick(() => setGroupViewType(group, GroupViewType.Default));
 	});
 	menu.addItem((item) => {
 		item.setSection("group-view")
 			.setTitle("Continuous view")
 			.setDisabled(viewType === GroupViewType.ContinuousView)
-			.onClick(() => enableView(GroupViewType.ContinuousView));
+			.onClick(() =>
+				setGroupViewType(group, GroupViewType.ContinuousView)
+			);
 	});
 	menu.addItem((item) => {
 		item.setSection("group-view")
 			.setTitle("Column view")
 			.setDisabled(viewType === GroupViewType.ColumnView)
-			.onClick(() => enableView(GroupViewType.ColumnView));
+			.onClick(() => setGroupViewType(group, GroupViewType.ColumnView));
 	});
 	menu.addItem((item) => {
 		item.setSection("group-view")
 			.setTitle("Mission control view")
 			.setDisabled(viewType === GroupViewType.MissionControlView)
-			.onClick(() => enableView(GroupViewType.MissionControlView));
+			.onClick(() =>
+				setGroupViewType(group, GroupViewType.MissionControlView)
+			);
 	});
 	menu.addSeparator();
 	menu.addItem((item) => {
@@ -270,7 +255,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 					onClick={unlinkGroup}
 				/>
 			)}
-			{children && children(isSingleGroup, viewType, enableView)}
+			{children && children(isSingleGroup, viewType)}
 			{showLinkedGroupButtons && (
 				<LinkedGroupButton
 					title="Load more"

@@ -121,7 +121,7 @@ export const NavigationContent = () => {
 								type={entryOf(groupID).groupType}
 								group={entryOf(groupID).group}
 							>
-								{(isSingleGroup, viewType, enableView) => (
+								{(isSingleGroup, viewType) => (
 									<SortableContext
 										items={getLeaveIDs(groupID)}
 									>
@@ -131,7 +131,6 @@ export const NavigationContent = () => {
 												leaf={leaf}
 												isSingleGroup={isSingleGroup}
 												viewType={viewType}
-												enableView={enableView}
 											/>
 										))}
 										<TabSlot groupID={groupID} />

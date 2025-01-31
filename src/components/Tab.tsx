@@ -23,21 +23,15 @@ import {
 import { useTouchSensor } from "src/services/TouchSeneor";
 import { zoomIn, zoomOut, resetZoom } from "src/services/TabZoom";
 import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
-import { GroupViewType } from "src/models/VTWorkspace";
+import { GroupViewType, setGroupViewType } from "src/models/VTGroupView";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
 	isSingleGroup?: boolean;
 	viewType?: GroupViewType;
-	enableView?: (viewType: GroupViewType) => void;
 }
 
-export const Tab = ({
-	leaf,
-	isSingleGroup,
-	viewType,
-	enableView,
-}: TabProps) => {
+export const Tab = ({ leaf, isSingleGroup, viewType }: TabProps) => {
 	const plugin = usePlugin();
 	const app = plugin.app;
 	const workspace = app.workspace;
@@ -133,31 +127,42 @@ export const Tab = ({
 				leaf.detach();
 			});
 	});
-	if (isSingleGroup && viewType && enableView) {
+	if (isSingleGroup && viewType) {
 		menu.addSeparator();
 		menu.addItem((item) => {
 			item.setSection("group-view")
 				.setTitle("Default view")
 				.setDisabled(viewType === GroupViewType.Default)
-				.onClick(() => enableView(GroupViewType.Default));
+				.onClick(() =>
+					setGroupViewType(leaf.parent, GroupViewType.Default)
+				);
 		});
 		menu.addItem((item) => {
 			item.setSection("group-view")
 				.setTitle("Continuous view")
 				.setDisabled(viewType === GroupViewType.ContinuousView)
-				.onClick(() => enableView(GroupViewType.ContinuousView));
+				.onClick(() =>
+					setGroupViewType(leaf.parent, GroupViewType.ContinuousView)
+				);
 		});
 		menu.addItem((item) => {
 			item.setSection("group-view")
 				.setTitle("Column view")
 				.setDisabled(viewType === GroupViewType.ColumnView)
-				.onClick(() => enableView(GroupViewType.ColumnView));
+				.onClick(() =>
+					setGroupViewType(leaf.parent, GroupViewType.ColumnView)
+				);
 		});
 		menu.addItem((item) => {
 			item.setSection("group-view")
 				.setTitle("Mission control view")
 				.setDisabled(viewType === GroupViewType.MissionControlView)
-				.onClick(() => enableView(GroupViewType.MissionControlView));
+				.onClick(() =>
+					setGroupViewType(
+						leaf.parent,
+						GroupViewType.MissionControlView
+					)
+				);
 		});
 	}
 	menu.addSeparator();

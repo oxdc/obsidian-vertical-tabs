@@ -26,6 +26,7 @@ import {
 import { getGroupType, GroupType, Identifier } from "./VTWorkspace";
 import { useTabCache } from "./TabCache";
 import { LinkedFolder } from "src/services/OpenFolder";
+import { GroupViewType } from "./VTGroupView";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -44,6 +45,11 @@ export type EphermalToggleEventCallback = (isEphemeral: boolean) => void;
 export const createNewEphermalToggleEvents = () =>
 	new DefaultRecord(() => null) as EphermalToggleEvents;
 
+export type GroupViewToggleEvents = DefaultRecord<Identifier, EventRef | null>;
+export type GroupViewToggleEventCallback = (viewType: GroupViewType) => void;
+export const createNewGroupViewToggleEvents = () =>
+	new DefaultRecord(() => null) as GroupViewToggleEvents;
+
 export type LinkedGroups = DefaultRecord<Identifier, LinkedFolder | null>;
 export const createNewLinkedGroups = () =>
 	new DefaultRecord(() => null) as LinkedGroups;
@@ -56,6 +62,7 @@ interface ViewState {
 	latestActiveLeaf: WorkspaceLeaf | null;
 	pinningEvents: PinningEvents;
 	ephermalToggleEvents: EphermalToggleEvents;
+	groupViewToggleEvents: GroupViewToggleEvents;
 	globalCollapseState: boolean;
 	clear: () => void;
 	setGroupTitle: (id: Identifier, name: string) => void;
@@ -92,6 +99,11 @@ interface ViewState {
 		callback: EphermalToggleEventCallback
 	) => void;
 	unbindEphemeralToggleEvent: (leaf: WorkspaceLeaf) => void;
+	bindGroupViewToggleEvent: (
+		group: WorkspaceParent | null,
+		callback: GroupViewToggleEventCallback
+	) => void;
+	unbindGroupViewToggleEvent: (group: WorkspaceParent | null) => void;
 	setAllCollapsed: () => void;
 	setAllExpanded: () => void;
 	uncollapseActiveGroup: (app: App) => void;
@@ -192,6 +204,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	latestActiveLeaf: null,
 	pinningEvents: createNewPinningEvents(),
 	ephermalToggleEvents: createNewEphermalToggleEvents(),
+	groupViewToggleEvents: createNewGroupViewToggleEvents(),
 	globalCollapseState: false,
 	linkedGroups: createNewLinkedGroups(),
 	leftButtonClone: null,
@@ -433,6 +446,28 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			leaf.offref(event);
 			ephermalToggleEvents.set(leaf.id, null);
 			set({ ephermalToggleEvents });
+		}
+	},
+	bindGroupViewToggleEvent(group, callback) {
+		if (!group) return;
+		const { groupViewToggleEvents } = get();
+		const event = groupViewToggleEvents.get(group.id);
+		if (event) return;
+		const newEvent = group.on(
+			"vertical-tabs:group-view-change",
+			(viewType: GroupViewType) => callback(viewType)
+		);
+		groupViewToggleEvents.set(group.id, newEvent);
+		set({ groupViewToggleEvents });
+	},
+	unbindGroupViewToggleEvent(group) {
+		if (!group) return;
+		const { groupViewToggleEvents } = get();
+		const event = groupViewToggleEvents.get(group.id);
+		if (event) {
+			group.offref(event);
+			groupViewToggleEvents.set(group.id, null);
+			set({ groupViewToggleEvents });
 		}
 	},
 	setAllCollapsed() {

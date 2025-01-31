@@ -1,3 +1,4 @@
+import { GroupViewType } from "./models/VTGroupView";
 import { Identifier } from "./models/VTWorkspace";
 
 declare module "obsidian" {
@@ -52,6 +53,10 @@ declare module "obsidian" {
 		setStacked: (stacked: boolean) => void;
 		detach: () => void;
 		tabHeaderContainerEl: HTMLElement;
+		on(
+			name: "vertical-tabs:group-view-change",
+			callback: (viewType: GroupViewType) => void
+		): EventRef;
 	}
 
 	interface HistoryState {
