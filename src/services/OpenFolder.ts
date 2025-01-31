@@ -31,6 +31,67 @@ export function getFilesRecursivelyInFolder(folder: TFolder): TFile[] {
 	}, files) as TFile[];
 }
 
+export type FileCompareFn = (a: TFile, b: TFile) => number;
+
+export type FileSortStrategy = {
+	compareFn: FileCompareFn;
+	reverse: boolean;
+};
+
+export function sortFiles(files: TFile[], sortStrategy: FileSortStrategy) {
+	files.sort(sortStrategy.compareFn);
+	if (sortStrategy.reverse) files.reverse();
+	return files;
+}
+
+export function byFileName(a: TFile, b: TFile) {
+	return a.name.localeCompare(b.name);
+}
+
+export function byExtension(a: TFile, b: TFile) {
+	const resultOfExtension = a.extension.localeCompare(b.extension);
+	const resultOfBasename = a.basename.localeCompare(b.basename);
+	return resultOfExtension === 0 ? resultOfBasename : resultOfExtension;
+}
+
+export function byFileCreatedTime(a: TFile, b: TFile) {
+	return a.stat.ctime - b.stat.ctime;
+}
+
+export function byFileModifiedTime(a: TFile, b: TFile) {
+	return a.stat.mtime - b.stat.mtime;
+}
+
+export function byFileSize(a: TFile, b: TFile) {
+	return a.stat.size - b.stat.size;
+}
+
+export const linkedFolderSortStrategies: Record<string, FileSortStrategy> = {
+	fileNameAToZ: { compareFn: byFileName, reverse: false },
+	fileNameZToA: { compareFn: byFileName, reverse: true },
+	extensionAToZ: { compareFn: byExtension, reverse: false },
+	extensionZToA: { compareFn: byExtension, reverse: true },
+	createdTimeOldestFirst: { compareFn: byFileCreatedTime, reverse: false },
+	createdTimeNewestFirst: { compareFn: byFileCreatedTime, reverse: true },
+	modifiedTimeOldestFirst: { compareFn: byFileModifiedTime, reverse: false },
+	modifiedTimeNewestFirst: { compareFn: byFileModifiedTime, reverse: true },
+	fileSizeSmallestFirst: { compareFn: byFileSize, reverse: false },
+	fileSizeLargestFirst: { compareFn: byFileSize, reverse: true },
+};
+
+export const linkedFolderSortStrategyOptions: Record<string, string> = {
+	fileNameAToZ: "File name A to Z",
+	fileNameZToA: "File name Z to A",
+	extensionAToZ: "Extension A to Z",
+	extensionZToA: "Extension Z to A",
+	createdTimeOldestFirst: "Created time oldest first",
+	createdTimeNewestFirst: "Created time newest first",
+	modifiedTimeOldestFirst: "Modified time oldest first",
+	modifiedTimeNewestFirst: "Modified time newest first",
+	fileSizeSmallestFirst: "File size smallest first",
+	fileSizeLargestFirst: "File size largest first",
+};
+
 export class LinkedFolder {
 	app: App;
 	folder: TFolder;
@@ -39,12 +100,23 @@ export class LinkedFolder {
 	newLeaf: WorkspaceLeaf | null = null;
 	group: WorkspaceParent | null = null;
 
+	private static getLimit() {
+		return useSettings.getState().linkedFolderLimit;
+	}
+
+	private static getSortStrategy() {
+		return useSettings.getState().linkedFolderSortStrategy;
+	}
+
 	constructor(app: App, folder: TFolder, recursive: boolean) {
 		this.app = app;
 		this.folder = folder;
 		this.files = recursive
 			? getFilesRecursivelyInFolder(folder)
 			: getFilesInFolder(folder);
+		const sortStrategyName = LinkedFolder.getSortStrategy();
+		const sortStrategy = linkedFolderSortStrategies[sortStrategyName];
+		sortFiles(this.files, sortStrategy);
 	}
 
 	async createNewGroup(): Promise<Identifier | null> {
@@ -61,13 +133,9 @@ export class LinkedFolder {
 		return group.id;
 	}
 
-	getLimit() {
-		return useSettings.getState().linkedFolderLimit;
-	}
-
 	async openNextFiles(replace: boolean): Promise<boolean> {
 		if (!this.group) return false;
-		const limit = this.getLimit();
+		const limit = LinkedFolder.getLimit();
 		const files = this.files.slice(this.offset, this.offset + limit);
 		if (files.length === 0) return false;
 		this.offset += limit;

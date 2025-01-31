@@ -5,6 +5,7 @@ import {
 	TabNavigationStrategy,
 	TabNavigationStrategyOptions,
 } from "./models/TabNavigation";
+import { linkedFolderSortStrategyOptions } from "./services/OpenFolder";
 
 export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	plugin: ObsidianVerticalTabs;
@@ -198,7 +199,23 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				break;
 		}
 
-		new Setting(containerEl).setName("Group View").setHeading();
+		new Setting(containerEl).setName("Linked Folder").setHeading();
+
+		new Setting(containerEl)
+			.setName("Load order")
+			.setDesc(
+				"Determines the order in which files are loaded, such as by name or date."
+			)
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOptions(linkedFolderSortStrategyOptions)
+					.setValue(this.plugin.settings.linkedFolderSortStrategy)
+					.onChange(async (value) => {
+						useSettings.getState().setSettings({
+							linkedFolderSortStrategy: value,
+						});
+					})
+			);
 
 		new Setting(containerEl)
 			.setName("Files per load")
@@ -225,6 +242,8 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 						});
 					});
 			});
+
+		new Setting(containerEl).setName("Group View").setHeading();
 
 		new Setting(containerEl)
 			.setName("Show metadata in continuous view")

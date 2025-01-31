@@ -18,6 +18,7 @@ interface ObsidianVerticalTabsSettings {
 	autoCloseEphemeralTabs: boolean;
 	deduplicateSidebarTabs: boolean;
 	linkedFolderLimit: number;
+	linkedFolderSortStrategy: string;
 	continuousViewShowMetadata: boolean;
 	continuousViewShowBacklinks: boolean;
 	columnViewMinWidth: number;
@@ -42,6 +43,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	autoCloseEphemeralTabs: true,
 	deduplicateSidebarTabs: false,
 	linkedFolderLimit: 5,
+	linkedFolderSortStrategy: "fileNameAToZ",
 	columnViewMinWidth: 300,
 	continuousViewShowMetadata: false,
 	continuousViewShowBacklinks: false,
