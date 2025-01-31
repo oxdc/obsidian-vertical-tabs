@@ -110,6 +110,13 @@ export const Tab = ({ leaf, isSingleGroup, viewType }: TabProps) => {
 		}
 	};
 
+	const makeLeafNonEphemeralAndExitMissionControl = () => {
+		makeLeafNonEphemeral(leaf);
+		if (viewType === GroupViewType.MissionControlView) {
+			setGroupViewType(leaf.parent, GroupViewType.Default);
+		}
+	};
+
 	const menu = new Menu();
 
 	menu.addItem((item) => {
@@ -419,7 +426,7 @@ export const Tab = ({ leaf, isSingleGroup, viewType }: TabProps) => {
 			toolbar={toolbar}
 			onClick={activeOrCloseTab}
 			onAuxClick={midClickCloseTab}
-			onDoubleClick={() => makeLeafNonEphemeral(leaf)}
+			onDoubleClick={makeLeafNonEphemeralAndExitMissionControl}
 			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
 			dataType={leaf.getViewState().type}
 			dataId={leaf.id}
