@@ -26,7 +26,7 @@ import {
 import { getGroupType, GroupType, Identifier } from "./VTWorkspace";
 import { useTabCache } from "./TabCache";
 import { LinkedFolder } from "src/services/OpenFolder";
-import { GroupViewType } from "./VTGroupView";
+import { GroupViewType, setGroupViewType } from "./VTGroupView";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -121,6 +121,7 @@ interface ViewState {
 	removeLinkedGroup: (groupID: Identifier) => void;
 	getLinkedFolder: (groupID: Identifier) => LinkedFolder | null;
 	isLinkedGroup: (groupID: Identifier) => boolean;
+	setGroupViewTypeForCurrentGroup: (viewType: GroupViewType) => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -534,5 +535,10 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		if (!groupID) return false;
 		const { linkedGroups } = get();
 		return linkedGroups.get(groupID) !== null;
+	},
+	setGroupViewTypeForCurrentGroup(viewType: GroupViewType) {
+		const { latestActiveLeaf } = get();
+		if (!latestActiveLeaf) return;
+		setGroupViewType(latestActiveLeaf.parent, viewType);
 	},
 }));

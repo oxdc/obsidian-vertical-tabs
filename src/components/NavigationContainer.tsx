@@ -23,6 +23,7 @@ import {
 import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
 import { iterateRootOrFloatingLeaves } from "src/services/GetTabs";
 import { addMenuItemsToFolderContextMenu } from "src/services/OpenFolder";
+import { GroupViewType } from "src/models/VTGroupView";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
@@ -35,6 +36,7 @@ export const NavigationContainer = () => {
 		lockFocusOnLeaf,
 		forgetNonephemeralTabs,
 		uncollapseActiveGroup,
+		setGroupViewTypeForCurrentGroup,
 	} = useViewState();
 	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
@@ -169,6 +171,36 @@ export const NavigationContainer = () => {
 				if (!useSettings.getState().ephemeralTabs) return;
 				iterateRootOrFloatingLeaves(app, (leaf) =>
 					makeLeafNonEphemeral(leaf)
+				);
+			},
+		});
+		plugin.addCommand({
+			id: "set-current-group-default-view",
+			name: "Set current group as default view",
+			callback: () => {
+				setGroupViewTypeForCurrentGroup(GroupViewType.Default);
+			},
+		});
+		plugin.addCommand({
+			id: "set-current-group-continuous-view",
+			name: "Set current group as continuous view",
+			callback: () => {
+				setGroupViewTypeForCurrentGroup(GroupViewType.ContinuousView);
+			},
+		});
+		plugin.addCommand({
+			id: "set-current-group-column-view",
+			name: "Set current group as column view",
+			callback: () => {
+				setGroupViewTypeForCurrentGroup(GroupViewType.ColumnView);
+			},
+		});
+		plugin.addCommand({
+			id: "set-current-group-mission-control-view",
+			name: "Set current group as mission control view",
+			callback: () => {
+				setGroupViewTypeForCurrentGroup(
+					GroupViewType.MissionControlView
 				);
 			},
 		});
