@@ -10,11 +10,21 @@ import {
 	loadNameFromBookmark,
 } from "src/models/VTBookmark";
 import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
+import { LinkedFolder } from "src/services/OpenFolder";
+import { LinkedGroupButton } from "./LinkedGroupButton";
+import {
+	GroupViewType,
+	identifyGroupViewType,
+	setGroupViewType,
+} from "src/models/VTGroupView";
 
 interface GroupProps {
 	type: GroupType;
 	group: WorkspaceParent | null;
-	children?: React.ReactNode;
+	children?: (
+		isSingleGroup: boolean,
+		viewType: GroupViewType
+	) => React.ReactNode;
 }
 
 const titleMap: Record<GroupType, string> = {
@@ -132,36 +142,110 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		</Fragment>
 	);
 
+	const { bindGroupViewToggleEvent } = useViewState();
+	const [viewType, setViewType] = useState<GroupViewType>(() =>
+		identifyGroupViewType(group)
+	);
+
+	useEffect(() => {
+		bindGroupViewToggleEvent(group, setViewType);
+	}, [group]);
+
 	const menu = new Menu();
 
 	menu.addItem((item) => {
-		item.setTitle(isHidden ? "Show" : "Hide").onClick(toggleHidden);
+		item.setSection("editing")
+			.setTitle(isHidden ? "Show" : "Hide")
+			.onClick(toggleHidden);
 	});
 	menu.addItem((item) => {
-		item.setTitle("Rename").onClick(handleTitleChange);
+		item.setSection("editing")
+			.setTitle("Rename")
+			.onClick(handleTitleChange);
 	});
 	menu.addSeparator();
 	menu.addItem((item) => {
-		item.setTitle("Bookmark all").onClick(() => {
-			if (group) createBookmarkForGroup(app, group, getTitle());
-		});
+		item.setSection("group-view")
+			.setTitle("Default view")
+			.setDisabled(viewType === GroupViewType.Default)
+			.onClick(() => setGroupViewType(group, GroupViewType.Default));
 	});
 	menu.addItem((item) => {
-		item.setTitle("Bookmark and close all").onClick(async () => {
-			if (group) {
-				await createBookmarkForGroup(app, group, getTitle());
-				group.detach();
-			}
-		});
+		item.setSection("group-view")
+			.setTitle("Continuous view")
+			.setDisabled(viewType === GroupViewType.ContinuousView)
+			.onClick(() =>
+				setGroupViewType(group, GroupViewType.ContinuousView)
+			);
 	});
 	menu.addItem((item) => {
-		item.setTitle("Close all").onClick(() => group?.detach());
+		item.setSection("group-view")
+			.setTitle("Column view")
+			.setDisabled(viewType === GroupViewType.ColumnView)
+			.onClick(() => setGroupViewType(group, GroupViewType.ColumnView));
 	});
+	menu.addItem((item) => {
+		item.setSection("group-view")
+			.setTitle("Mission control view")
+			.setDisabled(viewType === GroupViewType.MissionControlView)
+			.onClick(() =>
+				setGroupViewType(group, GroupViewType.MissionControlView)
+			);
+	});
+	menu.addSeparator();
+	menu.addItem((item) => {
+		item.setSection("control")
+			.setTitle("Bookmark all")
+			.onClick(() => {
+				if (group) createBookmarkForGroup(app, group, getTitle());
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("control")
+			.setTitle("Bookmark and close all")
+			.onClick(async () => {
+				if (group) {
+					await createBookmarkForGroup(app, group, getTitle());
+					group.detach();
+				}
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("control")
+			.setTitle("Close all")
+			.onClick(() => group?.detach());
+	});
+
+	const { getLinkedFolder, removeLinkedGroup } = useViewState();
+	const [linkedFolder, setLinkedFolder] = useState<LinkedFolder | null>(null);
+	useEffect(() => {
+		if (!group) return;
+		const linkedFolder = getLinkedFolder(group.id);
+		setLinkedFolder(linkedFolder);
+	}, [group]);
+
+	const unlinkGroup = () => {
+		if (group) {
+			removeLinkedGroup(group.id);
+			setLinkedFolder(null);
+		}
+	};
+
+	const loadMore = async () => {
+		if (linkedFolder) {
+			const hasMore = await linkedFolder.openNextFiles(false);
+			if (!hasMore) unlinkGroup();
+		}
+	};
+
+	const showLinkedGroupButtons =
+		linkedFolder && linkedFolder.files.length > linkedFolder.offset;
 
 	return (
 		<NavigationTreeItem
 			id={isSidebar ? null : group?.id ?? null}
 			isTab={false}
+			isLinkedGroup={!!linkedFolder}
 			title={isEditing ? titleEditor : title}
 			isRenaming={isEditing}
 			onClick={toggleCollapsed}
@@ -170,7 +254,21 @@ export const Group = ({ type, children, group }: GroupProps) => {
 			toolbar={toolbar}
 			{...props}
 		>
-			{children}
+			{showLinkedGroupButtons && (
+				<LinkedGroupButton
+					title={`Unlink "${linkedFolder.folder.path}"`}
+					icon="unlink"
+					onClick={unlinkGroup}
+				/>
+			)}
+			{children && children(isSingleGroup, viewType)}
+			{showLinkedGroupButtons && (
+				<LinkedGroupButton
+					title="Load more"
+					icon="ellipsis"
+					onClick={loadMore}
+				/>
+			)}
 		</NavigationTreeItem>
 	);
 };

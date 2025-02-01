@@ -4,6 +4,67 @@
 		contain: unset !important;
 		height: unset !important;
 		flex-grow: 1 !important;
+
+		.view-header {
+			position: absolute;
+			width: 100%;
+			background: transparent;
+			border: none;
+
+			& > div:not(.view-actions) {
+				visibility: hidden;
+				background: transparent !important;
+			}
+
+			.view-actions {
+				margin-top: calc(
+					0.5 * var(--inline-title-size) *
+						var(--inline-title-line-height)
+				);
+				padding: var(--file-margins);
+			}
+		}
+
+		/* BEGIN: Primary */
+		&:not(:only-child):first-child {
+			border-bottom-right-radius: 0 !important;
+			border-bottom-left-radius: 0 !important;
+
+			.workspace-leaf-content {
+				border-bottom: none !important;
+				border-bottom-right-radius: 0 !important;
+				border-bottom-left-radius: 0 !important;
+			}
+		}
+
+		&:not(:only-child):last-child {
+			border-top-right-radius: 0 !important;
+			border-top-left-radius: 0 !important;
+
+			.workspace-leaf-content {
+				border-top: none !important;
+				border-top-right-radius: 0 !important;
+				border-top-left-radius: 0 !important;
+			}
+		}
+
+		&:not(:first-child):not(:last-child) {
+			border-radius: 0 !important;
+
+			.workspace-leaf-content {
+				border-top: none !important;
+				border-bottom: none !important;
+				border-radius: 0 !important;
+			}
+		}
+		/* END: Primary */
+	}
+
+	.workspace-tab-header-container {
+		.workspace-tab-header-new-tab,
+		.workspace-tab-header-tab-list {
+			display: none;
+		}
 	}
 
 	.workspace-tab-container {
@@ -27,6 +88,16 @@
 		display: none;
 	}
 
+	&.vt-continuous-view-show-metadata {
+		.metadata-container {
+			display: var(--metadata-display-editing) !important;
+		}
+
+		.metadata-container[data-property-count="0"] {
+			display: none !important;
+		}
+	}
+
 	&.vt-continuous-view-show-backlinks {
 		.embedded-backlinks {
 			display: block !important;
@@ -35,16 +106,6 @@
 
 		.cm-contentContainer > div {
 			padding-bottom: 50px !important;
-		}
-	}
-
-	&.vt-continuous-view-show-metadata {
-		.metadata-container {
-			display: var(--metadata-display-editing) !important;
-		}
-
-		.metadata-container[data-property-count="0"] {
-			display: none !important;
 		}
 	}
 }

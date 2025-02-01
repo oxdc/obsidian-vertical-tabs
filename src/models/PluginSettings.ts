@@ -22,6 +22,11 @@ interface ObsidianVerticalTabsSettings {
 	deduplicateSameGroupTabs: boolean;
 	deduplicateSidebarTabs: boolean;
 	deduplicatePopupTabs: boolean;
+	linkedFolderLimit: number;
+	linkedFolderSortStrategy: string;
+	continuousViewShowMetadata: boolean;
+	continuousViewShowBacklinks: boolean;
+	columnViewMinWidth: number;
 	backgroundMode: boolean;
 }
 
@@ -46,6 +51,11 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	deduplicateSameGroupTabs: false,
 	deduplicateSidebarTabs: false,
 	deduplicatePopupTabs: false,
+	linkedFolderLimit: 5,
+	linkedFolderSortStrategy: "fileNameAToZ",
+	columnViewMinWidth: 300,
+	continuousViewShowMetadata: false,
+	continuousViewShowBacklinks: false,
 	backgroundMode: false,
 };
 

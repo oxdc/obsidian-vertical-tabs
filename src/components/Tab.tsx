@@ -25,14 +25,23 @@ import { zoomIn, zoomOut, resetZoom } from "src/services/TabZoom";
 import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
 import { HistoryBrowserModal } from "src/HistoryBrowserModal";
 import { getOpenFileOfLeaf } from "src/services/GetTabs";
+import { GroupViewType, setGroupViewType } from "src/models/VTGroupView";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
 	index: number;
 	isLast: boolean;
+	isSingleGroup?: boolean;
+	viewType?: GroupViewType;
 }
 
-export const Tab = ({ leaf, index, isLast }: TabProps) => {
+export const Tab = ({
+	leaf,
+	index,
+	isLast,
+	isSingleGroup,
+	viewType,
+}: TabProps) => {
 	const plugin = usePlugin();
 	const app = plugin.app;
 	const workspace = app.workspace;
@@ -98,10 +107,18 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 
 	const openTab = () => {
 		if (Platform.isMobile && isEditingTabs) return;
-		workspace.setActiveLeaf(leaf, { focus: true });
+		const positioning =
+			viewType === GroupViewType.MissionControlView ? "center" : "start";
+		const focus = viewType !== GroupViewType.MissionControlView;
+		workspace.setActiveLeaf(leaf, { focus });
 		workspace.onLayoutChange();
 		toggleHiddenGroup(leaf.parent.id, false);
 		lockFocusOnLeaf(app, leaf);
+		leaf.containerEl?.scrollIntoView({
+			behavior: "smooth",
+			block: positioning,
+			inline: "center",
+		});
 	};
 
 	const activeOrCloseTab = (
@@ -111,6 +128,13 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 			closeTab();
 		} else {
 			openTab();
+		}
+	};
+
+	const makeLeafNonEphemeralAndExitMissionControl = () => {
+		makeLeafNonEphemeral(leaf);
+		if (viewType === GroupViewType.MissionControlView) {
+			setGroupViewType(leaf.parent, GroupViewType.Default);
 		}
 	};
 
@@ -131,6 +155,44 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 				leaf.detach();
 			});
 	});
+	if (isSingleGroup && viewType) {
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("group-view")
+				.setTitle("Default view")
+				.setDisabled(viewType === GroupViewType.Default)
+				.onClick(() =>
+					setGroupViewType(leaf.parent, GroupViewType.Default)
+				);
+		});
+		menu.addItem((item) => {
+			item.setSection("group-view")
+				.setTitle("Continuous view")
+				.setDisabled(viewType === GroupViewType.ContinuousView)
+				.onClick(() =>
+					setGroupViewType(leaf.parent, GroupViewType.ContinuousView)
+				);
+		});
+		menu.addItem((item) => {
+			item.setSection("group-view")
+				.setTitle("Column view")
+				.setDisabled(viewType === GroupViewType.ColumnView)
+				.onClick(() =>
+					setGroupViewType(leaf.parent, GroupViewType.ColumnView)
+				);
+		});
+		menu.addItem((item) => {
+			item.setSection("group-view")
+				.setTitle("Mission control view")
+				.setDisabled(viewType === GroupViewType.MissionControlView)
+				.onClick(() =>
+					setGroupViewType(
+						leaf.parent,
+						GroupViewType.MissionControlView
+					)
+				);
+		});
+	}
 	menu.addSeparator();
 	menu.addItem((item) => {
 		item.setSection("close")
@@ -480,7 +542,7 @@ export const Tab = ({ leaf, index, isLast }: TabProps) => {
 			toolbar={toolbar}
 			onClick={activeOrCloseTab}
 			onAuxClick={midClickCloseTab}
-			onDoubleClick={() => makeLeafNonEphemeral(leaf)}
+			onDoubleClick={makeLeafNonEphemeralAndExitMissionControl}
 			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
 			onMouseOver={previewTab}
 			dataType={leaf.getViewState().type}

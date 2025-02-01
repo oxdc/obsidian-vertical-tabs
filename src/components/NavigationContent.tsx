@@ -121,23 +121,31 @@ export const NavigationContent = () => {
 								type={entryOf(groupID).groupType}
 								group={entryOf(groupID).group}
 							>
-								<SortableContext items={getLeaveIDs(groupID)}>
-									{entryOf(groupID).leaves.map(
-										(leaf, index, array) => {
-											const isLast =
-												index === array.length - 1;
-											return (
-												<Tab
-													key={leaf.id}
-													leaf={leaf}
-													index={index + 1}
-													isLast={isLast}
-												/>
-											);
-										}
-									)}
-									<TabSlot groupID={groupID} />
-								</SortableContext>
+								{(isSingleGroup, viewType) => (
+									<SortableContext
+										items={getLeaveIDs(groupID)}
+									>
+										{entryOf(groupID).leaves.map(
+											(leaf, index, array) => {
+												const isLast =
+													index === array.length - 1;
+												return (
+													<Tab
+														key={leaf.id}
+														leaf={leaf}
+														index={index + 1}
+														isLast={isLast}
+														isSingleGroup={
+															isSingleGroup
+														}
+														viewType={viewType}
+													/>
+												);
+											}
+										)}
+										<TabSlot groupID={groupID} />
+									</SortableContext>
+								)}
 							</Group>
 						))}
 						<GroupSlot />

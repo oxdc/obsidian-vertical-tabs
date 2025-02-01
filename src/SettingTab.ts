@@ -7,6 +7,7 @@ import {
 	TabNavigationStrategyOptions,
 	TabNavigationCopyOptions,
 } from "./models/TabNavigation";
+import { linkedFolderSortStrategyOptions } from "./services/OpenFolder";
 
 export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	plugin: ObsidianVerticalTabs;
@@ -253,6 +254,102 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				this.displayCustomNavigationStrategy(containerEl);
 				break;
 		}
+
+		new Setting(containerEl).setName("Linked Folder").setHeading();
+
+		new Setting(containerEl)
+			.setName("Load order")
+			.setDesc(
+				"Determines the order in which files are loaded, such as by name or date."
+			)
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOptions(linkedFolderSortStrategyOptions)
+					.setValue(this.plugin.settings.linkedFolderSortStrategy)
+					.onChange(async (value) => {
+						useSettings.getState().setSettings({
+							linkedFolderSortStrategy: value,
+						});
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Files per load")
+			.setDesc("Files loaded per click when opening a folder as a group.")
+			.addExtraButton((button) => {
+				button
+					.setIcon("reset")
+					.setTooltip("Reset to default")
+					.onClick(async () => {
+						useSettings.getState().setSettings({
+							linkedFolderLimit: 5,
+						});
+						this.display();
+					});
+			})
+			.addSlider((slider) => {
+				slider
+					.setLimits(5, 50, 1)
+					.setValue(this.plugin.settings.linkedFolderLimit)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						useSettings.getState().setSettings({
+							linkedFolderLimit: value,
+						});
+					});
+			});
+
+		new Setting(containerEl).setName("Group View").setHeading();
+
+		new Setting(containerEl)
+			.setName("Show metadata in continuous view")
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.continuousViewShowMetadata)
+					.onChange(async (value) => {
+						useSettings.getState().setGroupViewOptions(this.app, {
+							continuousViewShowMetadata: value,
+						});
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Show backlinks in continuous view")
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.continuousViewShowBacklinks)
+					.onChange(async (value) => {
+						useSettings.getState().setGroupViewOptions(this.app, {
+							continuousViewShowBacklinks: value,
+						});
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Column view tab width")
+			.setDesc("Minimum width of each tab in the column view in pixels.")
+			.addExtraButton((button) => {
+				button
+					.setIcon("reset")
+					.setTooltip("Reset to default")
+					.onClick(async () => {
+						useSettings.getState().setGroupViewOptions(this.app, {
+							columnViewMinWidth: 300,
+						});
+						this.display();
+					});
+			})
+			.addSlider((slider) => {
+				slider
+					.setLimits(200, 1000, 10)
+					.setValue(this.plugin.settings.columnViewMinWidth)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						useSettings.getState().setGroupViewOptions(this.app, {
+							columnViewMinWidth: value,
+						});
+					});
+			});
 
 		new Setting(containerEl).setName("Miscellaneous").setHeading();
 

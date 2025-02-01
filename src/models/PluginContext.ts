@@ -19,6 +19,7 @@ import {
 	moveSelfToDefaultLocation,
 	moveSelfToNewGroupAndHide,
 } from "src/services/MoveTab";
+import { refreshGroupViewTypes, setColumnViewMinWidth } from "./VTGroupView";
 
 function saveShowActiveTabs(showActiveTabs: boolean) {
 	localStorage.setItem("vt-show-active-tabs", showActiveTabs.toString());
@@ -43,6 +44,12 @@ export const useApp = (): App => {
 	return plugin.app;
 };
 
+export type GroupViewOptions = {
+	continuousViewShowMetadata?: boolean;
+	continuousViewShowBacklinks?: boolean;
+	columnViewMinWidth?: number;
+};
+
 interface SettingsActions {
 	plugin: ObsidianVerticalTabs | null;
 	loadSettings: (plugin: ObsidianVerticalTabs) => Promise<Settings>;
@@ -56,6 +63,7 @@ interface SettingsActions {
 	) => void;
 	toggleBackgroundMode: (app: App, enable?: boolean) => void;
 	toggleEnhancedKeyboardTabSwitch: (app: App, enable?: boolean) => void;
+	setGroupViewOptions: (app: App, options: GroupViewOptions) => void;
 }
 
 export const useSettingsBase = create<Settings & SettingsActions>(
@@ -165,6 +173,14 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				);
 			}
 			get().setSettings({ enhancedKeyboardTabSwitch: toEnable });
+		},
+		setGroupViewOptions(app: App, options: GroupViewOptions) {
+			get().setSettings(options);
+			refreshGroupViewTypes(app);
+			const { columnViewMinWidth } = options;
+			if (columnViewMinWidth) {
+				setColumnViewMinWidth(columnViewMinWidth);
+			}
 		},
 	})
 );

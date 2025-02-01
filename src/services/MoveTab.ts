@@ -5,6 +5,7 @@ import {
 	WorkspaceParent,
 	WorkspaceSidedock,
 } from "obsidian";
+import { syncUIForGroupView } from "src/models/VTGroupView";
 import { REFRESH_TIMEOUT_LONG } from "src/models/TabCache";
 import { Identifier } from "src/models/VTWorkspace";
 import { VIEW_TYPE } from "src/navigation";
@@ -66,6 +67,8 @@ export function moveTab(
 	insertChild(targetParent, sourceLeaf, insertIndex);
 	app.workspace.onLayoutChange();
 	reapplyEphemeralState(sourceLeaf);
+	syncUIForGroupView(sourceParent);
+	syncUIForGroupView(targetParent);
 	return sourceLeaf;
 }
 

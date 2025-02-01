@@ -8,7 +8,7 @@ import {
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect, useRef } from "react";
 import { useViewState, VIEW_CUE_DELAY } from "src/models/ViewState";
-import { debounce, ItemView, Platform } from "obsidian";
+import { debounce, ItemView, Platform, TFolder } from "obsidian";
 import {
 	ensureSelfIsOpen,
 	moveSelfToDefaultLocation,
@@ -31,6 +31,8 @@ import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
 import { iterateRootOrFloatingLeaves } from "src/services/GetTabs";
 import { SwipeDirection, useTouchSensor } from "src/services/TouchSeneor";
 import { getDrawer } from "src/services/MobileDrawer";
+import { addMenuItemsToFolderContextMenu } from "src/services/OpenFolder";
+import { GroupViewType } from "src/models/VTGroupView";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
@@ -50,6 +52,8 @@ export const NavigationContainer = () => {
 		resetViewCueCallback,
 		scorllToViewCueFirstTab,
 		setIsEditingTabs,
+		setGroupViewTypeForCurrentGroup,
+		exitMissionControlForCurrentGroup,
 	} = useViewState();
 	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
 
@@ -141,6 +145,15 @@ export const NavigationContainer = () => {
 			})
 		);
 		plugin.registerEvent(
+			workspace.on("file-menu", (menu, fileOrFolder) => {
+				if (useSettings.getState().backgroundMode) return;
+				if (fileOrFolder instanceof TFolder) {
+					const folder = fileOrFolder;
+					addMenuItemsToFolderContextMenu(app, menu, folder);
+				}
+			})
+		);
+		plugin.registerEvent(
 			workspace.on("vertical-tabs:enhanced-keyboard-tab-switch", () => {
 				modifyViewCueCallback(app);
 			})
@@ -151,6 +164,9 @@ export const NavigationContainer = () => {
 			})
 		);
 		plugin.registerDomEvent(window, "keydown", (event) => {
+			if (event.key === "Escape") {
+				exitMissionControlForCurrentGroup();
+			}
 			const { enhancedKeyboardTabSwitch } = useSettings.getState();
 			if (!enhancedKeyboardTabSwitch) return;
 			if (event.ctrlKey || event.metaKey) {
@@ -234,6 +250,36 @@ export const NavigationContainer = () => {
 			callback: () => {
 				deduplicateExistingTabs(app, true);
 				uncollapseActiveGroup(app);
+			},
+		});
+		plugin.addCommand({
+			id: "set-current-group-default-view",
+			name: "Set current group as default view",
+			callback: () => {
+				setGroupViewTypeForCurrentGroup(GroupViewType.Default);
+			},
+		});
+		plugin.addCommand({
+			id: "set-current-group-continuous-view",
+			name: "Set current group as continuous view",
+			callback: () => {
+				setGroupViewTypeForCurrentGroup(GroupViewType.ContinuousView);
+			},
+		});
+		plugin.addCommand({
+			id: "set-current-group-column-view",
+			name: "Set current group as column view",
+			callback: () => {
+				setGroupViewTypeForCurrentGroup(GroupViewType.ColumnView);
+			},
+		});
+		plugin.addCommand({
+			id: "set-current-group-mission-control-view",
+			name: "Set current group as mission control view",
+			callback: () => {
+				setGroupViewTypeForCurrentGroup(
+					GroupViewType.MissionControlView
+				);
 			},
 		});
 		plugin.registerHoverLinkSource("vertical-tabs", {

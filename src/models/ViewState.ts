@@ -28,6 +28,12 @@ import { getGroupType, GroupType, Identifier } from "./VTWorkspace";
 import { REFRESH_TIMEOUT_LONG, useTabCache } from "./TabCache";
 import { pinDrawer, unpinDrawer } from "src/services/MobileDrawer";
 import { CommandCheckCallback, getCommandByName } from "src/services/Commands";
+import { LinkedFolder } from "src/services/OpenFolder";
+import {
+	GroupViewType,
+	identifyGroupViewType,
+	setGroupViewType,
+} from "./VTGroupView";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -45,6 +51,15 @@ export type EphermalToggleEvents = DefaultRecord<Identifier, EventRef | null>;
 export type EphermalToggleEventCallback = (isEphemeral: boolean) => void;
 export const createNewEphermalToggleEvents = () =>
 	new DefaultRecord(() => null) as EphermalToggleEvents;
+
+export type GroupViewToggleEvents = DefaultRecord<Identifier, EventRef | null>;
+export type GroupViewToggleEventCallback = (viewType: GroupViewType) => void;
+export const createNewGroupViewToggleEvents = () =>
+	new DefaultRecord(() => null) as GroupViewToggleEvents;
+
+export type LinkedGroups = DefaultRecord<Identifier, LinkedFolder | null>;
+export const createNewLinkedGroups = () =>
+	new DefaultRecord(() => null) as LinkedGroups;
 
 export type ViewCueIndex = number | string | undefined;
 export const MIN_INDEX_KEY = 1;
@@ -68,6 +83,7 @@ interface ViewState {
 	latestActiveTab: HTMLElement | null;
 	pinningEvents: PinningEvents;
 	ephermalToggleEvents: EphermalToggleEvents;
+	groupViewToggleEvents: GroupViewToggleEvents;
 	globalCollapseState: boolean;
 	isEditingTabs: boolean;
 	hasCtrlKeyPressed: boolean;
@@ -86,6 +102,7 @@ interface ViewState {
 	) => void;
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
 	lockFocusOnLeaf: (app: App, leaf: WorkspaceLeaf) => void;
+	linkedGroups: LinkedGroups;
 	resetFocusFlags: () => void;
 	hookLatestActiveTab: (tab: HTMLElement | null) => void;
 	scorllToActiveTab: () => void;
@@ -110,6 +127,11 @@ interface ViewState {
 		callback: EphermalToggleEventCallback
 	) => void;
 	unbindEphemeralToggleEvent: (leaf: WorkspaceLeaf) => void;
+	bindGroupViewToggleEvent: (
+		group: WorkspaceParent | null,
+		callback: GroupViewToggleEventCallback
+	) => void;
+	unbindGroupViewToggleEvent: (group: WorkspaceParent | null) => void;
 	setAllCollapsed: () => void;
 	setAllExpanded: () => void;
 	uncollapseActiveGroup: (app: App) => void;
@@ -146,6 +168,12 @@ interface ViewState {
 		isFirst: boolean
 	) => void;
 	scorllToViewCueFirstTab: (app: App) => void;
+	addLinkedGroup: (groupID: Identifier, linkedFolder: LinkedFolder) => void;
+	removeLinkedGroup: (groupID: Identifier) => void;
+	getLinkedFolder: (groupID: Identifier) => LinkedFolder | null;
+	isLinkedGroup: (groupID: Identifier) => boolean;
+	setGroupViewTypeForCurrentGroup: (viewType: GroupViewType) => void;
+	exitMissionControlForCurrentGroup: () => void;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -230,12 +258,14 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	latestActiveTab: null,
 	pinningEvents: createNewPinningEvents(),
 	ephermalToggleEvents: createNewEphermalToggleEvents(),
+	groupViewToggleEvents: createNewGroupViewToggleEvents(),
 	globalCollapseState: false,
 	isEditingTabs: false,
 	hasCtrlKeyPressed: false,
 	viewCueOffset: 0,
 	viewCueNativeCallbacks: new Map(),
 	viewCueFirstTabs: createNewViewCueFirstTabs(),
+	linkedGroups: createNewLinkedGroups(),
 	leftButtonClone: null,
 	rightButtonClone: null,
 	topLeftContainer: null,
@@ -502,6 +532,28 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			set({ ephermalToggleEvents });
 		}
 	},
+	bindGroupViewToggleEvent(group, callback) {
+		if (!group) return;
+		const { groupViewToggleEvents } = get();
+		const event = groupViewToggleEvents.get(group.id);
+		if (event) return;
+		const newEvent = group.on(
+			"vertical-tabs:group-view-change",
+			(viewType: GroupViewType) => callback(viewType)
+		);
+		groupViewToggleEvents.set(group.id, newEvent);
+		set({ groupViewToggleEvents });
+	},
+	unbindGroupViewToggleEvent(group) {
+		if (!group) return;
+		const { groupViewToggleEvents } = get();
+		const event = groupViewToggleEvents.get(group.id);
+		if (event) {
+			group.offref(event);
+			groupViewToggleEvents.set(group.id, null);
+			set({ groupViewToggleEvents });
+		}
+	},
 	setAllCollapsed() {
 		const ids = useTabCache.getState().groupIDs;
 		set({ globalCollapseState: true, collapsedGroups: ids });
@@ -692,6 +744,39 @@ export const useViewState = create<ViewState>()((set, get) => ({
 				block: "start",
 				inline: "nearest",
 			});
+		}
+	},
+	addLinkedGroup(groupID: Identifier, linkedFolder: LinkedFolder) {
+		const { linkedGroups } = get();
+		linkedGroups.set(groupID, linkedFolder);
+		set({ linkedGroups: linkedGroups });
+	},
+	removeLinkedGroup(groupID: Identifier) {
+		const { linkedGroups } = get();
+		linkedGroups.set(groupID, null);
+		set({ linkedGroups: linkedGroups });
+	},
+	getLinkedFolder(groupID: Identifier) {
+		const { linkedGroups: linkedGroups } = get();
+		return linkedGroups.get(groupID);
+	},
+	isLinkedGroup(groupID: Identifier | null) {
+		if (!groupID) return false;
+		const { linkedGroups } = get();
+		return linkedGroups.get(groupID) !== null;
+	},
+	setGroupViewTypeForCurrentGroup(viewType: GroupViewType) {
+		const { latestActiveLeaf } = get();
+		if (!latestActiveLeaf) return;
+		setGroupViewType(latestActiveLeaf.parent, viewType);
+	},
+	exitMissionControlForCurrentGroup() {
+		const { latestActiveLeaf } = get();
+		if (!latestActiveLeaf) return;
+		const group = latestActiveLeaf.parent;
+		const viewType = identifyGroupViewType(group);
+		if (viewType === GroupViewType.MissionControlView) {
+			setGroupViewType(group, GroupViewType.Default);
 		}
 	},
 }));

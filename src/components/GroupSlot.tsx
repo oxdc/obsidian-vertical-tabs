@@ -9,7 +9,7 @@ export const GroupSlot = () => {
 	const { lockFocusOnLeaf } = useViewState();
 
 	const createLeafNewGroupAndOpen = async () => {
-		const leaf = workspace.getLeaf(true);
+		const leaf = workspace.getLeaf("tab");
 		const movedLeaf = await moveTabToNewGroup(app, leaf.id);
 		if (!movedLeaf) return;
 		workspace.setActiveLeaf(movedLeaf, { focus: true });
