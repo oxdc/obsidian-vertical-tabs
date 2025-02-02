@@ -62,6 +62,7 @@ declare module "obsidian" {
 		setStacked: (stacked: boolean) => void;
 		detach: () => void;
 		tabHeaderContainerEl: HTMLElement;
+		isLinkedGroup?: boolean;
 		on(
 			name: "vertical-tabs:group-view-change",
 			callback: (viewType: GroupViewType) => void
@@ -86,6 +87,7 @@ declare module "obsidian" {
 		id: Identifier;
 		activeTime: number;
 		isEphemeral?: boolean;
+		isLinkedFile?: boolean;
 		parent: WorkspaceTabs | WorkspaceMobileDrawer;
 		setParent: (parent: WorkspaceParent) => void;
 		containerEl?: HTMLElement;

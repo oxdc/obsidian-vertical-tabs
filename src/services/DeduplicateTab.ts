@@ -101,6 +101,7 @@ export function deduplicateTab(
 		if (skipLeaves.includes(leaf.id)) return;
 		const viewType = leaf.view.getViewType();
 		if (EXCLUSION_LIST.has(viewType)) return;
+		if (leaf.parent?.isLinkedGroup && leaf.isLinkedFile) return;
 		const openFile = getOpenFileOfLeaf(app, leaf);
 		if (openFile === file) targetLeaves.push(leaf);
 	});
@@ -129,6 +130,7 @@ export function deduplicateExistingTabs(
 	overrideSameGroupPolicy = false
 ) {
 	const openFiles: TFile[] = [];
+	let hasLinkedLeaf = false;
 	app.workspace.iterateAllLeaves((leaf) => {
 		const path = leaf.getViewState().state?.file as string | undefined;
 		if (leaf.view instanceof FileView) {
@@ -137,6 +139,9 @@ export function deduplicateExistingTabs(
 		} else if (path) {
 			const file = app.vault.getAbstractFileByPath(path);
 			if (file instanceof TFile) openFiles.push(file);
+		}
+		if (leaf.parent?.isLinkedGroup && leaf.isLinkedFile) {
+			hasLinkedLeaf = true;
 		}
 	});
 	const uniqueFiles = new Set(openFiles);
@@ -153,10 +158,11 @@ export function deduplicateExistingTabs(
 	if (activeFile instanceof TFile) {
 		const latestActiveLeaf = useViewState.getState().latestActiveLeaf;
 		// Only focus on the deduplicated tab if the active file is still open
-		// and we are deduplicating different-group tabs.
+		// and we are deduplicating different-group tabs and there is no linked leaf.
 		const focus =
 			!!latestActiveLeaf &&
 			!deduplicateSameGroupTabs &&
+			!hasLinkedLeaf &&
 			getOpenFileOfLeaf(app, latestActiveLeaf) === activeFile;
 		const activeLeaf = deduplicateTab(
 			app,

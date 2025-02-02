@@ -136,6 +136,7 @@ export class LinkedFolder {
 		}
 		this.newLeaf = movedLeaf;
 		this.group = group;
+		this.group.isLinkedGroup = true;
 		return group.id;
 	}
 
@@ -154,6 +155,7 @@ export class LinkedFolder {
 					? split.children[index]
 					: this.app.workspace.createLeafInParent(split, tabIndex);
 			makeLeafNonEphemeral(leaf);
+			leaf.isLinkedFile = true;
 			await leaf.openFile(file, { active: false });
 		});
 		if (
