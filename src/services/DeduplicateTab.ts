@@ -59,6 +59,8 @@ export function deduplicateTabForTargets(
 	focus = true
 ): WorkspaceLeaf | null {
 	const sortedLeaves = targetLeaves.sort((a, b) => {
+		if (a.pinned && !b.pinned) return +1;
+		if (!a.pinned && b.pinned) return -1;
 		const aCreationTime = a.guessedCreationTime ?? a.activeTime;
 		const bCreationTime = b.guessedCreationTime ?? b.activeTime;
 		return bCreationTime - aCreationTime;

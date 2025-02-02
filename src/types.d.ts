@@ -85,6 +85,7 @@ declare module "obsidian" {
 
 	interface WorkspaceLeaf {
 		id: Identifier;
+		pinned?: boolean;
 		activeTime: number;
 		isEphemeral?: boolean;
 		isLinkedFile?: boolean;
