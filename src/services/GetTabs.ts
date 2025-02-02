@@ -12,6 +12,10 @@ function record(
 	content.get(nameOrID).group = leaf.parent as WorkspaceParent;
 	content.get(nameOrID).leaves.push(leaf);
 	content.get(nameOrID).leafIDs.push(leaf.id);
+	// If guessedCreationTime is not set, we assume the leaf was created now
+	if (!leaf.guessedCreationTime) {
+		leaf.guessedCreationTime = Date.now();
+	}
 }
 
 export function getTabs(app: App): TabCache {

@@ -57,11 +57,13 @@ export function deduplicateTabForTargets(
 	targetLeaves: WorkspaceLeaf[],
 	focus = true
 ): WorkspaceLeaf | null {
-	const sortedLeaves = targetLeaves.sort(
-		(a, b) => b.activeTime - a.activeTime
-	);
+	const sortedLeaves = targetLeaves.sort((a, b) => {
+		const aCreationTime = a.guessedCreationTime ?? a.activeTime;
+		const bCreationTime = b.guessedCreationTime ?? b.activeTime;
+		return bCreationTime - aCreationTime;
+	});
 	const latestOldLeaf = sortedLeaves
-		.filter((leaf) => leaf.activeTime > 0)
+		.filter((leaf) => (leaf.guessedCreationTime ?? leaf.activeTime) > 0)
 		.last();
 	const leafToKeep = sortedLeaves.pop();
 	if (!leafToKeep) return null;

@@ -92,6 +92,7 @@ declare module "obsidian" {
 		setParent: (parent: WorkspaceParent) => void;
 		containerEl?: HTMLElement;
 		tabHeaderEl?: HTMLElement;
+		guessedCreationTime?: number;
 		tabHeaderInnerTitleEl?: HTMLElement;
 		isVisible: () => boolean;
 		canNavigate(): boolean;

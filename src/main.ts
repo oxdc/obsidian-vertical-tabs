@@ -176,6 +176,15 @@ export default class ObsidianVerticalTabs extends Plugin {
 						return modifyCanNavigate(this, () => old.call(this));
 					};
 				},
+				setParent(old) {
+					return function (parent) {
+						// If guessedCreationTime is not set, we assume the leaf was created now
+						if (!this.guessedCreationTime) {
+							this.guessedCreationTime = Date.now();
+						}
+						old.call(this, parent);
+					};
+				},
 			})
 		);
 
