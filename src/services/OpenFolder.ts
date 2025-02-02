@@ -153,8 +153,8 @@ export class LinkedFolder {
 				replace && split && split.children.length > index
 					? split.children[index]
 					: this.app.workspace.createLeafInParent(split, tabIndex);
-			await leaf.openFile(file, { active: false });
 			makeLeafNonEphemeral(leaf);
+			await leaf.openFile(file, { active: false });
 		});
 		if (
 			replace &&
