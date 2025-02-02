@@ -110,6 +110,11 @@ declare module "obsidian" {
 		): EventRef;
 	}
 
+	interface FileView {
+		isDetachingFromVT?: boolean;
+		close: () => void;
+	}
+
 	interface WorkspaceSidedock extends WorkspaceSplit {
 		children: WorkspaceLeaf[];
 	}

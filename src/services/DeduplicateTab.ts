@@ -11,6 +11,7 @@ import { getOpenFileOfLeaf } from "./GetTabs";
 import { Identifier } from "src/models/VTWorkspace";
 import { DefaultRecord } from "src/utils/DefaultRecord";
 import { moveTab, reapplyEphemeralState } from "./MoveTab";
+import { safeDetach } from "./CloseTabs";
 
 const EXCLUSION_LIST = new Set([
 	"file-explorer",
@@ -78,7 +79,7 @@ export function deduplicateTabForTargets(
 		moveTab(app, leafToKeep.id, latestOldLeaf.id);
 		reapplyEphemeralState(leafToKeep, latestOldLeaf.getEphemeralState());
 	}
-	sortedLeaves.forEach((leaf) => leaf.detach());
+	sortedLeaves.forEach((leaf) => safeDetach(leaf));
 	loadDeferredLeaf(leafToKeep);
 	// If Hover Editor is enabled, we let Hover Editor take care of the focus.
 	// Otherwise, Hover Editor will be closed when we set the focus.

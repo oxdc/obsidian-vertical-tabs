@@ -1,4 +1,4 @@
-import { App, WorkspaceLeaf } from "obsidian";
+import { App, FileView, WorkspaceLeaf } from "obsidian";
 
 export function closeOthersInGroup(app: App, leaf: WorkspaceLeaf) {
 	const parent = leaf.parent;
@@ -25,4 +25,11 @@ export function closeTabsToBottomInGroup(app: App, leaf: WorkspaceLeaf) {
 
 export function closeAllTabsInGroup(app: App, leaf: WorkspaceLeaf) {
 	app.workspace.onLayoutChange();
+}
+
+export function safeDetach(leaf: WorkspaceLeaf) {
+	if (leaf.view instanceof FileView) {
+		leaf.view.isDetachingFromVT = true;
+	}
+	leaf.detach();
 }

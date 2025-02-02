@@ -18,6 +18,7 @@ import { useSettings } from "src/models/PluginContext";
 import { Identifier } from "src/models/VTWorkspace";
 import { iterateLeavesControlledByHoverEditor } from "./HoverEditorTabs";
 import { REFRESH_TIMEOUT_LONG } from "src/models/TabCache";
+import { safeDetach } from "./CloseTabs";
 
 export function makeLeafNonEphemeralByID(app: App, leafID: string) {
 	const leaf = app.workspace.getLeafById(leafID);
@@ -152,7 +153,7 @@ export function autoCloseOldEphemeralTabsForGroup(group: WorkspaceParent) {
 		const lastEphemeralTab = ephemeralTabs.pop();
 		if (!lastEphemeralTab) return;
 		mergeHistory(ephemeralTabs, lastEphemeralTab);
-		ephemeralTabs.forEach((tab) => tab.detach());
+		ephemeralTabs.forEach((tab) => safeDetach(tab));
 	} else {
 		// If we have active times, we sort the tabs as follows:
 		// First, we assume the tabs with non-positive active time are new, i.e., the latest active ones.
@@ -169,7 +170,7 @@ export function autoCloseOldEphemeralTabsForGroup(group: WorkspaceParent) {
 		const lastEphemeralTab = sortedEphemeralTabs.pop();
 		if (!lastEphemeralTab) return;
 		mergeHistory(sortedEphemeralTabs, lastEphemeralTab);
-		sortedEphemeralTabs.forEach((tab) => tab.detach());
+		sortedEphemeralTabs.forEach((tab) => safeDetach(tab));
 	}
 }
 

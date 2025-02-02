@@ -1,4 +1,5 @@
 import {
+	FileView,
 	ItemView,
 	MarkdownView,
 	Plugin,
@@ -183,6 +184,23 @@ export default class ObsidianVerticalTabs extends Plugin {
 							this.guessedCreationTime = Date.now();
 						}
 						old.call(this, parent);
+					};
+				},
+			})
+		);
+
+		this.register(
+			around(FileView.prototype, {
+				close(old) {
+					return async function () {
+						if (this.isDetachingFromVT) {
+							return await setTimeout(
+								() => old.call(this),
+								REFRESH_TIMEOUT_LONG
+							);
+						} else {
+							return old.call(this);
+						}
 					};
 				},
 			})
