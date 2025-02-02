@@ -169,7 +169,7 @@ interface ViewState {
 	) => void;
 	scorllToViewCueFirstTab: (app: App) => void;
 	addLinkedGroup: (groupID: Identifier, linkedFolder: LinkedFolder) => void;
-	removeLinkedGroup: (groupID: Identifier) => void;
+	removeLinkedGroup: (group: WorkspaceParent) => void;
 	getLinkedFolder: (groupID: Identifier) => LinkedFolder | null;
 	isLinkedGroup: (groupID: Identifier) => boolean;
 	setGroupViewTypeForCurrentGroup: (viewType: GroupViewType) => void;
@@ -751,9 +751,11 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		linkedGroups.set(groupID, linkedFolder);
 		set({ linkedGroups: linkedGroups });
 	},
-	removeLinkedGroup(groupID: Identifier) {
+	removeLinkedGroup(group: WorkspaceParent) {
 		const { linkedGroups } = get();
-		linkedGroups.set(groupID, null);
+		linkedGroups.set(group.id, null);
+		group.isLinkedGroup = false;
+		group.children.forEach((leaf) => (leaf.isLinkedFile = false));
 		set({ linkedGroups: linkedGroups });
 	},
 	getLinkedFolder(groupID: Identifier) {

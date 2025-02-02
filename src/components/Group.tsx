@@ -226,20 +226,30 @@ export const Group = ({ type, children, group }: GroupProps) => {
 
 	const unlinkGroup = () => {
 		if (group) {
-			removeLinkedGroup(group.id);
+			removeLinkedGroup(group);
 			setLinkedFolder(null);
+			app.workspace.trigger("vertical-tabs:deduplicate-tabs");
 		}
 	};
 
 	const loadMore = async () => {
 		if (linkedFolder) {
-			const hasMore = await linkedFolder.openNextFiles(false);
-			if (!hasMore) unlinkGroup();
+			await linkedFolder.openNextFiles(false);
 		}
 	};
 
-	const showLinkedGroupButtons =
-		linkedFolder && linkedFolder.files.length > linkedFolder.offset;
+	const hasMore =
+		!!linkedFolder && linkedFolder.files.length < linkedFolder.offset;
+
+	useEffect(() => {
+		if (
+			group &&
+			group.isLinkedGroup &&
+			getLinkedFolder(group.id) === null
+		) {
+			unlinkGroup();
+		}
+	}, [group]);
 
 	return (
 		<NavigationTreeItem
@@ -254,7 +264,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 			toolbar={toolbar}
 			{...props}
 		>
-			{showLinkedGroupButtons && (
+			{!!linkedFolder && (
 				<LinkedGroupButton
 					title={`Unlink "${linkedFolder.folder.path}"`}
 					icon="unlink"
@@ -262,7 +272,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 				/>
 			)}
 			{children && children(isSingleGroup, viewType)}
-			{showLinkedGroupButtons && (
+			{hasMore && (
 				<LinkedGroupButton
 					title="Load more"
 					icon="ellipsis"
