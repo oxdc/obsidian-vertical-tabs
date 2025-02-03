@@ -19,7 +19,7 @@ import { useSettings } from "./models/PluginContext";
 import { nanoid } from "nanoid";
 import { makeQuickSwitcherFileNonEphemeral } from "./services/EphemeralTabs";
 import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "./models/TabCache";
-import { linkTasksStore } from "./models/LinkTasks";
+import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
 
 export default class ObsidianVerticalTabs extends Plugin {

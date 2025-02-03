@@ -1,14 +1,17 @@
 import { App, FileView, TFile, WorkspaceLeaf, WorkspaceParent } from "obsidian";
 import { createNewTabCache, TabCache } from "src/models/TabCache";
 import { GroupType } from "src/models/VTWorkspace";
-import { getLeaveIDsControlledByHoverEditor } from "./HoverEditorTabs";
+import { managedLeafStore } from "src/stores/ManagedLeafStore";
 
 function record(
+	app: App,
 	nameOrID: string,
 	type: GroupType,
 	leaf: WorkspaceLeaf,
 	content: TabCache
 ) {
+	const { isManagedLeaf } = managedLeafStore.getActions();
+	if (isManagedLeaf(app, leaf)) return;
 	content.get(nameOrID).groupType = type;
 	content.get(nameOrID).group = leaf.parent as WorkspaceParent;
 	content.get(nameOrID).leaves.push(leaf);
@@ -23,27 +26,19 @@ export function getTabs(app: App): TabCache {
 	const content = createNewTabCache();
 	const workspace = app.workspace;
 	const { leftSplit, rightSplit, rootSplit, floatingSplit } = workspace;
-	const skipLeaves = getLeaveIDsControlledByHoverEditor(app);
-	workspace.iterateLeaves(leftSplit, (leaf) => {
-		if (!skipLeaves.includes(leaf.id)) {
-			record("left-sidebar", GroupType.LeftSidebar, leaf, content);
-		}
-	});
-	workspace.iterateLeaves(rightSplit, (leaf) => {
-		if (!skipLeaves.includes(leaf.id)) {
-			record("right-sidebar", GroupType.RightSidebar, leaf, content);
-		}
-	});
-	workspace.iterateLeaves(rootSplit, (leaf) => {
-		if (!skipLeaves.includes(leaf.id)) {
-			record(leaf.parent.id, GroupType.RootSplit, leaf, content);
-		}
-	});
-	workspace.iterateLeaves(floatingSplit, (leaf) => {
-		if (!skipLeaves.includes(leaf.id)) {
-			record(leaf.parent.id, GroupType.RootSplit, leaf, content);
-		}
-	});
+	managedLeafStore.getActions().refresh(app);
+	workspace.iterateLeaves(leftSplit, (leaf) =>
+		record(app, "left-sidebar", GroupType.LeftSidebar, leaf, content)
+	);
+	workspace.iterateLeaves(rightSplit, (leaf) =>
+		record(app, "right-sidebar", GroupType.RightSidebar, leaf, content)
+	);
+	workspace.iterateLeaves(rootSplit, (leaf) =>
+		record(app, leaf.parent.id, GroupType.RootSplit, leaf, content)
+	);
+	workspace.iterateLeaves(floatingSplit, (leaf) =>
+		record(app, leaf.parent.id, GroupType.RootSplit, leaf, content)
+	);
 	return content;
 }
 

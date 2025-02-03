@@ -1,4 +1,4 @@
-import { createStoreWithActions } from "./StoreWithActions";
+import { createStoreWithActions } from "../models/StoreWithActions";
 
 export type LinkTask = {
 	name: string;
@@ -7,17 +7,17 @@ export type LinkTask = {
 
 type LinkTaskRecord = Map<string, LinkTask>;
 
+type LinkTaskState = {
+	tasks: LinkTaskRecord;
+};
+
 type LinkTaskActions = {
 	addTask: (path: string, subpath: string) => void;
 	removeTask: (path: string) => void;
 	getTask: (path: string) => LinkTask | null;
 };
 
-type LinkTaskStates = {
-	tasks: LinkTaskRecord;
-};
-
-type LinkTaskStore = LinkTaskStates & {
+type LinkTaskStore = LinkTaskState & {
 	actions: LinkTaskActions;
 };
 
@@ -29,7 +29,6 @@ export const linkTasksStore = createStoreWithActions<LinkTaskStore>(
 				if (!name || !subpath) return;
 				const { tasks } = get();
 				tasks.set(name, { name, subpath });
-				console.log("tasks", tasks);
 				set({ tasks });
 			},
 			removeTask(name: string) {
@@ -37,7 +36,6 @@ export const linkTasksStore = createStoreWithActions<LinkTaskStore>(
 				const task = actions.getTask(name);
 				if (!task) return;
 				tasks.delete(task.name);
-				console.log("removed", task);
 				set({ tasks });
 			},
 			getTask(name: string) {

@@ -12,7 +12,7 @@ import { Identifier } from "src/models/VTWorkspace";
 import { DefaultRecord } from "src/utils/DefaultRecord";
 import { moveTab, reapplyEphemeralState } from "./MoveTab";
 import { safeDetach } from "./CloseTabs";
-import { linkTasksStore } from "src/models/LinkTasks";
+import { linkTasksStore } from "src/stores/LinkTaskStore";
 
 const EXCLUSION_LIST = new Set([
 	"file-explorer",
