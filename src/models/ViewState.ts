@@ -34,6 +34,7 @@ import {
 	identifyGroupViewType,
 	setGroupViewType,
 } from "./VTGroupView";
+import { managedLeafStore } from "src/stores/ManagedLeafStore";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -317,6 +318,8 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		set({ nonEphemeralTabs: [] });
 	},
 	setLatestActiveLeaf(plugin: ObsidianVerticalTabs) {
+		const { refresh, isManagedLeaf } = managedLeafStore.getActions();
+		refresh(plugin.app);
 		const oldActiveLeaf = get().latestActiveLeaf;
 		const workspace = plugin.app.workspace;
 		const activeView = workspace.getActiveViewOfType(ItemView);
@@ -326,7 +329,10 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			return;
 		}
 		const activeLeaf = activeView.leaf;
-		const isRootLeaf = activeLeaf.getRoot() === workspace.rootSplit;
+		// We exclude managed leaves
+		const isRootLeaf =
+			activeLeaf.getRoot() === workspace.rootSplit &&
+			!isManagedLeaf(plugin.app, activeLeaf);
 		if (isRootLeaf) {
 			set({ latestActiveLeaf: activeLeaf });
 		} else {
@@ -362,9 +368,12 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	lockFocus(plugin: ObsidianVerticalTabs) {
 		// We only need to force focus on the most recent leaf when Zen mode is enabled
 		if (!plugin.settings.zenMode) return;
+		const { isManagedLeaf } = managedLeafStore.getActions();
 		const workspace = plugin.app.workspace;
 		const activeLeaf = get().latestActiveLeaf;
-		const isRootLeaf = activeLeaf?.getRoot() === workspace.rootSplit;
+		const isRootLeaf =
+			activeLeaf?.getRoot() === workspace.rootSplit &&
+			!isManagedLeaf(plugin.app, activeLeaf);
 		// We should check this again, since the user may have moved or closed the tab
 		if (activeLeaf && isRootLeaf) {
 			get().lockFocusOnLeaf(plugin.app, activeLeaf);
@@ -375,13 +384,31 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		const groups: WorkspaceParent[] = [];
 		workspace.iterateRootLeaves((leaf) => {
 			const group = leaf.parent;
-			if (!groups.includes(group)) groups.push(group);
+			const isProcessed = groups.includes(group);
+			const hasOnlyManagedLeaves = group.children.every((leaf) =>
+				isManagedLeaf(plugin.app, leaf)
+			);
+			if (!isProcessed && !hasOnlyManagedLeaves) {
+				groups.push(group);
+			}
 		});
-		if (groups.length > 0) {
-			const group = groups[0];
+		for (const group of groups) {
 			const activeLeaf = group.children[group.currentTab];
-			get().lockFocusOnLeaf(plugin.app, activeLeaf);
-			return;
+			// If the active leaf is not managed, we lock focus on it
+			if (activeLeaf && !isManagedLeaf(plugin.app, activeLeaf)) {
+				get().lockFocusOnLeaf(plugin.app, activeLeaf);
+				return;
+			}
+			// Otherwise, we try to find the last non-managed leaf in the group
+			const leaves = group.children.filter(
+				(leaf) => !isManagedLeaf(plugin.app, leaf)
+			);
+			const lastLeaf = leaves.pop();
+			if (lastLeaf) {
+				get().lockFocusOnLeaf(plugin.app, lastLeaf);
+				return;
+			}
+			// We continue to the next group
 		}
 		// No root group has been found, this shall never happen?
 	},
