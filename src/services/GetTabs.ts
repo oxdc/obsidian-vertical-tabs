@@ -1,6 +1,7 @@
 import { App, FileView, TFile, WorkspaceLeaf, WorkspaceParent } from "obsidian";
 import { createNewTabCache, TabCache } from "src/models/TabCache";
 import { GroupType } from "src/models/VTWorkspace";
+import { getLeaveIDsControlledByHoverEditor } from "./HoverEditorTabs";
 
 function record(
 	nameOrID: string,
@@ -22,17 +23,26 @@ export function getTabs(app: App): TabCache {
 	const content = createNewTabCache();
 	const workspace = app.workspace;
 	const { leftSplit, rightSplit, rootSplit, floatingSplit } = workspace;
-	workspace.iterateLeaves(leftSplit, (leaf) =>
-		record("left-sidebar", GroupType.LeftSidebar, leaf, content)
-	);
-	workspace.iterateLeaves(rightSplit, (leaf) =>
-		record("right-sidebar", GroupType.RightSidebar, leaf, content)
-	);
+	const skipLeaves = getLeaveIDsControlledByHoverEditor(app);
+	workspace.iterateLeaves(leftSplit, (leaf) => {
+		if (!skipLeaves.includes(leaf.id)) {
+			record("left-sidebar", GroupType.LeftSidebar, leaf, content);
+		}
+	});
+	workspace.iterateLeaves(rightSplit, (leaf) => {
+		if (!skipLeaves.includes(leaf.id)) {
+			record("right-sidebar", GroupType.RightSidebar, leaf, content);
+		}
+	});
 	workspace.iterateLeaves(rootSplit, (leaf) => {
-		record(leaf.parent.id, GroupType.RootSplit, leaf, content);
+		if (!skipLeaves.includes(leaf.id)) {
+			record(leaf.parent.id, GroupType.RootSplit, leaf, content);
+		}
 	});
 	workspace.iterateLeaves(floatingSplit, (leaf) => {
-		record(leaf.parent.id, GroupType.RootSplit, leaf, content);
+		if (!skipLeaves.includes(leaf.id)) {
+			record(leaf.parent.id, GroupType.RootSplit, leaf, content);
+		}
 	});
 	return content;
 }
