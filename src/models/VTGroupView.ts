@@ -60,16 +60,22 @@ export function setGroupViewType(
 	if (!group || !group.containerEl) return;
 	normalizeGroupViewType(group.containerEl, viewType);
 	group.trigger("vertical-tabs:group-view-change", viewType);
-	if (viewType === GroupViewType.MissionControlView) {
-		const autoExit = (event: MouseEvent) => {
-			const targetEl = event.target as HTMLElement;
-			const leafEl = targetEl.matchParent(".workspace-leaf");
-			if (!leafEl) return;
-			normalizeGroupViewType(group?.containerEl, GroupViewType.Default);
-		};
-		group?.containerEl?.addEventListener("dblclick", autoExit, {
-			once: true,
-		});
+	const autoExit = (event: MouseEvent) => {
+		const targetEl = event.target as HTMLElement;
+		const leafEl = targetEl.matchParent(".workspace-leaf");
+		if (!leafEl) return;
+		normalizeGroupViewType(group?.containerEl, GroupViewType.Default);
+	};
+	switch (viewType) {
+		case GroupViewType.ContinuousView:
+		case GroupViewType.ColumnView:
+			sortLeafDomsInGroup(group);
+			break;
+		case GroupViewType.MissionControlView:
+			group?.containerEl?.addEventListener("dblclick", autoExit, {
+				once: true,
+			});
+			break;
 	}
 }
 
