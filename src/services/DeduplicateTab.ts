@@ -1,10 +1,7 @@
 import { App, FileView, TFile, WorkspaceLeaf } from "obsidian";
 import { loadDeferredLeaf } from "./LoadDeferredLeaf";
 import { useSettings } from "src/models/PluginContext";
-import {
-	getLeaveIDsControlledByHoverEditor,
-	isHoverEditorEnabled,
-} from "./HoverEditorTabs";
+import { isHoverEditorEnabled } from "./HoverEditorTabs";
 import { makeLeafNonEphemeral } from "./EphemeralTabs";
 import { useViewState } from "src/models/ViewState";
 import { getOpenFileOfLeaf } from "./GetTabs";
@@ -111,9 +108,8 @@ export function deduplicateTab(
 	if (!file) return null;
 	const targetLeaves: WorkspaceLeaf[] = [];
 	const options = useSettings.getState() as DeduplicateOptions;
-	const skipLeaves = getLeaveIDsControlledByHoverEditor(app);
 	iterateTabs(app, options, (leaf) => {
-		if (skipLeaves.includes(leaf.id)) return;
+		if (leaf.isManagedLeaf) return;
 		const viewType = leaf.view.getViewType();
 		if (EXCLUSION_LIST.has(viewType)) return;
 		if (leaf.parent?.isLinkedGroup && leaf.isLinkedFile) return;

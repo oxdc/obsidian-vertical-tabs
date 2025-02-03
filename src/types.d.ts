@@ -89,6 +89,7 @@ declare module "obsidian" {
 		activeTime: number;
 		isEphemeral?: boolean;
 		isLinkedFile?: boolean;
+		isManagedLeaf?: boolean;
 		parent: WorkspaceTabs | WorkspaceMobileDrawer;
 		setParent: (parent: WorkspaceParent) => void;
 		containerEl?: HTMLElement;
