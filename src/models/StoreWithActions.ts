@@ -1,4 +1,5 @@
 import {
+	create,
 	createStore,
 	Mutate,
 	StateCreator,
@@ -46,3 +47,6 @@ export const actions = actionsImpl as unknown as WithActions;
 
 export const createStoreWithActions = <T>(f: StateCreator<T, [], []>) =>
 	createStore<T>()(actions(f));
+
+export const useStoreWithActions = <T>(f: StateCreator<T, [], []>) =>
+	create<T>()(actions(f));

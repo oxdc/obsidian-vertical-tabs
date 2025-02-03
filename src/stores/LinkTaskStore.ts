@@ -38,7 +38,7 @@ export const linkTasksStore = createStoreWithActions<LinkTaskStore>(
 				tasks.delete(task.name);
 				set({ tasks });
 			},
-			getTask(name: string) {
+			getTask(name: string): LinkTask | null {
 				const { tasks } = get();
 				let task: LinkTask | null = null;
 				for (const [key, value] of tasks) {
