@@ -1,5 +1,4 @@
-import { createStore } from "zustand";
-import { actions } from "./StoreWithActions";
+import { createStoreWithActions } from "./StoreWithActions";
 
 export type LinkTask = {
 	name: string;
@@ -22,24 +21,26 @@ type LinkTaskStore = LinkTaskStates & {
 	actions: LinkTaskActions;
 };
 
-export const linkTasksStore = createStore<LinkTaskStore>()(
-	actions<LinkTaskStore, () => LinkTaskActions, [], []>((set, get) => ({
+export const linkTasksStore = createStoreWithActions<LinkTaskStore>(
+	(set, get) => ({
 		tasks: new Map(),
 		actions: {
-			addTask: (name, subpath) => {
+			addTask(name: string, subpath: string) {
 				if (!name || !subpath) return;
 				const { tasks } = get();
 				tasks.set(name, { name, subpath });
+				console.log("tasks", tasks);
 				set({ tasks });
 			},
-			removeTask: (name) => {
+			removeTask(name: string) {
 				const { tasks, actions } = get();
 				const task = actions.getTask(name);
 				if (!task) return;
 				tasks.delete(task.name);
+				console.log("removed", task);
 				set({ tasks });
 			},
-			getTask: (name) => {
+			getTask(name: string) {
 				const { tasks } = get();
 				let task: LinkTask | null = null;
 				for (const [key, value] of tasks) {
@@ -51,5 +52,5 @@ export const linkTasksStore = createStore<LinkTaskStore>()(
 				return task;
 			},
 		},
-	}))
+	})
 );
