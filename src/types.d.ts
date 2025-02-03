@@ -98,6 +98,12 @@ declare module "obsidian" {
 		isVisible: () => boolean;
 		canNavigate(): boolean;
 		getHistoryState: () => HistoryState;
+		openLinkText: (
+			linktext: string,
+			sourcePath: string,
+			newLeaf?: PaneType | boolean,
+			openViewState?: OpenViewState
+		) => Promise<void>;
 		history: {
 			backHistory: HistoryState[];
 			forwardHistory: HistoryState[];

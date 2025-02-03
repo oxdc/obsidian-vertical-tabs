@@ -12,6 +12,7 @@ import { Identifier } from "src/models/VTWorkspace";
 import { DefaultRecord } from "src/utils/DefaultRecord";
 import { moveTab, reapplyEphemeralState } from "./MoveTab";
 import { safeDetach } from "./CloseTabs";
+import { linkTasksStore } from "src/models/LinkTasks";
 
 const EXCLUSION_LIST = new Set([
 	"file-explorer",
@@ -53,8 +54,9 @@ function iterateTabs(
 	}
 }
 
-export function deduplicateTabForTargets(
+export function deduplicateForTargets(
 	app: App,
+	file: TFile,
 	targetLeaves: WorkspaceLeaf[],
 	focus = true
 ): WorkspaceLeaf | null {
@@ -83,6 +85,14 @@ export function deduplicateTabForTargets(
 	}
 	sortedLeaves.forEach((leaf) => safeDetach(leaf));
 	loadDeferredLeaf(leafToKeep);
+	// If there is a link task for the file, we jump to the subpath.
+	const { getTask, removeTask } = linkTasksStore.getActions();
+	const task = getTask(file.path);
+	if (task) {
+		const { subpath } = task;
+		leafToKeep.openLinkText(subpath, file.path, false);
+		removeTask(task.name);
+	}
 	// If Hover Editor is enabled, we let Hover Editor take care of the focus.
 	// Otherwise, Hover Editor will be closed when we set the focus.
 	if (focus && !isHoverEditorEnabled(app)) {
@@ -121,12 +131,12 @@ export function deduplicateTab(
 		});
 		const possibleActiveLeaves: WorkspaceLeaf[] = [];
 		for (const leaves of targetLeavesByGroups.values()) {
-			const candidates = deduplicateTabForTargets(app, leaves, focus);
+			const candidates = deduplicateForTargets(app, file, leaves, focus);
 			if (candidates) possibleActiveLeaves.push(candidates);
 		}
 		return possibleActiveLeaves.last() ?? null;
 	} else {
-		return deduplicateTabForTargets(app, targetLeaves, focus);
+		return deduplicateForTargets(app, file, targetLeaves, focus);
 	}
 }
 

@@ -2,9 +2,11 @@ import {
 	FileView,
 	ItemView,
 	MarkdownView,
+	OpenViewState,
 	Plugin,
 	QuickSwitcherItem,
 	View,
+	Workspace,
 	WorkspaceLeaf,
 } from "obsidian";
 import { NavigationView, VIEW_TYPE } from "src/navigation";
@@ -17,6 +19,8 @@ import { useSettings } from "./models/PluginContext";
 import { nanoid } from "nanoid";
 import { makeQuickSwitcherFileNonEphemeral } from "./services/EphemeralTabs";
 import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "./models/TabCache";
+import { linkTasksStore } from "./models/LinkTasks";
+import { parseLink } from "./services/ParseLink";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -188,6 +192,29 @@ export default class ObsidianVerticalTabs extends Plugin {
 				},
 			})
 		);
+
+		around(Workspace.prototype, {
+			openLinkText(old) {
+				return async function (
+					linkText: string,
+					sourcePath: string,
+					newLeaf?: boolean,
+					openViewState?: OpenViewState
+				) {
+					const { addTask } = linkTasksStore.getActions();
+					const { path, subpath } = parseLink(linkText);
+					const name = path ? `${path}.md` : sourcePath;
+					addTask(name, subpath);
+					return old.call(
+						this,
+						linkText,
+						sourcePath,
+						newLeaf,
+						openViewState
+					);
+				};
+			},
+		});
 
 		this.register(
 			around(FileView.prototype, {
