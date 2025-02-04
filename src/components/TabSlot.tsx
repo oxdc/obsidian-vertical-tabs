@@ -22,11 +22,14 @@ export const TabSlot = ({ groupID }: TabSlotProps) => {
 		workspace.onLayoutChange();
 	};
 
+	const id = `slot-${groupID}`;
+
 	return (
 		<NavigationTreeItem
+			id={id}
+			item={id}
 			title="New tab"
 			icon="plus"
-			id={`slot-${groupID}`}
 			isTab={true}
 			isTabSlot={true}
 			onClick={createLeafNewTabAndOpen}

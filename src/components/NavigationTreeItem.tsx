@@ -1,13 +1,18 @@
 import { Platform, setIcon } from "obsidian";
 import { useEffect, useRef, useState } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
-import { useSortable } from "@dnd-kit/sortable";
 import { IconButton } from "./IconButton";
 import { Identifier } from "src/models/VTWorkspace";
 import { ViewCueIndex } from "src/models/ViewState";
+import {
+	DroppableItem,
+	useDNDActions,
+	useDNDManager,
+} from "src/stores/DNDManager";
 
 interface NavigationTreeItemProps {
 	id: Identifier | null;
+	item: DroppableItem | null;
 	index?: ViewCueIndex;
 	ref?: React.RefObject<HTMLDivElement | null>;
 	title: string | React.ReactNode;
@@ -45,12 +50,33 @@ interface NavigationTreeItemProps {
 }
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
-	const { attributes, listeners, setNodeRef, isDragging, isOver } =
-		useSortable({
-			id: props.id ?? "",
-			data: { isTab: props.isTab && !props.isTabSlot },
-			disabled: !props.id || props.isTabSlot || props.isGroupSlot,
-		});
+	const { selectOne, setOverItem, setIsDragging } = useDNDActions();
+	const [isOver, setIsOver] = useState(false);
+
+	const onDragStart = (event: React.DragEvent<HTMLDivElement>) => {
+		if (!props.item || props.isTabSlot || props.isGroupSlot) return;
+		if (!(typeof props.item === "string")) {
+			selectOne(props.item);
+		}
+		setIsDragging(true);
+	};
+
+	const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+		setOverItem(props.item);
+		setIsOver(true);
+	};
+
+	const onDragLeave = (event: React.DragEvent<HTMLDivElement>) => {
+		setIsOver(false);
+	};
+
+	const isDragging = useDNDManager((state) => state.isDragging);
+	const selectedItems = useDNDManager((state) => state.selectedItems);
+	const isBeingDragged =
+		isDragging &&
+		props.item !== null &&
+		typeof props.item !== "string" &&
+		selectedItems.includes(props.item);
 
 	const iconEl = useRef<HTMLDivElement>(null);
 	const [height, setHeight] = useState(0);
@@ -64,7 +90,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-pinned": props.isPinned,
 		"is-collapsed": props.isCollapsed,
 		"is-sidebar": props.isSidebar,
-		"is-being-dragged": isDragging,
+		"is-being-dragged": isBeingDragged,
 		"vt-is-being-dragged-over": isOver,
 		"is-tab-slot": props.isTabSlot,
 		"is-linked-btn": props.isLinkedGroupBtn,
@@ -79,7 +105,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"tree-item-self": true,
 		"is-clickable": true,
 		"is-active": props.isActive,
-		"is-being-dragged": isDragging,
+		"is-being-dragged": isBeingDragged,
 		"is-being-renamed": props.isRenaming,
 	};
 
@@ -123,12 +149,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 						onClick={(e) => e.stopPropagation()}
 					>
 						{props.toolbar}
-						<div
-							className="drag-handle"
-							ref={props.id ? setNodeRef : null}
-							{...attributes}
-							{...listeners}
-						>
+						<div className="drag-handle">
 							<IconButton
 								icon="grip-vertical"
 								action="drag-handle"
@@ -136,7 +157,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 						</div>
 					</div>
 				</div>
-				{!props.isCollapsed && !isDragging && (
+				{!props.isCollapsed && !isBeingDragged && (
 					<div className="tree-item-children">{props.children}</div>
 				)}
 			</div>
@@ -158,9 +179,10 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 					onContextMenu={props.onContextMenu}
 					onMouseOver={props.onMouseOver}
 					data-index={props.index}
-					ref={props.id ? setNodeRef : null}
-					{...attributes}
-					{...listeners}
+					onDragStart={onDragStart}
+					onDragOver={onDragOver}
+					onDragLeave={onDragLeave}
+					draggable
 				>
 					<div className="tree-item-icon" ref={iconEl}></div>
 					<div className="tree-item-inner">
@@ -175,7 +197,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 						{props.toolbar}
 					</div>
 				</div>
-				{!props.isCollapsed && !isDragging && (
+				{!props.isCollapsed && !isBeingDragged && (
 					<div className="tree-item-children">{props.children}</div>
 				)}
 			</div>

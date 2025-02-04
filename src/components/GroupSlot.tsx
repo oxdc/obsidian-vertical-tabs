@@ -17,11 +17,14 @@ export const GroupSlot = () => {
 		lockFocusOnLeaf(app, movedLeaf);
 	};
 
+	const id = "slot-new";
+
 	return (
 		<NavigationTreeItem
+			id={id}
+			item={id}
 			title="New group"
 			icon="plus"
-			id={`slot-new`}
 			isTab={false}
 			isGroupSlot={true}
 			onClick={createLeafNewGroupAndOpen}

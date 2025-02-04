@@ -533,6 +533,7 @@ export const Tab = ({
 		<NavigationTreeItem
 			ref={ref}
 			id={leaf.id}
+			item={leaf}
 			index={viewCueIndex}
 			title={volatileTitle ?? DeduplicatedTitle(app, leaf)}
 			isTab={true}

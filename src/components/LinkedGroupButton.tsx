@@ -9,10 +9,11 @@ interface LinkedGroupButtonProps {
 export const LinkedGroupButton = (props: LinkedGroupButtonProps) => {
 	return (
 		<NavigationTreeItem
+			id={null}
+			item={null}
 			title={props.title}
 			icon={props.icon}
 			onClick={props.onClick}
-			id={null}
 			isTab={true}
 			isLinkedGroupBtn={true}
 		/>

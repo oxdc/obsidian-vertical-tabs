@@ -254,6 +254,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	return (
 		<NavigationTreeItem
 			id={isSidebar ? null : group?.id ?? null}
+			item={group}
 			isTab={false}
 			isLinkedGroup={!!linkedFolder}
 			title={isEditing ? titleEditor : title}
