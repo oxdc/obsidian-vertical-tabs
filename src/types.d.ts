@@ -22,6 +22,7 @@ declare module "obsidian" {
 		leftSidebarToggleButtonEl: HTMLElement;
 		rightSidebarToggleButtonEl: HTMLElement;
 		floatingSplit: WorkspaceSplit;
+		onDragLeaf: (event: DragEvent, leaf: WorkspaceLeaf) => void;
 		on(name: "vertical-tabs:update-toggle", callback: () => void): EventRef;
 		on(
 			name: "vertical-tabs:ephemeral-tabs-init",
@@ -203,6 +204,10 @@ declare module "obsidian" {
 		};
 		commands: {
 			commands: Record<string, Command>;
+		};
+		dragManager: {
+			dragFile: (event: DragEvent, file: TFile) => unknown;
+			onDragStart: (event: DragEvent, data: unknown) => void;
 		};
 	}
 

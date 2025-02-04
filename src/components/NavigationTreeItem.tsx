@@ -1,4 +1,4 @@
-import { Platform, setIcon } from "obsidian";
+import { Platform, setIcon, WorkspaceLeaf } from "obsidian";
 import { useEffect, useRef, useState } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
 import { IconButton } from "./IconButton";
@@ -9,6 +9,8 @@ import {
 	useDNDActions,
 	useDNDManager,
 } from "src/stores/DNDManager";
+import { getOpenFileOfLeaf } from "src/services/GetTabs";
+import { useApp } from "src/models/PluginContext";
 
 interface NavigationTreeItemProps {
 	id: Identifier | null;
@@ -50,6 +52,7 @@ interface NavigationTreeItemProps {
 }
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
+	const app = useApp();
 	const { selectOne, setOverItem, setIsDragging } = useDNDActions();
 	const [isOver, setIsOver] = useState(false);
 
@@ -59,6 +62,23 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 			selectOne(props.item);
 		}
 		setIsDragging(true);
+		if (props.isTab && props.item instanceof WorkspaceLeaf) {
+			const nativeEvent = event.nativeEvent as DragEvent;
+			const leaf = props.item;
+			if (event.nativeEvent.altKey) {
+				const file = getOpenFileOfLeaf(app, leaf);
+				if (!file) return;
+				const data = { filePath: file.path };
+				event.dataTransfer.setData(
+					"application/json",
+					JSON.stringify(data)
+				);
+				const dragData = app.dragManager.dragFile(nativeEvent, file);
+				app.dragManager.onDragStart(event.nativeEvent, dragData);
+			} else {
+				app.workspace.onDragLeaf(event.nativeEvent, leaf);
+			}
+		}
 	};
 
 	const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
