@@ -63,10 +63,11 @@ export function moveTab(
 		sourceParent.id === targetParent.id && sourceIndex < targetIndex
 			? targetIndex - 1
 			: targetIndex;
-	removeChild(sourceParent, sourceIndex);
-	insertChild(targetParent, sourceLeaf, insertIndex);
-	app.workspace.onLayoutChange();
-	reapplyEphemeralState(sourceLeaf);
+	sourceParent.removeChild(sourceLeaf)
+	sourceLeaf.setDimension(null)
+	targetParent.insertChild(insertIndex, sourceLeaf);
+	targetParent.selectTabIndex(insertIndex);
+	app.workspace.requestResize();
 	syncUIForGroupView(sourceParent);
 	syncUIForGroupView(targetParent);
 	return sourceLeaf;

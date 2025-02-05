@@ -23,6 +23,7 @@ declare module "obsidian" {
 		rightSidebarToggleButtonEl: HTMLElement;
 		floatingSplit: WorkspaceSplit;
 		onDragLeaf: (event: DragEvent, leaf: WorkspaceLeaf) => void;
+		requestResize: () => unknown;
 		on(name: "vertical-tabs:update-toggle", callback: () => void): EventRef;
 		on(
 			name: "vertical-tabs:ephemeral-tabs-init",
@@ -56,6 +57,8 @@ declare module "obsidian" {
 		tabsContainerEl: HTMLElement;
 		currentTab: number;
 		children: WorkspaceLeaf[];
+		removeChild: (leaf: WorkspaceLeaf) => void;
+		insertChild: (index: number, leaf: WorkspaceLeaf) => void;
 		selectTab: (leaf: WorkspaceLeaf) => void;
 		selectTabIndex: (index: number) => void;
 		recomputeChildrenDimensions: () => void;
@@ -92,6 +95,7 @@ declare module "obsidian" {
 		isLinkedFile?: boolean;
 		parent: WorkspaceTabs | WorkspaceMobileDrawer;
 		setParent: (parent: WorkspaceParent) => void;
+		setDimension(dimension: number | null): void;
 		containerEl?: HTMLElement;
 		tabHeaderEl?: HTMLElement;
 		guessedCreationTime?: number;
