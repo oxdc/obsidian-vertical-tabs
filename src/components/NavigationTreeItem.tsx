@@ -76,7 +76,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				const dragData = app.dragManager.dragFile(nativeEvent, file);
 				app.dragManager.onDragStart(event.nativeEvent, dragData);
 			} else {
-				app.workspace.onDragLeaf(event.nativeEvent, leaf);
+				// app.workspace.onDragLeaf(event.nativeEvent, leaf);
 			}
 		}
 	};
@@ -111,7 +111,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-collapsed": props.isCollapsed,
 		"is-sidebar": props.isSidebar,
 		"is-being-dragged": isBeingDragged,
-		"vt-is-being-dragged-over": isOver,
+		"vt-is-being-dragged-over": isOver && isDragging,
 		"is-tab-slot": props.isTabSlot,
 		"is-linked-btn": props.isLinkedGroupBtn,
 		"is-group-slot": props.isGroupSlot,
