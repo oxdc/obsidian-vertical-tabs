@@ -1,4 +1,4 @@
-import { App, FileView, TFile, WorkspaceLeaf } from "obsidian";
+import { App, TFile, WorkspaceLeaf } from "obsidian";
 import { loadDeferredLeaf } from "./LoadDeferredLeaf";
 import { useSettings } from "src/models/PluginContext";
 import {
@@ -14,19 +14,7 @@ import { moveTab, reapplyEphemeralState } from "./MoveTab";
 import { safeDetach } from "./CloseTabs";
 import { linkTasksStore } from "src/stores/LinkTaskStore";
 
-const EXCLUSION_LIST = new Set([
-	"file-explorer",
-	"search",
-	"bookmarks",
-	"tag",
-	"backlink",
-	"outgoing-link",
-	"outline",
-	"file-properties",
-	"sync",
-	"all-properties",
-	"localgraph",
-]);
+const INCLUDE_LIST = new Set(["markdown", "canvas", "image", "video", "pdf"]);
 
 interface DeduplicateOptions {
 	deduplicateSidebarTabs: boolean;
@@ -115,7 +103,7 @@ export function deduplicateTab(
 	iterateTabs(app, options, (leaf) => {
 		if (skipLeaves.includes(leaf.id)) return;
 		const viewType = leaf.view.getViewType();
-		if (EXCLUSION_LIST.has(viewType)) return;
+		if (!INCLUDE_LIST.has(viewType)) return;
 		if (leaf.parent?.isLinkedGroup && leaf.isLinkedFile) return;
 		const openFile = getOpenFileOfLeaf(app, leaf);
 		if (openFile === file) targetLeaves.push(leaf);
@@ -147,14 +135,8 @@ export function deduplicateExistingTabs(
 	const openFiles: TFile[] = [];
 	let hasLinkedLeaf = false;
 	app.workspace.iterateAllLeaves((leaf) => {
-		const path = leaf.getViewState().state?.file as string | undefined;
-		if (leaf.view instanceof FileView) {
-			const file = leaf.view.file;
-			if (file instanceof TFile) openFiles.push(file);
-		} else if (path) {
-			const file = app.vault.getAbstractFileByPath(path);
-			if (file instanceof TFile) openFiles.push(file);
-		}
+		const file = getOpenFileOfLeaf(app, leaf);
+		if (file) openFiles.push(file);
 		if (leaf.parent?.isLinkedGroup && leaf.isLinkedFile) {
 			hasLinkedLeaf = true;
 		}
