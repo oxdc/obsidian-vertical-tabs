@@ -33,10 +33,13 @@ body.vt-zen-mode:not(.is-popout-window) .workspace-split.mod-root {
 			flex-basis: 100%;
 		}
 	}
+}
 
+body.vt-zen-mode.vt-auto-hide-tabs:not(.is-popout-window)
+	.workspace-split.mod-root {
 	.workspace-tabs > .workspace-tab-header-container {
 		.workspace-tab-header {
-			container-type: unset;  // fix tab width from Obsidian 1.8.0
+			container-type: unset; // fix tab width from Obsidian 1.8.0
 
 			&.is-active {
 				max-width: unset;

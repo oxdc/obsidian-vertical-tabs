@@ -100,6 +100,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.toggle("vt-show-more-buttons", this.settings.showMoreButtons);
 		this.toggle("vt-use-tab-editing", this.settings.useTabEditing);
 		this.toggle("vt-zen-mode", this.settings.zenMode);
+		this.toggle("vt-auto-hide-tabs", this.settings.showActiveTabsInZenMode);
 		this.toggle("vt-enable-tab-zoom", this.settings.enableTabZoom);
 		this.toggle("vt-ephemeral-tabs", this.settings.ephemeralTabs);
 		this.toggle("vt-background-mode", this.settings.backgroundMode);
