@@ -101,13 +101,17 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			set({ ...plugin.settings });
 		},
 		toggleZenMode() {
-			const { zenMode, showActiveTabs } = get();
+			const { zenMode, showActiveTabs, showActiveTabsInZenMode } = get();
 			if (zenMode) {
 				const showActiveTabs = loadShowActiveTabs();
 				get().setSettings({ zenMode: false, showActiveTabs });
 			} else {
 				saveShowActiveTabs(showActiveTabs);
-				get().setSettings({ zenMode: true, showActiveTabs: true });
+				if (showActiveTabsInZenMode) {
+					get().setSettings({ zenMode: true, showActiveTabs: true });
+				} else {
+					get().setSettings({ zenMode: true });
+				}
 			}
 		},
 		updateEphemeralTabs(app: App) {

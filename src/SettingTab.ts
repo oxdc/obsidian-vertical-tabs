@@ -63,6 +63,23 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				});
 
 			new Setting(containerEl)
+				.setName("Hide inactive tabs in Zen Mode")
+				.setDesc(
+					"Hide inactive horizontal tabs when Zen Mode is enabled."
+				)
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.showActiveTabsInZenMode)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setSettings({
+									showActiveTabsInZenMode: value,
+								});
+						});
+				});
+
+			new Setting(containerEl)
 				.setName("Auto uncollapse active group")
 				.setDesc(
 					"Automatically uncollapse the active groups when switching tabs."
