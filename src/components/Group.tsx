@@ -239,7 +239,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	};
 
 	const hasMore =
-		!!linkedFolder && linkedFolder.files.length < linkedFolder.offset;
+		!!linkedFolder && linkedFolder.files.length > linkedFolder.offset;
 
 	useEffect(() => {
 		if (
