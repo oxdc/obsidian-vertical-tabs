@@ -4,8 +4,8 @@ import {
 	App,
 	debounce,
 	EventRef,
-	ItemView,
 	Platform,
+	View,
 	Workspace,
 	WorkspaceLeaf,
 	WorkspaceParent,
@@ -322,7 +322,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		refresh(plugin.app);
 		const oldActiveLeaf = get().latestActiveLeaf;
 		const workspace = plugin.app.workspace;
-		const activeView = workspace.getActiveViewOfType(ItemView);
+		const activeView = workspace.getActiveViewOfType(View);
 		if (!activeView) {
 			// Focus has already been moved, try our best to lock it back
 			get().lockFocus(plugin);
