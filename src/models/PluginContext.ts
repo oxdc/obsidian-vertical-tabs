@@ -76,6 +76,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			const settings = plugin.settings;
 			plugin.saveSettings();
 			set(settings);
+			setColumnViewMinWidth(settings.columnViewMinWidth);
 			return settings;
 		},
 		setSettings: (mutator: SettingsMutator) => {
