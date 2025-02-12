@@ -98,7 +98,6 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			plugin.saveSettings();
 			plugin.updateViewStates();
 			set({ ...plugin.settings });
-			saveShowActiveTabs(plugin.settings.showActiveTabs);
 		},
 		toggleZenMode() {
 			const { zenMode, showActiveTabs } = get();
@@ -146,8 +145,8 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 		toggleBackgroundMode(app: App, enable?: boolean) {
 			const { backgroundMode, showActiveTabs } = get();
 			const toEnable = enable ?? !backgroundMode;
+			saveShowActiveTabs(showActiveTabs);
 			if (toEnable) {
-				saveShowActiveTabs(showActiveTabs);
 				get().setSettings({
 					backgroundMode: true,
 					showActiveTabs: false, // ensure access to all horizontal tabs
