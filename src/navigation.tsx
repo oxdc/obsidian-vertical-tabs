@@ -1,9 +1,10 @@
 import { StrictMode } from "react";
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import { addIcon, ItemView, WorkspaceLeaf } from "obsidian";
 import { Root, createRoot } from "react-dom/client";
 import { NavigationContainer } from "./components/NavigationContainer";
 import { PluginContext } from "./models/PluginContext";
 import ObsidianVerticalTabs from "./main";
+import { VERTICAL_TABS_ICON } from "./icon";
 
 export const VIEW_TYPE = "vertical-tabs";
 
@@ -13,9 +14,10 @@ export class NavigationView extends ItemView {
 
 	constructor(leaf: WorkspaceLeaf, plugin: ObsidianVerticalTabs) {
 		super(leaf);
+		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
 		this.navigation = false;
 		this.plugin = plugin;
-		this.icon = "gallery-vertical";
+		this.icon = "vertical-tabs";
 		this.leaf.containerEl?.addClass("obsidian-vertical-tabs-tab-content");
 		this.leaf.tabHeaderEl?.addClass("obsidian-vertical-tabs-tab-header");
 	}
