@@ -184,6 +184,7 @@ export const NavigationContainer = () => {
 				setTimeout(() => {
 					if (useViewState.getState().hasCtrlKeyPressed) {
 						ref.current?.toggleClass("tab-index-view-cue", true);
+						document.body.toggleClass("vt-tab-index-view-cue", true);
 						scorllToViewCueFirstTab(app);
 					}
 				}, VIEW_CUE_DELAY);
@@ -197,6 +198,7 @@ export const NavigationContainer = () => {
 		plugin.registerDomEvent(window, "keyup", () => {
 			setCtrlKeyState(false);
 			ref.current?.toggleClass("tab-index-view-cue", false);
+			document.body.toggleClass("vt-tab-index-view-cue", false);
 		});
 		plugin.registerDomEvent(document, "dblclick", (event) => {
 			makeDblclickedFileNonEphemeral(app, event);

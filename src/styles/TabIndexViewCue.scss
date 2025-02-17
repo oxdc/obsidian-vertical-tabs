@@ -26,3 +26,27 @@
 		}
 	}
 }
+
+body.vt-tab-index-view-cue {
+	.workspace-tab-header-inner-title {
+		&[data-index]::before {
+			content: attr(data-index);
+			display: inline-block;
+			width: var(--size-4-4);
+			height: var(--size-4-4);
+			line-height: var(--size-4-4);
+			background: var(--background-primary);
+			border-radius: var(--radius-s);
+			border: var(--border-width) solid;
+			text-align: center;
+			left: var(--size-2-1);
+			z-index: var(--layer-tooltip);
+			margin-right: var(--size-4-1);
+		}
+
+		&[data-index="→"]::before,
+		&[data-index="←"]::before {
+			background: var(--background-secondary);
+		}
+	}
+}

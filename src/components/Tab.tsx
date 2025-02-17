@@ -512,6 +512,14 @@ export const Tab = ({
 			viewCueIndex === VIEW_CUE_PREV ||
 			(viewCueIndex === index && index === 1);
 		registerViewCueTab(leaf, ref.current, isFirstTab);
+		if (leaf.tabHeaderInnerTitleEl) {
+			if (viewCueIndex) {
+				leaf.tabHeaderInnerTitleEl.dataset.index =
+					viewCueIndex.toString();
+			} else {
+				delete leaf.tabHeaderInnerTitleEl.dataset.index;
+			}
+		}
 	}, [viewCueIndex, ref]);
 
 	const previewTab = (
