@@ -21,6 +21,7 @@ import { makeQuickSwitcherFileNonEphemeral } from "./services/EphemeralTabs";
 import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "./models/TabCache";
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
+import { SAFE_DETACH_TIMEOUT } from "./services/CloseTabs";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -224,7 +225,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 						if (this.isDetachingFromVT) {
 							return await setTimeout(
 								() => old.call(this),
-								REFRESH_TIMEOUT_LONG
+								SAFE_DETACH_TIMEOUT
 							);
 						} else {
 							return old.call(this);

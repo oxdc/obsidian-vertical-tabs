@@ -27,6 +27,8 @@ export function closeAllTabsInGroup(app: App, leaf: WorkspaceLeaf) {
 	app.workspace.onLayoutChange();
 }
 
+export const SAFE_DETACH_TIMEOUT = 1000;
+
 export function safeDetach(leaf: WorkspaceLeaf) {
 	if (leaf.view instanceof FileView) {
 		leaf.view.isDetachingFromVT = true;
