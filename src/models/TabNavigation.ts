@@ -88,7 +88,7 @@ export const TabNavigationPresets: TabNavigationRecipes = {
 		smartNavigation: false,
 	},
 	notebook: {
-		alwaysOpenInNewTab: false,
+		alwaysOpenInNewTab: true,
 		deduplicateTabs: true,
 		deduplicateSameGroupTabs: false,
 		deduplicateSidebarTabs: false,
