@@ -95,7 +95,7 @@ export function makeTabNonEphemeralAutomatically(app: App) {
 		const count = children.filter((child) => child.isEphemeral);
 		if (count.length <= 1) return;
 		// Otherwise, we keep the latest active tab ephemeral and make the rest non-ephemeral
-		const activeTimes = children.map((child) => child.activeTime);
+		const activeTimes = children.map((child) => child.activeTime ?? 0);
 		const latestActiveTime = Math.max(...activeTimes);
 		if (latestActiveTime > 0) {
 			// We have that information
@@ -145,7 +145,7 @@ export function mergeHistory(from: WorkspaceLeaf[], to: WorkspaceLeaf) {
 export function autoCloseOldEphemeralTabsForGroup(group: WorkspaceParent) {
 	const ephemeralTabs = group.children.filter((child) => child.isEphemeral);
 	if (ephemeralTabs.length <= 1) return;
-	const activeTimes = ephemeralTabs.map((tab) => tab.activeTime);
+	const activeTimes = ephemeralTabs.map((tab) => tab.activeTime ?? 0);
 	const earliestActiveTime = Math.min(...activeTimes);
 	const latestActiveTime = Math.max(...activeTimes);
 	// If both are non-positive, all tabs are new or not fully loaded.
@@ -161,12 +161,12 @@ export function autoCloseOldEphemeralTabsForGroup(group: WorkspaceParent) {
 		// Second, we sort the tabs by their active time, with the latest active tab being the last one.
 		// Third, for tabs with the same active time, we sort them by their index.
 		const sortedEphemeralTabs = ephemeralTabs.sort((a, b) => {
-			if (a.activeTime <= 0) return 1;
-			if (b.activeTime <= 0) return -1;
+			if (a.activeTime && a.activeTime <= 0) return 1;
+			if (b.activeTime && b.activeTime <= 0) return -1;
 			if (a.activeTime === b.activeTime) {
 				return group.children.indexOf(a) - group.children.indexOf(b);
 			}
-			return a.activeTime - b.activeTime;
+			return (b.activeTime ?? 0) - (a.activeTime ?? 0);
 		});
 		const lastEphemeralTab = sortedEphemeralTabs.pop();
 		if (!lastEphemeralTab) return;
@@ -192,8 +192,8 @@ export function makeTheLatestFileNonEphemeral(
 	app.workspace.iterateAllLeaves((leaf) => {
 		const leafFile = getOpenFileOfLeaf(app, leaf);
 		if (!leafFile || leafFile.path !== file.path) return;
-		if (leaf.activeTime >= activeTime) {
-			activeTime = leaf.activeTime;
+		if ((leaf.activeTime ?? 0) >= activeTime) {
+			activeTime = leaf.activeTime ?? 0;
 			targetLeaf = leaf;
 		}
 	});

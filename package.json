@@ -22,6 +22,7 @@
 		"esbuild": "^0.23.1",
 		"esbuild-sass-plugin": "^3.3.1",
 		"obsidian": "latest",
+		"obsidian-typings": "^2.35.0",
 		"tslib": "2.4.0",
 		"typescript": "4.7.4"
 	},

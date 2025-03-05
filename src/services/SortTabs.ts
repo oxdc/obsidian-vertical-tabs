@@ -28,5 +28,5 @@ export function byPinned(a: WorkspaceLeaf, b: WorkspaceLeaf) {
 }
 
 export function byActiveTime(a: WorkspaceLeaf, b: WorkspaceLeaf) {
-	return b.activeTime - a.activeTime;
+	return (b.activeTime ?? 0) - (a.activeTime ?? 0);
 }

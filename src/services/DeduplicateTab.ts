@@ -51,12 +51,12 @@ export function deduplicateForTargets(
 	const sortedLeaves = targetLeaves.sort((a, b) => {
 		if (a.pinned && !b.pinned) return +1;
 		if (!a.pinned && b.pinned) return -1;
-		const aCreationTime = a.guessedCreationTime ?? a.activeTime;
-		const bCreationTime = b.guessedCreationTime ?? b.activeTime;
+		const aCreationTime = a.guessedCreationTime ?? a.activeTime ?? 0;
+		const bCreationTime = b.guessedCreationTime ?? b.activeTime ?? 0;
 		return bCreationTime - aCreationTime;
 	});
 	const latestOldLeaf = sortedLeaves
-		.filter((leaf) => (leaf.guessedCreationTime ?? leaf.activeTime) > 0)
+		.filter((leaf) => (leaf.guessedCreationTime ?? leaf.activeTime ?? 0) > 0)
 		.last();
 	const leafToKeep = sortedLeaves.pop();
 	if (!leafToKeep) return null;
@@ -78,7 +78,7 @@ export function deduplicateForTargets(
 	const task = getTask(file.path);
 	if (task) {
 		const { subpath } = task;
-		leafToKeep.openLinkText(subpath, file.path, false);
+		leafToKeep.openLinkText(subpath, file.path);
 		removeTask(task.name);
 	}
 	// If Hover Editor is enabled, we let Hover Editor take care of the focus.

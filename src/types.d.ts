@@ -9,17 +9,12 @@ declare module "obsidian" {
 		eState: unknown;
 	}
 
-	interface ItemView {
-		getSyncViewState: () => SyncViewState;
+	interface FileView {
+		isDetachingFromVT?: boolean;
+		getSyncViewState(): SyncViewState;
 	}
 
 	interface Workspace {
-		iterateLeaves(
-			split: WorkspaceSplit,
-			callback: (leaf: WorkspaceLeaf) => void
-		): void;
-		onLayoutChange: () => void;
-		getActiveFileView: () => FileView;
 		leftSidebarToggleButtonEl: HTMLElement;
 		rightSidebarToggleButtonEl: HTMLElement;
 		floatingSplit: WorkspaceSplit;
@@ -52,7 +47,6 @@ declare module "obsidian" {
 
 	interface WorkspaceParent {
 		id: Identifier;
-		containerEl: HTMLElement;
 		tabsContainerEl: HTMLElement;
 		currentTab: number;
 		children: WorkspaceLeaf[];
@@ -87,24 +81,14 @@ declare module "obsidian" {
 	interface WorkspaceLeaf {
 		id: Identifier;
 		pinned?: boolean;
-		activeTime: number;
 		isEphemeral?: boolean;
 		isLinkedFile?: boolean;
 		parent: WorkspaceTabs | WorkspaceMobileDrawer;
 		setParent: (parent: WorkspaceParent) => void;
-		containerEl?: HTMLElement;
-		tabHeaderEl?: HTMLElement;
 		guessedCreationTime?: number;
-		tabHeaderInnerTitleEl?: HTMLElement;
 		isVisible: () => boolean;
 		canNavigate(): boolean;
 		getHistoryState: () => HistoryState;
-		openLinkText: (
-			linktext: string,
-			sourcePath: string,
-			newLeaf?: PaneType | boolean,
-			openViewState?: OpenViewState
-		) => Promise<void>;
 		history: {
 			backHistory: HistoryState[];
 			forwardHistory: HistoryState[];
@@ -116,11 +100,6 @@ declare module "obsidian" {
 			name: typeof EVENTS.EPHEMERAL_TOGGLE,
 			callback: (isEphemeral: boolean) => void
 		): EventRef;
-	}
-
-	interface FileView {
-		isDetachingFromVT?: boolean;
-		close: () => void;
 	}
 
 	interface WorkspaceSidedock extends WorkspaceSplit {
@@ -209,11 +188,6 @@ declare module "obsidian" {
 
 	interface Menu {
 		items: MenuItem[];
-	}
-
-	interface MenuItem {
-		setSubmenu: () => Menu;
-		section?: string;
 	}
 
 	interface WebviewView extends ItemView {
