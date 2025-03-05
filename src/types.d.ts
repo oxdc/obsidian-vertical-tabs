@@ -1,5 +1,6 @@
 import { GroupViewType } from "./models/VTGroupView";
 import { Identifier } from "./models/VTWorkspace";
+import { EVENTS } from "./constants/events";
 
 declare module "obsidian" {
 	interface SyncViewState {
@@ -22,29 +23,29 @@ declare module "obsidian" {
 		leftSidebarToggleButtonEl: HTMLElement;
 		rightSidebarToggleButtonEl: HTMLElement;
 		floatingSplit: WorkspaceSplit;
-		on(name: "vertical-tabs:update-toggle", callback: () => void): EventRef;
+		on(name: typeof EVENTS.UPDATE_TOGGLE, callback: () => void): EventRef;
 		on(
-			name: "vertical-tabs:ephemeral-tabs-init",
+			name: typeof EVENTS.EPHEMERAL_TABS_INIT,
 			callback: (autoClose: boolean) => void
 		): EventRef;
 		on(
-			name: "vertical-tabs:ephemeral-tabs-deinit",
+			name: typeof EVENTS.EPHEMERAL_TABS_DEINIT,
 			callback: () => void
 		): EventRef;
 		on(
-			name: "vertical-tabs:ephemeral-tabs-update",
+			name: typeof EVENTS.EPHEMERAL_TABS_UPDATE,
 			callback: (enabled: boolean, autoClose: boolean) => void
 		): EventRef;
 		on(
-			name: "vertical-tabs:deduplicate-tabs",
+			name: typeof EVENTS.DEDUPLICATE_TABS,
 			callback: () => void
 		): EventRef;
 		on(
-			name: "vertical-tabs:enhanced-keyboard-tab-switch",
+			name: typeof EVENTS.ENHANCED_KEYBOARD_TAB_SWITCH,
 			callback: () => void
 		): EventRef;
 		on(
-			name: "vertical-tabs:reset-keyboard-tab-switch",
+			name: typeof EVENTS.RESET_KEYBOARD_TAB_SWITCH,
 			callback: () => void
 		): EventRef;
 	}
@@ -64,7 +65,7 @@ declare module "obsidian" {
 		tabHeaderContainerEl: HTMLElement;
 		isLinkedGroup?: boolean;
 		on(
-			name: "vertical-tabs:group-view-change",
+			name: typeof EVENTS.GROUP_VIEW_CHANGE,
 			callback: (viewType: GroupViewType) => void
 		): EventRef;
 	}
@@ -112,7 +113,7 @@ declare module "obsidian" {
 			go: (offset: number) => void;
 		};
 		on(
-			name: "ephemeral-toggle",
+			name: typeof EVENTS.EPHEMERAL_TOGGLE,
 			callback: (isEphemeral: boolean) => void
 		): EventRef;
 	}

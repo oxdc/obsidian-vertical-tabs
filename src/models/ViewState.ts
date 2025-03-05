@@ -35,6 +35,7 @@ import {
 	setGroupViewType,
 } from "./VTGroupView";
 import { managedLeafStore } from "src/stores/ManagedLeafStore";
+import { EVENTS } from "src/constants/events";
 
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
@@ -362,7 +363,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		} else if (oldLeaf.parent.id !== newLeaf.parent.id) {
 			changed = true;
 		}
-		if (changed) workspace.trigger("vertical-tabs:update-toggle");
+		if (changed) workspace.trigger(EVENTS.UPDATE_TOGGLE);
 		return changed;
 	},
 	lockFocus(plugin: ObsidianVerticalTabs) {
@@ -543,7 +544,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		const { ephermalToggleEvents } = get();
 		const event = ephermalToggleEvents.get(leaf.id);
 		if (event) return;
-		const newEvent = leaf.on("ephemeral-toggle", (isEphemeral) => {
+		const newEvent = leaf.on(EVENTS.EPHEMERAL_TOGGLE, (isEphemeral) => {
 			if (!isEphemeral) get().rememberNonephemeralTab(app, leaf.id);
 			callback(isEphemeral);
 		});
@@ -565,7 +566,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		const event = groupViewToggleEvents.get(group.id);
 		if (event) return;
 		const newEvent = group.on(
-			"vertical-tabs:group-view-change",
+			EVENTS.GROUP_VIEW_CHANGE,
 			(viewType: GroupViewType) => callback(viewType)
 		);
 		groupViewToggleEvents.set(group.id, newEvent);

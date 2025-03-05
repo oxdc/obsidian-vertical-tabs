@@ -5,6 +5,7 @@ import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
 import { useApp, useSettings } from "src/models/PluginContext";
 import { GroupType } from "src/models/VTWorkspace";
 import { Menu, WorkspaceParent } from "obsidian";
+import { EVENTS } from "src/constants/events";
 import {
 	createBookmarkForGroup,
 	loadNameFromBookmark,
@@ -63,7 +64,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	const toggleHidden = () => {
 		if (isSidebar) return;
 		if (group) toggleHiddenGroup(group.id, !isHidden);
-		workspace.trigger("vertical-tabs:update-toggle");
+		workspace.trigger(EVENTS.UPDATE_TOGGLE);
 	};
 	useEffect(() => {
 		if (!group) return;
@@ -228,7 +229,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		if (group) {
 			removeLinkedGroup(group);
 			setLinkedFolder(null);
-			app.workspace.trigger("vertical-tabs:deduplicate-tabs");
+			app.workspace.trigger(EVENTS.DEDUPLICATE_TABS);
 		}
 	};
 

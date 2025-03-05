@@ -1,6 +1,7 @@
 import { App, Platform, PluginSettingTab, Setting } from "obsidian";
 import ObsidianVerticalTabs from "./main";
 import { useSettings } from "./models/PluginContext";
+import { EVENTS } from "./constants/events";
 import {
 	TabNavigationPresets,
 	TabNavigationStrategy,
@@ -71,11 +72,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					toggle
 						.setValue(this.plugin.settings.showActiveTabsInZenMode)
 						.onChange(async (value) => {
-							useSettings
-								.getState()
-								.setSettings({
-									showActiveTabsInZenMode: value,
-								});
+							useSettings.getState().setSettings({
+								showActiveTabsInZenMode: value,
+							});
 						});
 				});
 
@@ -490,12 +489,12 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 							});
 							if (value) {
 								this.app.workspace.trigger(
-									"vertical-tabs:ephemeral-tabs-init",
+									EVENTS.EPHEMERAL_TABS_INIT,
 									true
 								);
 							} else {
 								this.app.workspace.trigger(
-									"vertical-tabs:ephemeral-tabs-deinit"
+									EVENTS.EPHEMERAL_TABS_DEINIT
 								);
 							}
 							this.refresh();
@@ -518,7 +517,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 									autoCloseEphemeralTabs: value,
 								});
 								this.app.workspace.trigger(
-									"vertical-tabs:ephemeral-tabs-update",
+									EVENTS.EPHEMERAL_TABS_UPDATE,
 									true,
 									value
 								);
@@ -541,9 +540,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 							deduplicatePopupTabs: false,
 						});
 						if (value) {
-							this.app.workspace.trigger(
-								"vertical-tabs:deduplicate-tabs"
-							);
+							this.app.workspace.trigger(EVENTS.DEDUPLICATE_TABS);
 						}
 						this.refresh();
 					});
@@ -562,9 +559,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 							useSettings.getState().setSettings({
 								deduplicateSameGroupTabs: value,
 							});
-							this.app.workspace.trigger(
-								"vertical-tabs:deduplicate-tabs"
-							);
+							this.app.workspace.trigger(EVENTS.DEDUPLICATE_TABS);
 						});
 				});
 
@@ -578,9 +573,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 							useSettings
 								.getState()
 								.setSettings({ deduplicateSidebarTabs: value });
-							this.app.workspace.trigger(
-								"vertical-tabs:deduplicate-tabs"
-							);
+							this.app.workspace.trigger(EVENTS.DEDUPLICATE_TABS);
 						});
 				});
 
@@ -594,9 +587,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 							useSettings
 								.getState()
 								.setSettings({ deduplicatePopupTabs: value });
-							this.app.workspace.trigger(
-								"vertical-tabs:deduplicate-tabs"
-							);
+							this.app.workspace.trigger(EVENTS.DEDUPLICATE_TABS);
 						});
 				});
 		}

@@ -1,6 +1,7 @@
 import { App, debounce, WorkspaceParent } from "obsidian";
 import { useSettings } from "./PluginContext";
 import { Identifier } from "./VTWorkspace";
+import { EVENTS } from "../constants/events";
 import { sortLeafDomsInGroup } from "src/services/SortTabDom";
 import { REFRESH_TIMEOUT_LONG } from "./TabCache";
 
@@ -59,7 +60,7 @@ export function setGroupViewType(
 ) {
 	if (!group || !group.containerEl) return;
 	normalizeGroupViewType(group.containerEl, viewType);
-	group.trigger("vertical-tabs:group-view-change", viewType);
+	group.trigger(EVENTS.GROUP_VIEW_CHANGE, viewType);
 	const autoExit = (event: MouseEvent) => {
 		const targetEl = event.target as HTMLElement;
 		const leafEl = targetEl.matchParent(".workspace-leaf");

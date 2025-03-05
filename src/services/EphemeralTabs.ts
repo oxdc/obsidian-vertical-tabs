@@ -19,6 +19,7 @@ import { Identifier } from "src/models/VTWorkspace";
 import { iterateLeavesControlledByHoverEditor } from "./HoverEditorTabs";
 import { REFRESH_TIMEOUT_LONG } from "src/models/TabCache";
 import { safeDetach } from "./CloseTabs";
+import { EVENTS } from "src/constants/events";
 
 export function makeLeafNonEphemeralByID(app: App, leafID: string) {
 	const leaf = app.workspace.getLeafById(leafID);
@@ -35,7 +36,7 @@ export function makeTabsNonEphemeralByList(app: App, leafIDs: string[]) {
 export function makeLeafNonEphemeral(leaf: WorkspaceLeaf) {
 	leaf.isEphemeral = false;
 	leaf.tabHeaderEl?.toggleClass("vt-non-ephemeral", true);
-	leaf.trigger("ephemeral-toggle", false);
+	leaf.trigger(EVENTS.EPHEMERAL_TOGGLE, false);
 }
 
 export function makeLeafEphemeralOnEditorChange(
@@ -50,7 +51,7 @@ export function installTabHeaderHandlerForLeaf(leaf: WorkspaceLeaf) {
 	if (leaf.isEphemeral !== undefined) return;
 	leaf.isEphemeral = true;
 	leaf.tabHeaderEl?.toggleClass("vt-non-ephemeral", false);
-	leaf.trigger("ephemeral-toggle", true);
+	leaf.trigger(EVENTS.EPHEMERAL_TOGGLE, true);
 	if (!leaf.tabHeaderEl) return;
 	leaf.tabHeaderEl.ondblclick = (event: MouseEvent) => {
 		makeLeafNonEphemeral(leaf);

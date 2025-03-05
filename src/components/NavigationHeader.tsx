@@ -7,6 +7,7 @@ import {
 	useTabCache,
 } from "src/models/TabCache";
 import { useViewState } from "src/models/ViewState";
+import { EVENTS } from "src/constants/events";
 
 interface NavigationHeaderProps {
 	container: HTMLElement | null;
@@ -42,7 +43,7 @@ export const NavigationHeader = (props: NavigationHeaderProps) => {
 		toggleZenMode();
 		lockFocus(plugin);
 		const workspace = app.workspace;
-		workspace.trigger("vertical-tabs:update-toggle");
+		workspace.trigger(EVENTS.UPDATE_TOGGLE);
 	};
 
 	const toggleEditingTabs = () => {

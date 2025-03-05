@@ -9,6 +9,7 @@ import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect, useRef } from "react";
 import { useViewState, VIEW_CUE_DELAY } from "src/models/ViewState";
 import { debounce, ItemView, Platform, TFolder } from "obsidian";
+import { EVENTS } from "src/constants/events";
 import {
 	ensureSelfIsOpen,
 	moveSelfToDefaultLocation,
@@ -64,7 +65,7 @@ export const NavigationContainer = () => {
 			moveSelfToDefaultLocation(app);
 		}
 		if (useSettings.getState().deduplicateTabs) {
-			app.workspace.trigger("vertical-tabs:deduplicate-tabs");
+			app.workspace.trigger(EVENTS.DEDUPLICATE_TABS);
 		}
 		setTimeout(() => {
 			updateEphemeralTabs(app);
@@ -101,35 +102,30 @@ export const NavigationContainer = () => {
 			workspace.on("active-leaf-change", autoUncollapseGroup)
 		);
 		plugin.registerEvent(workspace.on("resize", debounce(updateToggles)));
+		plugin.registerEvent(workspace.on(EVENTS.UPDATE_TOGGLE, updateToggles));
 		plugin.registerEvent(
-			workspace.on("vertical-tabs:update-toggle", updateToggles)
-		);
-		plugin.registerEvent(
-			workspace.on("vertical-tabs:ephemeral-tabs-init", (autoClose) => {
+			workspace.on(EVENTS.EPHEMERAL_TABS_INIT, (autoClose) => {
 				initEphemeralTabs(app);
 				installTabHeaderHandlers(app);
 				if (autoClose) autoCloseOldEphemeralTabs(app);
 			})
 		);
 		plugin.registerEvent(
-			workspace.on("vertical-tabs:ephemeral-tabs-deinit", () => {
+			workspace.on(EVENTS.EPHEMERAL_TABS_DEINIT, () => {
 				forgetNonephemeralTabs();
 				uninstallTabHeaderHandlers(app);
 			})
 		);
 		plugin.registerEvent(
-			workspace.on(
-				"vertical-tabs:ephemeral-tabs-update",
-				(enabled, autoClose) => {
-					if (enabled) {
-						installTabHeaderHandlers(app);
-						if (autoClose) autoCloseOldEphemeralTabs(app);
-						makeTabNonEphemeralAutomatically(app);
-					} else {
-						uninstallTabHeaderHandlers(app);
-					}
+			workspace.on(EVENTS.EPHEMERAL_TABS_UPDATE, (enabled, autoClose) => {
+				if (enabled) {
+					installTabHeaderHandlers(app);
+					if (autoClose) autoCloseOldEphemeralTabs(app);
+					makeTabNonEphemeralAutomatically(app);
+				} else {
+					uninstallTabHeaderHandlers(app);
 				}
-			)
+			})
 		);
 		plugin.registerEvent(
 			workspace.on("editor-change", (_, info) => {
@@ -139,7 +135,7 @@ export const NavigationContainer = () => {
 			})
 		);
 		plugin.registerEvent(
-			workspace.on("vertical-tabs:deduplicate-tabs", () => {
+			workspace.on(EVENTS.DEDUPLICATE_TABS, () => {
 				deduplicateExistingTabs(app);
 				uncollapseActiveGroup(app);
 			})
@@ -154,12 +150,12 @@ export const NavigationContainer = () => {
 			})
 		);
 		plugin.registerEvent(
-			workspace.on("vertical-tabs:enhanced-keyboard-tab-switch", () => {
+			workspace.on(EVENTS.ENHANCED_KEYBOARD_TAB_SWITCH, () => {
 				modifyViewCueCallback(app);
 			})
 		);
 		plugin.registerEvent(
-			workspace.on("vertical-tabs:reset-keyboard-tab-switch", () => {
+			workspace.on(EVENTS.RESET_KEYBOARD_TAB_SWITCH, () => {
 				resetViewCueCallback(app);
 			})
 		);
@@ -184,7 +180,10 @@ export const NavigationContainer = () => {
 				setTimeout(() => {
 					if (useViewState.getState().hasCtrlKeyPressed) {
 						ref.current?.toggleClass("tab-index-view-cue", true);
-						document.body.toggleClass("vt-tab-index-view-cue", true);
+						document.body.toggleClass(
+							"vt-tab-index-view-cue",
+							true
+						);
 						scorllToViewCueFirstTab(app);
 					}
 				}, VIEW_CUE_DELAY);
@@ -209,7 +208,7 @@ export const NavigationContainer = () => {
 			callback: () => {
 				toggleZenMode();
 				lockFocus(plugin);
-				workspace.trigger("vertical-tabs:update-toggle");
+				workspace.trigger(EVENTS.UPDATE_TOGGLE);
 			},
 		});
 		plugin.addCommand({

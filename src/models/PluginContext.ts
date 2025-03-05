@@ -20,6 +20,7 @@ import {
 	moveSelfToNewGroupAndHide,
 } from "src/services/MoveTab";
 import { refreshGroupViewTypes, setColumnViewMinWidth } from "./VTGroupView";
+import { EVENTS } from "src/constants/events";
 
 function saveShowActiveTabs(showActiveTabs: boolean) {
 	localStorage.setItem("vt-show-active-tabs", showActiveTabs.toString());
@@ -117,7 +118,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 		updateEphemeralTabs(app: App) {
 			const { ephemeralTabs, autoCloseEphemeralTabs } = get();
 			app.workspace.trigger(
-				"vertical-tabs:ephemeral-tabs-update",
+				EVENTS.EPHEMERAL_TABS_UPDATE,
 				ephemeralTabs,
 				autoCloseEphemeralTabs
 			);
@@ -136,15 +137,15 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			const { deduplicateTabs, ephemeralTabs, autoCloseEphemeralTabs } =
 				get();
 			if (deduplicateTabs) {
-				app.workspace.trigger("vertical-tabs:deduplicate-tabs");
+				app.workspace.trigger(EVENTS.DEDUPLICATE_TABS);
 			}
 			if (ephemeralTabs) {
 				app.workspace.trigger(
-					"vertical-tabs:ephemeral-tabs-init",
+					EVENTS.EPHEMERAL_TABS_INIT,
 					autoCloseEphemeralTabs
 				);
 			} else {
-				app.workspace.trigger("vertical-tabs:ephemeral-tabs-deinit");
+				app.workspace.trigger(EVENTS.EPHEMERAL_TABS_DEINIT);
 			}
 		},
 		toggleBackgroundMode(app: App, enable?: boolean) {
@@ -168,13 +169,9 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			const { enhancedKeyboardTabSwitch } = get();
 			const toEnable = enable ?? !enhancedKeyboardTabSwitch;
 			if (toEnable) {
-				app.workspace.trigger(
-					"vertical-tabs:enhanced-keyboard-tab-switch"
-				);
+				app.workspace.trigger(EVENTS.ENHANCED_KEYBOARD_TAB_SWITCH);
 			} else {
-				app.workspace.trigger(
-					"vertical-tabs:reset-keyboard-tab-switch"
-				);
+				app.workspace.trigger(EVENTS.RESET_KEYBOARD_TAB_SWITCH);
 			}
 			get().setSettings({ enhancedKeyboardTabSwitch: toEnable });
 		},
