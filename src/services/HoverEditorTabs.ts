@@ -29,13 +29,13 @@ export function getLeaveIDsControlledByHoverEditor(app: App): Identifier[] {
 }
 
 export function iterateLeavesControlledByHoverEditor(
-  app: App,
-  callback: (leaf: WorkspaceLeaf) => void
+	app: App,
+	callback: (leaf: WorkspaceLeaf) => void
 ) {
-  const instance = getHoverEditorInstance(app);
-  if (!instance) return;
-  instance.activePopovers.forEach((popover) => {
-    if (!popover.rootSplit) return;
-    app.workspace.iterateLeaves(popover.rootSplit, callback);
-  });
+	const instance = getHoverEditorInstance(app);
+	if (!instance) return;
+	instance.activePopovers.forEach((popover) => {
+		if (!popover.rootSplit) return;
+		app.workspace.iterateLeaves(popover.rootSplit, callback);
+	});
 }

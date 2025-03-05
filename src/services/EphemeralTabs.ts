@@ -8,6 +8,7 @@ import {
 	WorkspaceLeaf,
 	WorkspaceParent,
 } from "obsidian";
+import { around } from "monkey-around";
 import {
 	getOpenFileOfLeaf,
 	iterateRootOrFloatingLeaves,
@@ -220,4 +221,29 @@ export function makeQuickSwitcherFileNonEphemeral(
 			makeTheLatestFileNonEphemeral(app, item.file);
 		}
 	}, REFRESH_TIMEOUT_LONG);
+}
+
+export function patchQuickSwitcher(
+	app: App,
+	settings: { ephemeralTabs: boolean }
+) {
+	const modifyOpenFromQuickSwitcher = (item: QuickSwitcherItem) => {
+		if (settings.ephemeralTabs) {
+			makeQuickSwitcherFileNonEphemeral(app, item);
+		}
+	};
+
+	const quickSwitcher = app.internalPlugins.plugins.switcher.instance;
+
+	return around(quickSwitcher.QuickSwitcherModal.prototype, {
+		onChooseSuggestion(old) {
+			return function (
+				item: QuickSwitcherItem,
+				evt: MouseEvent | KeyboardEvent
+			) {
+				old.call(this, item, evt);
+				modifyOpenFromQuickSwitcher(item);
+			};
+		},
+	});
 }

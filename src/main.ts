@@ -4,7 +4,6 @@ import {
 	MarkdownView,
 	OpenViewState,
 	Plugin,
-	QuickSwitcherItem,
 	View,
 	Workspace,
 	WorkspaceLeaf,
@@ -17,7 +16,7 @@ import { useViewState } from "./models/ViewState";
 import { ObsidianVerticalTabsSettingTab } from "./SettingTab";
 import { useSettings } from "./models/PluginContext";
 import { nanoid } from "nanoid";
-import { makeQuickSwitcherFileNonEphemeral } from "./services/EphemeralTabs";
+import { patchQuickSwitcher } from "./services/EphemeralTabs";
 import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "./models/TabCache";
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
@@ -247,27 +246,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 			})
 		);
 
-		const modifyOpenFromQuickSwitcher = (item: QuickSwitcherItem) => {
-			if (this.settings.ephemeralTabs) {
-				makeQuickSwitcherFileNonEphemeral(this.app, item);
-			}
-		};
-
-		const quickSwitcher =
-			this.app.internalPlugins.plugins.switcher.instance;
-
-		this.register(
-			around(quickSwitcher.QuickSwitcherModal.prototype, {
-				onChooseSuggestion(old) {
-					return function (
-						item: QuickSwitcherItem,
-						evt: MouseEvent | KeyboardEvent
-					) {
-						old.call(this, item, evt);
-						modifyOpenFromQuickSwitcher(item);
-					};
-				},
-			})
-		);
+		this.register(patchQuickSwitcher(this.app, this.settings));
 	}
 }

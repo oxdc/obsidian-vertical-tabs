@@ -1,6 +1,28 @@
 import { GroupViewType } from "./models/VTGroupView";
 import { Identifier } from "./models/VTWorkspace";
 import { EVENTS } from "./constants/events";
+import { QuickSwitcherItem, WorkspaceSplit } from "obsidian";
+import { SuggestModal } from "obsidian";
+
+export {};
+
+// Quick Switcher API
+declare module "obsidian-typings" {
+	interface SwitcherPluginInstance {
+		QuickSwitcherModal: typeof SuggestModal<QuickSwitcherItem>;
+	}
+}
+
+// Hover Editor API
+declare module "obsidian-typings" {
+	interface PluginsPluginsRecord {
+		"obsidian-hover-editor": {
+			activePopovers: {
+				rootSplit?: WorkspaceSplit;
+			}[];
+		};
+	}
+}
 
 declare module "obsidian" {
 	interface SyncViewState {
@@ -145,41 +167,6 @@ declare module "obsidian" {
 	interface QuickSwitcherItem {
 		type: "file" | unknown;
 		file?: TFile;
-	}
-
-	interface App {
-		internalPlugins: {
-			plugins: {
-				bookmarks: {
-					enabled: boolean;
-					instance: {
-						items: BookmarkItem[];
-						addItem: (
-							item: BookmarkItem,
-							target?: BookmarkGroupItem
-						) => void;
-						editItem: (item: BookmarkItem) => void;
-						removeItem: (item: BookmarkItem) => void;
-						saveData: () => void;
-					};
-				};
-				switcher: {
-					enabled: boolean;
-					instance: {
-						QuickSwitcherModal: typeof SuggestModal<QuickSwitcherItem>;
-					};
-				};
-			};
-		};
-		plugins: {
-			plugins: {
-				"obsidian-hover-editor": {
-					activePopovers: {
-						rootSplit?: WorkspaceSplit;
-					}[];
-				};
-			};
-		};
 	}
 
 	interface Menu {

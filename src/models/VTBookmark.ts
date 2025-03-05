@@ -17,6 +17,12 @@ import {
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 import { loadDeferredLeaf } from "src/services/LoadDeferredLeaf";
 
+function getBookmarksPluginInstance(app: App) {
+	const bookmarks = app.internalPlugins.plugins.bookmarks;
+	if (!bookmarks.enabled) return null;
+	return bookmarks.instance;
+}
+
 function NewBookmarkGroupItem(title?: string): VTBookmarkGroupItem {
 	return {
 		type: "group",
@@ -150,10 +156,10 @@ function NewFileBookmarkForHistoryState(
 }
 
 function forceSaveBookmarks(app: App) {
-	const bookmarks = app.internalPlugins.plugins.bookmarks;
-	if (!bookmarks.enabled) return;
+	const instance = getBookmarksPluginInstance(app);
+	if (!instance) return;
 	setTimeout(() => {
-		bookmarks.instance.saveData();
+		instance.saveData();
 	}, 1000);
 }
 
@@ -162,8 +168,8 @@ export async function createBookmarkForGroup(
 	group: WorkspaceParent,
 	title: string
 ) {
-	const bookmarks = app.internalPlugins.plugins.bookmarks;
-	if (!bookmarks.enabled) return;
+	const instance = getBookmarksPluginInstance(app);
+	if (!instance) return;
 	const bookmark = NewBookmarkGroupItem();
 	bookmark.title = title;
 	for (const child of group.children) {
@@ -173,7 +179,7 @@ export async function createBookmarkForGroup(
 		const item = NewBookmarkForView(app, view, title);
 		if (item) bookmark.items.push(item);
 	}
-	bookmarks.instance.addItem(bookmark);
+	instance.addItem(bookmark);
 	forceSaveBookmarks(app);
 }
 
@@ -182,11 +188,11 @@ export async function createBookmarkForLeaf(
 	leaf: WorkspaceLeaf,
 	title: string
 ) {
-	const bookmarks = app.internalPlugins.plugins.bookmarks;
-	if (!bookmarks.enabled) return;
+	const instance = getBookmarksPluginInstance(app);
+	if (!instance) return;
 	await loadDeferredLeaf(leaf);
 	const item = NewBookmarkForView(app, leaf.view, title);
-	if (item) bookmarks.instance.addItem(item);
+	if (item) instance.addItem(item);
 	forceSaveBookmarks(app);
 }
 
@@ -194,8 +200,8 @@ export async function createBookmarkForLeafHistory(
 	app: App,
 	leaf: WorkspaceLeaf
 ) {
-	const bookmarks = app.internalPlugins.plugins.bookmarks;
-	if (!bookmarks.enabled) return;
+	const instance = getBookmarksPluginInstance(app);
+	if (!instance) return;
 	await loadDeferredLeaf(leaf);
 	const bookmark = NewBookmarkGroupItem();
 	const leafTitle = DeduplicatedTitle(app, leaf);
@@ -205,13 +211,17 @@ export async function createBookmarkForLeafHistory(
 		const item = NewFileBookmarkForHistoryState(app, state);
 		if (item) bookmark.items.push(item);
 	});
-	const currentItem = NewBookmarkForView(app, leaf.view, `${leafTitle} (last viewed)`);
+	const currentItem = NewBookmarkForView(
+		app,
+		leaf.view,
+		`${leafTitle} (last viewed)`
+	);
 	if (currentItem) bookmark.items.push(currentItem);
 	forwardHistory.forEach((state) => {
 		const item = NewFileBookmarkForHistoryState(app, state);
 		if (item) bookmark.items.push(item);
 	});
-	bookmarks.instance.addItem(bookmark);
+	instance.addItem(bookmark);
 	forceSaveBookmarks(app);
 }
 
@@ -219,9 +229,12 @@ export async function loadNameFromBookmark(
 	app: App,
 	group: WorkspaceParent
 ): Promise<string | undefined> {
-	const bookmarks = app.internalPlugins.plugins.bookmarks;
-	if (!bookmarks.enabled) return;
-	return await findNamesIteratively(bookmarks.instance.items, group);
+	const instance = getBookmarksPluginInstance(app);
+	if (!instance) return;
+	return await findNamesIteratively(
+		instance.items as unknown as BookmarkItem[],
+		group
+	);
 }
 
 async function findNamesIteratively(
