@@ -223,12 +223,9 @@ export function makeQuickSwitcherFileNonEphemeral(
 	}, REFRESH_TIMEOUT_LONG);
 }
 
-export function patchQuickSwitcher(
-	app: App,
-	settings: { ephemeralTabs: boolean }
-) {
+export function patchQuickSwitcher(app: App) {
 	const modifyOpenFromQuickSwitcher = (item: QuickSwitcherItem) => {
-		if (settings.ephemeralTabs) {
+		if (useSettings.getState().ephemeralTabs) {
 			makeQuickSwitcherFileNonEphemeral(app, item);
 		}
 	};

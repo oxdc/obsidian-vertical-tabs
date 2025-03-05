@@ -246,6 +246,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 			})
 		);
 
-		this.register(patchQuickSwitcher(this.app, this.settings));
+		this.register(patchQuickSwitcher(this.app));
 	}
 }
