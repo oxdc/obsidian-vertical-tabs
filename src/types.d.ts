@@ -172,7 +172,6 @@ declare module "obsidian" {
 			};
 		};
 		plugins: {
-			enabledPlugins: Set<string>;
 			plugins: {
 				"obsidian-hover-editor": {
 					activePopovers: {
@@ -180,9 +179,6 @@ declare module "obsidian" {
 					}[];
 				};
 			};
-		};
-		commands: {
-			commands: Record<string, Command>;
 		};
 	}
 
