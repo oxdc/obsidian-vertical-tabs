@@ -3,7 +3,8 @@ import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useRef, useState } from "react";
 import { usePlugin, useSettings } from "src/models/PluginContext";
-import { Menu, Platform, WebviewView, WorkspaceLeaf } from "obsidian";
+import { Menu, Platform, WorkspaceLeaf } from "obsidian";
+import { BrowserView } from "obsidian-typings";
 import {
 	closeOthersInGroup,
 	closeTabsToBottomInGroup,
@@ -411,7 +412,7 @@ export const Tab = ({
 		}
 	}
 	if (Platform.isDesktop && isWebViewer) {
-		const webview = leaf.view as WebviewView;
+		const webview = leaf.view as BrowserView;
 		if (webview.webview) {
 			webview.webview.addEventListener(
 				"page-title-updated",

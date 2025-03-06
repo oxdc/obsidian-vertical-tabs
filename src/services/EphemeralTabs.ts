@@ -2,12 +2,12 @@ import {
 	App,
 	MarkdownFileInfo,
 	MarkdownView,
-	QuickSwitcherItem,
 	TAbstractFile,
 	TFile,
 	WorkspaceLeaf,
 	WorkspaceParent,
 } from "obsidian";
+import { QuickSwitcherItem } from "obsidian-typings";
 import { around } from "monkey-around";
 import {
 	getOpenFileOfLeaf,

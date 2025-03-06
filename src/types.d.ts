@@ -73,27 +73,4 @@ declare module "obsidian" {
 		type: "url";
 		url: string;
 	}
-
-	interface QuickSwitcherItem {
-		type: "file" | unknown;
-		file?: TFile;
-	}
-
-	interface WebviewView extends ItemView {
-		toggleReaderMode: () => void;
-		saveAsMarkdown: () => Promise<TFile | null>;
-		zoomIn: () => void;
-		zoomOut: () => void;
-		zoomReset: () => void;
-		webview: {
-			addEventListener: (type: string, listener: unknown) => void;
-		};
-	}
-
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	interface SuggestModal<T> {
-		chooser: {
-			setSelectedItem: (index: number) => void;
-		};
-	}
 }
