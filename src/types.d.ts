@@ -5,48 +5,6 @@ import { EVENTS } from "./constants/events";
 export {};
 
 declare module "obsidian" {
-	interface SyncViewState {
-		active: boolean;
-		state: ViewState;
-		eState: unknown;
-	}
-
-	interface FileView {
-		isDetachingFromVT?: boolean;
-		getSyncViewState(): SyncViewState;
-	}
-
-	interface Workspace {
-		leftSidebarToggleButtonEl: HTMLElement;
-		rightSidebarToggleButtonEl: HTMLElement;
-		floatingSplit: WorkspaceSplit;
-		on(name: typeof EVENTS.UPDATE_TOGGLE, callback: () => void): EventRef;
-		on(
-			name: typeof EVENTS.EPHEMERAL_TABS_INIT,
-			callback: (autoClose: boolean) => void
-		): EventRef;
-		on(
-			name: typeof EVENTS.EPHEMERAL_TABS_DEINIT,
-			callback: () => void
-		): EventRef;
-		on(
-			name: typeof EVENTS.EPHEMERAL_TABS_UPDATE,
-			callback: (enabled: boolean, autoClose: boolean) => void
-		): EventRef;
-		on(
-			name: typeof EVENTS.DEDUPLICATE_TABS,
-			callback: () => void
-		): EventRef;
-		on(
-			name: typeof EVENTS.ENHANCED_KEYBOARD_TAB_SWITCH,
-			callback: () => void
-		): EventRef;
-		on(
-			name: typeof EVENTS.RESET_KEYBOARD_TAB_SWITCH,
-			callback: () => void
-		): EventRef;
-	}
-
 	interface WorkspaceParent {
 		id: Identifier;
 		tabsContainerEl: HTMLElement;
@@ -78,34 +36,6 @@ declare module "obsidian" {
 		state: {
 			file: string;
 		};
-	}
-
-	interface WorkspaceLeaf {
-		id: Identifier;
-		pinned?: boolean;
-		isEphemeral?: boolean;
-		isLinkedFile?: boolean;
-		parent: WorkspaceTabs | WorkspaceMobileDrawer;
-		setParent: (parent: WorkspaceParent) => void;
-		guessedCreationTime?: number;
-		isVisible: () => boolean;
-		canNavigate(): boolean;
-		getHistoryState: () => HistoryState;
-		history: {
-			backHistory: HistoryState[];
-			forwardHistory: HistoryState[];
-			back: () => void;
-			forward: () => void;
-			go: (offset: number) => void;
-		};
-		on(
-			name: typeof EVENTS.EPHEMERAL_TOGGLE,
-			callback: (isEphemeral: boolean) => void
-		): EventRef;
-	}
-
-	interface WorkspaceSidedock extends WorkspaceSplit {
-		children: WorkspaceLeaf[];
 	}
 
 	interface BookmarkItem {
@@ -147,10 +77,6 @@ declare module "obsidian" {
 	interface QuickSwitcherItem {
 		type: "file" | unknown;
 		file?: TFile;
-	}
-
-	interface Menu {
-		items: MenuItem[];
 	}
 
 	interface WebviewView extends ItemView {

@@ -1,4 +1,4 @@
-import { App, TFile, WorkspaceLeaf } from "obsidian";
+import { App, TFile, WorkspaceLeaf, WorkspaceSplit } from "obsidian";
 import { loadDeferredLeaf } from "./LoadDeferredLeaf";
 import { useSettings } from "src/models/PluginContext";
 import {
@@ -34,8 +34,8 @@ function iterateTabs(
 	const { rootSplit, leftSplit, rightSplit, floatingSplit } = workspace;
 	workspace.iterateLeaves(rootSplit, callback);
 	if (options.deduplicateSidebarTabs) {
-		workspace.iterateLeaves(leftSplit, callback);
-		workspace.iterateLeaves(rightSplit, callback);
+		workspace.iterateLeaves(leftSplit as WorkspaceSplit, callback);
+		workspace.iterateLeaves(rightSplit as WorkspaceSplit, callback);
 	}
 	if (options.deduplicatePopupTabs) {
 		workspace.iterateLeaves(floatingSplit, callback);
@@ -56,7 +56,9 @@ export function deduplicateForTargets(
 		return bCreationTime - aCreationTime;
 	});
 	const latestOldLeaf = sortedLeaves
-		.filter((leaf) => (leaf.guessedCreationTime ?? leaf.activeTime ?? 0) > 0)
+		.filter(
+			(leaf) => (leaf.guessedCreationTime ?? leaf.activeTime ?? 0) > 0
+		)
 		.last();
 	const leafToKeep = sortedLeaves.pop();
 	if (!leafToKeep) return null;

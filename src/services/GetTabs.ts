@@ -1,8 +1,14 @@
-import { App, FileView, TFile, WorkspaceLeaf, WorkspaceParent } from "obsidian";
+import {
+	App,
+	FileView,
+	TFile,
+	WorkspaceLeaf,
+	WorkspaceParent,
+	WorkspaceSplit,
+} from "obsidian";
 import { createNewTabCache, TabCache } from "src/models/TabCache";
 import { GroupType } from "src/models/VTWorkspace";
 import { managedLeafStore } from "src/stores/ManagedLeafStore";
-
 function record(
 	app: App,
 	nameOrID: string,
@@ -27,10 +33,10 @@ export function getTabs(app: App): TabCache {
 	const workspace = app.workspace;
 	const { leftSplit, rightSplit, rootSplit, floatingSplit } = workspace;
 	managedLeafStore.getActions().refresh(app);
-	workspace.iterateLeaves(leftSplit, (leaf) =>
+	workspace.iterateLeaves(leftSplit as WorkspaceSplit, (leaf) =>
 		record(app, "left-sidebar", GroupType.LeftSidebar, leaf, content)
 	);
-	workspace.iterateLeaves(rightSplit, (leaf) =>
+	workspace.iterateLeaves(rightSplit as WorkspaceSplit, (leaf) =>
 		record(app, "right-sidebar", GroupType.RightSidebar, leaf, content)
 	);
 	workspace.iterateLeaves(rootSplit, (leaf) =>
@@ -58,8 +64,8 @@ export function iterateSidebarLeaves(
 ) {
 	const workspace = app.workspace;
 	const { leftSplit, rightSplit } = workspace;
-	workspace.iterateLeaves(leftSplit, callback);
-	workspace.iterateLeaves(rightSplit, callback);
+	workspace.iterateLeaves(leftSplit as WorkspaceSplit, callback);
+	workspace.iterateLeaves(rightSplit as WorkspaceSplit, callback);
 }
 
 export function getOpenFileOfLeaf(app: App, leaf: WorkspaceLeaf): TFile | null {
