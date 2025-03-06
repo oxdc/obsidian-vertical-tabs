@@ -1,5 +1,5 @@
-import { EventRef } from "obsidian";
 import { EVENTS } from "src/constants/events";
+import { GroupViewType } from "src/models/VTGroupView";
 
 export {};
 
@@ -17,5 +17,9 @@ declare module "obsidian" {
 
 	interface WorkspaceLeaf {
 		on(name: typeof EVENTS.EPHEMERAL_TOGGLE, callback: (isEphemeral: boolean) => void): EventRef;
+	}
+
+	interface WorkspaceParent {
+		on(name: typeof EVENTS.GROUP_VIEW_CHANGE, callback: (viewType: GroupViewType) => void): EventRef;
 	}
 }
