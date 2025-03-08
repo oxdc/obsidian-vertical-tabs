@@ -85,7 +85,7 @@ export const TabNavigationPresets: TabNavigationRecipes = {
 		deduplicatePopupTabs: false,
 		ephemeralTabs: true,
 		autoCloseEphemeralTabs: true,
-		smartNavigation: false,
+		smartNavigation: true,
 	},
 	notebook: {
 		alwaysOpenInNewTab: true,
@@ -95,7 +95,7 @@ export const TabNavigationPresets: TabNavigationRecipes = {
 		deduplicatePopupTabs: false,
 		ephemeralTabs: false,
 		autoCloseEphemeralTabs: false,
-		smartNavigation: true,
+		smartNavigation: false,
 	},
 	"prefer-new-tab": {
 		alwaysOpenInNewTab: true,
