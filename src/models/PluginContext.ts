@@ -18,6 +18,7 @@ import {
 import {
 	moveSelfToDefaultLocation,
 	moveSelfToNewGroupAndHide,
+	selfIsNotInTheSidebar,
 } from "src/services/MoveTab";
 import { refreshGroupViewTypes, setColumnViewMinWidth } from "./VTGroupView";
 import { EVENTS } from "src/constants/events";
@@ -150,6 +151,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 		},
 		toggleBackgroundMode(app: App, enable?: boolean) {
 			const { backgroundMode, showActiveTabs } = get();
+			if (enable === backgroundMode) return;
 			const toEnable = enable ?? !backgroundMode;
 			saveShowActiveTabs(showActiveTabs);
 			if (toEnable) {
@@ -162,7 +164,9 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			} else {
 				const showActiveTabs = loadShowActiveTabs();
 				get().setSettings({ backgroundMode: false, showActiveTabs });
-				moveSelfToDefaultLocation(app);
+				if (selfIsNotInTheSidebar(app)) {
+					moveSelfToDefaultLocation(app);
+				}
 			}
 		},
 		toggleEnhancedKeyboardTabSwitch(app: App, enable?: boolean) {
