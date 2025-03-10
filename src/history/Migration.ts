@@ -16,18 +16,31 @@ class MigrationContext {
 	}
 }
 
-const SHOW_ACTIVE_TABS_KEY = "vt-show-active-tabs";
+const OBSOLETE_SHOW_ACTIVE_TABS_KEY = "vt-show-active-tabs";
+const SHOW_ACTIVE_TABS_KEY = "show-active-tabs";
+
+const OBSOLETE_SORT_STRATEGY_KEY = "sort-strategy";
 const SORT_STRATEGY_KEY = "sort-strategy";
-const TEMP_GROUP_ORDER_KEY = "temp-group-order";
+
+const OBSOLETE_TEMP_GROUP_ORDER_KEY = "temp-group-order";
+const TEMP_GROUP_ORDER_KEY = "group-order";
+
+const OBSOLETE_VIEW_STATE_KEY = "view-state";
 const VIEW_STATE_KEY = "view-state";
+
+const OBSOLETE_HIDDEN_GROUPS_KEY = "hidden-groups";
 const HIDDEN_GROUPS_KEY = "hidden-groups";
+
+const OBSOLETE_COLLAPSED_GROUPS_KEY = "collapsed-groups";
 const COLLAPSED_GROUPS_KEY = "collapsed-groups";
+
+const OBSOLETE_NONEPHEMERAL_TABS_KEY = "nonephemeral-tabs";
 const NONEPHEMERAL_TABS_KEY = "nonephemeral-tabs";
 
 export async function migrateShowActiveTabs(
 	persistenceManager: PersistenceManager
 ): Promise<void> {
-	const legacyValue = localStorage.getItem(SHOW_ACTIVE_TABS_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_SHOW_ACTIVE_TABS_KEY);
 	if (legacyValue !== null) {
 		const value = legacyValue === "true";
 		await persistenceManager.set(SHOW_ACTIVE_TABS_KEY, value);
@@ -45,7 +58,7 @@ export async function getShowActiveTabs(): Promise<boolean> {
 	}
 
 	// Fall back to legacy storage
-	const legacyValue = localStorage.getItem(SHOW_ACTIVE_TABS_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_SHOW_ACTIVE_TABS_KEY);
 	if (legacyValue !== null) {
 		const value = legacyValue === "true";
 		// Migrate to new storage
@@ -59,14 +72,14 @@ export async function getShowActiveTabs(): Promise<boolean> {
 export async function setShowActiveTabs(value: boolean): Promise<void> {
 	const persistenceManager = MigrationContext.getPersistenceManager();
 	// Update both storages for graceful migration
-	localStorage.setItem(SHOW_ACTIVE_TABS_KEY, value.toString());
+	localStorage.setItem(OBSOLETE_SHOW_ACTIVE_TABS_KEY, value.toString());
 	await persistenceManager.set(SHOW_ACTIVE_TABS_KEY, value);
 }
 
 export async function migrateSortStrategy(
 	persistenceManager: PersistenceManager
 ): Promise<void> {
-	const legacyValue = localStorage.getItem(SORT_STRATEGY_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_SORT_STRATEGY_KEY);
 	if (legacyValue !== null) {
 		await persistenceManager.set(SORT_STRATEGY_KEY, legacyValue);
 	}
@@ -81,7 +94,7 @@ export async function getSortStrategy(): Promise<string> {
 	}
 
 	// Fall back to legacy storage
-	const legacyValue = localStorage.getItem(SORT_STRATEGY_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_SORT_STRATEGY_KEY);
 	if (legacyValue !== null) {
 		// Migrate to new storage
 		await persistenceManager.set(SORT_STRATEGY_KEY, legacyValue);
@@ -94,14 +107,14 @@ export async function getSortStrategy(): Promise<string> {
 export async function setSortStrategy(value: string): Promise<void> {
 	const persistenceManager = MigrationContext.getPersistenceManager();
 	// Update both storages for graceful migration
-	localStorage.setItem(SORT_STRATEGY_KEY, value);
+	localStorage.setItem(OBSOLETE_SORT_STRATEGY_KEY, value);
 	await persistenceManager.set(SORT_STRATEGY_KEY, value);
 }
 
 export async function migrateTempGroupOrder(
 	persistenceManager: PersistenceManager
 ): Promise<void> {
-	const legacyValue = localStorage.getItem(TEMP_GROUP_ORDER_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_TEMP_GROUP_ORDER_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue);
 		await persistenceManager.set(TEMP_GROUP_ORDER_KEY, value);
@@ -120,7 +133,7 @@ export async function getTempGroupOrder(
 	}
 
 	// Fall back to legacy storage
-	const legacyValue = localStorage.getItem(TEMP_GROUP_ORDER_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_TEMP_GROUP_ORDER_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue);
 		// Migrate to new storage
@@ -136,7 +149,7 @@ export async function setTempGroupOrder(
 	value: string[]
 ): Promise<void> {
 	// Update both storages for graceful migration
-	localStorage.setItem(TEMP_GROUP_ORDER_KEY, JSON.stringify(value));
+	localStorage.setItem(OBSOLETE_TEMP_GROUP_ORDER_KEY, JSON.stringify(value));
 	await persistenceManager.set(TEMP_GROUP_ORDER_KEY, value);
 }
 
@@ -144,7 +157,7 @@ export async function setTempGroupOrder(
 export async function migrateViewState(
 	persistenceManager: PersistenceManager
 ): Promise<void> {
-	const legacyValue = localStorage.getItem(VIEW_STATE_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_VIEW_STATE_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue);
 		await persistenceManager.set(VIEW_STATE_KEY, value);
@@ -161,7 +174,7 @@ export async function getViewState<T>(
 	}
 
 	// Fall back to legacy storage
-	const legacyValue = localStorage.getItem(VIEW_STATE_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_VIEW_STATE_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue) as T;
 		// Migrate to new storage
@@ -177,7 +190,7 @@ export async function setViewState<T>(
 	value: T
 ): Promise<void> {
 	// Update both storages for graceful migration
-	localStorage.setItem(VIEW_STATE_KEY, JSON.stringify(value));
+	localStorage.setItem(OBSOLETE_VIEW_STATE_KEY, JSON.stringify(value));
 	await persistenceManager.set(VIEW_STATE_KEY, value);
 }
 
@@ -185,7 +198,7 @@ export async function setViewState<T>(
 export async function migrateHiddenGroups(
 	persistenceManager: PersistenceManager
 ): Promise<void> {
-	const legacyValue = localStorage.getItem(HIDDEN_GROUPS_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_HIDDEN_GROUPS_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue);
 		await persistenceManager.set(HIDDEN_GROUPS_KEY, value);
@@ -202,7 +215,7 @@ export async function getHiddenGroups<T>(
 	}
 
 	// Fall back to legacy storage
-	const legacyValue = localStorage.getItem(HIDDEN_GROUPS_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_HIDDEN_GROUPS_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue) as T[];
 		// Migrate to new storage
@@ -218,7 +231,7 @@ export async function setHiddenGroups<T>(
 	value: T[]
 ): Promise<void> {
 	// Update both storages for graceful migration
-	localStorage.setItem(HIDDEN_GROUPS_KEY, JSON.stringify(value));
+	localStorage.setItem(OBSOLETE_HIDDEN_GROUPS_KEY, JSON.stringify(value));
 	await persistenceManager.set(HIDDEN_GROUPS_KEY, value);
 }
 
@@ -226,7 +239,7 @@ export async function setHiddenGroups<T>(
 export async function migrateCollapsedGroups(
 	persistenceManager: PersistenceManager
 ): Promise<void> {
-	const legacyValue = localStorage.getItem(COLLAPSED_GROUPS_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_COLLAPSED_GROUPS_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue);
 		await persistenceManager.set(COLLAPSED_GROUPS_KEY, value);
@@ -243,7 +256,7 @@ export async function getCollapsedGroups<T>(
 	}
 
 	// Fall back to legacy storage
-	const legacyValue = localStorage.getItem(COLLAPSED_GROUPS_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_COLLAPSED_GROUPS_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue) as T[];
 		// Migrate to new storage
@@ -259,7 +272,7 @@ export async function setCollapsedGroups<T>(
 	value: T[]
 ): Promise<void> {
 	// Update both storages for graceful migration
-	localStorage.setItem(COLLAPSED_GROUPS_KEY, JSON.stringify(value));
+	localStorage.setItem(OBSOLETE_COLLAPSED_GROUPS_KEY, JSON.stringify(value));
 	await persistenceManager.set(COLLAPSED_GROUPS_KEY, value);
 }
 
@@ -267,7 +280,7 @@ export async function setCollapsedGroups<T>(
 export async function migrateNonephemeralTabs(
 	persistenceManager: PersistenceManager
 ): Promise<void> {
-	const legacyValue = localStorage.getItem(NONEPHEMERAL_TABS_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_NONEPHEMERAL_TABS_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue);
 		await persistenceManager.set(NONEPHEMERAL_TABS_KEY, value);
@@ -284,7 +297,7 @@ export async function getNonephemeralTabs<T>(
 	}
 
 	// Fall back to legacy storage
-	const legacyValue = localStorage.getItem(NONEPHEMERAL_TABS_KEY);
+	const legacyValue = localStorage.getItem(OBSOLETE_NONEPHEMERAL_TABS_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue) as T[];
 		// Migrate to new storage
@@ -300,7 +313,7 @@ export async function setNonephemeralTabs<T>(
 	value: T[]
 ): Promise<void> {
 	// Update both storages for graceful migration
-	localStorage.setItem(NONEPHEMERAL_TABS_KEY, JSON.stringify(value));
+	localStorage.setItem(OBSOLETE_NONEPHEMERAL_TABS_KEY, JSON.stringify(value));
 	await persistenceManager.set(NONEPHEMERAL_TABS_KEY, value);
 }
 
@@ -308,7 +321,7 @@ export async function removeNonephemeralTabs(
 	persistenceManager: PersistenceManager
 ): Promise<void> {
 	// Remove from both storages
-	localStorage.removeItem(NONEPHEMERAL_TABS_KEY);
+	localStorage.removeItem(OBSOLETE_NONEPHEMERAL_TABS_KEY);
 	await persistenceManager.remove(NONEPHEMERAL_TABS_KEY);
 }
 
