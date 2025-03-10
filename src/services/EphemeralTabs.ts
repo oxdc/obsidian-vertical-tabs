@@ -18,9 +18,9 @@ import { useViewState } from "src/models/ViewState";
 import { useSettings } from "src/models/PluginContext";
 import { Identifier } from "src/models/VTWorkspace";
 import { iterateLeavesControlledByHoverEditor } from "./HoverEditorTabs";
-import { REFRESH_TIMEOUT_LONG } from "src/stores/TabCacheStore";
 import { safeDetach } from "./CloseTabs";
-import { EVENTS } from "src/constants/events";
+import { EVENTS } from "src/constants/Events";
+import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 
 export function makeLeafNonEphemeralByID(app: App, leafID: string) {
 	const leaf = app.workspace.getLeafById(leafID);

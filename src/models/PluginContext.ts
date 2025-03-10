@@ -21,7 +21,7 @@ import {
 	selfIsNotInTheSidebar,
 } from "src/services/MoveTab";
 import { refreshGroupViewTypes, setColumnViewMinWidth } from "./VTGroupView";
-import { EVENTS } from "src/constants/events";
+import { EVENTS } from "src/constants/Events";
 
 function saveShowActiveTabs(showActiveTabs: boolean) {
 	localStorage.setItem("vt-show-active-tabs", showActiveTabs.toString());

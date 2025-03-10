@@ -1,9 +1,9 @@
 import { App, debounce, WorkspaceParent } from "obsidian";
 import { useSettings } from "./PluginContext";
 import { Identifier } from "./VTWorkspace";
-import { EVENTS } from "../constants/events";
+import { EVENTS } from "src/constants/Events";
 import { sortLeafDomsInGroup } from "src/services/SortTabDom";
-import { REFRESH_TIMEOUT_LONG } from "../stores/TabCacheStore";
+import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 
 export enum GroupViewType {
 	Default = "vt-default-view",

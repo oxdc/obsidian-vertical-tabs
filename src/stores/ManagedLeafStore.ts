@@ -4,7 +4,7 @@ import {
 	isHoverEditorEnabled,
 	iterateLeavesControlledByHoverEditor,
 } from "../services/HoverEditorTabs";
-import { REFRESH_TIMEOUT_LONG } from "src/stores/TabCacheStore";
+import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 import { Identifier } from "src/models/VTWorkspace";
 
 type ManagedLeafState = {

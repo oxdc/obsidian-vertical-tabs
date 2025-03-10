@@ -1,13 +1,10 @@
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { IconButton } from "./IconButton";
 import { Menu, Platform } from "obsidian";
-import {
-	REFRESH_TIMEOUT_LONG,
-	sortStrategies,
-	tabCacheStore,
-} from "src/stores/TabCacheStore";
+import { sortStrategies, tabCacheStore } from "src/stores/TabCacheStore";
 import { useViewState } from "src/models/ViewState";
-import { EVENTS } from "src/constants/events";
+import { EVENTS } from "src/constants/Events";
+import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 
 interface NavigationHeaderProps {
 	container: HTMLElement | null;

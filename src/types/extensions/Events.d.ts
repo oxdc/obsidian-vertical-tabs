@@ -1,4 +1,4 @@
-import { EVENTS } from "src/constants/events";
+import { EVENTS } from "src/constants/Events";
 import { GroupViewType } from "src/models/VTGroupView";
 
 export {};

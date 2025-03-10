@@ -10,7 +10,7 @@ import {
 	closeTabsToBottomInGroup,
 	closeTabsToTopInGroup,
 } from "src/services/CloseTabs";
-import { REFRESH_TIMEOUT, tabCacheStore } from "src/stores/TabCacheStore";
+import { tabCacheStore } from "src/stores/TabCacheStore";
 import { useViewState, VIEW_CUE_PREV } from "src/models/ViewState";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 import {
@@ -27,7 +27,7 @@ import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
 import { HistoryBrowserModal } from "src/HistoryBrowserModal";
 import { getOpenFileOfLeaf } from "src/services/GetTabs";
 import { GroupViewType, setGroupViewType } from "src/models/VTGroupView";
-
+import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 interface TabProps {
 	leaf: WorkspaceLeaf;
 	index: number;

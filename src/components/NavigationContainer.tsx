@@ -1,15 +1,12 @@
 import { NavigationContent } from "./NavigationContent";
 import { NavigationHeader } from "./NavigationHeader";
-import {
-	REFRESH_TIMEOUT,
-	REFRESH_TIMEOUT_LONG,
-	tabCacheStore,
-} from "src/stores/TabCacheStore";
+import { tabCacheStore } from "src/stores/TabCacheStore";
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect, useRef } from "react";
 import { useViewState, VIEW_CUE_DELAY } from "src/models/ViewState";
 import { debounce, ItemView, Platform, TFolder } from "obsidian";
-import { EVENTS } from "src/constants/events";
+import { EVENTS } from "src/constants/Events";
+import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 import {
 	ensureSelfIsOpen,
 	moveSelfToDefaultLocation,

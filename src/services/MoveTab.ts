@@ -6,9 +6,9 @@ import {
 	WorkspaceSidedock,
 } from "obsidian";
 import { syncUIForGroupView } from "src/models/VTGroupView";
-import { REFRESH_TIMEOUT_LONG } from "src/stores/TabCacheStore";
 import { Identifier } from "src/models/VTWorkspace";
 import { VIEW_TYPE } from "src/navigation";
+import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 
 export function reapplyEphemeralState(
 	leaf: WorkspaceLeaf,

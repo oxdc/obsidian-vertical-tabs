@@ -1,7 +1,7 @@
 import { App, Platform, PluginSettingTab, Setting } from "obsidian";
 import ObsidianVerticalTabs from "./main";
 import { useSettings } from "./models/PluginContext";
-import { EVENTS } from "./constants/events";
+import { EVENTS } from "./constants/Events";
 import {
 	TabNavigationPresets,
 	TabNavigationStrategy,

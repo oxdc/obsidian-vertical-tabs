@@ -5,12 +5,12 @@ import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
 import { useApp, useSettings } from "src/models/PluginContext";
 import { GroupType } from "src/models/VTWorkspace";
 import { Menu, WorkspaceParent } from "obsidian";
-import { EVENTS } from "src/constants/events";
+import { EVENTS } from "src/constants/Events";
 import {
 	createBookmarkForGroup,
 	loadNameFromBookmark,
 } from "src/models/VTBookmark";
-import { REFRESH_TIMEOUT, tabCacheStore } from "src/stores/TabCacheStore";
+import { tabCacheStore } from "src/stores/TabCacheStore";
 import { LinkedFolder } from "src/services/OpenFolder";
 import { LinkedGroupButton } from "./LinkedGroupButton";
 import {
@@ -18,6 +18,7 @@ import {
 	identifyGroupViewType,
 	setGroupViewType,
 } from "src/models/VTGroupView";
+import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 
 interface GroupProps {
 	type: GroupType;

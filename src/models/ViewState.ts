@@ -25,7 +25,7 @@ import {
 	insertRightSidebarToggle,
 } from "src/services/SidebarToggles";
 import { getGroupType, GroupType, Identifier } from "./VTWorkspace";
-import { REFRESH_TIMEOUT_LONG, tabCacheStore } from "../stores/TabCacheStore";
+import { tabCacheStore } from "../stores/TabCacheStore";
 import { pinDrawer, unpinDrawer } from "src/services/MobileDrawer";
 import { CommandCheckCallback, getCommandByName } from "src/services/Commands";
 import { LinkedFolder } from "src/services/OpenFolder";
@@ -35,8 +35,8 @@ import {
 	setGroupViewType,
 } from "./VTGroupView";
 import { managedLeafStore } from "src/stores/ManagedLeafStore";
-import { EVENTS } from "src/constants/events";
-
+import { EVENTS } from "src/constants/Events";
+import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
 
