@@ -1,8 +1,18 @@
 import { nanoid } from "nanoid";
-import { App, PluginManifest, TFile } from "obsidian";
+import { App, normalizePath, PluginManifest } from "obsidian";
 
 const DEVICE_ID_KEY = "vertical-tabs:device-id";
+const JSON_EXTENSION = ".json";
 
+/** Represents storage options for persistence */
+interface StorageOptions {
+	/** If true, stores data in file system instead of localStorage */
+	largeBlob?: boolean;
+}
+
+/**
+ * Manages persistent storage for the plugin, handling both localStorage and file-based storage
+ */
 export class PersistenceManager {
 	readonly installationID: string;
 	readonly deviceID: string;
@@ -16,48 +26,49 @@ export class PersistenceManager {
 		this.manifest = manifest;
 	}
 
-	private loadDeviceID() {
-		let deviceID = localStorage.getItem(DEVICE_ID_KEY);
-		if (!deviceID) {
-			deviceID = nanoid();
-			localStorage.setItem(DEVICE_ID_KEY, deviceID);
-		}
+	private loadDeviceID(): string {
+		const deviceID = localStorage.getItem(DEVICE_ID_KEY) ?? nanoid();
+		localStorage.setItem(DEVICE_ID_KEY, deviceID);
 		return deviceID;
 	}
 
-	private normalizePath(path: string) {
-		path = path.replace(/([\\/])+/g, "/");
-		path = path.replace(/(^\/+|\/+$)/g, "");
-		path = path === "" ? "/" : path;
-		path = path.replace(/\u00A0|\u202F/g, " ");
-		return path;
-	}
-
-	private constructSafeFilePathFrom(key: string) {
+	private constructSafeFilePathFrom(key: string): string {
 		const defaultDir = `${this.app.vault.configDir}/plugins/${this.manifest.id}`;
 		const dir = this.manifest.dir ?? defaultDir;
-		const unsafeFilePath = `${dir}/${key}.json`;
-		const normalizedPath = this.normalizePath(unsafeFilePath);
-		return normalizedPath.normalize("NFC");
+		return normalizePath(`${dir}/${key}${JSON_EXTENSION}`);
+	}
+
+	private getStorageKey(key: string): string {
+		return `${this.prefix}:${key}`;
 	}
 
 	private async writeObjectToFile<T>(key: string, value: T): Promise<void> {
 		try {
 			const filePath = this.constructSafeFilePathFrom(key);
-			await this.app.vault.writeJson(filePath, value as object);
+			await this.app.vault.writeJson(
+				filePath,
+				value as unknown as object
+			);
 		} catch (error) {
-			console.error(`Failed to write to file ${key}:`, error);
-			throw new Error(`Failed to write to file ${key}: ${error.message}`);
+			this.handleError("write", key, error);
 		}
 	}
 
 	private async readObjectFromFile<T>(key: string): Promise<T | null> {
 		try {
 			const filePath = this.constructSafeFilePathFrom(key);
-			return (await this.app.vault.readJson(filePath)) as T;
+			return (await this.app.vault.readJson(filePath)) as unknown as T;
 		} catch (error) {
-			console.error(`Failed to read from file ${key}:`, error);
+			this.handleError("read", key, error);
 			return null;
+		}
+	}
+
+	private handleError(operation: string, key: string, error: Error): void {
+		const message = `Failed to ${operation} ${key}: ${error.message}`;
+		console.error(message, error);
+		if (operation !== "read") {
+			throw new Error(message);
 		}
 	}
 
@@ -70,61 +81,84 @@ export class PersistenceManager {
 		return `vertical-tabs:${this.installationID}:${this.deviceID}`;
 	}
 
+	/**
+	 * Retrieves a value from storage
+	 * @param key The key to retrieve
+	 * @returns The stored value or null if not found
+	 */
 	async get<T>(key: string): Promise<T | null> {
 		try {
-			const value = localStorage.getItem(`${this.prefix}:${key}`);
+			const storageKey = this.getStorageKey(key);
+			const value = localStorage.getItem(storageKey);
+
 			if (value) {
 				return JSON.parse(value) as T;
 			}
-			const fileExists = await this.hasFile(key);
-			if (fileExists) {
+
+			if (await this.hasFile(key)) {
 				return await this.readObjectFromFile<T>(key);
 			}
+
 			return null;
 		} catch (error) {
-			console.error(`Failed to get value for key ${key}:`, error);
+			this.handleError("get", key, error);
 			return null;
 		}
 	}
 
-	async set<T>(key: string, value: T, largeBlob = false): Promise<void> {
+	/**
+	 * Stores a value in persistence
+	 * @param key The key to store under
+	 * @param value The value to store
+	 * @param options Storage options
+	 */
+	async set<T>(
+		key: string,
+		value: T,
+		options: StorageOptions = {}
+	): Promise<void> {
 		try {
-			if (largeBlob) {
+			if (options.largeBlob) {
 				await this.writeObjectToFile(key, value);
 			} else {
-				localStorage.setItem(
-					`${this.prefix}:${key}`,
-					JSON.stringify(value)
-				);
+				const storageKey = this.getStorageKey(key);
+				localStorage.setItem(storageKey, JSON.stringify(value));
 			}
 		} catch (error) {
-			console.error(`Failed to set value for key ${key}:`, error);
-			throw new Error(
-				`Failed to set value for key ${key}: ${error.message}`
-			);
+			this.handleError("set", key, error);
 		}
 	}
 
+	/**
+	 * Removes a value from storage
+	 * @param key The key to remove
+	 */
 	async remove(key: string): Promise<void> {
 		try {
-			localStorage.removeItem(`${this.prefix}:${key}`);
+			const storageKey = this.getStorageKey(key);
+			localStorage.removeItem(storageKey);
+
 			const filePath = this.constructSafeFilePathFrom(key);
-			const file = this.app.vault.getFileByPath(filePath);
-			if (file) await this.app.vault.delete(file);
+			await this.app.vault.adapter.remove(filePath);
 		} catch (error) {
-			console.error(`Failed to remove key ${key}:`, error);
-			throw new Error(`Failed to remove key ${key}: ${error.message}`);
+			this.handleError("remove", key, error);
 		}
 	}
 
+	/**
+	 * Checks if a key exists in storage
+	 * @param key The key to check
+	 * @returns True if the key exists
+	 */
 	async has(key: string): Promise<boolean> {
 		try {
+			const storageKey = this.getStorageKey(key);
 			return (
-				localStorage.getItem(`${this.prefix}:${key}`) !== null ||
+				localStorage.getItem(storageKey) !== null ||
 				(await this.hasFile(key))
 			);
 		} catch (error) {
-			console.error(`Failed to check existence of key ${key}:`, error);
+			this.handleError("check", key, error);
 			return false;
 		}
 	}
