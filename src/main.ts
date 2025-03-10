@@ -21,12 +21,15 @@ import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
 import { SAFE_DETACH_TIMEOUT } from "./services/CloseTabs";
 import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
+import { PersistenceManager } from "./models/PersistenceManager";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
+	persistenceManager: PersistenceManager;
 
 	async onload() {
 		await this.loadSettings();
+		await this.setupPersistenceManager();
 		await this.registerEventsAndViews();
 		await this.setupCommands();
 		await this.updateViewStates();
@@ -39,6 +42,17 @@ export default class ObsidianVerticalTabs extends Plugin {
 				REFRESH_TIMEOUT_LONG
 			);
 		});
+	}
+
+	async setupPersistenceManager() {
+		this.persistenceManager = new PersistenceManager(
+			this.app,
+			// The following assertion is safe because we check for
+			// `installationID` in `loadSettings`
+			// eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+			this.settings.installationID!,
+			this.manifest
+		);
 	}
 
 	async registerEventsAndViews() {
@@ -80,8 +94,9 @@ export default class ObsidianVerticalTabs extends Plugin {
 			DEFAULT_SETTINGS,
 			await this.loadData()
 		);
-		if (!this.settings.installationID)
+		if (!this.settings.installationID) {
 			this.settings.installationID = nanoid();
+		}
 	}
 
 	async saveSettings() {

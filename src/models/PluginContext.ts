@@ -22,6 +22,7 @@ import {
 } from "src/services/MoveTab";
 import { refreshGroupViewTypes, setColumnViewMinWidth } from "./VTGroupView";
 import { EVENTS } from "src/constants/Events";
+import { PersistenceManager } from "./PersistenceManager";
 
 function saveShowActiveTabs(showActiveTabs: boolean) {
 	localStorage.setItem("vt-show-active-tabs", showActiveTabs.toString());
@@ -44,6 +45,11 @@ export const usePlugin = (): ObsidianVerticalTabs => {
 export const useApp = (): App => {
 	const plugin = usePlugin();
 	return plugin.app;
+};
+
+export const usePersistenceManager = (): PersistenceManager => {
+	const plugin = usePlugin();
+	return plugin.persistenceManager;
 };
 
 export type GroupViewOptions = {

@@ -8,6 +8,8 @@ const JSON_EXTENSION = ".json";
 interface StorageOptions {
 	/** If true, stores data in file system instead of localStorage */
 	largeBlob?: boolean;
+	/** If true, does not remove duplicated entries */
+	noCleanup?: boolean;
 }
 
 /**
@@ -123,11 +125,13 @@ export class PersistenceManager {
 			if (options.largeBlob) {
 				await this.writeObjectToFile(key, value);
 				// Remove from localStorage after successful file write
-				localStorage.removeItem(storageKey);
+				if (!options.noCleanup) {
+					localStorage.removeItem(storageKey);
+				}
 			} else {
 				localStorage.setItem(storageKey, JSON.stringify(value));
 				// Remove file if it exists
-				if (await this.hasFile(key)) {
+				if (!options.noCleanup && (await this.hasFile(key))) {
 					const filePath = this.constructSafeFilePathFrom(key);
 					await this.app.vault.adapter.remove(filePath);
 				}
