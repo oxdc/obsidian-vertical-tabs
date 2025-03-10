@@ -6,7 +6,7 @@ import {
 	WorkspaceParent,
 	WorkspaceSplit,
 } from "obsidian";
-import { createNewTabCache, TabCache } from "src/models/TabCache";
+import { createNewTabCache, TabCache } from "src/stores/TabCacheStore";
 import { GroupType } from "src/models/VTWorkspace";
 import { managedLeafStore } from "src/stores/ManagedLeafStore";
 function record(

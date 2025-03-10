@@ -3,8 +3,8 @@ import { NavigationHeader } from "./NavigationHeader";
 import {
 	REFRESH_TIMEOUT,
 	REFRESH_TIMEOUT_LONG,
-	useTabCache,
-} from "src/models/TabCache";
+	tabCacheStore,
+} from "src/stores/TabCacheStore";
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect, useRef } from "react";
 import { useViewState, VIEW_CUE_DELAY } from "src/models/ViewState";
@@ -39,7 +39,7 @@ export const NavigationContainer = () => {
 	const plugin = usePlugin();
 	const app = plugin.app;
 	const ref = useRef<HTMLDivElement>(null);
-	const { refresh, sort } = useTabCache();
+	const { refresh, sort } = tabCacheStore.getActions();
 	const {
 		setLatestActiveLeaf,
 		refreshToggleButtons,

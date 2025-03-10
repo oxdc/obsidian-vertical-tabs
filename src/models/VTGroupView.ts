@@ -3,7 +3,7 @@ import { useSettings } from "./PluginContext";
 import { Identifier } from "./VTWorkspace";
 import { EVENTS } from "../constants/events";
 import { sortLeafDomsInGroup } from "src/services/SortTabDom";
-import { REFRESH_TIMEOUT_LONG } from "./TabCache";
+import { REFRESH_TIMEOUT_LONG } from "../stores/TabCacheStore";
 
 export enum GroupViewType {
 	Default = "vt-default-view",

@@ -25,7 +25,7 @@ import {
 	insertRightSidebarToggle,
 } from "src/services/SidebarToggles";
 import { getGroupType, GroupType, Identifier } from "./VTWorkspace";
-import { REFRESH_TIMEOUT_LONG, useTabCache } from "./TabCache";
+import { REFRESH_TIMEOUT_LONG, tabCacheStore } from "../stores/TabCacheStore";
 import { pinDrawer, unpinDrawer } from "src/services/MobileDrawer";
 import { CommandCheckCallback, getCommandByName } from "src/services/Commands";
 import { LinkedFolder } from "src/services/OpenFolder";
@@ -583,7 +583,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		}
 	},
 	setAllCollapsed() {
-		const ids = useTabCache.getState().groupIDs;
+		const ids = tabCacheStore.getState().groupIDs;
 		set({ globalCollapseState: true, collapsedGroups: ids });
 		saveCollapsedGroups(ids);
 	},

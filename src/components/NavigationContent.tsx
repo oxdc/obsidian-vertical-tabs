@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useTabCache } from "src/models/TabCache";
+import { tabCacheStore } from "src/stores/TabCacheStore";
 import { Tab } from "./Tab";
 import { Group } from "./Group";
 import {
@@ -25,7 +25,8 @@ import { WorkspaceLeaf } from "obsidian";
 import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
 
 export const NavigationContent = () => {
-	const { groupIDs, content, swapGroup, moveGroupToEnd } = useTabCache();
+	const { groupIDs, content } = tabCacheStore.getState();
+	const { swapGroup, moveGroupToEnd } = tabCacheStore.getActions();
 	const app = useApp();
 	const sensors = useSensors(
 		useSensor(PointerSensor, {

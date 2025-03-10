@@ -17,7 +17,7 @@ import { ObsidianVerticalTabsSettingTab } from "./SettingTab";
 import { useSettings } from "./models/PluginContext";
 import { nanoid } from "nanoid";
 import { patchQuickSwitcher } from "./services/EphemeralTabs";
-import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "./models/TabCache";
+import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "./stores/TabCacheStore";
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
 import { SAFE_DETACH_TIMEOUT } from "./services/CloseTabs";

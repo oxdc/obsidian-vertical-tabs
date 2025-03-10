@@ -10,7 +10,7 @@ import {
 	closeTabsToBottomInGroup,
 	closeTabsToTopInGroup,
 } from "src/services/CloseTabs";
-import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
+import { REFRESH_TIMEOUT, tabCacheStore } from "src/stores/TabCacheStore";
 import { useViewState, VIEW_CUE_PREV } from "src/models/ViewState";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 import {
@@ -60,7 +60,7 @@ export const Tab = ({
 		leaf.getViewState().pinned ?? false
 	);
 	const [isEphemeral, setIsEphemeral] = useState(!!leaf.isEphemeral);
-	const { refresh, sort } = useTabCache();
+	const { refresh, sort } = tabCacheStore.getActions();
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 	const enableTabZoom = useSettings((state) => state.enableTabZoom);
 	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);

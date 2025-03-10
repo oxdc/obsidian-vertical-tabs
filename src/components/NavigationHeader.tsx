@@ -4,8 +4,8 @@ import { Menu, Platform } from "obsidian";
 import {
 	REFRESH_TIMEOUT_LONG,
 	sortStrategies,
-	useTabCache,
-} from "src/models/TabCache";
+	tabCacheStore,
+} from "src/stores/TabCacheStore";
 import { useViewState } from "src/models/ViewState";
 import { EVENTS } from "src/constants/events";
 
@@ -16,15 +16,15 @@ interface NavigationHeaderProps {
 export const NavigationHeader = (props: NavigationHeaderProps) => {
 	const plugin = usePlugin();
 	const app = plugin.app;
-	const { hasOnlyOneGroup } = useTabCache();
+	const { hasOnlyOneGroup } = tabCacheStore.getActions();
 	const { setSettings } = useSettings();
 	const showActiveTabs = useSettings.use.showActiveTabs();
 	const hideSidebars = useSettings.use.hideSidebars();
 	const zenMode = useSettings.use.zenMode();
 	const toggleZenMode = useSettings.use.toggleZenMode();
 	const useTabEditing = useSettings.use.useTabEditing();
-	const sortStrategy = useTabCache((state) => state.sortStrategy);
-	const { setSortStrategy } = useTabCache();
+	const sortStrategy = tabCacheStore((state) => state.sortStrategy);
+	const { setSortStrategy } = tabCacheStore.getActions();
 	const { lockFocus, setAllCollapsed, setAllExpanded, scorllToActiveTab } =
 		useViewState();
 	const globalCollapseState = useViewState(

@@ -6,7 +6,7 @@ import {
 	WorkspaceSidedock,
 } from "obsidian";
 import { syncUIForGroupView } from "src/models/VTGroupView";
-import { REFRESH_TIMEOUT_LONG } from "src/models/TabCache";
+import { REFRESH_TIMEOUT_LONG } from "src/stores/TabCacheStore";
 import { Identifier } from "src/models/VTWorkspace";
 import { VIEW_TYPE } from "src/navigation";
 

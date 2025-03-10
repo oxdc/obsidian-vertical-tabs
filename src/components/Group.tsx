@@ -10,7 +10,7 @@ import {
 	createBookmarkForGroup,
 	loadNameFromBookmark,
 } from "src/models/VTBookmark";
-import { REFRESH_TIMEOUT, useTabCache } from "src/models/TabCache";
+import { REFRESH_TIMEOUT, tabCacheStore } from "src/stores/TabCacheStore";
 import { LinkedFolder } from "src/services/OpenFolder";
 import { LinkedGroupButton } from "./LinkedGroupButton";
 import {
@@ -39,7 +39,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	const workspace = app.workspace;
 	const isSidebar =
 		type === GroupType.LeftSidebar || type === GroupType.RightSidebar;
-	const { hasOnlyOneGroup } = useTabCache();
+	const { hasOnlyOneGroup } = tabCacheStore.getActions();
 	const hideSidebars = useSettings((state) => state.hideSidebars);
 	const isSingleGroup =
 		hasOnlyOneGroup() && hideSidebars && !isSidebar && !!group;
