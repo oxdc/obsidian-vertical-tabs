@@ -118,11 +118,19 @@ export class PersistenceManager {
 		options: StorageOptions = {}
 	): Promise<void> {
 		try {
+			const storageKey = this.getStorageKey(key);
+
 			if (options.largeBlob) {
 				await this.writeObjectToFile(key, value);
+				// Remove from localStorage after successful file write
+				localStorage.removeItem(storageKey);
 			} else {
-				const storageKey = this.getStorageKey(key);
 				localStorage.setItem(storageKey, JSON.stringify(value));
+				// Remove file if it exists
+				if (await this.hasFile(key)) {
+					const filePath = this.constructSafeFilePathFrom(key);
+					await this.app.vault.adapter.remove(filePath);
+				}
 			}
 		} catch (error) {
 			this.handleError("set", key, error);
