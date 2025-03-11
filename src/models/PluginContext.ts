@@ -23,14 +23,7 @@ import {
 import { refreshGroupViewTypes, setColumnViewMinWidth } from "./VTGroupView";
 import { EVENTS } from "src/constants/Events";
 import { PersistenceManager } from "./PersistenceManager";
-
-function saveShowActiveTabs(showActiveTabs: boolean) {
-	localStorage.setItem("vt-show-active-tabs", showActiveTabs.toString());
-}
-
-function loadShowActiveTabs() {
-	return localStorage.getItem("vt-show-active-tabs") === "true";
-}
+import { setShowActiveTabs, getShowActiveTabs } from "src/history/Migration";
 
 export type SettingsContext = [Settings, (mutator: SettingsMutator) => void];
 
@@ -111,10 +104,10 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 		toggleZenMode() {
 			const { zenMode, showActiveTabs, showActiveTabsInZenMode } = get();
 			if (zenMode) {
-				const showActiveTabs = loadShowActiveTabs();
+				const showActiveTabs = getShowActiveTabs();
 				get().setSettings({ zenMode: false, showActiveTabs });
 			} else {
-				saveShowActiveTabs(showActiveTabs);
+				setShowActiveTabs(showActiveTabs);
 				if (showActiveTabsInZenMode) {
 					get().setSettings({ zenMode: true, showActiveTabs: true });
 				} else {
@@ -159,7 +152,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			const { backgroundMode, showActiveTabs } = get();
 			if (enable === backgroundMode) return;
 			const toEnable = enable ?? !backgroundMode;
-			saveShowActiveTabs(showActiveTabs);
+			setShowActiveTabs(showActiveTabs);
 			if (toEnable) {
 				get().setSettings({
 					backgroundMode: true,
@@ -168,7 +161,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				});
 				moveSelfToNewGroupAndHide(app);
 			} else {
-				const showActiveTabs = loadShowActiveTabs();
+				const showActiveTabs = getShowActiveTabs();
 				get().setSettings({ backgroundMode: false, showActiveTabs });
 				if (selfIsNotInTheSidebar(app)) {
 					moveSelfToDefaultLocation(app);

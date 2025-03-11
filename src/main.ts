@@ -22,6 +22,7 @@ import { parseLink } from "./services/ParseLink";
 import { SAFE_DETACH_TIMEOUT } from "./services/CloseTabs";
 import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 import { PersistenceManager } from "./models/PersistenceManager";
+import { migrateAllData } from "./history/Migration";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -53,6 +54,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 			this.settings.installationID!,
 			this.manifest
 		);
+		migrateAllData(this);
 	}
 
 	async registerEventsAndViews() {

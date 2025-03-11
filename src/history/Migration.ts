@@ -37,22 +37,21 @@ const COLLAPSED_GROUPS_KEY = "collapsed-groups";
 const OBSOLETE_NONEPHEMERAL_TABS_KEY = "nonephemeral-tabs";
 const NONEPHEMERAL_TABS_KEY = "nonephemeral-tabs";
 
-export async function migrateShowActiveTabs(
+export function migrateShowActiveTabs(
 	persistenceManager: PersistenceManager
-): Promise<void> {
+): void {
 	const legacyValue = localStorage.getItem(OBSOLETE_SHOW_ACTIVE_TABS_KEY);
 	if (legacyValue !== null) {
 		const value = legacyValue === "true";
-		await persistenceManager.instance.set(SHOW_ACTIVE_TABS_KEY, value);
+		persistenceManager.instance.set(SHOW_ACTIVE_TABS_KEY, value);
 	}
 }
 
-export async function getShowActiveTabs(): Promise<boolean> {
+export function getShowActiveTabs(): boolean {
 	const persistenceManager = MigrationContext.getPersistenceManager();
 	// Try new storage first
-	const newValue = await persistenceManager.instance.get<boolean>(
-		SHOW_ACTIVE_TABS_KEY
-	);
+	const newValue =
+		persistenceManager.instance.get<boolean>(SHOW_ACTIVE_TABS_KEY);
 	if (newValue !== null) {
 		return newValue;
 	}
@@ -62,35 +61,33 @@ export async function getShowActiveTabs(): Promise<boolean> {
 	if (legacyValue !== null) {
 		const value = legacyValue === "true";
 		// Migrate to new storage
-		await persistenceManager.instance.set(SHOW_ACTIVE_TABS_KEY, value);
+		persistenceManager.instance.set(SHOW_ACTIVE_TABS_KEY, value);
 		return value;
 	}
 
 	return false;
 }
 
-export async function setShowActiveTabs(value: boolean): Promise<void> {
+export function setShowActiveTabs(value: boolean): void {
 	const persistenceManager = MigrationContext.getPersistenceManager();
 	// Update both storages for graceful migration
 	localStorage.setItem(OBSOLETE_SHOW_ACTIVE_TABS_KEY, value.toString());
-	await persistenceManager.instance.set(SHOW_ACTIVE_TABS_KEY, value);
+	persistenceManager.instance.set(SHOW_ACTIVE_TABS_KEY, value);
 }
 
-export async function migrateSortStrategy(
+export function migrateSortStrategy(
 	persistenceManager: PersistenceManager
-): Promise<void> {
+): void {
 	const legacyValue = localStorage.getItem(OBSOLETE_SORT_STRATEGY_KEY);
 	if (legacyValue !== null) {
-		await persistenceManager.instance.set(SORT_STRATEGY_KEY, legacyValue);
+		persistenceManager.instance.set(SORT_STRATEGY_KEY, legacyValue);
 	}
 }
 
-export async function getSortStrategy(): Promise<string> {
+export function getSortStrategy(): string {
 	const persistenceManager = MigrationContext.getPersistenceManager();
 	// Try new storage first
-	const newValue = await persistenceManager.instance.get<string>(
-		SORT_STRATEGY_KEY
-	);
+	const newValue = persistenceManager.instance.get<string>(SORT_STRATEGY_KEY);
 	if (newValue !== null) {
 		return newValue;
 	}
@@ -99,37 +96,36 @@ export async function getSortStrategy(): Promise<string> {
 	const legacyValue = localStorage.getItem(OBSOLETE_SORT_STRATEGY_KEY);
 	if (legacyValue !== null) {
 		// Migrate to new storage
-		await persistenceManager.instance.set(SORT_STRATEGY_KEY, legacyValue);
+		persistenceManager.instance.set(SORT_STRATEGY_KEY, legacyValue);
 		return legacyValue;
 	}
 
 	return "none";
 }
 
-export async function setSortStrategy(value: string): Promise<void> {
+export function setSortStrategy(value: string): void {
 	const persistenceManager = MigrationContext.getPersistenceManager();
 	// Update both storages for graceful migration
 	localStorage.setItem(OBSOLETE_SORT_STRATEGY_KEY, value);
-	await persistenceManager.instance.set(SORT_STRATEGY_KEY, value);
+	persistenceManager.instance.set(SORT_STRATEGY_KEY, value);
 }
 
-export async function migrateTempGroupOrder(
+export function migrateTempGroupOrder(
 	persistenceManager: PersistenceManager
-): Promise<void> {
+): void {
 	const legacyValue = localStorage.getItem(OBSOLETE_TEMP_GROUP_ORDER_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue);
-		await persistenceManager.instance.set(TEMP_GROUP_ORDER_KEY, value);
+		persistenceManager.instance.set(TEMP_GROUP_ORDER_KEY, value);
 	}
 }
 
-export async function getTempGroupOrder(
+export function getTempGroupOrder(
 	persistenceManager: PersistenceManager
-): Promise<string[]> {
+): string[] {
 	// Try new storage first
-	const newValue = await persistenceManager.instance.get<string[]>(
-		TEMP_GROUP_ORDER_KEY
-	);
+	const newValue =
+		persistenceManager.instance.get<string[]>(TEMP_GROUP_ORDER_KEY);
 	if (newValue !== null) {
 		return newValue;
 	}
@@ -139,38 +135,36 @@ export async function getTempGroupOrder(
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue);
 		// Migrate to new storage
-		await persistenceManager.instance.set(TEMP_GROUP_ORDER_KEY, value);
+		persistenceManager.instance.set(TEMP_GROUP_ORDER_KEY, value);
 		return value;
 	}
 
 	return [];
 }
 
-export async function setTempGroupOrder(
+export function setTempGroupOrder(
 	persistenceManager: PersistenceManager,
 	value: string[]
-): Promise<void> {
+): void {
 	// Update both storages for graceful migration
 	localStorage.setItem(OBSOLETE_TEMP_GROUP_ORDER_KEY, JSON.stringify(value));
-	await persistenceManager.instance.set(TEMP_GROUP_ORDER_KEY, value);
+	persistenceManager.instance.set(TEMP_GROUP_ORDER_KEY, value);
 }
 
 // ViewState migrations
-export async function migrateViewState(
-	persistenceManager: PersistenceManager
-): Promise<void> {
+export function migrateViewState(persistenceManager: PersistenceManager): void {
 	const legacyValue = localStorage.getItem(OBSOLETE_VIEW_STATE_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue);
-		await persistenceManager.instance.set(VIEW_STATE_KEY, value);
+		persistenceManager.instance.set(VIEW_STATE_KEY, value);
 	}
 }
 
-export async function getViewState<T>(
+export function getViewState<T>(
 	persistenceManager: PersistenceManager
-): Promise<T | null> {
+): T | null {
 	// Try new storage first
-	const newValue = await persistenceManager.instance.get<T>(VIEW_STATE_KEY);
+	const newValue = persistenceManager.instance.get<T>(VIEW_STATE_KEY);
 	if (newValue !== null) {
 		return newValue;
 	}
@@ -180,40 +174,38 @@ export async function getViewState<T>(
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue) as T;
 		// Migrate to new storage
-		await persistenceManager.instance.set(VIEW_STATE_KEY, value);
+		persistenceManager.instance.set(VIEW_STATE_KEY, value);
 		return value;
 	}
 
 	return null;
 }
 
-export async function setViewState<T>(
+export function setViewState<T>(
 	persistenceManager: PersistenceManager,
 	value: T
-): Promise<void> {
+): void {
 	// Update both storages for graceful migration
 	localStorage.setItem(OBSOLETE_VIEW_STATE_KEY, JSON.stringify(value));
-	await persistenceManager.instance.set(VIEW_STATE_KEY, value);
+	persistenceManager.instance.set(VIEW_STATE_KEY, value);
 }
 
 // Hidden Groups migrations
-export async function migrateHiddenGroups(
+export function migrateHiddenGroups(
 	persistenceManager: PersistenceManager
-): Promise<void> {
+): void {
 	const legacyValue = localStorage.getItem(OBSOLETE_HIDDEN_GROUPS_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue);
-		await persistenceManager.instance.set(HIDDEN_GROUPS_KEY, value);
+		persistenceManager.instance.set(HIDDEN_GROUPS_KEY, value);
 	}
 }
 
-export async function getHiddenGroups<T>(
+export function getHiddenGroups<T>(
 	persistenceManager: PersistenceManager
-): Promise<T[]> {
+): T[] {
 	// Try new storage first
-	const newValue = await persistenceManager.instance.get<T[]>(
-		HIDDEN_GROUPS_KEY
-	);
+	const newValue = persistenceManager.instance.get<T[]>(HIDDEN_GROUPS_KEY);
 	if (newValue !== null) {
 		return newValue;
 	}
@@ -223,40 +215,38 @@ export async function getHiddenGroups<T>(
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue) as T[];
 		// Migrate to new storage
-		await persistenceManager.instance.set(HIDDEN_GROUPS_KEY, value);
+		persistenceManager.instance.set(HIDDEN_GROUPS_KEY, value);
 		return value;
 	}
 
 	return [];
 }
 
-export async function setHiddenGroups<T>(
+export function setHiddenGroups<T>(
 	persistenceManager: PersistenceManager,
 	value: T[]
-): Promise<void> {
+): void {
 	// Update both storages for graceful migration
 	localStorage.setItem(OBSOLETE_HIDDEN_GROUPS_KEY, JSON.stringify(value));
-	await persistenceManager.instance.set(HIDDEN_GROUPS_KEY, value);
+	persistenceManager.instance.set(HIDDEN_GROUPS_KEY, value);
 }
 
 // Collapsed Groups migrations
-export async function migrateCollapsedGroups(
+export function migrateCollapsedGroups(
 	persistenceManager: PersistenceManager
-): Promise<void> {
+): void {
 	const legacyValue = localStorage.getItem(OBSOLETE_COLLAPSED_GROUPS_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue);
-		await persistenceManager.instance.set(COLLAPSED_GROUPS_KEY, value);
+		persistenceManager.instance.set(COLLAPSED_GROUPS_KEY, value);
 	}
 }
 
-export async function getCollapsedGroups<T>(
+export function getCollapsedGroups<T>(
 	persistenceManager: PersistenceManager
-): Promise<T[]> {
+): T[] {
 	// Try new storage first
-	const newValue = await persistenceManager.instance.get<T[]>(
-		COLLAPSED_GROUPS_KEY
-	);
+	const newValue = persistenceManager.instance.get<T[]>(COLLAPSED_GROUPS_KEY);
 	if (newValue !== null) {
 		return newValue;
 	}
@@ -266,38 +256,38 @@ export async function getCollapsedGroups<T>(
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue) as T[];
 		// Migrate to new storage
-		await persistenceManager.instance.set(COLLAPSED_GROUPS_KEY, value);
+		persistenceManager.instance.set(COLLAPSED_GROUPS_KEY, value);
 		return value;
 	}
 
 	return [];
 }
 
-export async function setCollapsedGroups<T>(
+export function setCollapsedGroups<T>(
 	persistenceManager: PersistenceManager,
 	value: T[]
-): Promise<void> {
+): void {
 	// Update both storages for graceful migration
 	localStorage.setItem(OBSOLETE_COLLAPSED_GROUPS_KEY, JSON.stringify(value));
-	await persistenceManager.instance.set(COLLAPSED_GROUPS_KEY, value);
+	persistenceManager.instance.set(COLLAPSED_GROUPS_KEY, value);
 }
 
 // Nonephemeral Tabs migrations
-export async function migrateNonephemeralTabs(
+export function migrateNonephemeralTabs(
 	persistenceManager: PersistenceManager
-): Promise<void> {
+): void {
 	const legacyValue = localStorage.getItem(OBSOLETE_NONEPHEMERAL_TABS_KEY);
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue);
-		await persistenceManager.instance.set(NONEPHEMERAL_TABS_KEY, value);
+		persistenceManager.instance.set(NONEPHEMERAL_TABS_KEY, value);
 	}
 }
 
-export async function getNonephemeralTabs<T>(
+export function getNonephemeralTabs<T>(
 	persistenceManager: PersistenceManager
-): Promise<T[]> {
+): T[] {
 	// Try new storage first
-	const newValue = await persistenceManager.instance.get<T[]>(
+	const newValue = persistenceManager.instance.get<T[]>(
 		NONEPHEMERAL_TABS_KEY
 	);
 	if (newValue !== null) {
@@ -309,41 +299,39 @@ export async function getNonephemeralTabs<T>(
 	if (legacyValue !== null) {
 		const value = JSON.parse(legacyValue) as T[];
 		// Migrate to new storage
-		await persistenceManager.instance.set(NONEPHEMERAL_TABS_KEY, value);
+		persistenceManager.instance.set(NONEPHEMERAL_TABS_KEY, value);
 		return value;
 	}
 
 	return [];
 }
 
-export async function setNonephemeralTabs<T>(
+export function setNonephemeralTabs<T>(
 	persistenceManager: PersistenceManager,
 	value: T[]
-): Promise<void> {
+): void {
 	// Update both storages for graceful migration
 	localStorage.setItem(OBSOLETE_NONEPHEMERAL_TABS_KEY, JSON.stringify(value));
-	await persistenceManager.instance.set(NONEPHEMERAL_TABS_KEY, value);
+	persistenceManager.instance.set(NONEPHEMERAL_TABS_KEY, value);
 }
 
-export async function removeNonephemeralTabs(
+export function removeNonephemeralTabs(
 	persistenceManager: PersistenceManager
-): Promise<void> {
+): void {
 	// Remove from both storages
 	localStorage.removeItem(OBSOLETE_NONEPHEMERAL_TABS_KEY);
-	await persistenceManager.instance.remove(NONEPHEMERAL_TABS_KEY);
+	persistenceManager.instance.remove(NONEPHEMERAL_TABS_KEY);
 }
 
 // Run all migrations
-export async function migrateAllData(
-	plugin: ObsidianVerticalTabs
-): Promise<void> {
+export function migrateAllData(plugin: ObsidianVerticalTabs): void {
 	MigrationContext.initialize(plugin);
 	const persistenceManager = plugin.persistenceManager;
-	await migrateShowActiveTabs(persistenceManager);
-	await migrateSortStrategy(persistenceManager);
-	await migrateTempGroupOrder(persistenceManager);
-	await migrateViewState(persistenceManager);
-	await migrateHiddenGroups(persistenceManager);
-	await migrateCollapsedGroups(persistenceManager);
-	await migrateNonephemeralTabs(persistenceManager);
+	migrateShowActiveTabs(persistenceManager);
+	// migrateSortStrategy(persistenceManager);
+	// migrateTempGroupOrder(persistenceManager);
+	// migrateViewState(persistenceManager);
+	// migrateHiddenGroups(persistenceManager);
+	// migrateCollapsedGroups(persistenceManager);
+	// migrateNonephemeralTabs(persistenceManager);
 }
