@@ -4,18 +4,41 @@ import { App, normalizePath, PluginManifest } from "obsidian";
 const DEVICE_ID_KEY = "vertical-tabs:device-id";
 const JSON_EXTENSION = ".json";
 
-/** Represents storage options for persistence */
-interface StorageOptions {
-	/** If true, stores data in file system instead of localStorage */
-	largeBlob?: boolean;
-	/** If true, does not remove duplicated entries */
-	noCleanup?: boolean;
+enum DataScope {
+	Device, // visible in all vaults on this device
+	Vault, // visible in this vault on all devices
+	Instance, // visible in this vault on this device
+}
+
+interface AsyncStorageOperations<T> {
+	get<V extends T>(key: string): Promise<V | null>;
+	set<V extends T>(key: string, value: V): Promise<void>;
+	has(key: string): Promise<boolean>;
+	remove(key: string): Promise<void>;
+}
+
+interface SyncStorageOperations<T> {
+	get<V extends T>(key: string): V | null;
+	set<V extends T>(key: string, value: V): void;
+	has(key: string): boolean;
+	remove(key: string): void;
+}
+
+class PersistenceError extends Error {
+	readonly cause: Error;
+
+	constructor(operation: string, key: string, originalError: Error) {
+		super(`Failed to ${operation} ${key}: ${originalError.message}`);
+		this.name = "PersistenceError";
+		this.cause = originalError;
+	}
 }
 
 /**
  * Manages persistent storage for the plugin, handling both localStorage and file-based storage
+ * @template T - The type of data being stored
  */
-export class PersistenceManager {
+export class PersistenceManager<T = unknown> {
 	readonly installationID: string;
 	readonly deviceID: string;
 	readonly manifest: PluginManifest;
@@ -34,144 +57,174 @@ export class PersistenceManager {
 		return deviceID;
 	}
 
-	private constructSafeFilePathFrom(key: string): string {
+	private handleError(operation: string, key: string, error: Error): never {
+		const persistenceError = new PersistenceError(operation, key, error);
+		console.error(persistenceError);
+		throw persistenceError;
+	}
+
+	private prefix(scope: DataScope): string {
+		switch (scope) {
+			case DataScope.Device:
+				return `vertical-tabs-${this.deviceID}`;
+			case DataScope.Vault:
+				return `vertical-tabs-${this.installationID}`;
+			case DataScope.Instance:
+				return `vertical-tabs-${this.installationID}-${this.deviceID}`;
+		}
+	}
+
+	private getStorageKey(key: string, scope: DataScope): string {
+		return `${this.prefix(scope)}:${key}`;
+	}
+
+	private constructSafeFilePathFrom(filename: string): string {
 		const defaultDir = `${this.app.vault.configDir}/plugins/${this.manifest.id}`;
 		const dir = this.manifest.dir ?? defaultDir;
-		return normalizePath(`${dir}/${key}${JSON_EXTENSION}`);
+		return normalizePath(`${dir}/${filename}${JSON_EXTENSION}`);
 	}
 
-	private getStorageKey(key: string): string {
-		return `${this.prefix}:${key}`;
-	}
-
-	private async writeObjectToFile<T>(key: string, value: T): Promise<void> {
+	private async writeToFile<T>(storageKey: string, value: T): Promise<void> {
 		try {
-			const filePath = this.constructSafeFilePathFrom(key);
+			const filePath = this.constructSafeFilePathFrom(storageKey);
 			await this.app.vault.writeJson(
 				filePath,
 				value as unknown as object
 			);
 		} catch (error) {
-			this.handleError("write", key, error);
+			this.handleError("write", storageKey, error);
 		}
 	}
 
-	private async readObjectFromFile<T>(key: string): Promise<T | null> {
+	private async readFromFile<T>(storageKey: string): Promise<T | null> {
 		try {
-			const filePath = this.constructSafeFilePathFrom(key);
+			const filePath = this.constructSafeFilePathFrom(storageKey);
 			return (await this.app.vault.readJson(filePath)) as unknown as T;
 		} catch (error) {
-			this.handleError("read", key, error);
+			this.handleError("read", storageKey, error);
 			return null;
-		}
-	}
-
-	private handleError(operation: string, key: string, error: Error): void {
-		const message = `Failed to ${operation} ${key}: ${error.message}`;
-		console.error(message, error);
-		if (operation !== "read") {
-			throw new Error(message);
 		}
 	}
 
 	private async hasFile(key: string): Promise<boolean> {
-		const filePath = this.constructSafeFilePathFrom(key);
-		return await this.app.vault.exists(filePath);
-	}
-
-	get prefix(): string {
-		return `vertical-tabs:${this.installationID}:${this.deviceID}`;
-	}
-
-	/**
-	 * Retrieves a value from storage
-	 * @param key The key to retrieve
-	 * @returns The stored value or null if not found
-	 */
-	async get<T>(key: string): Promise<T | null> {
 		try {
-			const storageKey = this.getStorageKey(key);
-			const value = localStorage.getItem(storageKey);
-
-			if (value) {
-				return JSON.parse(value) as T;
-			}
-
-			if (await this.hasFile(key)) {
-				return await this.readObjectFromFile<T>(key);
-			}
-
-			return null;
-		} catch (error) {
-			this.handleError("get", key, error);
-			return null;
-		}
-	}
-
-	/**
-	 * Stores a value in persistence
-	 * @param key The key to store under
-	 * @param value The value to store
-	 * @param options Storage options
-	 */
-	async set<T>(
-		key: string,
-		value: T,
-		options: StorageOptions = {}
-	): Promise<void> {
-		try {
-			const storageKey = this.getStorageKey(key);
-
-			if (options.largeBlob) {
-				await this.writeObjectToFile(key, value);
-				// Remove from localStorage after successful file write
-				if (!options.noCleanup) {
-					localStorage.removeItem(storageKey);
-				}
-			} else {
-				localStorage.setItem(storageKey, JSON.stringify(value));
-				// Remove file if it exists
-				if (!options.noCleanup && (await this.hasFile(key))) {
-					const filePath = this.constructSafeFilePathFrom(key);
-					await this.app.vault.adapter.remove(filePath);
-				}
-			}
-		} catch (error) {
-			this.handleError("set", key, error);
-		}
-	}
-
-	/**
-	 * Removes a value from storage
-	 * @param key The key to remove
-	 */
-	async remove(key: string): Promise<void> {
-		try {
-			const storageKey = this.getStorageKey(key);
-			localStorage.removeItem(storageKey);
-
 			const filePath = this.constructSafeFilePathFrom(key);
-			await this.app.vault.adapter.remove(filePath);
+			return await this.app.vault.exists(filePath);
 		} catch (error) {
-			this.handleError("remove", key, error);
-		}
-	}
-
-	/**
-	 * Checks if a key exists in storage
-	 * @param key The key to check
-	 * @returns True if the key exists
-	 */
-	async has(key: string): Promise<boolean> {
-		try {
-			const storageKey = this.getStorageKey(key);
-			return (
-				localStorage.getItem(storageKey) !== null ||
-				(await this.hasFile(key))
-			);
-		} catch (error) {
-			this.handleError("check", key, error);
+			this.handleError("hasFile", key, error);
 			return false;
 		}
 	}
+
+	private async removeFile(key: string): Promise<void> {
+		try {
+			const filePath = this.constructSafeFilePathFrom(key);
+			await this.app.vault.adapter.remove(filePath);
+		} catch (error) {
+			this.handleError("removeFile", key, error);
+		}
+	}
+
+	private writeToLocalStorage<T>(storageKey: string, value: T): void {
+		try {
+			localStorage.setItem(storageKey, JSON.stringify(value));
+		} catch (error) {
+			this.handleError("write", storageKey, error);
+		}
+	}
+
+	private readFromLocalStorage<T>(storageKey: string): T | null {
+		try {
+			const value = localStorage.getItem(storageKey);
+			return value ? (JSON.parse(value) as T) : null;
+		} catch (error) {
+			this.handleError("read", storageKey, error);
+			return null;
+		}
+	}
+
+	private hasLocalStorageItem(storageKey: string): boolean {
+		try {
+			return localStorage.getItem(storageKey) !== null;
+		} catch (error) {
+			return false;
+		}
+	}
+
+	private removeLocalStorageItem(storageKey: string): void {
+		try {
+			localStorage.removeItem(storageKey);
+		} catch (error) {
+			this.handleError("removeLocalStorageItem", storageKey, error);
+		}
+	}
+
+	/**
+	 * Device-scoped storage operations - data persists across vaults on this device
+	 * Operations are synchronous since they use localStorage
+	 */
+	device: SyncStorageOperations<T> = {
+		get: <V extends T>(key: string): V | null => {
+			const storageKey = this.getStorageKey(key, DataScope.Device);
+			return this.readFromLocalStorage<V>(storageKey);
+		},
+		set: <V extends T>(key: string, value: V): void => {
+			const storageKey = this.getStorageKey(key, DataScope.Device);
+			this.writeToLocalStorage(storageKey, value);
+		},
+		has: (key: string): boolean => {
+			const storageKey = this.getStorageKey(key, DataScope.Device);
+			return this.hasLocalStorageItem(storageKey);
+		},
+		remove: (key: string): void => {
+			const storageKey = this.getStorageKey(key, DataScope.Device);
+			this.removeLocalStorageItem(storageKey);
+		},
+	};
+
+	/**
+	 * Vault-scoped storage operations - data persists across devices for this vault
+	 * Operations are asynchronous since they use file system
+	 */
+	vault: AsyncStorageOperations<T> = {
+		get: async <V extends T>(key: string): Promise<V | null> => {
+			const storageKey = this.getStorageKey(key, DataScope.Vault);
+			return this.readFromFile<V>(storageKey);
+		},
+		set: async <V extends T>(key: string, value: V): Promise<void> => {
+			const storageKey = this.getStorageKey(key, DataScope.Vault);
+			await this.writeToFile(storageKey, value);
+		},
+		has: async (key: string): Promise<boolean> => {
+			const storageKey = this.getStorageKey(key, DataScope.Vault);
+			return this.hasFile(storageKey);
+		},
+		remove: async (key: string): Promise<void> => {
+			const storageKey = this.getStorageKey(key, DataScope.Vault);
+			await this.removeFile(storageKey);
+		},
+	};
+
+	/**
+	 * Instance-scoped storage operations - data only persists for this vault on this device
+	 * Operations are synchronous since they use localStorage
+	 */
+	instance: SyncStorageOperations<T> = {
+		get: <V extends T>(key: string): V | null => {
+			const storageKey = this.getStorageKey(key, DataScope.Instance);
+			return this.readFromLocalStorage<V>(storageKey);
+		},
+		set: <V extends T>(key: string, value: V): void => {
+			const storageKey = this.getStorageKey(key, DataScope.Instance);
+			this.writeToLocalStorage(storageKey, value);
+		},
+		has: (key: string): boolean => {
+			const storageKey = this.getStorageKey(key, DataScope.Instance);
+			return this.hasLocalStorageItem(storageKey);
+		},
+		remove: (key: string): void => {
+			const storageKey = this.getStorageKey(key, DataScope.Instance);
+			this.removeLocalStorageItem(storageKey);
+		},
+	};
 }
