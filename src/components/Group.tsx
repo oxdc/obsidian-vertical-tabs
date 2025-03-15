@@ -10,7 +10,7 @@ import {
 	createBookmarkForGroup,
 	loadNameFromBookmark,
 } from "src/models/VTBookmark";
-import { tabCacheStore } from "src/stores/TabCacheStore";
+import { tabCacheStore } from "src/stores/NewTabCacheStore";
 import { LinkedFolder } from "src/services/OpenFolder";
 import { LinkedGroupButton } from "./LinkedGroupButton";
 import {

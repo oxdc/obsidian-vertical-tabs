@@ -1,6 +1,6 @@
 import { NavigationContent } from "./NavigationContent";
 import { NavigationHeader } from "./NavigationHeader";
-import { tabCacheStore } from "src/stores/TabCacheStore";
+import { tabCacheStore } from "src/stores/NewTabCacheStore";
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect, useRef } from "react";
 import { useViewState, VIEW_CUE_DELAY } from "src/models/ViewState";
@@ -67,7 +67,7 @@ export const NavigationContainer = () => {
 		setTimeout(() => {
 			updateEphemeralTabs(app);
 			if (isSelfVisible(app) || Platform.isMobile) {
-				refresh(app);
+				refresh(app, plugin.persistenceManager);
 				sort();
 			}
 		}, REFRESH_TIMEOUT);

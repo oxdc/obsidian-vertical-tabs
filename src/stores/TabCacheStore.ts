@@ -66,7 +66,7 @@ const loadGroupOrder = (): Identifier[] => {
 	return order ? JSON.parse(order) : [];
 };
 
-export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
+const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 	content: createNewTabCache(),
 	groupIDs: [],
 	leaveIDs: [],

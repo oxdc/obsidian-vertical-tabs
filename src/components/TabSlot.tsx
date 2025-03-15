@@ -1,7 +1,7 @@
 import { Identifier } from "src/models/VTWorkspace";
 import { NavigationTreeItem } from "./NavigationTreeItem";
 import { useApp } from "src/models/PluginContext";
-import { tabCacheStore } from "src/stores/TabCacheStore";
+import { tabCacheStore } from "src/stores/NewTabCacheStore";
 import { moveTabToEnd } from "src/services/MoveTab";
 
 interface TabSlotProps {
@@ -11,13 +11,13 @@ interface TabSlotProps {
 export const TabSlot = ({ groupID }: TabSlotProps) => {
 	const app = useApp();
 	const workspace = app.workspace;
-	const { content } = tabCacheStore.getState();
-	const group = content.get(groupID).group;
+	const groups = tabCacheStore((state) => state.groups);
+	const group = groups.get(groupID);
 
 	const createLeafNewTabAndOpen = () => {
 		if (!group) return;
 		const leaf = workspace.getLeaf("split");
-		moveTabToEnd(app, leaf.id, group);
+		moveTabToEnd(app, leaf.id, group.instance);
 		workspace.setActiveLeaf(leaf, { focus: true });
 		workspace.onLayoutChange();
 	};

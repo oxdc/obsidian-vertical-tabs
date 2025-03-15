@@ -10,7 +10,7 @@ import {
 	closeTabsToBottomInGroup,
 	closeTabsToTopInGroup,
 } from "src/services/CloseTabs";
-import { tabCacheStore } from "src/stores/TabCacheStore";
+import { tabCacheStore } from "src/stores/NewTabCacheStore";
 import { useViewState, VIEW_CUE_PREV } from "src/models/ViewState";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 import {
@@ -356,7 +356,7 @@ export const Tab = ({
 				.onClick(() => {
 					leaf.history.backHistory = [];
 					leaf.history.forwardHistory = [];
-					setTimeout(() => refresh(app), REFRESH_TIMEOUT);
+					setTimeout(() => refresh(app, plugin.persistenceManager), REFRESH_TIMEOUT);
 				});
 		});
 	}

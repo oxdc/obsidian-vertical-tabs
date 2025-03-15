@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { tabCacheStore } from "src/stores/TabCacheStore";
+import { VTGroup, tabCacheStore } from "src/stores/NewTabCacheStore";
 import { Tab } from "./Tab";
 import { Group } from "./Group";
 import {
@@ -12,7 +12,11 @@ import {
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
-import { useApp, useSettings } from "src/models/PluginContext";
+import {
+	useApp,
+	usePersistenceManager,
+	useSettings,
+} from "src/models/PluginContext";
 import { useState } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
 import { SortableContext } from "@dnd-kit/sortable";
@@ -25,7 +29,10 @@ import { WorkspaceLeaf } from "obsidian";
 import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
 
 export const NavigationContent = () => {
-	const { groupIDs, content } = tabCacheStore.getState();
+	const persistenceManager = usePersistenceManager();
+	const groupOrder = tabCacheStore((state) => state.groupOrder);
+	const tabs = tabCacheStore((state) => state.tabs);
+	const groups = tabCacheStore((state) => state.groups);
 	const { swapGroup, moveGroupToEnd } = tabCacheStore.getActions();
 	const app = useApp();
 	const sensors = useSensors(
@@ -64,7 +71,7 @@ export const NavigationContent = () => {
 				if (groupID === "new") {
 					movedTab = await moveTabToNewGroup(app, activeID);
 				} else {
-					const parent = content.get(groupID).group;
+					const parent = groups.get(groupID)?.instance;
 					if (parent) movedTab = moveTabToEnd(app, activeID, parent);
 				}
 			}
@@ -75,12 +82,12 @@ export const NavigationContent = () => {
 			if (isOverTab) {
 				const leaf = app.workspace.getLeafById(overID);
 				if (!leaf) return;
-				swapGroup(activeID, leaf.parent.id);
+				swapGroup(activeID, leaf.parent.id, persistenceManager);
 			} else {
 				if (overID === "slot-new") {
-					moveGroupToEnd(activeID);
+					moveGroupToEnd(activeID, persistenceManager);
 				} else {
-					swapGroup(activeID, overID);
+					swapGroup(activeID, overID, persistenceManager);
 				}
 			}
 		}
@@ -95,15 +102,10 @@ export const NavigationContent = () => {
 		"is-dragging": isDragging,
 	};
 
-	const getGroupIDs = () => [...groupIDs, "slot-new"];
+	const getGroupIDs = () => [...groupOrder, "slot-new"];
 
-	const getLeaveIDs = (groupID: Identifier) => {
-		const group = content.get(groupID);
-		return [...group.leafIDs, `slot-${groupID}`];
-	};
-
-	const entryOf = (groupID: Identifier) => {
-		return content.get(groupID);
+	const getLeaveIDs = (group: VTGroup) => {
+		return [...group.tabs, `slot-${group.instance.id}`];
 	};
 
 	return (
@@ -116,39 +118,46 @@ export const NavigationContent = () => {
 					onDragEnd={handleDragEnd}
 				>
 					<SortableContext items={getGroupIDs()}>
-						{groupIDs.map((groupID) => (
-							<Group
-								key={groupID}
-								type={entryOf(groupID).groupType}
-								group={entryOf(groupID).group}
-							>
-								{(isSingleGroup, viewType) => (
-									<SortableContext
-										items={getLeaveIDs(groupID)}
-									>
-										{entryOf(groupID).leaves.map(
-											(leaf, index, array) => {
-												const isLast =
-													index === array.length - 1;
-												return (
-													<Tab
-														key={leaf.id}
-														leaf={leaf}
-														index={index + 1}
-														isLast={isLast}
-														isSingleGroup={
-															isSingleGroup
-														}
-														viewType={viewType}
-													/>
-												);
-											}
-										)}
-										<TabSlot groupID={groupID} />
-									</SortableContext>
-								)}
-							</Group>
-						))}
+						{Array.from(groups.entries()).map(
+							([groupID, group]) => (
+								<Group
+									key={groupID}
+									type={group.groupType}
+									group={group.instance}
+								>
+									{(isSingleGroup, viewType) => (
+										<SortableContext
+											items={getLeaveIDs(group)}
+										>
+											{group.tabs.map(
+												(leafID, index, array) => {
+													const isLast =
+														index ===
+														array.length - 1;
+													return (
+														<Tab
+															key={leafID}
+															leaf={
+																tabs.get(
+																	leafID
+																)!.instance
+															}
+															index={index + 1}
+															isLast={isLast}
+															isSingleGroup={
+																isSingleGroup
+															}
+															viewType={viewType}
+														/>
+													);
+												}
+											)}
+											<TabSlot groupID={groupID} />
+										</SortableContext>
+									)}
+								</Group>
+							)
+						)}
 						<GroupSlot />
 					</SortableContext>
 					{createPortal(<DragOverlay />, document.body)}

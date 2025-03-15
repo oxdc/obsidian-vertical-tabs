@@ -110,7 +110,7 @@ export function setSortStrategy(value: string): void {
 	persistenceManager.instance.set(SORT_STRATEGY_KEY, value);
 }
 
-export function migrateTempGroupOrder(
+export function migrateGroupOrder(
 	persistenceManager: PersistenceManager
 ): void {
 	const legacyValue = localStorage.getItem(OBSOLETE_TEMP_GROUP_ORDER_KEY);
@@ -120,7 +120,7 @@ export function migrateTempGroupOrder(
 	}
 }
 
-export function getTempGroupOrder(
+export function getGroupOrder(
 	persistenceManager: PersistenceManager
 ): string[] {
 	// Try new storage first
@@ -142,7 +142,7 @@ export function getTempGroupOrder(
 	return [];
 }
 
-export function setTempGroupOrder(
+export function setGroupOrder(
 	persistenceManager: PersistenceManager,
 	value: string[]
 ): void {
@@ -328,8 +328,8 @@ export function migrateAllData(plugin: ObsidianVerticalTabs): void {
 	MigrationContext.initialize(plugin);
 	const persistenceManager = plugin.persistenceManager;
 	migrateShowActiveTabs(persistenceManager);
-	// migrateSortStrategy(persistenceManager);
-	// migrateTempGroupOrder(persistenceManager);
+	migrateSortStrategy(persistenceManager);
+	migrateGroupOrder(persistenceManager);
 	// migrateViewState(persistenceManager);
 	// migrateHiddenGroups(persistenceManager);
 	// migrateCollapsedGroups(persistenceManager);
