@@ -1,13 +1,7 @@
 import { App, WorkspaceLeaf, WorkspaceParent } from "obsidian";
 import { DefaultRecord } from "src/utils/DefaultRecord";
 import { getTabs } from "src/services/GetTabs";
-import {
-	byActiveTime,
-	byPinned,
-	byTitle,
-	SortStrategy,
-	sortTabs,
-} from "src/services/SortTabs";
+import { SortStrategy, sortTabs, sortStrategies } from "src/services/SortTabs";
 import { GroupType, Identifier } from "../models/VTWorkspace";
 import { useStoreWithActions } from "../models/StoreWithActions";
 
@@ -48,15 +42,6 @@ interface TabCacheActions {
 
 type TabCacheStore = TabCacheState & {
 	actions: TabCacheActions;
-};
-
-export const sortStrategies: Record<string, SortStrategy> = {
-	titleAToZ: { compareFn: byTitle, reverse: false },
-	titleZToA: { compareFn: byTitle, reverse: true },
-	pinnedAtTop: { compareFn: byPinned, reverse: false },
-	pinnedAtBottom: { compareFn: byPinned, reverse: true },
-	recentOnTop: { compareFn: byActiveTime, reverse: false },
-	recentOnBottom: { compareFn: byActiveTime, reverse: true },
 };
 
 const saveSortStrategy = (strategy: SortStrategy | null) => {

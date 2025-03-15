@@ -30,3 +30,12 @@ export function byPinned(a: WorkspaceLeaf, b: WorkspaceLeaf) {
 export function byActiveTime(a: WorkspaceLeaf, b: WorkspaceLeaf) {
 	return (b.activeTime ?? 0) - (a.activeTime ?? 0);
 }
+
+export const sortStrategies: Record<string, SortStrategy> = {
+	titleAToZ: { compareFn: byTitle, reverse: false },
+	titleZToA: { compareFn: byTitle, reverse: true },
+	pinnedAtTop: { compareFn: byPinned, reverse: false },
+	pinnedAtBottom: { compareFn: byPinned, reverse: true },
+	recentOnTop: { compareFn: byActiveTime, reverse: false },
+	recentOnBottom: { compareFn: byActiveTime, reverse: true },
+};
