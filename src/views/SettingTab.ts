@@ -1,14 +1,14 @@
 import { App, Platform, PluginSettingTab, Setting } from "obsidian";
-import ObsidianVerticalTabs from "./main";
-import { useSettings } from "./models/PluginContext";
-import { EVENTS } from "./constants/Events";
+import ObsidianVerticalTabs from "../main";
+import { useSettings } from "../models/PluginContext";
+import { EVENTS } from "../constants/Events";
 import {
 	TabNavigationPresets,
 	TabNavigationStrategy,
 	TabNavigationStrategyOptions,
 	TabNavigationCopyOptions,
-} from "./models/TabNavigation";
-import { linkedFolderSortStrategyOptions } from "./services/OpenFolder";
+} from "../models/TabNavigation";
+import { linkedFolderSortStrategyOptions } from "../services/OpenFolder";
 
 export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	plugin: ObsidianVerticalTabs;

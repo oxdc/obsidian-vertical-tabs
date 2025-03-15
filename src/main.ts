@@ -8,12 +8,15 @@ import {
 	Workspace,
 	WorkspaceLeaf,
 } from "obsidian";
-import { NavigationView, VIEW_TYPE } from "src/navigation";
+import {
+	VerticalTabsView,
+	VERTICAL_TABS_VIEW,
+} from "src/views/VerticalTabsView";
 import { DEFAULT_SETTINGS, Settings } from "./models/PluginSettings";
 import { around } from "monkey-around";
 import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
 import { useViewState } from "./models/ViewState";
-import { ObsidianVerticalTabsSettingTab } from "./SettingTab";
+import { ObsidianVerticalTabsSettingTab } from "./views/SettingTab";
 import { useSettings } from "./models/PluginContext";
 import { nanoid } from "nanoid";
 import { patchQuickSwitcher } from "./services/EphemeralTabs";
@@ -58,7 +61,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 	}
 
 	async registerEventsAndViews() {
-		this.registerView(VIEW_TYPE, (leaf) => new NavigationView(leaf, this));
+		this.registerView(
+			VERTICAL_TABS_VIEW,
+			(leaf) => new VerticalTabsView(leaf, this)
+		);
 	}
 
 	async setupCommands() {
@@ -75,9 +81,9 @@ export default class ObsidianVerticalTabs extends Plugin {
 	async openVerticalTabs() {
 		try {
 			const leaf: WorkspaceLeaf =
-				this.app.workspace.getLeavesOfType(VIEW_TYPE)[0] ??
+				this.app.workspace.getLeavesOfType(VERTICAL_TABS_VIEW)[0] ??
 				this.app.workspace.getLeftLeaf(false);
-			leaf.setViewState({ type: VIEW_TYPE, active: true });
+			leaf.setViewState({ type: VERTICAL_TABS_VIEW, active: true });
 			this.app.workspace.revealLeaf(leaf);
 		} catch {
 			// do nothing

@@ -1,5 +1,5 @@
 import { App, Platform, WorkspaceMobileDrawer } from "obsidian";
-import { VIEW_TYPE } from "src/navigation";
+import { VERTICAL_TABS_VIEW } from "src/views/VerticalTabsView";
 
 const DRAWER_ANIMATION_TIMEOUT = 500;
 
@@ -16,7 +16,7 @@ const NULL_MOBILE_DRAWERS: MobileDrawers = {
 export function getDrawer(app: App): MobileDrawers {
 	if (!Platform.isMobile) return NULL_MOBILE_DRAWERS;
 	const workspace = app.workspace;
-	const self = workspace.getLeavesOfType(VIEW_TYPE).first();
+	const self = workspace.getLeavesOfType(VERTICAL_TABS_VIEW).first();
 	if (!self) return NULL_MOBILE_DRAWERS;
 	const { leftSplit, rightSplit } = workspace;
 	const parent = self.parent;

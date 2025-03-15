@@ -1,9 +1,9 @@
 import { App } from "obsidian";
-import { VIEW_TYPE } from "src/navigation";
+import { VERTICAL_TABS_VIEW } from "src/views/VerticalTabsView";
 
 export function isSelfVisible(app: App): boolean {
 	const workspace = app.workspace;
-	const self = workspace.getLeavesOfType(VIEW_TYPE).first();
+	const self = workspace.getLeavesOfType(VERTICAL_TABS_VIEW).first();
 	if (!self) return false;
 	return self.isVisible();
 }

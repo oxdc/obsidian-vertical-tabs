@@ -7,7 +7,7 @@ import {
 } from "obsidian";
 import { syncUIForGroupView } from "src/models/VTGroupView";
 import { Identifier } from "src/models/VTWorkspace";
-import { VIEW_TYPE } from "src/navigation";
+import { VERTICAL_TABS_VIEW } from "src/views/VerticalTabsView";
 import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 
 export function reapplyEphemeralState(
@@ -111,7 +111,7 @@ export async function moveTabToNewGroup(
 
 export async function moveSelfToNewGroupAndHide(app: App) {
 	const workspace = app.workspace;
-	const self = workspace.getLeavesOfType(VIEW_TYPE).first();
+	const self = workspace.getLeavesOfType(VERTICAL_TABS_VIEW).first();
 	if (!self) return;
 	const newSelf = await moveTabToNewGroup(app, self.id);
 	if (!newSelf) return;
@@ -120,20 +120,20 @@ export async function moveSelfToNewGroupAndHide(app: App) {
 
 export function selfIsClosed(app: App) {
 	const workspace = app.workspace;
-	const self = workspace.getLeavesOfType(VIEW_TYPE).first();
+	const self = workspace.getLeavesOfType(VERTICAL_TABS_VIEW).first();
 	return !self;
 }
 
 export function ensureSelfIsOpen(app: App) {
 	if (selfIsClosed(app)) {
 		const leaf = this.app.workspace.getLeftLeaf(false);
-		leaf.setViewState({ type: VIEW_TYPE, active: true });
+		leaf.setViewState({ type: VERTICAL_TABS_VIEW, active: true });
 	}
 }
 
 export function selfIsNotInTheSidebar(app: App) {
 	const workspace = app.workspace;
-	const self = workspace.getLeavesOfType(VIEW_TYPE).first();
+	const self = workspace.getLeavesOfType(VERTICAL_TABS_VIEW).first();
 	if (!self) return false;
 	const root = self.getRoot();
 	return root !== workspace.leftSplit && root !== workspace.rightSplit;
@@ -141,7 +141,7 @@ export function selfIsNotInTheSidebar(app: App) {
 
 export async function moveSelfToDefaultLocation(app: App) {
 	const workspace = app.workspace;
-	const leaves = workspace.getLeavesOfType(VIEW_TYPE);
+	const leaves = workspace.getLeavesOfType(VERTICAL_TABS_VIEW);
 	if (leaves.length === 0) return;
 	const self = leaves[0];
 	const leftSidebar = workspace.leftSplit;

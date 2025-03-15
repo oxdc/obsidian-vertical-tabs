@@ -1,5 +1,5 @@
 import { App, setIcon, SuggestModal, WorkspaceLeaf } from "obsidian";
-import { DeduplicatedTitle } from "./services/DeduplicateTitle";
+import { DeduplicatedTitle } from "../services/DeduplicateTitle";
 
 interface HistoryItem {
 	title: string;

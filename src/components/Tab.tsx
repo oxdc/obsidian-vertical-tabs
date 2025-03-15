@@ -24,7 +24,7 @@ import {
 import { useTouchSensor } from "src/services/TouchSeneor";
 import { zoomIn, zoomOut, resetZoom } from "src/services/TabZoom";
 import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
-import { HistoryBrowserModal } from "src/HistoryBrowserModal";
+import { HistoryBrowserModal } from "src/views/HistoryBrowserModal";
 import { getOpenFileOfLeaf } from "src/services/GetTabs";
 import { GroupViewType, setGroupViewType } from "src/models/VTGroupView";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
