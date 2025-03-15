@@ -92,7 +92,6 @@ interface ViewState {
 	viewCueOffset: number;
 	viewCueNativeCallbacks: ViewCueNativeCallbackMap;
 	viewCueFirstTabs: ViewCueFirstTabs;
-	clear: () => void;
 	setGroupTitle: (id: Identifier, name: string) => void;
 	toggleCollapsedGroup: (id: Identifier, isCollapsed: boolean) => void;
 	toggleHiddenGroup: (id: Identifier, isHidden: boolean) => void;
@@ -273,7 +272,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	topLeftContainer: null,
 	topRightContainer: null,
 	topRightMainContainer: null,
-	clear: () => set({ groupTitles: createNewGroupTitles() }),
 	setGroupTitle: (id: Identifier, name: string) =>
 		set((state) => {
 			state.groupTitles.set(id, name);

@@ -38,7 +38,6 @@ interface TabCacheState {
 }
 
 interface TabCacheActions {
-	clear: () => void;
 	refresh: (app: App) => void;
 	swapGroup: (source: Identifier, target: Identifier) => void;
 	moveGroupToEnd: (groupID: Identifier) => void;
@@ -88,12 +87,6 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 	leaveIDs: [],
 	sortStrategy: loadSortStrategy(),
 	actions: {
-		clear: () =>
-			set({
-				content: createNewTabCache(),
-				groupIDs: [],
-				leaveIDs: [],
-			}),
 		refresh: (app) => {
 			set((state) => {
 				const content = getTabs(app);
