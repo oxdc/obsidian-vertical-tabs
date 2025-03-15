@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { VTGroup, tabCacheStore } from "src/stores/NewTabCacheStore";
+import { ExtendedGroup, tabCacheStore } from "src/stores/NewTabCacheStore";
 import { Tab } from "./Tab";
 import { Group } from "./Group";
 import {
@@ -104,7 +104,7 @@ export const NavigationContent = () => {
 
 	const getGroupIDs = () => [...groupOrder, "slot-new"];
 
-	const getLeaveIDs = (group: VTGroup) => {
+	const getLeaveIDs = (group: ExtendedGroup) => {
 		return [...group.tabs, `slot-${group.instance.id}`];
 	};
 
@@ -134,14 +134,15 @@ export const NavigationContent = () => {
 													const isLast =
 														index ===
 														array.length - 1;
+													const leaf =
+														tabs.get(
+															leafID
+														)?.instance;
+													if (!leaf) return null;
 													return (
 														<Tab
 															key={leafID}
-															leaf={
-																tabs.get(
-																	leafID
-																)!.instance
-															}
+															leaf={leaf}
 															index={index + 1}
 															isLast={isLast}
 															isSingleGroup={

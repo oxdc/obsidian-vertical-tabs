@@ -1,4 +1,12 @@
-import { WorkspaceLeaf, WorkspaceParent, App, WorkspaceSplit } from "obsidian";
+import {
+	WorkspaceLeaf,
+	WorkspaceParent,
+	App,
+	WorkspaceSplit,
+	WorkspaceRoot,
+	WorkspaceSidedock,
+	WorkspaceMobileDrawer,
+} from "obsidian";
 import { GroupType, Identifier } from "src/models/VTWorkspace";
 import { getGroupType } from "src/models/VTWorkspace";
 import { SortStrategy, sortTabs } from "src/services/SortTabs";
@@ -12,7 +20,7 @@ import {
 } from "src/history/Migration";
 import { PersistenceManager } from "src/models/PersistenceManager";
 
-export class VTTab {
+export class ExtendedTab {
 	readonly instance: WorkspaceLeaf;
 
 	constructor(app: App, leaf: WorkspaceLeaf) {
@@ -24,7 +32,7 @@ export class VTTab {
 	}
 }
 
-export class VTGroup {
+export class ExtendedGroup {
 	readonly instance: WorkspaceParent;
 	readonly groupType: GroupType;
 
@@ -38,8 +46,8 @@ export class VTGroup {
 	}
 }
 
-export type TabCache = Map<Identifier, VTTab>;
-export type GroupCache = Map<Identifier, VTGroup>;
+export type TabCache = Map<Identifier, ExtendedTab>;
+export type GroupCache = Map<Identifier, ExtendedGroup>;
 
 export interface TabCacheState {
 	tabs: TabCache;
@@ -74,74 +82,57 @@ function getTabs(
 	existingGroups: GroupCache
 ): { tabs: TabCache; groups: GroupCache } {
 	const { isManagedLeaf } = managedLeafStore.getActions();
+
 	const tabs: TabCache = new Map(existingTabs);
 	const groups: GroupCache = new Map(existingGroups);
-	const workspace = app.workspace;
-	const { leftSplit, rightSplit, rootSplit, floatingSplit } = workspace;
+
 	const activeTabIDs = new Set<Identifier>();
 	const activeGroupIDs = new Set<Identifier>();
 
-	const recordTab = (
-		leaf: WorkspaceLeaf,
-		group: WorkspaceParent,
-		groupType: GroupType
-	) => {
+	const workspace = app.workspace;
+
+	const recordTab = (leaf: WorkspaceLeaf) => {
 		if (isManagedLeaf(app, leaf)) return;
+		const group = leaf.parent;
 
 		const tabId = leaf.id;
+		const groupId = group.id;
+
 		activeTabIDs.add(tabId);
+		activeGroupIDs.add(groupId);
+
 		const existingTab = tabs.get(tabId);
-		if (existingTab) {
-			if (existingTab.instance !== leaf) {
-				tabs.set(tabId, new VTTab(app, leaf));
-			}
-		} else {
-			tabs.set(tabId, new VTTab(app, leaf));
+		if (!existingTab || existingTab.instance !== leaf) {
+			tabs.set(tabId, new ExtendedTab(app, leaf));
 		}
 
-		const groupId =
-			groupType === GroupType.LeftSidebar
-				? "left-sidebar"
-				: groupType === GroupType.RightSidebar
-				? "right-sidebar"
-				: group.id;
-
-		activeGroupIDs.add(groupId);
 		const existingGroup = groups.get(groupId);
-		if (existingGroup) {
-			if (existingGroup.instance !== group) {
-				const newGroup = new VTGroup(app, group);
-				groups.set(groupId, newGroup);
-			}
-		} else {
-			const newGroup = new VTGroup(app, group);
-			groups.set(groupId, newGroup);
+		if (!existingGroup || existingGroup.instance !== group) {
+			groups.set(groupId, new ExtendedGroup(app, group));
 		}
 	};
 
-	workspace.iterateLeaves(leftSplit as WorkspaceSplit, (leaf) =>
-		recordTab(leaf, leaf.parent as WorkspaceParent, GroupType.LeftSidebar)
-	);
-	workspace.iterateLeaves(rightSplit as WorkspaceSplit, (leaf) =>
-		recordTab(leaf, leaf.parent as WorkspaceParent, GroupType.RightSidebar)
-	);
-	workspace.iterateLeaves(rootSplit, (leaf) =>
-		recordTab(leaf, leaf.parent as WorkspaceParent, GroupType.RootSplit)
-	);
-	workspace.iterateLeaves(floatingSplit, (leaf) =>
-		recordTab(leaf, leaf.parent as WorkspaceParent, GroupType.RootSplit)
-	);
+	const processSplit = (
+		split:
+			| WorkspaceSplit
+			| WorkspaceRoot
+			| WorkspaceSidedock
+			| WorkspaceMobileDrawer
+	) => {
+		workspace.iterateLeaves(split as WorkspaceSplit, recordTab);
+	};
 
-	for (const [tabId] of tabs) {
-		if (!activeTabIDs.has(tabId)) {
-			tabs.delete(tabId);
-		}
+	processSplit(workspace.leftSplit as WorkspaceSplit);
+	processSplit(workspace.rightSplit as WorkspaceSplit);
+	processSplit(workspace.rootSplit as WorkspaceRoot);
+	processSplit(workspace.floatingSplit as WorkspaceSplit);
+
+	for (const [id] of tabs) {
+		if (!activeTabIDs.has(id)) tabs.delete(id);
 	}
 
-	for (const [groupId] of groups) {
-		if (!activeGroupIDs.has(groupId)) {
-			groups.delete(groupId);
-		}
+	for (const [id] of groups) {
+		if (!activeGroupIDs.has(id)) groups.delete(id);
 	}
 
 	return { tabs, groups };
