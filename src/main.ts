@@ -118,7 +118,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 	async updateViewStates() {
 		this.toggle("vt-hide-sidebars", this.settings.hideSidebars);
 		this.toggle("vt-show-active-tabs", this.settings.showActiveTabs);
-		this.toggle("vt-exclude-self", this.settings.sidebarExcludeSelf);
 		this.toggle("vt-trim-tab-names", this.settings.trimTabNames);
 		this.toggle("vt-show-more-buttons", this.settings.showMoreButtons);
 		this.toggle("vt-use-tab-editing", this.settings.useTabEditing);

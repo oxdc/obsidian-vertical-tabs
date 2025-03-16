@@ -28,6 +28,7 @@ import { HistoryBrowserModal } from "src/views/HistoryBrowserModal";
 import { getOpenFileOfLeaf } from "src/services/GetTabs";
 import { GroupViewType, setGroupViewType } from "src/models/VTGroupView";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
+import { VerticalTabsView } from "src/views/VerticalTabsView";
 interface TabProps {
 	leaf: WorkspaceLeaf;
 	index: number;
@@ -67,6 +68,7 @@ export const Tab = ({
 	const [volatileTitle, setVolatileTitle] = useState<string | null>(null);
 	const isWebViewer = leaf.view.getViewType() === "webviewer";
 	const isEditingTabs = useViewState((state) => state.isEditingTabs);
+	const isSelf = leaf.view instanceof VerticalTabsView;
 
 	useEffect(() => {
 		if (!isWebViewer) setVolatileTitle(null);
@@ -356,7 +358,10 @@ export const Tab = ({
 				.onClick(() => {
 					leaf.history.backHistory = [];
 					leaf.history.forwardHistory = [];
-					setTimeout(() => refresh(app, plugin.persistenceManager), REFRESH_TIMEOUT);
+					setTimeout(
+						() => refresh(app, plugin.persistenceManager),
+						REFRESH_TIMEOUT
+					);
 				});
 		});
 	}
@@ -538,6 +543,12 @@ export const Tab = ({
 		}
 	};
 
+	const showContextMenu = (
+		event: React.MouseEvent<HTMLDivElement, MouseEvent>
+	) => {
+		if (!isSelf) menu.showAtMouseEvent(event.nativeEvent);
+	};
+
 	return (
 		<NavigationTreeItem
 			ref={ref}
@@ -548,11 +559,11 @@ export const Tab = ({
 			isEphemeralTab={isEphemeral && !isPinned}
 			isPinned={isPinned}
 			isHighlighted={isActiveTab}
-			toolbar={toolbar}
+			toolbar={!isSelf && toolbar}
 			onClick={activeOrCloseTab}
 			onAuxClick={midClickCloseTab}
 			onDoubleClick={makeLeafNonEphemeralAndExitMissionControl}
-			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
+			onContextMenu={showContextMenu}
 			onMouseOver={previewTab}
 			dataType={leaf.getViewState().type}
 			dataId={leaf.id}
