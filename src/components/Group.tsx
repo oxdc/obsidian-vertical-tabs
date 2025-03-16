@@ -22,7 +22,7 @@ import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 
 interface GroupProps {
 	type: GroupType;
-	group: WorkspaceParent | null;
+	group: WorkspaceParent;
 	children?: (
 		isSingleGroup: boolean,
 		viewType: GroupViewType
@@ -42,8 +42,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		type === GroupType.LeftSidebar || type === GroupType.RightSidebar;
 	const { hasOnlyOneGroup } = tabCacheStore.getActions();
 	const hideSidebars = useSettings((state) => state.hideSidebars);
-	const isSingleGroup =
-		hasOnlyOneGroup() && hideSidebars && !isSidebar && !!group;
+	const isSingleGroup = hasOnlyOneGroup() && hideSidebars && !isSidebar;
 	const { toggleCollapsedGroup } = useViewState();
 	const isCollapsed = useViewState((state) => {
 		if (group === null) return false;
@@ -53,29 +52,21 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	});
 	const { groupTitles, setGroupTitle, toggleHiddenGroup } = useViewState();
 	const isHidden = useViewState((state) =>
-		group ? state.hiddenGroups.includes(group.id) : false
+		state.hiddenGroups.includes(group.id)
 	);
 	const [isEditing, setIsEditing] = useState(false);
-	const toggleCollapsed = () => {
-		if (group) {
-			const modifiedID = isSidebar ? type : group.id;
-			toggleCollapsedGroup(modifiedID, !isCollapsed);
-		}
-	};
+	const toggleCollapsed = () => toggleCollapsedGroup(group.id, !isCollapsed);
 	const toggleHidden = () => {
 		if (isSidebar) return;
-		if (group) toggleHiddenGroup(group.id, !isHidden);
+		toggleHiddenGroup(group.id, !isHidden);
 		workspace.trigger(EVENTS.UPDATE_TOGGLE);
 	};
-	useEffect(() => {
-		if (!group) return;
-		group.containerEl.toggleClass("is-hidden", isHidden);
-	}, [isHidden]);
+	useEffect(
+		() => group.containerEl.toggleClass("is-hidden", isHidden),
+		[isHidden]
+	);
 
-	const title =
-		isSidebar || group === null
-			? titleMap[type]
-			: groupTitles.get(group.id);
+	const title = isSidebar ? titleMap[type] : groupTitles.get(group.id);
 	const [ephemeralTitle, setEphemeralTitle] = useState(title);
 	const getTitle = () => {
 		let title = ephemeralTitle.trim();
@@ -83,14 +74,11 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		return title;
 	};
 	const handleTitleChange = () => {
-		if (group && isEditing) {
-			setGroupTitle(group.id, getTitle());
-		}
+		if (isEditing) setGroupTitle(group.id, getTitle());
 		setIsEditing(!isEditing);
 	};
 	useEffect(() => {
 		setTimeout(async () => {
-			if (!group) return;
 			const titleFromBookmark = await loadNameFromBookmark(app, group);
 			if (titleFromBookmark && getTitle() === DEFAULT_GROUP_TITLE) {
 				setEphemeralTitle(titleFromBookmark);
@@ -113,7 +101,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	);
 
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
-	const isActiveGroup = group?.id === lastActiveLeaf?.parent?.id;
+	const isActiveGroup = group.id === lastActiveLeaf?.parent?.id;
 
 	const props = {
 		icon: "right-triangle",
@@ -198,40 +186,33 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	menu.addItem((item) => {
 		item.setSection("control")
 			.setTitle("Bookmark all")
-			.onClick(() => {
-				if (group) createBookmarkForGroup(app, group, getTitle());
-			});
+			.onClick(() => createBookmarkForGroup(app, group, getTitle()));
 	});
 	menu.addItem((item) => {
 		item.setSection("control")
 			.setTitle("Bookmark and close all")
 			.onClick(async () => {
-				if (group) {
-					await createBookmarkForGroup(app, group, getTitle());
-					group.detach();
-				}
+				await createBookmarkForGroup(app, group, getTitle());
+				group.detach();
 			});
 	});
 	menu.addItem((item) => {
 		item.setSection("control")
 			.setTitle("Close all")
-			.onClick(() => group?.detach());
+			.onClick(() => group.detach());
 	});
 
 	const { getLinkedFolder, removeLinkedGroup } = useViewState();
 	const [linkedFolder, setLinkedFolder] = useState<LinkedFolder | null>(null);
 	useEffect(() => {
-		if (!group) return;
 		const linkedFolder = getLinkedFolder(group.id);
 		setLinkedFolder(linkedFolder);
 	}, [group]);
 
 	const unlinkGroup = () => {
-		if (group) {
-			removeLinkedGroup(group);
-			setLinkedFolder(null);
-			app.workspace.trigger(EVENTS.DEDUPLICATE_TABS);
-		}
+		removeLinkedGroup(group);
+		setLinkedFolder(null);
+		app.workspace.trigger(EVENTS.DEDUPLICATE_TABS);
 	};
 
 	const loadMore = async () => {
@@ -244,18 +225,14 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		!!linkedFolder && linkedFolder.files.length > linkedFolder.offset;
 
 	useEffect(() => {
-		if (
-			group &&
-			group.isLinkedGroup &&
-			getLinkedFolder(group.id) === null
-		) {
+		if (group.isLinkedGroup && getLinkedFolder(group.id) === null) {
 			unlinkGroup();
 		}
 	}, [group]);
 
 	return (
 		<NavigationTreeItem
-			id={isSidebar ? null : group?.id ?? null}
+			id={group.id}
 			isTab={false}
 			isLinkedGroup={!!linkedFolder}
 			title={isEditing ? titleEditor : title}
