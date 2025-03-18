@@ -45,7 +45,6 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	const isSingleGroup = hasOnlyOneGroup() && hideSidebars && !isSidebar;
 	const { toggleCollapsedGroup } = useViewState();
 	const isCollapsed = useViewState((state) => {
-		if (group === null) return false;
 		const { collapsedGroups } = state;
 		const collapsed = collapsedGroups.includes(group.id);
 		return collapsed || (isSidebar && collapsedGroups.includes(type));
