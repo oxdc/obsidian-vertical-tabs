@@ -14,7 +14,8 @@ interface NavigationHeaderProps {
 export const NavigationHeader = (props: NavigationHeaderProps) => {
 	const plugin = usePlugin();
 	const app = plugin.app;
-	const { hasOnlyOneGroup } = tabCacheStore.getActions();
+	const { hasOnlyOneGroup, setAllGroupsCollapsed } =
+		tabCacheStore.getActions();
 	const { setSettings } = useSettings();
 	const showActiveTabs = useSettings.use.showActiveTabs();
 	const hideSidebars = useSettings.use.hideSidebars();
@@ -23,12 +24,25 @@ export const NavigationHeader = (props: NavigationHeaderProps) => {
 	const useTabEditing = useSettings.use.useTabEditing();
 	const sortStrategy = tabCacheStore((state) => state.sortStrategy);
 	const { setSortStrategy } = tabCacheStore.getActions();
-	const { lockFocus, setAllCollapsed, setAllExpanded, scorllToActiveTab } =
-		useViewState();
-	const globalCollapseState = useViewState(
-		(state) => state.globalCollapseState
-	);
-	const { uncollapseActiveGroup, setIsEditingTabs } = useViewState();
+
+	// Get collapse state from tabCacheStore
+	const groups = tabCacheStore((state) => {
+		const allGroups = Array.from(state.groups.values());
+		return {
+			allCollapsed:
+				allGroups.length > 0 &&
+				allGroups.every((g) => g.getState().collapsed),
+			_v: state.stateVersion,
+		};
+	});
+	const globalCollapseState = groups.allCollapsed;
+
+	const {
+		uncollapseActiveGroup,
+		setIsEditingTabs,
+		scorllToActiveTab,
+		lockFocus,
+	} = useViewState();
 	const isSingleGroup = hasOnlyOneGroup() && hideSidebars;
 	const isEditingTabs = useViewState((state) => state.isEditingTabs);
 
@@ -147,11 +161,7 @@ export const NavigationHeader = (props: NavigationHeaderProps) => {
 						globalCollapseState ? "Expand all" : "Collapse all"
 					}
 					disabled={isSingleGroup}
-					onClick={() =>
-						globalCollapseState
-							? setAllExpanded()
-							: setAllCollapsed()
-					}
+					onClick={() => setAllGroupsCollapsed(!globalCollapseState)}
 					isNavAction={true}
 				/>
 				{Platform.isMobile && useTabEditing && (

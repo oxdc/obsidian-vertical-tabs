@@ -20,6 +20,13 @@ import {
 } from "src/history/Migration";
 import { PersistenceManager } from "src/models/PersistenceManager";
 
+export interface GroupState {
+	collapsed: boolean;
+	title: string;
+	color: string | null;
+	icon: string | null;
+}
+
 export class ExtendedTab {
 	readonly instance: WorkspaceLeaf;
 
@@ -35,14 +42,34 @@ export class ExtendedTab {
 export class ExtendedGroup {
 	readonly instance: WorkspaceParent;
 	readonly groupType: GroupType;
+	private _state: GroupState;
 
-	constructor(app: App, group: WorkspaceParent) {
+	constructor(app: App, group: WorkspaceParent, savedState?: GroupState) {
 		this.instance = group;
 		this.groupType = getGroupType(app, group);
+		this._state = {
+			collapsed: false,
+			title: "Group",
+			color: null,
+			icon: null,
+			...savedState,
+		};
+	}
+
+	getState(): GroupState {
+		return { ...this._state };
+	}
+
+	setState(newState: Partial<GroupState>) {
+		this._state = { ...this._state, ...newState };
 	}
 
 	get tabs(): Identifier[] {
 		return this.instance.children.map((child) => child.id);
+	}
+
+	toJSON(): GroupState {
+		return { ...this._state };
 	}
 }
 
@@ -54,6 +81,7 @@ export interface TabCacheState {
 	groups: GroupCache;
 	groupOrder: Identifier[];
 	sortStrategy: SortStrategy | null;
+	stateVersion: number;
 }
 
 export interface TabCacheActions {
@@ -70,6 +98,12 @@ export interface TabCacheActions {
 	setSortStrategy: (strategy: SortStrategy | null) => void;
 	sort: () => void;
 	hasOnlyOneGroup: () => boolean;
+	setGroupState: (groupId: Identifier, state: Partial<GroupState>) => void;
+	setAllGroupsCollapsed: (collapsed: boolean) => void;
+	saveGroupStates: (persistenceManager: PersistenceManager) => Promise<void>;
+	loadGroupStates: (
+		persistenceManager: PersistenceManager
+	) => Record<string, GroupState>;
 }
 
 export type TabCacheStore = TabCacheState & {
@@ -79,7 +113,8 @@ export type TabCacheStore = TabCacheState & {
 function getTabs(
 	app: App,
 	existingTabs: TabCache,
-	existingGroups: GroupCache
+	existingGroups: GroupCache,
+	savedStates: Record<Identifier, GroupState>
 ): { tabs: TabCache; groups: GroupCache } {
 	const { isManagedLeaf } = managedLeafStore.getActions();
 
@@ -108,7 +143,10 @@ function getTabs(
 
 		const existingGroup = groups.get(groupId);
 		if (!existingGroup || existingGroup.instance !== group) {
-			groups.set(groupId, new ExtendedGroup(app, group));
+			groups.set(
+				groupId,
+				new ExtendedGroup(app, group, savedStates[groupId])
+			);
 		}
 	};
 
@@ -143,6 +181,7 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 	groups: new Map(),
 	groupOrder: [],
 	sortStrategy: null,
+	stateVersion: 0,
 	actions: {
 		refresh: (app, persistenceManager) => {
 			const {
@@ -151,7 +190,16 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 				groupOrder: existingGroupOrder,
 				sortStrategy: existingSortStrategy,
 			} = get();
-			const { tabs, groups } = getTabs(app, existingTabs, existingGroups);
+
+			// Use empty object as default if loading fails
+			const savedStates =
+				get().actions.loadGroupStates(persistenceManager);
+			const { tabs, groups } = getTabs(
+				app,
+				existingTabs,
+				existingGroups,
+				savedStates
+			);
 			const groupIDs = Array.from(groups.keys());
 
 			// Preserve existing group order and add new groups at the end
@@ -194,7 +242,13 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 				groups,
 				groupOrder: sortedGroupIDs,
 				sortStrategy,
+				stateVersion: get().stateVersion + 1,
 			});
+
+			// Save states after refresh
+			get()
+				.actions.saveGroupStates(persistenceManager)
+				.catch(console.error);
 		},
 		swapGroup: (source, target, persistenceManager) => {
 			const { groupOrder } = get();
@@ -235,6 +289,47 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 				(group) => group.groupType === GroupType.RootSplit
 			);
 			return rootGroup.length === 1;
+		},
+		setGroupState: (groupId: Identifier, newState: Partial<GroupState>) => {
+			const { groups } = get();
+			const group = groups.get(groupId);
+			if (group) {
+				group.setState(newState);
+				set((state) => ({ stateVersion: state.stateVersion + 1 }));
+			}
+		},
+		setAllGroupsCollapsed: (collapsed: boolean) => {
+			const { groups } = get();
+			for (const group of groups.values()) {
+				group.setState({ collapsed });
+			}
+			set((state) => ({ stateVersion: state.stateVersion + 1 }));
+		},
+		saveGroupStates: async (persistenceManager: PersistenceManager) => {
+			const { groups } = get();
+			const states = new Map<Identifier, GroupState>();
+			for (const [id, group] of groups.entries()) {
+				states.set(id, group.toJSON());
+			}
+			await persistenceManager.instance.set(
+				"groupStates",
+				Object.fromEntries(states)
+			);
+		},
+		loadGroupStates: (
+			persistenceManager: PersistenceManager
+		): Record<string, GroupState> => {
+			try {
+				// Use synchronous local storage or in-memory cache if available
+				const cachedData =
+					persistenceManager.instance.get<Record<string, GroupState>>(
+						"groupStates"
+					);
+				return cachedData ?? {};
+			} catch (error) {
+				console.error("Failed to load group states:", error);
+				return {};
+			}
 		},
 	},
 }));

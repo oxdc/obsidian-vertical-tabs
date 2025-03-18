@@ -40,21 +40,27 @@ export const Group = ({ type, children, group }: GroupProps) => {
 	const workspace = app.workspace;
 	const isSidebar =
 		type === GroupType.LeftSidebar || type === GroupType.RightSidebar;
-	const { hasOnlyOneGroup } = tabCacheStore.getActions();
+	const { hasOnlyOneGroup, setGroupState } = tabCacheStore.getActions();
 	const hideSidebars = useSettings((state) => state.hideSidebars);
 	const isSingleGroup = hasOnlyOneGroup() && hideSidebars && !isSidebar;
-	const { toggleCollapsedGroup } = useViewState();
-	const isCollapsed = useViewState((state) => {
-		const { collapsedGroups } = state;
-		const collapsed = collapsedGroups.includes(group.id);
-		return collapsed || (isSidebar && collapsedGroups.includes(type));
-	});
-	const { groupTitles, setGroupTitle, toggleHiddenGroup } = useViewState();
+
+	// Get group state from tabCacheStore
+	const groupState = tabCacheStore((state) => ({
+		state: state.groups.get(group.id)?.getState(),
+		_v: state.stateVersion,
+	})).state;
+
+	const { toggleHiddenGroup } = useViewState();
+	const isCollapsed = groupState?.collapsed ?? false;
+
+	const toggleCollapsed = () => {
+		setGroupState(group.id, { collapsed: !isCollapsed });
+	};
+
 	const isHidden = useViewState((state) =>
 		state.hiddenGroups.includes(group.id)
 	);
 	const [isEditing, setIsEditing] = useState(false);
-	const toggleCollapsed = () => toggleCollapsedGroup(group.id, !isCollapsed);
 	const toggleHidden = () => {
 		if (isSidebar) return;
 		toggleHiddenGroup(group.id, !isHidden);
@@ -65,26 +71,39 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		[isHidden]
 	);
 
-	const title = isSidebar ? titleMap[type] : groupTitles.get(group.id);
+	const title = isSidebar
+		? titleMap[type]
+		: groupState?.title ?? DEFAULT_GROUP_TITLE;
 	const [ephemeralTitle, setEphemeralTitle] = useState(title);
+
+	useEffect(() => {
+		setEphemeralTitle(title);
+	}, [title]);
+
 	const getTitle = () => {
 		let title = ephemeralTitle.trim();
 		if (title === "") title = DEFAULT_GROUP_TITLE;
 		return title;
 	};
+
 	const handleTitleChange = () => {
-		if (isEditing) setGroupTitle(group.id, getTitle());
+		if (isEditing) {
+			if (!isSidebar) {
+				setGroupState(group.id, { title: getTitle() });
+			}
+		}
 		setIsEditing(!isEditing);
 	};
+
 	useEffect(() => {
 		setTimeout(async () => {
 			const titleFromBookmark = await loadNameFromBookmark(app, group);
 			if (titleFromBookmark && getTitle() === DEFAULT_GROUP_TITLE) {
-				setEphemeralTitle(titleFromBookmark);
-				setGroupTitle(group.id, titleFromBookmark);
+				setGroupState(group.id, { title: titleFromBookmark });
 			}
 		}, REFRESH_TIMEOUT);
-	});
+	}, []);
+
 	const titleEditor = (
 		<input
 			autoFocus
@@ -104,7 +123,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 
 	const props = {
 		icon: "right-triangle",
-		isCollapsed: isCollapsed && !isSingleGroup, // Single group should not be collapsed
+		isCollapsed: isCollapsed && !isSingleGroup,
 		isSidebar,
 		isSingleGroup,
 		isActiveGroup,
