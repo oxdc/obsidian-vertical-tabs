@@ -9,7 +9,7 @@ import {
 } from "obsidian";
 import { GroupType, Identifier } from "src/models/VTWorkspace";
 import { getGroupType } from "src/models/VTWorkspace";
-import { SortStrategy, sortTabs } from "src/services/SortTabs";
+import { SortStrategy, sortStrategies, sortTabs } from "src/services/SortTabs";
 import { useStoreWithActions } from "src/models/StoreWithActions";
 import { managedLeafStore } from "src/stores/ManagedLeafStore";
 import {
@@ -145,42 +145,55 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 	sortStrategy: null,
 	actions: {
 		refresh: (app, persistenceManager) => {
-			set((state) => {
-				const { tabs, groups } = getTabs(app, state.tabs, state.groups);
+			const {
+				tabs: existingTabs,
+				groups: existingGroups,
+				groupOrder: existingGroupOrder,
+				sortStrategy: existingSortStrategy,
+			} = get();
+			const { tabs, groups } = getTabs(app, existingTabs, existingGroups);
+			const groupIDs = Array.from(groups.keys());
 
-				// Update group order
-				const groupIDs = Array.from(groups.keys());
-				const existingGroupIDs = state.groupOrder.filter((id) =>
-					groupIDs.includes(id)
-				);
-				const newGroupIDs = groupIDs.filter(
-					(id) => !existingGroupIDs.includes(id)
-				);
-				const unsortedGroupIDs = [...existingGroupIDs, ...newGroupIDs];
+			// Preserve existing group order and add new groups at the end
+			const existingGroupIDs = existingGroupOrder.filter((id) =>
+				groupIDs.includes(id)
+			);
+			const newGroupIDs = groupIDs.filter(
+				(id) => !existingGroupIDs.includes(id)
+			);
+			const unsortedGroupIDs = [...existingGroupIDs, ...newGroupIDs];
 
-				const loadedGroupIDs = getGroupOrder(persistenceManager);
-				const sortedGroupIDs = ([] as Identifier[])
-					.concat(loadedGroupIDs)
-					.filter((id) => unsortedGroupIDs.includes(id))
-					.concat(
-						unsortedGroupIDs.filter(
-							(id) => !loadedGroupIDs.includes(id)
-						)
-					);
+			// Merge with loaded group order from persistence
+			const loadedGroupIDs = getGroupOrder(persistenceManager);
 
-				setGroupOrder(persistenceManager, sortedGroupIDs);
+			// First, take groups from loaded order that still exist
+			const groupsFromLoadedOrder = loadedGroupIDs.filter((id) =>
+				unsortedGroupIDs.includes(id)
+			);
 
-				const sortStrategy =
-					state.sortStrategy ??
-					(getSortStrategy() as unknown as SortStrategy);
+			// Then, add any new groups that weren't in loaded order
+			const newlyAddedGroups = unsortedGroupIDs.filter(
+				(id) => !loadedGroupIDs.includes(id)
+			);
 
-				return {
-					...state,
-					tabs,
-					groups,
-					groupOrder: sortedGroupIDs,
-					sortStrategy,
-				};
+			// Combine them to preserve loaded order and append new groups
+			const sortedGroupIDs: Identifier[] = [
+				...groupsFromLoadedOrder,
+				...newlyAddedGroups,
+			];
+
+			// Update persistence and determine sort strategy
+			setGroupOrder(persistenceManager, sortedGroupIDs);
+			const sortStrategy =
+				existingSortStrategy ||
+				sortStrategies[getSortStrategy()] ||
+				null;
+
+			set({
+				tabs,
+				groups,
+				groupOrder: sortedGroupIDs,
+				sortStrategy,
 			});
 		},
 		swapGroup: (source, target, persistenceManager) => {
@@ -217,11 +230,11 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 			}
 		},
 		hasOnlyOneGroup: () => {
-			const { groupOrder } = get();
-			const rootGroupIDs = groupOrder.filter(
-				(id) => !id.endsWith("-sidebar")
+			const { groups } = get();
+			const rootGroup = Array.from(groups.values()).filter(
+				(group) => group.groupType === GroupType.RootSplit
 			);
-			return rootGroupIDs.length === 1;
+			return rootGroup.length === 1;
 		},
 	},
 }));
