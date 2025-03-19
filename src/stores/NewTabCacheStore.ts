@@ -25,6 +25,7 @@ export interface GroupState {
 	title: string;
 	color: string | null;
 	icon: string | null;
+	hidden: boolean;
 }
 
 export class ExtendedTab {
@@ -52,6 +53,7 @@ export class ExtendedGroup {
 			title: "Group",
 			color: null,
 			icon: null,
+			hidden: false,
 			...savedState,
 		};
 	}
@@ -104,6 +106,7 @@ export interface TabCacheActions {
 	loadGroupStates: (
 		persistenceManager: PersistenceManager
 	) => Record<string, GroupState>;
+	isGroupHidden: (groupId: Identifier) => boolean;
 }
 
 export type TabCacheStore = TabCacheState & {
@@ -295,6 +298,15 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 			const group = groups.get(groupId);
 			if (group) {
 				group.setState(newState);
+
+				// Update UI visibility if hidden state changed
+				if (newState.hidden !== undefined) {
+					group.instance.containerEl.toggleClass(
+						"is-hidden",
+						newState.hidden
+					);
+				}
+
 				set((state) => ({ stateVersion: state.stateVersion + 1 }));
 			}
 		},
@@ -330,6 +342,11 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 				console.error("Failed to load group states:", error);
 				return {};
 			}
+		},
+		isGroupHidden: (groupId: Identifier) => {
+			const { groups } = get();
+			const group = groups.get(groupId);
+			return group ? group.getState().hidden : false;
 		},
 	},
 }));

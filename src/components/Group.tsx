@@ -50,27 +50,20 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		_v: state.stateVersion,
 	})).state;
 
-	const { toggleHiddenGroup } = useViewState();
 	const isCollapsed = groupState?.collapsed ?? false;
+	const isHidden = isSidebar ? false : groupState?.hidden ?? false;
 
 	const toggleCollapsed = () => {
 		setGroupState(group.id, { collapsed: !isCollapsed });
 	};
 
-	const isHidden = useViewState((state) =>
-		state.hiddenGroups.includes(group.id)
-	);
-	const [isEditing, setIsEditing] = useState(false);
 	const toggleHidden = () => {
 		if (isSidebar) return;
-		toggleHiddenGroup(group.id, !isHidden);
+		setGroupState(group.id, { hidden: !isHidden });
 		workspace.trigger(EVENTS.UPDATE_TOGGLE);
 	};
-	useEffect(
-		() => group.containerEl.toggleClass("is-hidden", isHidden),
-		[isHidden]
-	);
 
+	const [isEditing, setIsEditing] = useState(false);
 	const title = isSidebar
 		? titleMap[type]
 		: groupState?.title ?? DEFAULT_GROUP_TITLE;
