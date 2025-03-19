@@ -37,12 +37,6 @@ import {
 import { managedLeafStore } from "src/stores/ManagedLeafStore";
 import { EVENTS } from "src/constants/Events";
 import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
-export const DEFAULT_GROUP_TITLE = "Grouped tabs";
-const factory = () => DEFAULT_GROUP_TITLE;
-
-export type GroupTitles = DefaultRecord<Identifier, string>;
-export const createNewGroupTitles = () =>
-	new DefaultRecord(factory) as GroupTitles;
 
 export type PinningEvents = DefaultRecord<Identifier, EventRef | null>;
 export type PinningEventCallback = (pinned: boolean) => void;
@@ -77,24 +71,23 @@ export const createNewViewCueFirstTabs = () =>
 	new DefaultRecord(() => null) as ViewCueFirstTabs;
 
 interface ViewState {
-	groupTitles: GroupTitles;
-	hiddenGroups: Array<Identifier>;
-	collapsedGroups: Array<Identifier>;
 	nonEphemeralTabs: Array<Identifier>;
 	latestActiveLeaf: WorkspaceLeaf | null;
 	latestActiveTab: HTMLElement | null;
 	pinningEvents: PinningEvents;
 	ephermalToggleEvents: EphermalToggleEvents;
 	groupViewToggleEvents: GroupViewToggleEvents;
-	globalCollapseState: boolean;
 	isEditingTabs: boolean;
 	hasCtrlKeyPressed: boolean;
 	viewCueOffset: number;
 	viewCueNativeCallbacks: ViewCueNativeCallbackMap;
 	viewCueFirstTabs: ViewCueFirstTabs;
-	setGroupTitle: (id: Identifier, name: string) => void;
-	toggleCollapsedGroup: (id: Identifier, isCollapsed: boolean) => void;
-	toggleHiddenGroup: (id: Identifier, isHidden: boolean) => void;
+	linkedGroups: LinkedGroups;
+	leftButtonClone: HTMLElement | null;
+	rightButtonClone: HTMLElement | null;
+	topLeftContainer: Element | null;
+	topRightContainer: Element | null;
+	topRightMainContainer: Element | null;
 	rememberNonephemeralTab: (app: App, id: Identifier) => void;
 	forgetNonephemeralTabs: () => void;
 	setLatestActiveLeaf: (
@@ -103,15 +96,9 @@ interface ViewState {
 	) => void;
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
 	lockFocusOnLeaf: (app: App, leaf: WorkspaceLeaf) => void;
-	linkedGroups: LinkedGroups;
 	resetFocusFlags: () => void;
 	hookLatestActiveTab: (tab: HTMLElement | null) => void;
 	scorllToActiveTab: () => void;
-	leftButtonClone: HTMLElement | null;
-	rightButtonClone: HTMLElement | null;
-	topLeftContainer: Element | null;
-	topRightContainer: Element | null;
-	topRightMainContainer: Element | null;
 	cloneToggleButtons: (app: App) => void;
 	removeCloneButtons: () => void;
 	insertCloneButtons: () => void;
@@ -133,8 +120,6 @@ interface ViewState {
 		callback: GroupViewToggleEventCallback
 	) => void;
 	unbindGroupViewToggleEvent: (group: WorkspaceParent | null) => void;
-	setAllCollapsed: () => void;
-	setAllExpanded: () => void;
 	uncollapseActiveGroup: (app: App) => void;
 	executeSmartNavigation: (
 		app: App,
@@ -176,38 +161,6 @@ interface ViewState {
 	setGroupViewTypeForCurrentGroup: (viewType: GroupViewType) => void;
 	exitMissionControlForCurrentGroup: () => void;
 }
-
-const saveViewState = (titles: GroupTitles) => {
-	const data = Array.from(titles.entries());
-	localStorage.setItem("view-state", JSON.stringify(data));
-};
-
-const loadViewState = (): GroupTitles | null => {
-	const data = localStorage.getItem("view-state");
-	if (!data) return null;
-	const entries = JSON.parse(data) as [Identifier, string][];
-	return new DefaultRecord(factory, entries);
-};
-
-const saveHiddenGroups = (hiddenGroups: Array<Identifier>) => {
-	localStorage.setItem("hidden-groups", JSON.stringify(hiddenGroups));
-};
-
-const loadHiddenGroups = (): Array<Identifier> => {
-	const data = localStorage.getItem("hidden-groups");
-	if (!data) return [];
-	return JSON.parse(data);
-};
-
-const saveCollapsedGroups = (collapsedGroups: Array<Identifier>) => {
-	localStorage.setItem("collapsed-groups", JSON.stringify(collapsedGroups));
-};
-
-const loadCollapsedGroups = (): Array<Identifier> => {
-	const data = localStorage.getItem("collapsed-groups");
-	if (!data) return [];
-	return JSON.parse(data);
-};
 
 const saveNonEphemeralTabs = (tabs: Array<Identifier>) => {
 	localStorage.setItem("nonephemeral-tabs", JSON.stringify(Array.from(tabs)));
@@ -251,16 +204,12 @@ const getCornerContainers = (tabContainers: Array<Element>) => {
 };
 
 export const useViewState = create<ViewState>()((set, get) => ({
-	groupTitles: loadViewState() ?? createNewGroupTitles(),
-	hiddenGroups: loadHiddenGroups(),
-	collapsedGroups: loadCollapsedGroups(),
 	nonEphemeralTabs: loadNonEphemeralTabs(),
 	latestActiveLeaf: null,
 	latestActiveTab: null,
 	pinningEvents: createNewPinningEvents(),
 	ephermalToggleEvents: createNewEphermalToggleEvents(),
 	groupViewToggleEvents: createNewGroupViewToggleEvents(),
-	globalCollapseState: false,
 	isEditingTabs: false,
 	hasCtrlKeyPressed: false,
 	viewCueOffset: 0,
@@ -272,37 +221,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	topLeftContainer: null,
 	topRightContainer: null,
 	topRightMainContainer: null,
-	setGroupTitle: (id: Identifier, name: string) =>
-		set((state) => {
-			state.groupTitles.set(id, name);
-			saveViewState(state.groupTitles);
-			return state;
-		}),
-	toggleHiddenGroup: (id: Identifier, isHidden: boolean) => {
-		if (isHidden) {
-			set((state) => ({ hiddenGroups: [...state.hiddenGroups, id] }));
-		} else {
-			set((state) => ({
-				hiddenGroups: state.hiddenGroups.filter((gid) => gid !== id),
-			}));
-		}
-		saveHiddenGroups(get().hiddenGroups);
-	},
-	toggleCollapsedGroup: (id: Identifier, isCollapsed: boolean) => {
-		if (isCollapsed) {
-			set((state) => ({
-				collapsedGroups: [...state.collapsedGroups, id],
-			}));
-		} else {
-			set((state) => ({
-				collapsedGroups: state.collapsedGroups.filter(
-					(gid) => gid !== id
-				),
-				globalCollapseState: false,
-			}));
-		}
-		saveCollapsedGroups(get().collapsedGroups);
-	},
 	rememberNonephemeralTab(app: App, id: Identifier) {
 		const { nonEphemeralTabs } = get();
 		if (nonEphemeralTabs.contains(id)) return;
@@ -580,15 +498,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			set({ groupViewToggleEvents });
 		}
 	},
-	setAllCollapsed() {
-		const ids = tabCacheStore.getState().groupOrder;
-		set({ globalCollapseState: true, collapsedGroups: ids });
-		saveCollapsedGroups(ids);
-	},
-	setAllExpanded() {
-		set({ globalCollapseState: false, collapsedGroups: [] });
-		saveCollapsedGroups([]);
-	},
 	uncollapseActiveGroup(app: App) {
 		const { latestActiveLeaf } = get();
 		if (!latestActiveLeaf) return;
@@ -599,8 +508,10 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			type === GroupType.LeftSidebar || type === GroupType.RightSidebar;
 		if (isSidebar) return;
 		if (!group.id) return;
-		get().toggleCollapsedGroup(group.id, false);
-		set({ globalCollapseState: false });
+		// Use tabCacheStore instead of internal state management
+		tabCacheStore
+			.getActions()
+			.setGroupState(group.id, { collapsed: false });
 	},
 	executeSmartNavigation(
 		app: App,

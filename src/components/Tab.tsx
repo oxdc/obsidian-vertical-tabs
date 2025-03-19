@@ -50,13 +50,12 @@ export const Tab = ({
 	const {
 		bindPinningEvent,
 		bindEphemeralToggleEvent,
-		setGroupTitle,
 		lockFocusOnLeaf,
-		toggleHiddenGroup,
 		hookLatestActiveTab,
 		mapViewCueIndex,
 		registerViewCueTab,
 	} = useViewState();
+	const { setGroupState } = tabCacheStore.getActions();
 	const [isPinned, setIsPinned] = useState(
 		leaf.getViewState().pinned ?? false
 	);
@@ -115,7 +114,7 @@ export const Tab = ({
 		const focus = viewType !== GroupViewType.MissionControlView;
 		workspace.setActiveLeaf(leaf, { focus });
 		workspace.onLayoutChange();
-		toggleHiddenGroup(leaf.parent.id, false);
+		setGroupState(leaf.parent.id, { hidden: false });
 		lockFocusOnLeaf(app, leaf);
 		leaf.containerEl?.scrollIntoView({
 			behavior: "smooth",
@@ -346,7 +345,7 @@ export const Tab = ({
 						index += 1;
 					}
 					const title = DeduplicatedTitle(app, leaf);
-					setGroupTitle(group.id, `History: ${title}`);
+					setGroupState(group.id, { title: `History: ${title}` });
 					workspace.setActiveLeaf(duplicatedLeaf, { focus: true });
 					lockFocusOnLeaf(app, duplicatedLeaf);
 				});

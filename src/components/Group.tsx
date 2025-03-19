@@ -1,7 +1,7 @@
 import { NavigationTreeItem } from "./NavigationTreeItem";
 import { Fragment, useEffect, useState } from "react";
 import { IconButton } from "./IconButton";
-import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
+import { useViewState } from "src/models/ViewState";
 import { useApp, useSettings } from "src/models/PluginContext";
 import { GroupType } from "src/models/VTWorkspace";
 import { Menu, WorkspaceParent } from "obsidian";
@@ -28,6 +28,8 @@ interface GroupProps {
 		viewType: GroupViewType
 	) => React.ReactNode;
 }
+
+const DEFAULT_GROUP_TITLE = "Grouped tabs";
 
 const titleMap: Record<GroupType, string> = {
 	[GroupType.LeftSidebar]: "Left sidebar",
