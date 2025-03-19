@@ -108,6 +108,35 @@ export const NavigationContent = () => {
 		return [...group.tabs, `slot-${group.instance.id}`];
 	};
 
+	const buildGroup = (groupID: string) => {
+		const group = groups.get(groupID);
+		if (!group) return null;
+		return (
+			<Group key={groupID} type={group.groupType} group={group.instance}>
+				{(isSingleGroup, viewType) => (
+					<SortableContext items={getLeaveIDs(group)}>
+						{group.tabs.map((leafID, index, array) => {
+							const isLast = index === array.length - 1;
+							const leaf = tabs.get(leafID)?.instance;
+							if (!leaf) return null;
+							return (
+								<Tab
+									key={leafID}
+									leaf={leaf}
+									index={index + 1}
+									isLast={isLast}
+									isSingleGroup={isSingleGroup}
+									viewType={viewType}
+								/>
+							);
+						})}
+						<TabSlot groupID={groupID} />
+					</SortableContext>
+				)}
+			</Group>
+		);
+	};
+
 	return (
 		<div className={toClassName(rootContainerClasses)}>
 			<div className={toClassName(containerClasses)}>
@@ -118,47 +147,7 @@ export const NavigationContent = () => {
 					onDragEnd={handleDragEnd}
 				>
 					<SortableContext items={getGroupIDs()}>
-						{Array.from(groups.entries()).map(
-							([groupID, group]) => (
-								<Group
-									key={groupID}
-									type={group.groupType}
-									group={group.instance}
-								>
-									{(isSingleGroup, viewType) => (
-										<SortableContext
-											items={getLeaveIDs(group)}
-										>
-											{group.tabs.map(
-												(leafID, index, array) => {
-													const isLast =
-														index ===
-														array.length - 1;
-													const leaf =
-														tabs.get(
-															leafID
-														)?.instance;
-													if (!leaf) return null;
-													return (
-														<Tab
-															key={leafID}
-															leaf={leaf}
-															index={index + 1}
-															isLast={isLast}
-															isSingleGroup={
-																isSingleGroup
-															}
-															viewType={viewType}
-														/>
-													);
-												}
-											)}
-											<TabSlot groupID={groupID} />
-										</SortableContext>
-									)}
-								</Group>
-							)
-						)}
+						{Array.from(groupOrder).map(buildGroup)}
 						<GroupSlot />
 					</SortableContext>
 					{createPortal(<DragOverlay />, document.body)}
