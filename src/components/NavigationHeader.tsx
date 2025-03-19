@@ -1,7 +1,7 @@
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { IconButton } from "./IconButton";
 import { Menu, Platform } from "obsidian";
-import { tabCacheStore } from "src/stores/NewTabCacheStore";
+import { tabCacheStore } from "src/stores/TabCacheStore";
 import { sortStrategies } from "src/services/SortTabs";
 import { useViewState } from "src/models/ViewState";
 import { EVENTS } from "src/constants/Events";

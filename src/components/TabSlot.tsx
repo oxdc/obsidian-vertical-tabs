@@ -1,7 +1,7 @@
 import { Identifier } from "src/models/VTWorkspace";
 import { NavigationTreeItem } from "./NavigationTreeItem";
 import { useApp } from "src/models/PluginContext";
-import { tabCacheStore } from "src/stores/NewTabCacheStore";
+import { tabCacheStore } from "src/stores/TabCacheStore";
 import { moveTabToEnd } from "src/services/MoveTab";
 
 interface TabSlotProps {

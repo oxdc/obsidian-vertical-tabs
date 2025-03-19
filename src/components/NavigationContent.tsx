@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ExtendedGroup, tabCacheStore } from "src/stores/NewTabCacheStore";
+import { ExtendedGroup, tabCacheStore } from "src/stores/TabCacheStore";
 import { Tab } from "./Tab";
 import { Group } from "./Group";
 import {

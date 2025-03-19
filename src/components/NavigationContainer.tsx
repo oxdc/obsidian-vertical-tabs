@@ -1,6 +1,6 @@
 import { NavigationContent } from "./NavigationContent";
 import { NavigationHeader } from "./NavigationHeader";
-import { tabCacheStore } from "src/stores/NewTabCacheStore";
+import { tabCacheStore } from "src/stores/TabCacheStore";
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect, useRef } from "react";
 import { useViewState, VIEW_CUE_DELAY } from "src/models/ViewState";

@@ -10,7 +10,7 @@ import {
 	closeTabsToBottomInGroup,
 	closeTabsToTopInGroup,
 } from "src/services/CloseTabs";
-import { tabCacheStore } from "src/stores/NewTabCacheStore";
+import { tabCacheStore } from "src/stores/TabCacheStore";
 import { useViewState, VIEW_CUE_PREV } from "src/models/ViewState";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 import {

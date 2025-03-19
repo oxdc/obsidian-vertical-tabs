@@ -25,7 +25,7 @@ import {
 	insertRightSidebarToggle,
 } from "src/services/SidebarToggles";
 import { getGroupType, GroupType, Identifier } from "./VTWorkspace";
-import { tabCacheStore } from "../stores/NewTabCacheStore";
+import { tabCacheStore } from "../stores/TabCacheStore";
 import { pinDrawer, unpinDrawer } from "src/services/MobileDrawer";
 import { CommandCheckCallback, getCommandByName } from "src/services/Commands";
 import { LinkedFolder } from "src/services/OpenFolder";
