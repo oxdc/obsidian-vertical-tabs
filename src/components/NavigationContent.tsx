@@ -33,7 +33,7 @@ export const NavigationContent = () => {
 	const groupOrder = tabCacheStore((state) => state.groupOrder);
 	const tabs = tabCacheStore((state) => state.tabs);
 	const groups = tabCacheStore((state) => state.groups);
-	const { swapGroup, moveGroupToEnd } = tabCacheStore.getActions();
+	const { moveGroup, moveGroupToEnd } = tabCacheStore.getActions();
 	const app = useApp();
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -82,12 +82,12 @@ export const NavigationContent = () => {
 			if (isOverTab) {
 				const leaf = app.workspace.getLeafById(overID);
 				if (!leaf) return;
-				swapGroup(activeID, leaf.parent.id, persistenceManager);
+				moveGroup(activeID, leaf.parent.id, persistenceManager);
 			} else {
 				if (overID === "slot-new") {
 					moveGroupToEnd(activeID, persistenceManager);
 				} else {
-					swapGroup(activeID, overID, persistenceManager);
+					moveGroup(activeID, overID, persistenceManager);
 				}
 			}
 		}

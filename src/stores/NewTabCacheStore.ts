@@ -90,7 +90,7 @@ export interface TabCacheState {
 
 export interface TabCacheActions {
 	refresh: (app: App, persistenceManager: PersistenceManager) => void;
-	swapGroup: (
+	moveGroup: (
 		source: Identifier,
 		target: Identifier,
 		persistenceManager: PersistenceManager
@@ -255,13 +255,15 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 				.actions.saveGroupStates(persistenceManager)
 				.catch(console.error);
 		},
-		swapGroup: (source, target, persistenceManager) => {
+		moveGroup: (source, target, persistenceManager) => {
 			const { groupOrder } = get();
-			const sourceIndex = groupOrder.indexOf(source);
-			const targetIndex = groupOrder.indexOf(target);
 			const newGroupOrder = [...groupOrder];
-			newGroupOrder[sourceIndex] = target;
-			newGroupOrder[targetIndex] = source;
+			const sourceIndex = newGroupOrder.indexOf(source);
+			const targetIndex = newGroupOrder.indexOf(target);
+			const insertIndex =
+				sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
+			newGroupOrder.splice(sourceIndex, 1);
+			newGroupOrder.splice(insertIndex, 0, source);
 			set({ groupOrder: newGroupOrder });
 			setGroupOrder(persistenceManager, newGroupOrder);
 		},
