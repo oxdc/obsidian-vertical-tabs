@@ -10,7 +10,7 @@ import {
 	createBookmarkForGroup,
 	loadNameFromBookmark,
 } from "src/models/VTBookmark";
-import { tabCacheStore } from "src/stores/NewTabCacheStore";
+import { DEFAULT_GROUP_TITLE, tabCacheStore } from "src/stores/NewTabCacheStore";
 import { LinkedFolder } from "src/services/OpenFolder";
 import { LinkedGroupButton } from "./LinkedGroupButton";
 import {
@@ -28,8 +28,6 @@ interface GroupProps {
 		viewType: GroupViewType
 	) => React.ReactNode;
 }
-
-const DEFAULT_GROUP_TITLE = "Grouped tabs";
 
 const titleMap: Record<GroupType, string> = {
 	[GroupType.LeftSidebar]: "Left sidebar",

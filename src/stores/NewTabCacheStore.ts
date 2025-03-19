@@ -20,6 +20,8 @@ import {
 } from "src/history/Migration";
 import { PersistenceManager } from "src/models/PersistenceManager";
 
+export const DEFAULT_GROUP_TITLE = "Grouped tabs";
+
 export interface GroupState {
 	collapsed: boolean;
 	title: string;
@@ -50,7 +52,7 @@ export class ExtendedGroup {
 		this.groupType = getGroupType(app, group);
 		this._state = {
 			collapsed: false,
-			title: "Group",
+			title: DEFAULT_GROUP_TITLE,
 			color: null,
 			icon: null,
 			hidden: false,
