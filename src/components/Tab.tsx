@@ -29,6 +29,7 @@ import { getOpenFileOfLeaf } from "src/services/GetTabs";
 import { GroupViewType, setGroupViewType } from "src/models/VTGroupView";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 import { VerticalTabsView } from "src/views/VerticalTabsView";
+
 interface TabProps {
 	leaf: WorkspaceLeaf;
 	index: number;
@@ -47,6 +48,10 @@ export const Tab = ({
 	const plugin = usePlugin();
 	const app = plugin.app;
 	const workspace = app.workspace;
+	const { setGroupState } = tabCacheStore.getActions();
+	const enableTabZoom = useSettings((state) => state.enableTabZoom);
+	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
+	const { refresh, sort } = tabCacheStore.getActions();
 	const {
 		bindPinningEvent,
 		bindEphemeralToggleEvent,
@@ -55,35 +60,83 @@ export const Tab = ({
 		mapViewCueIndex,
 		registerViewCueTab,
 	} = useViewState();
-	const { setGroupState } = tabCacheStore.getActions();
+	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
+	const isEditingTabs = useViewState((state) => state.isEditingTabs);
+
+	// Component refs
+	const ref = useRef<HTMLDivElement>(null);
+
+	// Basic state
+	const isSelf = leaf.view instanceof VerticalTabsView;
+	const isWebViewer = leaf.view.getViewType() === "webviewer";
+	const isActiveTab = lastActiveLeaf?.id === leaf.id;
+	const viewCueIndex = mapViewCueIndex(index, isLast);
+
+	// Tab state
 	const [isPinned, setIsPinned] = useState(
 		leaf.getViewState().pinned ?? false
 	);
 	const [isEphemeral, setIsEphemeral] = useState(!!leaf.isEphemeral);
-	const { refresh, sort } = tabCacheStore.getActions();
-	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
-	const enableTabZoom = useSettings((state) => state.enableTabZoom);
-	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
 	const [volatileTitle, setVolatileTitle] = useState<string | null>(null);
-	const isWebViewer = leaf.view.getViewType() === "webviewer";
-	const isEditingTabs = useViewState((state) => state.isEditingTabs);
-	const isSelf = leaf.view instanceof VerticalTabsView;
 
+	// Touch sensor for mobile
+	const { listeners } = useTouchSensor({
+		minDistance: 10,
+		callback: (moved) => {
+			if (!moved) openTab();
+		},
+	});
+
+	// Register event listeners
+	useEffect(() => {
+		bindPinningEvent(leaf, changePinnedState);
+		bindEphemeralToggleEvent(app, leaf, setIsEphemeral);
+	}, [leaf.id]);
+
+	// Handle webviewer title updates
 	useEffect(() => {
 		if (!isWebViewer) setVolatileTitle(null);
+
+		if (Platform.isDesktop && isWebViewer) {
+			const webview = leaf.view as BrowserView;
+			if (webview.webview) {
+				webview.webview.addEventListener(
+					"page-title-updated",
+					(data: { title: string }) => setVolatileTitle(data.title)
+				);
+			}
+		}
 	}, [isWebViewer]);
 
+	// Track active tab for UI
+	useEffect(() => {
+		if (isActiveTab) {
+			hookLatestActiveTab(ref.current);
+		}
+	}, [isActiveTab, ref]);
+
+	// Set up view cue index
+	useEffect(() => {
+		const isFirstTab =
+			viewCueIndex === VIEW_CUE_PREV ||
+			(viewCueIndex === index && index === 1);
+		registerViewCueTab(leaf, ref.current, isFirstTab);
+
+		if (leaf.tabHeaderInnerTitleEl) {
+			if (viewCueIndex) {
+				leaf.tabHeaderInnerTitleEl.dataset.index =
+					viewCueIndex.toString();
+			} else {
+				delete leaf.tabHeaderInnerTitleEl.dataset.index;
+			}
+		}
+	}, [viewCueIndex, ref]);
+
+	// Tab action handlers
 	const changePinnedState = (pinned: boolean) => {
 		setIsPinned(pinned);
 		if (pinned && leaf.isEphemeral) makeLeafNonEphemeral(leaf);
 	};
-
-	useEffect(() => {
-		bindPinningEvent(leaf, changePinnedState);
-		bindEphemeralToggleEvent(app, leaf, (isEphemeral) => {
-			setIsEphemeral(isEphemeral);
-		});
-	}, [leaf.id]);
 
 	const togglePinned = () => {
 		leaf.togglePinned();
@@ -101,21 +154,18 @@ export const Tab = ({
 		if (!leaf.getViewState().pinned) leaf.detach();
 	};
 
-	const midClickCloseTab = (
-		event: React.MouseEvent<HTMLDivElement, MouseEvent>
-	) => {
-		if (event.button === 1) closeTab();
-	};
-
 	const openTab = () => {
 		if (Platform.isMobile && isEditingTabs) return;
+
 		const positioning =
 			viewType === GroupViewType.MissionControlView ? "center" : "start";
 		const focus = viewType !== GroupViewType.MissionControlView;
+
 		workspace.setActiveLeaf(leaf, { focus });
 		workspace.onLayoutChange();
 		setGroupState(leaf.parent.id, { hidden: false });
 		lockFocusOnLeaf(app, leaf);
+
 		leaf.containerEl?.scrollIntoView({
 			behavior: "smooth",
 			block: positioning,
@@ -123,6 +173,14 @@ export const Tab = ({
 		});
 	};
 
+	const makeLeafNonEphemeralAndExitMissionControl = () => {
+		makeLeafNonEphemeral(leaf);
+		if (viewType === GroupViewType.MissionControlView) {
+			setGroupViewType(leaf.parent, GroupViewType.Default);
+		}
+	};
+
+	// Event callbacks
 	const activeOrCloseTab = (
 		event: React.MouseEvent<HTMLDivElement, MouseEvent>
 	) => {
@@ -133,15 +191,31 @@ export const Tab = ({
 		}
 	};
 
-	const makeLeafNonEphemeralAndExitMissionControl = () => {
-		makeLeafNonEphemeral(leaf);
-		if (viewType === GroupViewType.MissionControlView) {
-			setGroupViewType(leaf.parent, GroupViewType.Default);
+	const midClickCloseTab = (
+		event: React.MouseEvent<HTMLDivElement, MouseEvent>
+	) => {
+		if (event.button === 1) closeTab();
+	};
+
+	const previewTab = (
+		event: React.MouseEvent<HTMLDivElement, MouseEvent>
+	) => {
+		const file = getOpenFileOfLeaf(app, leaf);
+		if (file && ref.current) {
+			workspace.trigger("hover-link", {
+				event: event.nativeEvent,
+				source: "vertical-tabs",
+				hoverParent: leaf,
+				targetEl: ref.current,
+				linktext: file.path,
+			});
 		}
 	};
 
+	// Context menu setup
 	const menu = new Menu();
 
+	// Bookmark section
 	menu.addItem((item) => {
 		item.setSection("bookmark")
 			.setTitle("Bookmark")
@@ -157,6 +231,8 @@ export const Tab = ({
 				leaf.detach();
 			});
 	});
+
+	// Group view section (only for single groups)
 	if (isSingleGroup && viewType) {
 		menu.addSeparator();
 		menu.addItem((item) => {
@@ -195,6 +271,8 @@ export const Tab = ({
 				);
 		});
 	}
+
+	// Close section
 	menu.addSeparator();
 	menu.addItem((item) => {
 		item.setSection("close")
@@ -226,12 +304,16 @@ export const Tab = ({
 			.setDisabled(isPinned)
 			.onClick(() => leaf.parent.detach());
 	});
+
+	// Pin section
 	menu.addSeparator();
 	menu.addItem((item) => {
 		item.setSection("pin")
 			.setTitle(isPinned ? "Unpin" : "Pin")
 			.onClick(togglePinned);
 	});
+
+	// Leaf manipulation section
 	menu.addSeparator();
 	menu.addItem((item) => {
 		item.setSection("leaf")
@@ -260,6 +342,8 @@ export const Tab = ({
 				workspace.duplicateLeaf(leaf, "window");
 			});
 	});
+
+	// History section
 	if (leaf.view.navigation && !alwaysOpenInNewTab) {
 		const historyLength =
 			leaf.history.backHistory.length +
@@ -328,6 +412,7 @@ export const Tab = ({
 					duplicatedLeaf.history.forwardHistory = [];
 					const group = duplicatedLeaf.parent;
 					const { backHistory, forwardHistory } = leaf.history;
+
 					let index = 0;
 					for (const state of backHistory) {
 						const leaf = workspace.createLeafInParent(group, index);
@@ -336,6 +421,7 @@ export const Tab = ({
 						leaf.setEphemeralState(state.eState);
 						index += 1;
 					}
+
 					index += 1;
 					for (const state of forwardHistory) {
 						const leaf = workspace.createLeafInParent(group, index);
@@ -344,6 +430,7 @@ export const Tab = ({
 						leaf.setEphemeralState(state.eState);
 						index += 1;
 					}
+
 					const title = DeduplicatedTitle(app, leaf);
 					setGroupState(group.id, { title: `History: ${title}` });
 					workspace.setActiveLeaf(duplicatedLeaf, { focus: true });
@@ -364,6 +451,8 @@ export const Tab = ({
 				});
 		});
 	}
+
+	// Deferred leaf section
 	if (isDeferredLeaf(leaf) && !alwaysOpenInNewTab) {
 		menu.addSeparator();
 		menu.addItem((item) => {
@@ -375,6 +464,8 @@ export const Tab = ({
 				.onClick(async () => await loadDeferredLeaf(leaf));
 		});
 	}
+
+	// Zoom section
 	if (enableTabZoom && !isWebViewer) {
 		menu.addSeparator();
 		if (Platform.isDesktop) {
@@ -382,47 +473,34 @@ export const Tab = ({
 				item.setSection("zoom").setTitle("Zoom");
 				const submenu = item.setSubmenu();
 				submenu.addItem((item) => {
-					item.setTitle("Zoom in").onClick(() => {
-						zoomIn(leaf.view);
-					});
+					item.setTitle("Zoom in").onClick(() => zoomIn(leaf.view));
 				});
 				submenu.addItem((item) => {
-					item.setTitle("Zoom out").onClick(() => {
-						zoomOut(leaf.view);
-					});
+					item.setTitle("Zoom out").onClick(() => zoomOut(leaf.view));
 				});
 				submenu.addItem((item) => {
-					item.setTitle("Reset zoom").onClick(() => {
-						resetZoom(leaf.view);
-					});
+					item.setTitle("Reset zoom").onClick(() =>
+						resetZoom(leaf.view)
+					);
 				});
 			});
 		} else {
 			menu.addItem((item) => {
-				item.setTitle("Zoom in").onClick(() => {
-					zoomIn(leaf.view);
-				});
+				item.setTitle("Zoom in").onClick(() => zoomIn(leaf.view));
 			});
 			menu.addItem((item) => {
-				item.setTitle("Zoom out").onClick(() => {
-					zoomOut(leaf.view);
-				});
+				item.setTitle("Zoom out").onClick(() => zoomOut(leaf.view));
 			});
 			menu.addItem((item) => {
-				item.setTitle("Reset zoom").onClick(() => {
-					resetZoom(leaf.view);
-				});
+				item.setTitle("Reset zoom").onClick(() => resetZoom(leaf.view));
 			});
 		}
 	}
+
+	// Webviewer section
 	if (Platform.isDesktop && isWebViewer) {
 		const webview = leaf.view as BrowserView;
-		if (webview.webview) {
-			webview.webview.addEventListener(
-				"page-title-updated",
-				(data: { title: string }) => setVolatileTitle(data.title)
-			);
-		}
+
 		menu.addSeparator();
 		menu.addItem((item) => {
 			item.setSection("webview")
@@ -437,6 +515,7 @@ export const Tab = ({
 					if (file) workspace.getLeaf("tab").openFile(file);
 				});
 		});
+
 		menu.addSeparator();
 		menu.addItem((item) => {
 			item.setSection("zoom").setTitle("Zoom");
@@ -452,6 +531,8 @@ export const Tab = ({
 			});
 		});
 	}
+
+	// More options section (desktop only)
 	if (Platform.isDesktop && !isWebViewer) {
 		menu.addSeparator();
 		menu.addItem((item) => {
@@ -467,6 +548,14 @@ export const Tab = ({
 		});
 	}
 
+	// Show context menu handler
+	const showContextMenu = (
+		event: React.MouseEvent<HTMLDivElement, MouseEvent>
+	) => {
+		if (!isSelf) menu.showAtMouseEvent(event.nativeEvent);
+	};
+
+	// Tab toolbar
 	const toolbar = (
 		<Fragment>
 			{isPinned && (
@@ -489,65 +578,6 @@ export const Tab = ({
 		</Fragment>
 	);
 
-	const props = {
-		icon: leaf.getIcon(),
-		isActive: leaf.tabHeaderEl?.classList.contains("is-active"),
-	};
-
-	const { listeners } = useTouchSensor({
-		minDistance: 10,
-		callback: (moved) => {
-			if (!moved) openTab();
-		},
-	});
-
-	const isActiveTab = lastActiveLeaf?.id === leaf.id;
-	const ref = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		if (isActiveTab) {
-			hookLatestActiveTab(ref.current);
-		}
-	}, [isActiveTab, ref]);
-
-	const viewCueIndex = mapViewCueIndex(index, isLast);
-
-	useEffect(() => {
-		const isFirstTab =
-			viewCueIndex === VIEW_CUE_PREV ||
-			(viewCueIndex === index && index === 1);
-		registerViewCueTab(leaf, ref.current, isFirstTab);
-		if (leaf.tabHeaderInnerTitleEl) {
-			if (viewCueIndex) {
-				leaf.tabHeaderInnerTitleEl.dataset.index =
-					viewCueIndex.toString();
-			} else {
-				delete leaf.tabHeaderInnerTitleEl.dataset.index;
-			}
-		}
-	}, [viewCueIndex, ref]);
-
-	const previewTab = (
-		event: React.MouseEvent<HTMLDivElement, MouseEvent>
-	) => {
-		const file = getOpenFileOfLeaf(app, leaf);
-		if (file && ref.current) {
-			workspace.trigger("hover-link", {
-				event: event.nativeEvent,
-				source: "vertical-tabs",
-				hoverParent: leaf,
-				targetEl: ref.current,
-				linktext: file.path,
-			});
-		}
-	};
-
-	const showContextMenu = (
-		event: React.MouseEvent<HTMLDivElement, MouseEvent>
-	) => {
-		if (!isSelf) menu.showAtMouseEvent(event.nativeEvent);
-	};
-
 	return (
 		<NavigationTreeItem
 			ref={ref}
@@ -566,7 +596,8 @@ export const Tab = ({
 			onMouseOver={previewTab}
 			dataType={leaf.getViewState().type}
 			dataId={leaf.id}
-			{...props}
+			icon={leaf.getIcon()}
+			isActive={leaf.tabHeaderEl?.classList.contains("is-active")}
 			{...listeners}
 		/>
 	);
