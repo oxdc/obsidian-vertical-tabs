@@ -3,7 +3,7 @@ import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useRef, useState } from "react";
 import { usePlugin, useSettings } from "src/models/PluginContext";
-import { Menu, Platform, WorkspaceLeaf } from "obsidian";
+import { Menu, Platform, View, WorkspaceLeaf } from "obsidian";
 import { BrowserView } from "obsidian-typings";
 import {
 	closeOthersInGroup,
@@ -486,9 +486,10 @@ export const Tab = ({
 	);
 
 	const props = {
-		icon: leaf.getIcon(),
 		isActive: leaf.tabHeaderEl?.classList.contains("is-active"),
 	};
+
+	const [icon, setIcon] = useState<string>(leaf.getIcon())
 
 	const { listeners } = useTouchSensor({
 		minDistance: 10,
@@ -505,6 +506,34 @@ export const Tab = ({
 			hookLatestActiveTab(ref.current);
 		}
 	}, [isActiveTab, ref]);
+
+	type WebviewLeafView = View & { mode?: string, faviconImgEl?: HTMLDivElement, faviconUrl?: string, inProgressPageLoad?: object };
+
+	const observer = new MutationObserver((mutationList, observer) => {
+		for (const mutation of mutationList) {
+			if (mutation.type === "attributes" && mutation.attributeName) {
+				const src = (mutation.target as HTMLDivElement).getAttribute(mutation.attributeName)
+				if (!src) continue
+				setIcon(src)
+			}
+		}
+	});
+
+	useEffect(() => {
+		const view = leaf.view as WebviewLeafView;
+		if (view?.mode === 'webview' && view?.faviconUrl) {
+			setIcon(view.faviconUrl)
+		}
+	}, [volatileTitle, isActiveTab, ref]);
+
+	useEffect(() => {
+		const view = leaf.view as WebviewLeafView;
+		if (view?.mode !== 'webview') return
+		if (!view?.faviconImgEl) return
+
+		observer.disconnect()
+		observer.observe(view.faviconImgEl, { attributes: true, subtree: true });
+	}, [(leaf.view as WebviewLeafView).faviconImgEl]);
 
 	const viewCueIndex = mapViewCueIndex(index, isLast);
 
@@ -556,6 +585,7 @@ export const Tab = ({
 			onMouseOver={previewTab}
 			dataType={leaf.getViewState().type}
 			dataId={leaf.id}
+			icon={icon}
 			{...props}
 			{...listeners}
 		/>
