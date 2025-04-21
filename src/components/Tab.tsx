@@ -541,7 +541,8 @@ export const Tab = ({
 		observer.observe(view.faviconImgEl, { attributes: true, subtree: true });
 
 		if(faviconInterval){
-			faviconInterval = clearInterval(faviconInterval) ?? null
+			clearInterval(faviconInterval)
+			faviconInterval = null
 		}
 
 		if(!view?.faviconImgEl?.children.length) return
