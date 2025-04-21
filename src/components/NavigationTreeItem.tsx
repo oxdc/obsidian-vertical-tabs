@@ -12,6 +12,7 @@ interface NavigationTreeItemProps {
 	ref?: React.RefObject<HTMLDivElement | null>;
 	title: string | React.ReactNode;
 	icon: string;
+	webviewIcon: string;
 	isTab: boolean;
 	isEphemeralTab?: boolean;
 	isTabSlot?: boolean;
@@ -84,12 +85,10 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 	};
 
 	useEffect(() => {
-		if (/http|base64/.test(props.icon)) return;
-
 		if (iconEl && iconEl.current) {
 			setIcon(iconEl.current, props.icon)
 		}
-	}, [props.icon]);
+	}, [props.icon, props.webviewIcon]);
 
 	useEffect(() => {
 		if (props.children && props.children instanceof Array) {
@@ -115,14 +114,12 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				onDoubleClick={props.onDoubleClick}
 				onContextMenu={props.onContextMenu}
 			>
-				{/http|base64/.test(props.icon) ? (
-					<img
-						src={props.icon}
-						className="tree-item-icon"
-					/>
-				) : (
-					<div className="tree-item-icon" ref={iconEl}></div>
-				)}
+				<img
+					src={props.webviewIcon || undefined}
+					className="tree-item-icon" style={{ display: /http|base64/.test(props.webviewIcon) ? 'unset' : 'none' }}
+				/>
+				<div className="tree-item-icon" style={{ display: /http|base64/.test(props.webviewIcon) ? 'none' : 'unset' }} ref={iconEl}></div>
+
 				<div className="tree-item-inner">
 					<div className="tree-item-inner-text">
 						{props.title}
@@ -171,14 +168,12 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				{...attributes}
 				{...listeners}
 			>
-				{/http|base64/.test(props.icon) ? (
-					<img
-						src={props.icon}
-						className="tree-item-icon"
-					/>
-				) : (
-					<div className="tree-item-icon" ref={iconEl}></div>
-				)}
+				<img
+					src={props.webviewIcon || undefined}
+					className="tree-item-icon" style={{ display: /http|base64/.test(props.webviewIcon) ? 'unset' : 'none' }}
+				/>
+				<div className="tree-item-icon" style={{ display: /http|base64/.test(props.webviewIcon) ? 'none' : 'unset' }} ref={iconEl}></div>
+
 				<div className="tree-item-inner">
 					<div className="tree-item-inner-text">
 						{props.title}

@@ -487,9 +487,10 @@ export const Tab = ({
 
 	const props = {
 		isActive: leaf.tabHeaderEl?.classList.contains("is-active"),
+		icon: leaf.getIcon()
 	};
 
-	const [icon, setIcon] = useState<string>(leaf.getIcon())
+	const [webviewIcon, setWebviewIcon] = useState<string>('')
 
 	const { listeners } = useTouchSensor({
 		minDistance: 10,
@@ -512,28 +513,46 @@ export const Tab = ({
 	const observer = new MutationObserver((mutationList, observer) => {
 		for (const mutation of mutationList) {
 			if (mutation.type === "attributes" && mutation.attributeName) {
-				const src = (mutation.target as HTMLDivElement).getAttribute(mutation.attributeName)
+				const src = (mutation.target as HTMLImageElement)?.src
 				if (!src) continue
-				setIcon(src)
+				setWebviewIcon(src)
 			}
 		}
 	});
 
-	useEffect(() => {
-		const view = leaf.view as WebviewLeafView;
-		if (view?.mode === 'webview' && view?.faviconUrl) {
-			setIcon(view.faviconUrl)
-		}
-	}, [volatileTitle, isActiveTab, ref]);
+	let faviconInterval: ReturnType<typeof setInterval> | null = null
 
-	useEffect(() => {
+	const observeFavicon = () => {
 		const view = leaf.view as WebviewLeafView;
-		if (view?.mode !== 'webview') return
-		if (!view?.faviconImgEl) return
+		
+		if (view?.mode !== 'webview' && view?.mode !== 'blank') {
+			setWebviewIcon('')
+			console.log(webviewIcon)
+			return
+		}
+		if (!view?.faviconImgEl?.children.length) {
+			if(!webviewIcon && faviconInterval === null) {
+				faviconInterval = setInterval(observeFavicon, 200)
+			}
+			return
+		}
 
 		observer.disconnect()
 		observer.observe(view.faviconImgEl, { attributes: true, subtree: true });
-	}, [(leaf.view as WebviewLeafView).faviconImgEl]);
+
+		if(faviconInterval){
+			faviconInterval = clearInterval(faviconInterval) ?? null
+		}
+
+		if(!view?.faviconImgEl?.children.length) return
+		
+		const img = view.faviconImgEl.children[0] as HTMLImageElement
+		setWebviewIcon(img.src)
+	}
+
+	useEffect(() => {
+		observeFavicon()
+	}, [isActiveTab, volatileTitle]);
 
 	const viewCueIndex = mapViewCueIndex(index, isLast);
 
@@ -585,7 +604,7 @@ export const Tab = ({
 			onMouseOver={previewTab}
 			dataType={leaf.getViewState().type}
 			dataId={leaf.id}
-			icon={icon}
+			webviewIcon={webviewIcon}
 			{...props}
 			{...listeners}
 		/>
