@@ -105,3 +105,10 @@ export function syncUIForGroupView(group: WorkspaceParent | null) {
 export const setColumnViewMinWidth = debounce((value: number) => {
 	document.body.style.setProperty("--vt-column-view-min-width", `${value}px`);
 }, REFRESH_TIMEOUT_LONG);
+
+export const setMissionControlViewZoomFactor = debounce((value: number) => {
+	document.body.style.setProperty(
+		"--vt-mission-control-view-leaf-zoom-factor",
+		value.toString()
+	);
+}, REFRESH_TIMEOUT_LONG);

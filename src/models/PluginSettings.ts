@@ -28,6 +28,8 @@ interface ObsidianVerticalTabsSettings {
 	continuousViewShowMetadata: boolean;
 	continuousViewShowBacklinks: boolean;
 	columnViewMinWidth: number;
+	missionControlViewZoomFactor: number;
+	disablePointerInMissionControlView: boolean;
 	backgroundMode: boolean;
 }
 
@@ -58,6 +60,8 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	columnViewMinWidth: 300,
 	continuousViewShowMetadata: false,
 	continuousViewShowBacklinks: false,
+	missionControlViewZoomFactor: 0.5,
+	disablePointerInMissionControlView: true,
 	backgroundMode: false,
 };
 

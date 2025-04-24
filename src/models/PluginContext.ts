@@ -20,7 +20,11 @@ import {
 	moveSelfToNewGroupAndHide,
 	selfIsNotInTheSidebar,
 } from "src/services/MoveTab";
-import { refreshGroupViewTypes, setColumnViewMinWidth } from "./VTGroupView";
+import {
+	refreshGroupViewTypes,
+	setColumnViewMinWidth,
+	setMissionControlViewZoomFactor,
+} from "./VTGroupView";
 import { EVENTS } from "src/constants/Events";
 import { PersistenceManager } from "./PersistenceManager";
 import { setShowActiveTabs, getShowActiveTabs } from "src/history/Migration";
@@ -49,6 +53,7 @@ export type GroupViewOptions = {
 	continuousViewShowMetadata?: boolean;
 	continuousViewShowBacklinks?: boolean;
 	columnViewMinWidth?: number;
+	missionControlViewZoomFactor?: number;
 };
 
 interface SettingsActions {
@@ -78,6 +83,9 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			plugin.saveSettings();
 			set(settings);
 			setColumnViewMinWidth(settings.columnViewMinWidth);
+			setMissionControlViewZoomFactor(
+				settings.missionControlViewZoomFactor
+			);
 			return settings;
 		},
 		setSettings: (mutator: SettingsMutator) => {
@@ -181,9 +189,12 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 		setGroupViewOptions(app: App, options: GroupViewOptions) {
 			get().setSettings(options);
 			refreshGroupViewTypes(app);
-			const { columnViewMinWidth } = options;
+			const { columnViewMinWidth, missionControlViewZoomFactor } = options;
 			if (columnViewMinWidth) {
 				setColumnViewMinWidth(columnViewMinWidth);
+			}
+			if (missionControlViewZoomFactor) {
+				setMissionControlViewZoomFactor(missionControlViewZoomFactor);
 			}
 		},
 	})

@@ -127,6 +127,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.toggle("vt-enable-tab-zoom", this.settings.enableTabZoom);
 		this.toggle("vt-ephemeral-tabs", this.settings.ephemeralTabs);
 		this.toggle("vt-background-mode", this.settings.backgroundMode);
+		this.toggle(
+			"vt-mission-control-view-disable-pointer",
+			this.settings.disablePointerInMissionControlView
+		);
 	}
 
 	async patchViews() {

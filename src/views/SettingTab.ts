@@ -367,6 +367,49 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					});
 			});
 
+		new Setting(containerEl)
+			.setName("Zoom factor in mission control view")
+			.setDesc("Adjust the page size in mission control view.")
+			.addExtraButton((button) => {
+				button
+					.setIcon("reset")
+					.setTooltip("Reset to default")
+					.onClick(async () => {
+						useSettings.getState().setGroupViewOptions(this.app, {
+							missionControlViewZoomFactor: 0.5,
+						});
+						this.display();
+					});
+			})
+			.addSlider((slider) => {
+				slider
+					.setLimits(0.5, 1, 0.1)
+					.setValue(this.plugin.settings.missionControlViewZoomFactor)
+					.setDynamicTooltip()
+					.onChange(async (value) => {
+						useSettings.getState().setGroupViewOptions(this.app, {
+							missionControlViewZoomFactor: value,
+						});
+					});
+			});
+
+		new Setting(containerEl)
+			.setName("Disable pointer in mission control view")
+			.setDesc(
+				"Prevents interaction with tab content when in mission control view, allowing easier navigation between tabs."
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(
+						this.plugin.settings.disablePointerInMissionControlView
+					)
+					.onChange(async (value) => {
+						useSettings.getState().setSettings({
+							disablePointerInMissionControlView: value,
+						});
+					});
+			});
+
 		new Setting(containerEl).setName("Miscellaneous").setHeading();
 
 		new Setting(containerEl)
