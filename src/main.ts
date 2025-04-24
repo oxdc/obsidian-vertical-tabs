@@ -138,6 +138,9 @@ export default class ObsidianVerticalTabs extends Plugin {
 
 	async patchViews() {
 		const applyZoom = (view: View, zoom: number) => {
+			if (!this.settings.enableTabZoom) {
+				return;
+			}
 			if (zoom <= 0) return;
 			const isNonUnitaryZoom = Math.abs(zoom - 1) > ZOOM_FACTOR_TOLERANCE;
 			if (isNonUnitaryZoom) {
