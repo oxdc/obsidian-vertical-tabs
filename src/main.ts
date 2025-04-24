@@ -7,6 +7,7 @@ import {
 	View,
 	Workspace,
 	WorkspaceLeaf,
+	addIcon,
 } from "obsidian";
 import {
 	VerticalTabsView,
@@ -26,12 +27,14 @@ import { SAFE_DETACH_TIMEOUT } from "./services/CloseTabs";
 import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 import { PersistenceManager } from "./models/PersistenceManager";
 import { migrateAllData } from "./history/Migration";
+import { VERTICAL_TABS_ICON } from "./icon";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
 	persistenceManager: PersistenceManager;
 
 	async onload() {
+		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
 		await this.loadSettings();
 		await this.setupPersistenceManager();
 		await this.registerEventsAndViews();
