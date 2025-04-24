@@ -168,11 +168,6 @@ export const NavigationContainer = () => {
 					increaseViewCueOffset();
 				} else if (event.key === "ArrowLeft") {
 					decreaseViewCueOffset();
-				} else if (
-					event.key.length === 1 &&
-					!isNaN(parseInt(event.key))
-				) {
-					event.preventDefault();
 				}
 				setTimeout(() => {
 					if (useViewState.getState().hasCtrlKeyPressed) {
