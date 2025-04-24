@@ -8,7 +8,7 @@
 		display: block !important;
 		height: var(--vt-mission-control-view-leaf-height);
 		min-width: var(--vt-mission-control-view-leaf-width);
-		max-width: var(--vt-mission-control-view-leaf-width);
+		max-width: 100% !important;
 		zoom: var(--vt-mission-control-view-leaf-zoom-factor);
 
 		.workspace-leaf-content {
@@ -21,16 +21,24 @@
 	}
 
 	.workspace-tab-container {
-		display: flex;
-		flex-wrap: wrap !important;
+		display: grid;
+		grid-template-columns: repeat(
+			auto-fill,
+			minmax(
+				calc(
+					var(--vt-mission-control-view-leaf-width) *
+						var(--vt-mission-control-view-leaf-zoom-factor)
+				),
+				1fr
+			)
+		);
 		gap: var(--vt-mission-control-view-leaf-gap);
-		flex: 1 0 auto;
 		justify-content: center;
 		align-content: flex-start;
 		overflow-y: scroll !important;
 		position: relative;
-		height: 0;
-		padding: var(--size-4-3) 0;
+		height: fit-content;
+		padding: var(--size-4-3) var(--vt-mission-control-view-leaf-gap);
 	}
 
 	.workspace-tab-header-container-inner {
