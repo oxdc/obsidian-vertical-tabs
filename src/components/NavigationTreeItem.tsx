@@ -86,7 +86,13 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 
 	useEffect(() => {
 		if (iconEl && iconEl.current) {
-			setIcon(iconEl.current, props.icon)
+			if (props?.webviewIcon) {
+				iconEl.current.replaceChildren(
+					createEl("img", { attr: { src: props.webviewIcon } })
+				);
+			} else {
+				setIcon(iconEl.current, props.icon);
+			}
 		}
 	}, [props.icon, props?.webviewIcon]);
 
@@ -96,99 +102,92 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		}
 	}, [props.isCollapsed]);
 
-	return Platform.isMobile ? (
-		<div
-			className={toClassName(itemElClasses)}
-			data-type={props.dataType}
-			data-id={props.dataId}
-			style={{ minHeight: props.isCollapsed ? 0 : height }}
-			ref={props.ref}
-		>
+	if (Platform.isMobile) {
+		return (
 			<div
-				className={toClassName(selfElClasses)}
-				onClick={props.onClick}
-				onTouchStart={props.onTouchStart}
-				onTouchMove={props.onTouchMove}
-				onTouchEnd={props.onTouchEnd}
-				onAuxClick={props.onAuxClick}
-				onDoubleClick={props.onDoubleClick}
-				onContextMenu={props.onContextMenu}
+				className={toClassName(itemElClasses)}
+				data-type={props.dataType}
+				data-id={props.dataId}
+				style={{ minHeight: props.isCollapsed ? 0 : height }}
+				ref={props.ref}
 			>
-				<img
-					src={props.webviewIcon || undefined}
-					className="tree-item-icon" style={{ display: /http|base64/.test(props?.webviewIcon||'') ? 'unset' : 'none' }}
-				/>
-				<div className="tree-item-icon" style={{ display: /http|base64/.test(props?.webviewIcon||'') ? 'none' : 'unset' }} ref={iconEl}></div>
-
-				<div className="tree-item-inner">
-					<div className="tree-item-inner-text">
-						{props.title}
-					</div>
-				</div>
 				<div
-					className="tree-item-flair-outer"
-					onClick={(e) => e.stopPropagation()}
+					className={toClassName(selfElClasses)}
+					onClick={props.onClick}
+					onTouchStart={props.onTouchStart}
+					onTouchMove={props.onTouchMove}
+					onTouchEnd={props.onTouchEnd}
+					onAuxClick={props.onAuxClick}
+					onDoubleClick={props.onDoubleClick}
+					onContextMenu={props.onContextMenu}
 				>
-					{props.toolbar}
+					<div className="tree-item-icon" ref={iconEl}></div>
+					<div className="tree-item-inner">
+						<div className="tree-item-inner-text">
+							{props.title}
+						</div>
+					</div>
 					<div
-						className="drag-handle"
-						ref={props.id ? setNodeRef : null}
-						{...attributes}
-						{...listeners}
+						className="tree-item-flair-outer"
+						onClick={(e) => e.stopPropagation()}
 					>
-						<IconButton
-							icon="grip-vertical"
-							action="drag-handle"
-						/>
+						{props.toolbar}
+						<div
+							className="drag-handle"
+							ref={props.id ? setNodeRef : null}
+							{...attributes}
+							{...listeners}
+						>
+							<IconButton
+								icon="grip-vertical"
+								action="drag-handle"
+							/>
+						</div>
 					</div>
 				</div>
+				{!props.isCollapsed && !isDragging && (
+					<div className="tree-item-children">{props.children}</div>
+				)}
 			</div>
-			{!props.isCollapsed && !isDragging && (
-				<div className="tree-item-children">{props.children}</div>
-			)}
-		</div>
-	) : (
-
-		<div
-			className={toClassName(itemElClasses)}
-			data-type={props.dataType}
-			data-id={props.dataId}
-			style={{ minHeight: props.isCollapsed ? 0 : height }}
-			ref={props.ref}
-		>
+		);
+	} else {
+		return (
 			<div
-				className={toClassName(selfElClasses)}
-				onClick={props.onClick}
-				onAuxClick={props.onAuxClick}
-				onDoubleClick={props.onDoubleClick}
-				onContextMenu={props.onContextMenu}
-				onMouseOver={props.onMouseOver}
-				data-index={props.index}
-				ref={props.id ? setNodeRef : null}
-				{...attributes}
-				{...listeners}
+				className={toClassName(itemElClasses)}
+				data-type={props.dataType}
+				data-id={props.dataId}
+				style={{ minHeight: props.isCollapsed ? 0 : height }}
+				ref={props.ref}
 			>
-				<img
-					src={props.webviewIcon || undefined}
-					className="tree-item-icon" style={{ display: /http|base64/.test(props?.webviewIcon||'') ? 'unset' : 'none' }}
-				/>
-				<div className="tree-item-icon" style={{ display: /http|base64/.test(props?.webviewIcon||'') ? 'none' : 'unset' }} ref={iconEl}></div>
-
-				<div className="tree-item-inner">
-					<div className="tree-item-inner-text">
-						{props.title}
+				<div
+					className={toClassName(selfElClasses)}
+					onClick={props.onClick}
+					onAuxClick={props.onAuxClick}
+					onDoubleClick={props.onDoubleClick}
+					onContextMenu={props.onContextMenu}
+					onMouseOver={props.onMouseOver}
+					data-index={props.index}
+					ref={props.id ? setNodeRef : null}
+					{...attributes}
+					{...listeners}
+				>
+					<div className="tree-item-icon" ref={iconEl}></div>
+					<div className="tree-item-inner">
+						<div className="tree-item-inner-text">
+							{props.title}
+						</div>
+					</div>
+					<div
+						className="tree-item-flair-outer"
+						onClick={(e) => e.stopPropagation()}
+					>
+						{props.toolbar}
 					</div>
 				</div>
-				<div
-					className="tree-item-flair-outer"
-					onClick={(e) => e.stopPropagation()}
-				>
-					{props.toolbar}
-				</div>
+				{!props.isCollapsed && !isDragging && (
+					<div className="tree-item-children">{props.children}</div>
+				)}
 			</div>
-			{!props.isCollapsed && !isDragging && (
-				<div className="tree-item-children">{props.children}</div>
-			)}
-		</div>
-	)
+		);
+	}
 };
