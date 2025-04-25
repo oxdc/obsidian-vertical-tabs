@@ -3,7 +3,7 @@ import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useRef, useState } from "react";
 import { usePlugin, useSettings } from "src/models/PluginContext";
-import { Menu, Platform, View, WorkspaceLeaf } from "obsidian";
+import { Menu, Platform, WorkspaceLeaf } from "obsidian";
 import { BrowserView } from "obsidian-typings";
 import {
 	closeOthersInGroup,
@@ -490,7 +490,7 @@ export const Tab = ({
 		isActive: leaf.tabHeaderEl?.classList.contains("is-active"),
 	};
 
-	const [webviewIcon, setWebviewIcon] = useState<string>("");
+	const [webviewIcon, setWebviewIcon] = useState<string | undefined>();
 
 	const { listeners } = useTouchSensor({
 		minDistance: 10,
@@ -525,7 +525,7 @@ export const Tab = ({
 
 		// Exit early if not in webview or blank mode
 		if (view?.mode !== "webview" && view?.mode !== "blank") {
-			setWebviewIcon("");
+			setWebviewIcon(undefined);
 			return;
 		}
 
