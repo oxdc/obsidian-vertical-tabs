@@ -162,12 +162,12 @@ export function autoCloseOldEphemeralTabsForGroup(group: WorkspaceParent) {
 		// Second, we sort the tabs by their active time, with the latest active tab being the last one.
 		// Third, for tabs with the same active time, we sort them by their index.
 		const sortedEphemeralTabs = ephemeralTabs.sort((a, b) => {
-			if (a.activeTime && a.activeTime <= 0) return 1;
-			if (b.activeTime && b.activeTime <= 0) return -1;
+			if (a.activeTime && a.activeTime <= 0) return -1;
+			if (b.activeTime && b.activeTime <= 0) return 1;
 			if (a.activeTime === b.activeTime) {
 				return group.children.indexOf(a) - group.children.indexOf(b);
 			}
-			return (b.activeTime ?? 0) - (a.activeTime ?? 0);
+			return (a.activeTime ?? 0) - (b.activeTime ?? 0);
 		});
 		const lastEphemeralTab = sortedEphemeralTabs.pop();
 		if (!lastEphemeralTab) return;
