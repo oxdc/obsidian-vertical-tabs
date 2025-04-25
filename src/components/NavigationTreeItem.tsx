@@ -12,6 +12,7 @@ interface NavigationTreeItemProps {
 	ref?: React.RefObject<HTMLDivElement | null>;
 	title: string | React.ReactNode;
 	icon: string;
+	webviewIcon?: string;
 	isTab: boolean;
 	isEphemeralTab?: boolean;
 	isTabSlot?: boolean;
@@ -84,8 +85,16 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 	};
 
 	useEffect(() => {
-		if (iconEl && iconEl.current) setIcon(iconEl.current, props.icon);
-	}, [props.icon]);
+		if (iconEl && iconEl.current) {
+			if (props?.webviewIcon) {
+				iconEl.current.replaceChildren(
+					createEl("img", { attr: { src: props.webviewIcon } })
+				);
+			} else {
+				setIcon(iconEl.current, props.icon);
+			}
+		}
+	}, [props.icon, props?.webviewIcon]);
 
 	useEffect(() => {
 		if (props.children && props.children instanceof Array) {
