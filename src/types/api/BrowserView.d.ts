@@ -8,6 +8,10 @@ declare module "obsidian-typings" {
 	}
 
 	interface BrowserView {
+		mode?: string;
+		faviconImgEl?: HTMLDivElement;
+		faviconUrl?: string;
+		inProgressPageLoad?: object;
 		saveAsMarkdown(): Promise<TFile | null>;
 		webview: Webview;
 	}
