@@ -3,7 +3,7 @@ import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useRef, useState } from "react";
 import { usePlugin, useSettings } from "src/models/PluginContext";
-import { Menu, Platform, View, WorkspaceLeaf } from "obsidian";
+import { Menu, Platform, WorkspaceLeaf } from "obsidian";
 import { BrowserView } from "obsidian-typings";
 import {
 	closeOthersInGroup,
@@ -27,7 +27,7 @@ import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
 import { HistoryBrowserModal } from "src/views/HistoryBrowserModal";
 import { getOpenFileOfLeaf } from "src/services/GetTabs";
 import { GroupViewType, setGroupViewType } from "src/models/VTGroupView";
-import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
+import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 interface TabProps {
 	leaf: WorkspaceLeaf;
 	index: number;
@@ -486,11 +486,11 @@ export const Tab = ({
 	);
 
 	const props = {
+		icon: leaf.getIcon(),
 		isActive: leaf.tabHeaderEl?.classList.contains("is-active"),
-		icon: leaf.getIcon()
 	};
 
-	const [webviewIcon, setWebviewIcon] = useState<string>('')
+	const [webviewIcon, setWebviewIcon] = useState<string | undefined>();
 
 	const { listeners } = useTouchSensor({
 		minDistance: 10,
@@ -508,52 +508,57 @@ export const Tab = ({
 		}
 	}, [isActiveTab, ref]);
 
-	type WebviewLeafView = View & { mode?: string, faviconImgEl?: HTMLDivElement, faviconUrl?: string, inProgressPageLoad?: object };
-
-	const observer = new MutationObserver((mutationList, observer) => {
+	const observer = new MutationObserver((mutationList) => {
 		for (const mutation of mutationList) {
 			if (mutation.type === "attributes" && mutation.attributeName) {
-				const src = (mutation.target as HTMLImageElement)?.src
-				if (!src) continue
-				setWebviewIcon(src)
+				const src = (mutation.target as HTMLImageElement)?.src;
+				if (!src) continue;
+				setWebviewIcon(src);
 			}
 		}
 	});
 
-	let faviconInterval: ReturnType<typeof setInterval> | null = null
+	let faviconInterval: ReturnType<typeof setInterval> | null = null;
 
 	const observeFavicon = () => {
-		const view = leaf.view as WebviewLeafView;
-		
-		if (view?.mode !== 'webview' && view?.mode !== 'blank') {
-			setWebviewIcon('')
-			console.log(webviewIcon)
-			return
+		const view = leaf.view as BrowserView;
+
+		// Exit early if not in webview or blank mode
+		if (view?.mode !== "webview" && view?.mode !== "blank") {
+			setWebviewIcon(undefined);
+			return;
 		}
+
+		// Set up polling interval if favicon element isn't available yet
 		if (!view?.faviconImgEl?.children.length) {
-			if(!webviewIcon && faviconInterval === null) {
-				faviconInterval = setInterval(observeFavicon, 200)
+			if (!webviewIcon && faviconInterval === null) {
+				faviconInterval = setInterval(
+					observeFavicon,
+					REFRESH_TIMEOUT_LONG
+				);
 			}
-			return
+			return;
 		}
 
-		observer.disconnect()
-		observer.observe(view.faviconImgEl, { attributes: true, subtree: true });
-
-		if(faviconInterval){
-			clearInterval(faviconInterval)
-			faviconInterval = null
+		// Clean up existing observation and interval
+		observer.disconnect();
+		if (faviconInterval) {
+			clearInterval(faviconInterval);
+			faviconInterval = null;
 		}
 
-		if(!view?.faviconImgEl?.children.length) return
-		
-		const img = view.faviconImgEl.children[0] as HTMLImageElement
-		setWebviewIcon(img.src)
-	}
+		// Set up new observation on favicon element
+		observer.observe(view.faviconImgEl, {
+			attributes: true,
+			subtree: true,
+		});
 
-	useEffect(() => {
-		observeFavicon()
-	}, [isActiveTab, volatileTitle]);
+		// Update webview icon from the favicon image
+		const img = view.faviconImgEl.children[0] as HTMLImageElement;
+		setWebviewIcon(img.src);
+	};
+
+	useEffect(observeFavicon, [isActiveTab, volatileTitle]);
 
 	const viewCueIndex = mapViewCueIndex(index, isLast);
 
