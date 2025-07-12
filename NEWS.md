@@ -3,11 +3,11 @@
 ## 🎉 What's New:
 
 - **Webview Icons**: Website favicons now appear on webview tabs, enhancing visual recognition when browsing the web within Obsidian. (Credit: @AlanJs26)
-- **Enhanced Mission Control View**: Added customization options for zoom factor and pointer interactions, featuring a new responsive layout that adapts elegantly to various screen sizes.
+- **Enhanced Mission Control View**: Added customization options for zoom factor and pointer interactions, featuring a new responsive layout that adapts elegantly to various screen sizes. (Credit: @PandaNocturne)
 
 ## 🐛 Bug Fixes:
 
-- Corrected ephemeral tab history handling issues (#160) Credit: @PandaNocturne
+- Corrected ephemeral tab history handling issues (#160)
 - Eliminated conflicts between Enhanced Keyboard Tab Switcher and built-in hotkeys (#138)
 - Properly disabled per-tab zooming commands when the feature is turned off (#144)
 - Resolved the issue where Vertical Tabs icon would disappear after restarting Obsidian (#158)
