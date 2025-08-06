@@ -227,15 +227,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 			})
 		);
 
-		const modifyDuplicateLeaf = async (
-			sourceLeaf: WorkspaceLeaf,
-			fallback: () => Promise<WorkspaceLeaf>
-		) => {
-			return this.settings.deduplicateTabs
-				? sourceLeaf
-				: await fallback();
-		};
-
 		around(Workspace.prototype, {
 			openLinkText(old) {
 				return async function (
@@ -254,13 +245,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 						sourcePath,
 						newLeaf,
 						openViewState
-					);
-				};
-			},
-			duplicateLeaf(next) {
-				return async function (...args) {
-					return modifyDuplicateLeaf(args[0], () =>
-						next.call(this, ...args)
 					);
 				};
 			},
