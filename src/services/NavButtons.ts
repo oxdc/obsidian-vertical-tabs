@@ -129,9 +129,7 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 					.setTitle(historyState.title)
 					.onClick(async (clickEvent) => {
 						const steps =
-							direction === "back"
-								? -(historyItems.length - index)
-								: index + 1;
+							direction === "back" ? -(index + 1) : +(index + 1);
 						await handleNavigation(
 							direction,
 							steps,
