@@ -1,5 +1,6 @@
 import {
 	App,
+	HistoryState,
 	ItemView,
 	Keymap,
 	Menu,
@@ -37,126 +38,136 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 	backButtonEl.style.display = "none";
 	forwardButtonEl.style.display = "none";
 
-	// Add event listeners to cloned buttons
+	// General navigation function for both button clicks and menu items
+	const handleNavigation = async (
+		direction: "back" | "forward",
+		steps: number,
+		targetHistoryState: HistoryState | null = null,
+		event?: MouseEvent | KeyboardEvent | UserEvent
+	) => {
+		const isModEvent = event ? Keymap.isModEvent(event) : false;
+
+		// Without pressing the mod key, navigate in current leaf
+		if (!isModEvent) {
+			await leaf.history.go(steps);
+			return;
+		}
+
+		// With pressing the mod key, open in new leaf and update its history
+		const targetLeaf = app.workspace.getLeaf("tab");
+		const currentState = leaf.getHistoryState();
+
+		// Use provided history state or get the recent state
+		const historyState =
+			targetHistoryState ||
+			(direction === "back"
+				? leaf.history.backHistory.last()
+				: leaf.history.forwardHistory.first());
+		if (!historyState) return;
+
+		// Set the target state
+		await targetLeaf.history.updateState(historyState);
+
+		// Update history arrays based on navigation type
+		if (targetHistoryState) {
+			// Menu item navigation - use calculated positions
+			const historyItems =
+				direction === "back"
+					? leaf.history.backHistory
+					: leaf.history.forwardHistory;
+			const itemIndex = historyItems.indexOf(historyState);
+
+			targetLeaf.history.backHistory =
+				direction === "back"
+					? historyItems.slice(0, itemIndex)
+					: [...leaf.history.backHistory, currentState];
+
+			targetLeaf.history.forwardHistory =
+				direction === "forward"
+					? historyItems.slice(itemIndex + 1)
+					: [currentState, ...leaf.history.forwardHistory];
+		} else {
+			// Regular button navigation - use simple slice
+			targetLeaf.history.backHistory =
+				direction === "back"
+					? leaf.history.backHistory.slice(0, -1)
+					: [...leaf.history.backHistory, currentState];
+			targetLeaf.history.forwardHistory =
+				direction === "forward"
+					? leaf.history.forwardHistory.slice(1)
+					: [currentState, ...leaf.history.forwardHistory];
+		}
+	};
+
+	// Button click handler
 	const handleClick = (direction: "back" | "forward") => (e: UserEvent) => {
 		e.preventDefault();
 		e.stopPropagation();
 		// Ignore middle mouse button clicks
 		if (e instanceof MouseEvent && e.button === 2) return;
-		// Without pressing the mod key, navigate inside the current leaf
-		if (!Keymap.isModEvent(e)) {
-			leaf.history.go(direction === "back" ? -1 : 1);
-			return;
-		}
-		// If the mod key is pressed, open in a new leaf and update its history
-		const currentState = leaf.getHistoryState();
-		const recentState =
-			direction === "back"
-				? leaf.history.backHistory.last()
-				: leaf.history.forwardHistory.first();
-		if (!recentState) return;
-		const targetLeaf = app.workspace.getLeaf("tab");
-		targetLeaf.history.updateState(recentState);
-		targetLeaf.history.backHistory =
-			direction === "back"
-				? leaf.history.backHistory.slice(0, -1)
-				: [...leaf.history.backHistory, currentState];
-		targetLeaf.history.forwardHistory =
-			direction === "forward"
-				? leaf.history.forwardHistory.slice(1)
-				: [currentState, ...leaf.history.forwardHistory];
+
+		const steps = direction === "back" ? -1 : 1;
+		handleNavigation(direction, steps, null, e);
 	};
 
 	// Create history dropdown functionality
-	const createHistoryMenu =
-		(direction: "back" | "forward") => (isLongPress: boolean) => {
-			const historyItems =
-				direction === "back"
-					? leaf.history.backHistory
-					: leaf.history.forwardHistory;
-			if (historyItems.length === 0) return;
-			const menu = new Menu();
+	const createMenu = (
+		direction: "back" | "forward",
+		isLongPress: boolean
+	) => {
+		const historyItems =
+			direction === "back"
+				? leaf.history.backHistory
+				: leaf.history.forwardHistory;
+		if (historyItems.length === 0) return;
+		const menu = new Menu();
 
-			// Add history items to menu (in reverse order for back, normal order for forward)
-			const items =
-				direction === "back"
-					? [...historyItems].reverse()
-					: historyItems;
-
-			items.forEach((historyState, index) => {
-				menu.addItem((item) => {
-					return item
-						.setTitle(historyState.title)
-						.onClick(async (clickEvent) => {
-							const isModEvent = Keymap.isModEvent(clickEvent);
-
-							if (!isModEvent) {
-								// Navigate in current leaf
-								const steps =
-									direction === "back"
-										? -(historyItems.length - index)
-										: index + 1;
-								await leaf.history.go(steps);
-							} else {
-								// Open in new leaf with proper history state
-								const targetLeaf = app.workspace.getLeaf("tab");
-								const currentState = leaf.getHistoryState();
-
-								// Set the target state
-								await targetLeaf.history.updateState(
-									historyState
-								);
-
-								// Update history arrays
-								if (direction === "back") {
-									targetLeaf.history.backHistory =
-										historyItems.slice(
-											0,
-											historyItems.length - index - 1
-										);
-									targetLeaf.history.forwardHistory = [
-										currentState,
-										...leaf.history.forwardHistory,
-									];
-								} else {
-									targetLeaf.history.backHistory = [
-										...leaf.history.backHistory,
-										currentState,
-									];
-									targetLeaf.history.forwardHistory =
-										historyItems.slice(index + 1);
-								}
-							}
-						});
-				});
-			});
-
-			// Show menu at button position
-			const buttonEl =
-				direction === "back" ? clonedBackButton : clonedForwardButton;
-			const rect = buttonEl.getBoundingClientRect();
-			menu.showAtPosition({
-				x: rect.x,
-				y: rect.bottom,
-				width: rect.width,
-				overlap: true,
-			});
-
-			// Handle mouseup events for long press
-			if (isLongPress) {
-				menu.dom.addEventListener("mouseup", (event) => {
-					const targetNode = event.target as Node;
-					setTimeout(() => {
-						for (const menuItem of menu.items) {
-							if (menuItem.dom.contains(targetNode)) {
-								menuItem.handleEvent?.(event);
-								return;
-							}
-						}
+		// Add history items to menu
+		historyItems.reverse().forEach((historyState, index) => {
+			menu.addItem((item) => {
+				return item
+					.setTitle(historyState.title)
+					.onClick(async (clickEvent) => {
+						const steps =
+							direction === "back"
+								? -(historyItems.length - index)
+								: index + 1;
+						await handleNavigation(
+							direction,
+							steps,
+							historyState,
+							clickEvent
+						);
 					});
+			});
+		});
+
+		// Show menu at button position
+		const target =
+			direction === "back" ? clonedBackButton : clonedForwardButton;
+		const rect = target.getBoundingClientRect();
+		menu.showAtPosition({
+			x: rect.x,
+			y: rect.bottom,
+			width: rect.width,
+			overlap: true,
+		});
+
+		// Handle mouseup events for long press
+		if (isLongPress) {
+			menu.dom.addEventListener("mouseup", (event) => {
+				const targetNode = event.target as Node;
+				setTimeout(() => {
+					for (const menuItem of menu.items) {
+						if (menuItem.dom.contains(targetNode)) {
+							menuItem.handleEvent?.(event);
+							return;
+						}
+					}
 				});
-			}
-		};
+			});
+		}
+	};
 
 	// Helper function for long press detection
 	const addLongPressHandler = (
@@ -206,18 +217,14 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 	// Add context menu (right-click) for history dropdown
 	clonedBackButton.addEventListener("contextmenu", (e) => {
 		e.preventDefault();
-		createHistoryMenu("back")(false);
+		createMenu("back", false);
 	});
 	clonedForwardButton.addEventListener("contextmenu", (e) => {
 		e.preventDefault();
-		createHistoryMenu("forward")(false);
+		createMenu("forward", false);
 	});
 
 	// Add long press handlers for history dropdown
-	addLongPressHandler(clonedBackButton, () =>
-		createHistoryMenu("back")(true)
-	);
-	addLongPressHandler(clonedForwardButton, () =>
-		createHistoryMenu("forward")(true)
-	);
+	addLongPressHandler(clonedBackButton, () => createMenu("back", true));
+	addLongPressHandler(clonedForwardButton, () => createMenu("forward", true));
 }
