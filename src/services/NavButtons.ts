@@ -68,35 +68,27 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 		// Set the target state
 		await targetLeaf.history.updateState(historyState);
 
-		// Update history arrays based on navigation type
-		if (targetHistoryState) {
-			// Menu item navigation - use calculated positions
-			const historyItems =
-				direction === "back"
-					? leaf.history.backHistory
-					: leaf.history.forwardHistory;
-			const itemIndex = historyItems.indexOf(historyState);
+		// Update history arrays
+		const backHistoryItems = leaf.history.backHistory;
+		const forwardHistoryItems = leaf.history.forwardHistory;
 
-			targetLeaf.history.backHistory =
-				direction === "back"
-					? historyItems.slice(0, itemIndex)
-					: [...leaf.history.backHistory, currentState];
+		const backSplitIndex = targetHistoryState
+			? backHistoryItems.indexOf(historyState)
+			: backHistoryItems.length - 1;
 
-			targetLeaf.history.forwardHistory =
-				direction === "forward"
-					? historyItems.slice(itemIndex + 1)
-					: [currentState, ...leaf.history.forwardHistory];
-		} else {
-			// Regular button navigation - use simple slice
-			targetLeaf.history.backHistory =
-				direction === "back"
-					? leaf.history.backHistory.slice(0, -1)
-					: [...leaf.history.backHistory, currentState];
-			targetLeaf.history.forwardHistory =
-				direction === "forward"
-					? leaf.history.forwardHistory.slice(1)
-					: [currentState, ...leaf.history.forwardHistory];
-		}
+		const forwardSplitIndex = targetHistoryState
+			? forwardHistoryItems.indexOf(historyState)
+			: 0;
+
+		targetLeaf.history.backHistory =
+			direction === "back"
+				? backHistoryItems.slice(0, backSplitIndex)
+				: [...backHistoryItems, currentState];
+
+		targetLeaf.history.forwardHistory =
+			direction === "forward"
+				? forwardHistoryItems.slice(forwardSplitIndex + 1)
+				: [currentState, ...forwardHistoryItems];
 	};
 
 	// Button click handler
