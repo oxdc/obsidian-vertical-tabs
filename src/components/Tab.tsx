@@ -30,6 +30,7 @@ import { getOpenFileOfLeaf } from "src/services/GetTabs";
 import { GroupViewType, setGroupViewType } from "src/models/VTGroupView";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 import { byPinned } from "src/services/SortTabs";
+import { cloneNavButtons } from "src/services/NavButtons";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -84,6 +85,7 @@ export const Tab = (props: TabProps) => {
 	/* Derived states */
 	const isActiveTab = lastActiveLeaf?.id === leaf.id;
 	const viewCueIndex = mapViewCueIndex(index, isLast);
+	const title = volatileTitle ?? DeduplicatedTitle(app, leaf);
 
 	/* Commands */
 	/* Commands - Tab control */
@@ -293,6 +295,7 @@ export const Tab = (props: TabProps) => {
 			}
 		}
 	}, [viewCueIndex, ref]);
+	useEffect(() => cloneNavButtons(leaf, app), [leaf.id, leaf.view]);
 
 	/* Menu */
 	const menu = new Menu();
@@ -579,7 +582,7 @@ export const Tab = (props: TabProps) => {
 			ref={ref}
 			id={leaf.id}
 			index={viewCueIndex}
-			title={volatileTitle ?? DeduplicatedTitle(app, leaf)}
+			title={title}
 			isTab={true}
 			isEphemeralTab={isEphemeral && !isPinned}
 			isPinned={isPinned}

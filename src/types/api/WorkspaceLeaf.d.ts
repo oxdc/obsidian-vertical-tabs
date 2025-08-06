@@ -12,6 +12,7 @@ declare module "obsidian" {
 			back(): void;
 			forward(): void;
 			go(offset: number): void;
+			updateState(state: HistoryState | undefined): void;
 		};
 	}
 }
