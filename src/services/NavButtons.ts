@@ -89,6 +89,11 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 			direction === "forward"
 				? forwardHistoryItems.slice(forwardSplitIndex + 1)
 				: [currentState, ...forwardHistoryItems];
+
+		// Request to update the nav buttons
+		if (targetLeaf.view instanceof ItemView) {
+			targetLeaf.view.updateNavButtons();
+		}
 	};
 
 	// Button click handler
