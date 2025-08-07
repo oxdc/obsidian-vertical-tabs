@@ -45,6 +45,15 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 		targetHistoryState: HistoryState | null = null,
 		event?: MouseEvent | KeyboardEvent | UserEvent
 	) => {
+		if (
+			(direction === "back" &&
+				(steps >= 0 || leaf.history.backHistory.length < -steps)) ||
+			(direction === "forward" &&
+				(steps <= 0 || leaf.history.forwardHistory.length < steps))
+		) {
+			return;
+		}
+
 		const isModEvent = event ? Keymap.isModEvent(event) : false;
 
 		// Without pressing the mod key, navigate in current leaf
