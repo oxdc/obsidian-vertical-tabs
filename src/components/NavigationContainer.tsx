@@ -64,6 +64,9 @@ export const NavigationContainer = () => {
 	const dragInProgress = useRef(false);
 	const draggedLeaf = useRef<Element | null>(null);
 
+	// Alt key timeout reference to allow cancellation
+	const altKeyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
 	// Helper function to detect if drag target is a tab
 	const isLeafDragTarget = (target: Element): boolean => {
 		return (
@@ -207,7 +210,12 @@ export const NavigationContainer = () => {
 			}
 			if (event.altKey) {
 				setAltKeyState(true);
-				setTimeout(
+				// Clear any existing timeout to prevent old resets
+				if (altKeyTimeoutRef.current) {
+					clearTimeout(altKeyTimeoutRef.current);
+				}
+				// Set new timeout and store reference
+				altKeyTimeoutRef.current = setTimeout(
 					() => setAltKeyState(false),
 					ALT_KEY_EFFECT_DURATION
 				);
@@ -334,6 +342,13 @@ export const NavigationContainer = () => {
 			defaultMod: true,
 			display: "Vertical Tabs",
 		});
+
+		// Cleanup function to clear alt key timeout on unmount
+		return () => {
+			if (altKeyTimeoutRef.current) {
+				clearTimeout(altKeyTimeoutRef.current);
+			}
+		};
 	}, []);
 
 	const disableMiddleClickScrolling = (event: React.MouseEvent) => {
