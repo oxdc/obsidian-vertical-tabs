@@ -31,7 +31,6 @@ import { GroupViewType, setGroupViewType } from "src/models/VTGroupView";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 import { byPinned } from "src/services/SortTabs";
 import { cloneNavButtons } from "src/services/NavButtons";
-import { EVENTS } from "src/constants/Events";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -79,17 +78,17 @@ export const Tab = (props: TabProps) => {
 	const [volatileTitle, setVolatileTitle] = useState<string | null>(null);
 	const [webviewIcon, setWebviewIcon] = useState<string | undefined>();
 	const [isHovered, setIsHovered] = useState(false);
-	const [isModifierPressed, setIsModifierPressed] = useState(false);
 	const ref = useRef<HTMLDivElement>(null);
 
 	/* Store states (managed by zustand, shared by components) */
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
+	const hasAltKeyPressed = useViewState((state) => state.hasAltKeyPressed);
 
 	/* Derived states */
 	const isActiveTab = lastActiveLeaf?.id === leaf.id;
 	const viewCueIndex = mapViewCueIndex(index, isLast);
 	const title = volatileTitle ?? DeduplicatedTitle(app, leaf);
-	const shouldShowHandle = isHovered && isModifierPressed;
+	const shouldShowHandle = isHovered && hasAltKeyPressed;
 
 	/* Commands */
 	/* Commands - Tab control */
@@ -305,17 +304,6 @@ export const Tab = (props: TabProps) => {
 		}
 	}, [viewCueIndex, ref]);
 	useEffect(() => cloneNavButtons(leaf, app), [leaf.id, leaf.view]);
-	// Track modifier key state (Option on macOS, Alt on Windows/Linux)
-	useEffect(() => {
-		plugin.registerEvent(
-			workspace.on(EVENTS.ALT_KEY_PRESSED, () => {
-				setIsModifierPressed(true);
-				setTimeout(() => {
-					setIsModifierPressed(false);
-				}, 1000);
-			})
-		);
-	}, []);
 
 	/* Menu */
 	const menu = new Menu();

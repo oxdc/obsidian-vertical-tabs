@@ -76,6 +76,8 @@ export type ViewCueFirstTabs = DefaultRecord<Identifier, HTMLElement | null>;
 export const createNewViewCueFirstTabs = () =>
 	new DefaultRecord(() => null) as ViewCueFirstTabs;
 
+export const ALT_KEY_EFFECT_DURATION = 1000;
+
 interface ViewState {
 	groupTitles: GroupTitles;
 	hiddenGroups: Array<Identifier>;
@@ -89,6 +91,7 @@ interface ViewState {
 	globalCollapseState: boolean;
 	isEditingTabs: boolean;
 	hasCtrlKeyPressed: boolean;
+	hasAltKeyPressed: boolean;
 	viewCueOffset: number;
 	viewCueNativeCallbacks: ViewCueNativeCallbackMap;
 	viewCueFirstTabs: ViewCueFirstTabs;
@@ -148,6 +151,7 @@ interface ViewState {
 	) => boolean;
 	setIsEditingTabs: (app: App, isEditing: boolean) => void;
 	setCtrlKeyState: (isPressed: boolean) => void;
+	setAltKeyState: (isPressed: boolean) => void;
 	increaseViewCueOffset: () => void;
 	decreaseViewCueOffset: () => void;
 	resetViewCueOffset: () => void;
@@ -263,6 +267,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	globalCollapseState: false,
 	isEditingTabs: false,
 	hasCtrlKeyPressed: false,
+	hasAltKeyPressed: false,
 	viewCueOffset: 0,
 	viewCueNativeCallbacks: new Map(),
 	viewCueFirstTabs: createNewViewCueFirstTabs(),
@@ -639,6 +644,9 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	setCtrlKeyState(isPressed: boolean) {
 		set({ hasCtrlKeyPressed: isPressed });
 		if (!isPressed) get().resetViewCueOffset();
+	},
+	setAltKeyState(isPressed: boolean) {
+		set({ hasAltKeyPressed: isPressed });
 	},
 	increaseViewCueOffset: debounce(() => {
 		const { viewCueOffset, latestActiveLeaf } = get();

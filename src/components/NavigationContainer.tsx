@@ -3,7 +3,11 @@ import { NavigationHeader } from "./NavigationHeader";
 import { tabCacheStore } from "src/stores/TabCacheStore";
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { useEffect, useRef } from "react";
-import { useViewState, VIEW_CUE_DELAY } from "src/models/ViewState";
+import {
+	useViewState,
+	ALT_KEY_EFFECT_DURATION,
+	VIEW_CUE_DELAY,
+} from "src/models/ViewState";
 import { debounce, ItemView, Platform, TFolder } from "obsidian";
 import { EVENTS } from "src/constants/Events";
 import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
@@ -44,6 +48,7 @@ export const NavigationContainer = () => {
 		forgetNonephemeralTabs,
 		uncollapseActiveGroup,
 		setCtrlKeyState,
+		setAltKeyState,
 		increaseViewCueOffset,
 		decreaseViewCueOffset,
 		modifyViewCueCallback,
@@ -90,9 +95,9 @@ export const NavigationContainer = () => {
 	};
 
 	const handleDrop = () => {
-		if (dragInProgress.current) {
-			setTimeout(autoRefresh, REFRESH_TIMEOUT_LONG);
-		}
+		// if (dragInProgress.current) {
+		setTimeout(autoRefresh, REFRESH_TIMEOUT_LONG);
+		// }
 	};
 
 	const autoRefresh = () => {
@@ -201,7 +206,11 @@ export const NavigationContainer = () => {
 				exitMissionControlForCurrentGroup();
 			}
 			if (event.altKey) {
-				app.workspace.trigger(EVENTS.ALT_KEY_PRESSED);
+				setAltKeyState(true);
+				setTimeout(
+					() => setAltKeyState(false),
+					ALT_KEY_EFFECT_DURATION
+				);
 			}
 			const { enhancedKeyboardTabSwitch } = useSettings.getState();
 			if (!enhancedKeyboardTabSwitch) return;
