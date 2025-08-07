@@ -159,11 +159,9 @@ export function deduplicateExistingTabs(
 	);
 	if (activeFile instanceof TFile) {
 		const latestActiveLeaf = useViewState.getState().latestActiveLeaf;
-		// Only focus on the deduplicated tab if the active file is still open
-		// and we are deduplicating different-group tabs and there is no linked leaf.
+		// Only focus on the deduplicated tab if the active file is still open and there is no linked leaf.
 		const focus =
 			!!latestActiveLeaf &&
-			!deduplicateSameGroupTabs &&
 			!hasLinkedLeaf &&
 			getOpenFileOfLeaf(app, latestActiveLeaf) === activeFile;
 		const activeLeaf = deduplicateTab(
