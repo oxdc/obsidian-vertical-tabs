@@ -1,0 +1,23 @@
+.obsidian-vertical-tabs-container {
+	.vt-tab-container {
+		position: relative;
+	}
+
+	.vt-tab-handle {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: transparent;
+		cursor: grab;
+	}
+
+  // TODO: Handle dangling groups. This might be because we refresh the tab cache
+  // while Obsidian is updating the workspace layout.
+	.tree-item.is-group:not(.is-group-slot):not(
+			:has(.tree-item.is-tab:not(.is-tab-slot))
+		) {
+		display: none;
+	}
+}

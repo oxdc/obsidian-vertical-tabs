@@ -31,6 +31,7 @@ import { GroupViewType, setGroupViewType } from "src/models/VTGroupView";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 import { byPinned } from "src/services/SortTabs";
 import { cloneNavButtons } from "src/services/NavButtons";
+import { EVENTS } from "src/constants/Events";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -77,6 +78,8 @@ export const Tab = (props: TabProps) => {
 	const [isEphemeral, setIsEphemeral] = useState(!!leaf.isEphemeral);
 	const [volatileTitle, setVolatileTitle] = useState<string | null>(null);
 	const [webviewIcon, setWebviewIcon] = useState<string | undefined>();
+	const [isHovered, setIsHovered] = useState(false);
+	const [isModifierPressed, setIsModifierPressed] = useState(false);
 	const ref = useRef<HTMLDivElement>(null);
 
 	/* Store states (managed by zustand, shared by components) */
@@ -86,6 +89,7 @@ export const Tab = (props: TabProps) => {
 	const isActiveTab = lastActiveLeaf?.id === leaf.id;
 	const viewCueIndex = mapViewCueIndex(index, isLast);
 	const title = volatileTitle ?? DeduplicatedTitle(app, leaf);
+	const shouldShowHandle = isHovered && isModifierPressed;
 
 	/* Commands */
 	/* Commands - Tab control */
@@ -253,6 +257,11 @@ export const Tab = (props: TabProps) => {
 		if (file) workspace.getLeaf("tab").openFile(file);
 	};
 
+	/* Commands - Drag */
+	const handleFreeDrag = (e: React.DragEvent<HTMLDivElement>) => {
+		app.workspace.onDragLeaf(e.nativeEvent, leaf);
+	};
+
 	/* Effects */
 	// Bind and track the events that used for syncing with Obsidian,
 	// when the states are changed outside of the component.
@@ -296,6 +305,17 @@ export const Tab = (props: TabProps) => {
 		}
 	}, [viewCueIndex, ref]);
 	useEffect(() => cloneNavButtons(leaf, app), [leaf.id, leaf.view]);
+	// Track modifier key state (Option on macOS, Alt on Windows/Linux)
+	useEffect(() => {
+		plugin.registerEvent(
+			workspace.on(EVENTS.ALT_KEY_PRESSED, () => {
+				setIsModifierPressed(true);
+				setTimeout(() => {
+					setIsModifierPressed(false);
+				}, 1000);
+			})
+		);
+	}, []);
 
 	/* Menu */
 	const menu = new Menu();
@@ -578,27 +598,40 @@ export const Tab = (props: TabProps) => {
 	);
 
 	return (
-		<NavigationTreeItem
-			ref={ref}
-			id={leaf.id}
-			index={viewCueIndex}
-			title={title}
-			isTab={true}
-			isEphemeralTab={isEphemeral && !isPinned}
-			isPinned={isPinned}
-			isHighlighted={isActiveTab}
-			toolbar={toolbar}
-			onClick={activeOrCloseTab}
-			onAuxClick={midClickCloseTab}
-			onDoubleClick={makeLeafNonEphemeralAndExitMissionControl}
-			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
-			onMouseOver={previewTab}
-			dataType={leaf.getViewState().type}
-			dataId={leaf.id}
-			webviewIcon={webviewIcon}
-			icon={leaf.getIcon()}
-			isActive={leaf.tabHeaderEl?.classList.contains("is-active")}
-			{...listeners}
-		/>
+		<div
+			className="vt-tab-container"
+			onMouseEnter={() => setIsHovered(true)}
+			onMouseLeave={() => setIsHovered(false)}
+		>
+			<NavigationTreeItem
+				ref={ref}
+				id={leaf.id}
+				index={viewCueIndex}
+				title={title}
+				isTab={true}
+				isEphemeralTab={isEphemeral && !isPinned}
+				isPinned={isPinned}
+				isHighlighted={isActiveTab}
+				toolbar={toolbar}
+				onClick={activeOrCloseTab}
+				onAuxClick={midClickCloseTab}
+				onDoubleClick={makeLeafNonEphemeralAndExitMissionControl}
+				onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
+				onMouseOver={previewTab}
+				dataType={leaf.getViewState().type}
+				dataId={leaf.id}
+				webviewIcon={webviewIcon}
+				icon={shouldShowHandle ? "grip" : leaf.getIcon()}
+				isActive={leaf.tabHeaderEl?.classList.contains("is-active")}
+				{...listeners}
+			/>
+			{shouldShowHandle && (
+				<div
+					className="vt-tab-handle"
+					draggable
+					onDragStart={handleFreeDrag}
+				/>
+			)}
+		</div>
 	);
 };

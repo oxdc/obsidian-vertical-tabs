@@ -13,6 +13,7 @@ declare module "obsidian" {
 		on(name: typeof EVENTS.DEDUPLICATE_TABS, callback: () => void): EventRef;
 		on(name: typeof EVENTS.ENHANCED_KEYBOARD_TAB_SWITCH, callback: () => void): EventRef;
 		on(name: typeof EVENTS.RESET_KEYBOARD_TAB_SWITCH, callback: () => void): EventRef;
+		on(name: typeof EVENTS.ALT_KEY_PRESSED, callback: () => void): EventRef;
 	}
 
 	interface WorkspaceLeaf {
