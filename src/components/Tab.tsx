@@ -31,6 +31,7 @@ import { GroupViewType, setGroupViewType } from "src/models/VTGroupView";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 import { byPinned } from "src/services/SortTabs";
 import { cloneNavButtons } from "src/services/NavButtons";
+import { onDragFile, onDragLeaf } from "src/services/PowerDrag";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -257,9 +258,10 @@ export const Tab = (props: TabProps) => {
 	};
 
 	/* Commands - Drag */
-	const handleFreeDrag = (e: React.DragEvent<HTMLDivElement>) => {
-		app.workspace.onDragLeaf(e.nativeEvent, leaf);
-	};
+	const handleFreeDrag = (e: React.DragEvent<HTMLDivElement>) =>
+		onDragLeaf(app, e, leaf);
+	const handleFileDrag = (e: React.DragEvent<HTMLDivElement>) =>
+		onDragFile(app, e, leaf);
 
 	/* Effects */
 	// Bind and track the events that used for syncing with Obsidian,
@@ -303,6 +305,7 @@ export const Tab = (props: TabProps) => {
 			}
 		}
 	}, [viewCueIndex, ref]);
+	// Replace the default navigation buttons with our own
 	useEffect(() => cloneNavButtons(leaf, app), [leaf.id, leaf.view]);
 
 	/* Menu */
@@ -585,6 +588,21 @@ export const Tab = (props: TabProps) => {
 		</Fragment>
 	);
 
+	const handles = (
+		<Fragment>
+			<div
+				className="vt-tab-handle"
+				draggable
+				onDragStart={handleFreeDrag}
+			/>
+			<div
+				className="vt-file-handle"
+				draggable
+				onDragStart={handleFileDrag}
+			/>
+		</Fragment>
+	);
+
 	return (
 		<div
 			className="vt-tab-container"
@@ -613,13 +631,7 @@ export const Tab = (props: TabProps) => {
 				isActive={leaf.tabHeaderEl?.classList.contains("is-active")}
 				{...listeners}
 			/>
-			{shouldShowHandle && (
-				<div
-					className="vt-tab-handle"
-					draggable
-					onDragStart={handleFreeDrag}
-				/>
-			)}
+			{shouldShowHandle && handles}
 		</div>
 	);
 };

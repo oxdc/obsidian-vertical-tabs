@@ -76,7 +76,7 @@ export type ViewCueFirstTabs = DefaultRecord<Identifier, HTMLElement | null>;
 export const createNewViewCueFirstTabs = () =>
 	new DefaultRecord(() => null) as ViewCueFirstTabs;
 
-export const ALT_KEY_EFFECT_DURATION = 1000;
+export const ALT_KEY_EFFECT_DURATION = 2000;
 
 interface ViewState {
 	groupTitles: GroupTitles;
