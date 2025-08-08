@@ -18,7 +18,6 @@ import { CssClasses, toClassName } from "src/utils/CssClasses";
 import { SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import { moveTab, moveTabToEnd, moveTabToNewGroup } from "src/services/MoveTab";
-import { TabSlot } from "./TabSlot";
 import { GroupSlot } from "./GroupSlot";
 import { Identifier } from "src/models/VTWorkspace";
 import { WorkspaceLeaf } from "obsidian";
@@ -99,7 +98,7 @@ export const NavigationContent = () => {
 
 	const getLeaveIDs = (groupID: Identifier) => {
 		const group = content.get(groupID);
-		return [...group.leafIDs, `slot-${groupID}`];
+		return [...group.leafIDs];
 	};
 
 	const entryOf = (groupID: Identifier) => {
@@ -144,7 +143,6 @@ export const NavigationContent = () => {
 												);
 											}
 										)}
-										<TabSlot groupID={groupID} />
 									</SortableContext>
 								)}
 							</Group>

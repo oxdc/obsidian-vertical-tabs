@@ -4,6 +4,7 @@ import { IconButton } from "./IconButton";
 import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
 import { useApp, useSettings } from "src/models/PluginContext";
 import { GroupType } from "src/models/VTWorkspace";
+import { moveTabToEnd } from "src/services/MoveTab";
 import { Menu, WorkspaceParent } from "obsidian";
 import { EVENTS } from "src/constants/Events";
 import {
@@ -125,6 +126,20 @@ export const Group = ({ type, children, group }: GroupProps) => {
 
 	const toolbar = (
 		<Fragment>
+			{!isSidebar && !isEditing && group && (
+				<IconButton
+					icon="plus"
+					action="new-tab"
+					tooltip="New tab"
+					onClick={(e) => {
+						e.stopPropagation();
+						const leaf = workspace.getLeaf("split");
+						moveTabToEnd(app, leaf.id, group);
+						workspace.setActiveLeaf(leaf, { focus: true });
+						workspace.onLayoutChange();
+					}}
+				/>
+			)}
 			{!isSidebar && !isEditing && (
 				<IconButton
 					icon="pencil"
