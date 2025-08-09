@@ -136,7 +136,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 						const leaf = workspace.getLeaf("split");
 						moveTabToEnd(app, leaf.id, group);
 						workspace.setActiveLeaf(leaf, { focus: true });
-						workspace.onLayoutChange();
+						// Removed manual call to workspace.onLayoutChange();
 					}}
 				/>
 			)}
