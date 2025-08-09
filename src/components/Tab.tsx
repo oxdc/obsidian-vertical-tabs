@@ -113,7 +113,6 @@ export const Tab = (props: TabProps) => {
 		// Signal the changes to Obsidian
 		const focus = viewType !== GroupViewType.MissionControlView;
 		workspace.setActiveLeaf(leaf, { focus });
-		workspace.onLayoutChange();
 		// Automatically unhide the group containing the tab
 		toggleHiddenGroup(leaf.parent.id, false);
 		// Lock the focus for Zen mode
