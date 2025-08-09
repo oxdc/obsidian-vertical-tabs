@@ -124,6 +124,14 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		isActiveGroup,
 	};
 
+	const createLeafNewTabAndOpen = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (!group) return;
+		const leaf = workspace.getLeaf("split");
+		moveTabToEnd(app, leaf.id, group);
+		workspace.setActiveLeaf(leaf, { focus: true });
+	};
+
 	const toolbar = (
 		<Fragment>
 			{!isSidebar && !isEditing && group && (
@@ -131,13 +139,7 @@ export const Group = ({ type, children, group }: GroupProps) => {
 					icon="plus"
 					action="new-tab"
 					tooltip="New tab"
-					onClick={(e) => {
-						e.stopPropagation();
-						const leaf = workspace.getLeaf("split");
-						moveTabToEnd(app, leaf.id, group);
-						workspace.setActiveLeaf(leaf, { focus: true });
-						// Removed manual call to workspace.onLayoutChange();
-					}}
+					onClick={createLeafNewTabAndOpen}
 				/>
 			)}
 			{!isSidebar && !isEditing && (
