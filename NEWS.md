@@ -1,3 +1,16 @@
+# Vertical Tabs v0.16.2
+
+## 🎉 What's New:
+
+- **Improved UI & UX**: The old "new tab" button has been replaced with a plus icon in the group toolbar. Creating new tabs no longer causes annoying content shifts (Credit: @DovieW) (#173).
+
+## 🐛 Bug Fixes:
+
+- Resolved a critical issue where folded groups would become invisible in the UI.
+- Performance improvements.
+
+---
+
 # Vertical Tabs v0.16.1
 
 ## 🎉 What's New:
