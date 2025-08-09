@@ -15,7 +15,6 @@ interface NavigationTreeItemProps {
 	webviewIcon?: string;
 	isTab: boolean;
 	isEphemeralTab?: boolean;
-	isTabSlot?: boolean;
 	isLinkedGroupBtn?: boolean;
 	isGroupSlot?: boolean;
 	isSingleGroup?: boolean;
@@ -49,8 +48,8 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 	const { attributes, listeners, setNodeRef, isDragging, isOver } =
 		useSortable({
 			id: props.id ?? "",
-			data: { isTab: props.isTab && !props.isTabSlot },
-			disabled: !props.id || props.isTabSlot || props.isGroupSlot,
+			data: { isTab: props.isTab },
+			disabled: !props.id || props.isGroupSlot,
 		});
 
 	const iconEl = useRef<HTMLDivElement>(null);
@@ -67,13 +66,12 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-sidebar": props.isSidebar,
 		"is-being-dragged": isDragging,
 		"vt-is-being-dragged-over": isOver,
-		"is-tab-slot": props.isTabSlot,
 		"is-linked-btn": props.isLinkedGroupBtn,
 		"is-group-slot": props.isGroupSlot,
 		"is-single-group": props.isSingleGroup,
 		"is-active-group": props.isActiveGroup,
 		"is-linked-group": props.isLinkedGroup,
-		"is-slot": props.isTabSlot || props.isGroupSlot,
+		"is-slot": props.isGroupSlot,
 		"is-highlighted": props.isHighlighted,
 	};
 	const selfElClasses: CssClasses = {
