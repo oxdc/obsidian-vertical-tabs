@@ -115,6 +115,7 @@ interface ViewState {
 	topLeftContainer: Element | null;
 	topRightContainer: Element | null;
 	topRightMainContainer: Element | null;
+	allTopContainers: Array<Element>;
 	cloneToggleButtons: (app: App) => void;
 	removeCloneButtons: () => void;
 	insertCloneButtons: () => void;
@@ -251,7 +252,10 @@ const getCornerContainers = (tabContainers: Array<Element>) => {
 			tabContainer.getBoundingClientRect().x === xMax &&
 			tabContainer.getBoundingClientRect().y === yMin
 	);
-	return { topLeftContainer, topRightContainer };
+	const allTopContainers = visibleTabContainers.filter(
+		(tabContainer) => tabContainer.getBoundingClientRect().y === yMin
+	);
+	return { topLeftContainer, topRightContainer, allTopContainers };
 };
 
 export const useViewState = create<ViewState>()((set, get) => ({
@@ -277,6 +281,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	topLeftContainer: null,
 	topRightContainer: null,
 	topRightMainContainer: null,
+	allTopContainers: [],
 	setGroupTitle: (id: Identifier, name: string) =>
 		set((state) => {
 			state.groupTitles.set(id, name);
@@ -498,7 +503,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 				"vt-mod-top-right-space"
 			);
 		});
-		const { topLeftContainer, topRightContainer } =
+		const { topLeftContainer, topRightContainer, allTopContainers } =
 			getCornerContainers(tabContainers);
 		topLeftContainer?.classList.add("vt-mod-top-left-space");
 		topRightContainer?.classList.add("vt-mod-top-right-space");
@@ -508,10 +513,14 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		);
 		const topRightMainContainer =
 			getCornerContainers(excludedRightSidebar).topRightContainer;
+		allTopContainers.forEach((container) => {
+			container.classList.add("vt-mod-top-space");
+		});
 		set({
 			topLeftContainer,
 			topRightContainer,
 			topRightMainContainer,
+			allTopContainers,
 		});
 	},
 	refreshToggleButtons(app: App) {
