@@ -32,6 +32,8 @@ import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 import { byPinned } from "src/services/SortTabs";
 import { cloneNavButtons } from "src/services/NavButtons";
 import { onDragFile, onDragLeaf } from "src/services/PowerDrag";
+import { getEmbedLinkFromLeaf, getWikiLinkFromLeaf } from "src/services/WikiLinks";
+import { insertToEditor } from "src/services/InsertText";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -431,6 +433,42 @@ export const Tab = (props: TabProps) => {
 			.setTitle("Open in new window")
 			.onClick(() => {
 				workspace.duplicateLeaf(leaf, "window");
+			});
+	});
+	// Wiki links
+	menu.addSeparator();
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Copy as internal link")
+			.onClick(() => {
+				const link = getWikiLinkFromLeaf(app, leaf);
+				if (link) navigator.clipboard.writeText(link);
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Copy as embed")
+			.onClick(() => {
+				const link = getEmbedLinkFromLeaf(app, leaf);
+				if (link) navigator.clipboard.writeText(link);
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Insert as internal link")
+			.onClick(() => {
+				const link = getWikiLinkFromLeaf(app, leaf);
+				if (link && lastActiveLeaf)
+					insertToEditor(app, link, lastActiveLeaf);
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Insert as embed")
+			.onClick(() => {
+				const link = getEmbedLinkFromLeaf(app, leaf);
+				if (link && lastActiveLeaf)
+					insertToEditor(app, link, lastActiveLeaf);
 			});
 	});
 	// If the tab is navigatable, show history options

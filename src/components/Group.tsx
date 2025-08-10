@@ -20,6 +20,11 @@ import {
 	setGroupViewType,
 } from "src/models/VTGroupView";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
+import {
+	getEmbedLinkFromLeaf,
+	getWikiLinkFromLeaf,
+} from "src/services/WikiLinks";
+import { insertToEditor } from "src/services/InsertText";
 
 interface GroupProps {
 	type: GroupType;
@@ -233,6 +238,80 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		item.setSection("control")
 			.setTitle("Close all")
 			.onClick(() => group?.detach());
+	});
+	// Wiki links
+	menu.addSeparator();
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Copy as internal links")
+			.onClick(() => {
+				if (!group) return;
+				const links = group.children.map((child) =>
+					getWikiLinkFromLeaf(app, child)
+				);
+				if (links.length > 0)
+					navigator.clipboard.writeText(links.join("\n"));
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Copy as list")
+			.onClick(() => {
+				if (!group) return;
+				const links = group.children.map(
+					(child) => "- " + getWikiLinkFromLeaf(app, child)
+				);
+				if (links.length > 0)
+					navigator.clipboard.writeText(links.join("\n"));
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Copy as embeds")
+			.onClick(() => {
+				if (!group) return;
+				const links = group.children.map((child) =>
+					getEmbedLinkFromLeaf(app, child)
+				);
+				if (links.length > 0)
+					navigator.clipboard.writeText(links.join("\n"));
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Insert as internal links")
+			.onClick(() => {
+				if (!group) return;
+				const links = group.children.map((child) =>
+					getWikiLinkFromLeaf(app, child)
+				);
+				if (links.length > 0 && lastActiveLeaf)
+					insertToEditor(app, links.join("\n"), lastActiveLeaf);
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Insert as list")
+			.onClick(() => {
+				if (!group) return;
+				const links = group.children.map(
+					(child) => "- " + getWikiLinkFromLeaf(app, child)
+				);
+				if (links.length > 0 && lastActiveLeaf)
+					insertToEditor(app, links.join("\n"), lastActiveLeaf);
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Insert as embeds")
+			.onClick(() => {
+				if (!group) return;
+				const links = group.children.map((child) =>
+					getEmbedLinkFromLeaf(app, child)
+				);
+				if (links.length > 0 && lastActiveLeaf)
+					insertToEditor(app, links.join("\n"), lastActiveLeaf);
+			});
 	});
 
 	const { getLinkedFolder, removeLinkedGroup } = useViewState();
