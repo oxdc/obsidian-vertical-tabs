@@ -19,7 +19,7 @@
 		"@typescript-eslint/eslint-plugin": "5.29.0",
 		"@typescript-eslint/parser": "5.29.0",
 		"builtin-modules": "3.3.0",
-		"esbuild": "^0.23.1",
+		"esbuild": "^0.25.0",
 		"esbuild-sass-plugin": "^3.3.1",
 		"obsidian": "latest",
 		"obsidian-typings": "^2.35.0",

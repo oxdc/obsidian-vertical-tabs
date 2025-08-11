@@ -1,12 +1,24 @@
+// Manual tab group hiding functionality
+// This only applies when zen mode is disabled - allows users to hide tab groups
+// by clicking the eye icon in the group header
 body:not(.vt-zen-mode) .workspace-split.mod-root {
 	.workspace-tabs.is-hidden {
+		// Hide tab groups that are manually marked as hidden
 		display: none;
 	}
 
 	.workspace-split {
+		// Hide all workspace splits by default to prevent visually empty containers from showing
 		display: none;
 
+		// Show splits that contain at least one visible tab group (#21)
 		&:has(.workspace-tabs:not(.is-hidden)) {
+			display: flex;
+		}
+
+		// Show splits from third-party plugins that don't contain workspace tabs
+		// (e.g., Excalidraw embeds, custom plugin containers) (#166)
+		&:not(:has(.workspace-tabs)) {
 			display: flex;
 		}
 	}

@@ -92,6 +92,17 @@ export const NavigationHeader = (props: NavigationHeaderProps) => {
 			.onClick(() => setSortStrategy(sortStrategies.recentOnBottom))
 			.setChecked(sortStrategy === sortStrategies.recentOnBottom);
 	});
+	sortMenu.addSeparator();
+	sortMenu.addItem((item) => {
+		item.setTitle("Oldest on top")
+			.onClick(() => setSortStrategy(sortStrategies.oldestOnTop))
+			.setChecked(sortStrategy === sortStrategies.oldestOnTop);
+	});
+	sortMenu.addItem((item) => {
+		item.setTitle("Oldest on bottom")
+			.onClick(() => setSortStrategy(sortStrategies.oldestOnBottom))
+			.setChecked(sortStrategy === sortStrategies.oldestOnBottom);
+	});
 
 	return (
 		<div className="nav-header obsidian-vertical-tabs-toolbar">

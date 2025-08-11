@@ -1,4 +1,4 @@
-import { WorkspaceLeaf, WorkspaceParent } from "obsidian";
+import { FileView, WorkspaceLeaf, WorkspaceParent } from "obsidian";
 
 export type TabCompareFn = (a: WorkspaceLeaf, b: WorkspaceLeaf) => number;
 
@@ -31,6 +31,13 @@ export function byActiveTime(a: WorkspaceLeaf, b: WorkspaceLeaf) {
 	return (b.activeTime ?? 0) - (a.activeTime ?? 0);
 }
 
+export function byFileCreationTime(a: WorkspaceLeaf, b: WorkspaceLeaf) {
+	if (a.view instanceof FileView && b.view instanceof FileView) {
+		return (a.view.file?.stat.ctime ?? 0) - (b.view.file?.stat.ctime ?? 0);
+	}
+	return byTitle(a, b);
+}
+
 export const sortStrategies: Record<string, SortStrategy> = {
 	titleAToZ: { compareFn: byTitle, reverse: false },
 	titleZToA: { compareFn: byTitle, reverse: true },
@@ -38,4 +45,6 @@ export const sortStrategies: Record<string, SortStrategy> = {
 	pinnedAtBottom: { compareFn: byPinned, reverse: true },
 	recentOnTop: { compareFn: byActiveTime, reverse: false },
 	recentOnBottom: { compareFn: byActiveTime, reverse: true },
+	oldestOnTop: { compareFn: byFileCreationTime, reverse: false },
+	oldestOnBottom: { compareFn: byFileCreationTime, reverse: true },
 };

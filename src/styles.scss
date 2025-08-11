@@ -2,9 +2,9 @@
 @use "styles/ZenMode.scss";
 @use "styles/TreeItem.scss";
 @use "styles/Tab.scss";
+@use "styles/TabHandle.scss";
 @use "styles/TabIndexViewCue.scss";
 @use "styles/Group.scss";
-@use "styles/TabSlot.scss";
 @use "styles/GroupSlot.scss";
 @use "styles/ToggleSidebar.scss";
 @use "styles/DropIndicator.scss";
@@ -22,6 +22,7 @@
 @use "styles/HistoryBrowserModal.scss";
 @use "styles/MobileDrawers.scss";
 @use "styles/Support.scss";
+@use "styles/FramelessWindowTitle.scss";
 
 .vertical-tabs {
 	display: flex;

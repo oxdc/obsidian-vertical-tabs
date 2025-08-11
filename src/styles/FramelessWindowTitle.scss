@@ -1,0 +1,11 @@
+body:not(.is-grabbing):not(.is-fullscreen).is-hidden-frameless {
+	// Make top tab headers draggable for window movement (#174)
+	.vt-mod-top-space .workspace-tab-header-container {
+		-webkit-app-region: drag;
+	}
+
+	// Make root workspace draggable when all tab headers are manually hidden
+	.workspace-split.mod-root:not(:has(.workspace-tabs:not(.is-hidden))) {
+		-webkit-app-region: drag;
+	}
+}

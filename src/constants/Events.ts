@@ -8,4 +8,5 @@ export const EVENTS = {
 	RESET_KEYBOARD_TAB_SWITCH: "vertical-tabs:reset-keyboard-tab-switch",
 	GROUP_VIEW_CHANGE: "vertical-tabs:group-view-change",
 	EPHEMERAL_TOGGLE: "vertical-tabs:ephemeral-toggle",
+	ALT_KEY_PRESSED: "vertical-tabs:alt-key-pressed",
 } as const;

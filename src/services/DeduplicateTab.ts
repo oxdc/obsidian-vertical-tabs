@@ -83,9 +83,12 @@ export function deduplicateForTargets(
 		leafToKeep.openLinkText(subpath, file.path);
 		removeTask(task.name);
 	}
+	// Only set focus when tabs were actually closed during deduplication.
+	// This prevents interference with focus management for sidebar tabs when
+	// triggered by commands or other plugins. (#164)
 	// If Hover Editor is enabled, we let Hover Editor take care of the focus.
 	// Otherwise, Hover Editor will be closed when we set the focus.
-	if (focus && !isHoverEditorEnabled(app)) {
+	if (focus && sortedLeaves.length > 0 && !isHoverEditorEnabled(app)) {
 		app.workspace.setActiveLeaf(leafToKeep, { focus: false });
 		return leafToKeep;
 	}
@@ -156,11 +159,9 @@ export function deduplicateExistingTabs(
 	);
 	if (activeFile instanceof TFile) {
 		const latestActiveLeaf = useViewState.getState().latestActiveLeaf;
-		// Only focus on the deduplicated tab if the active file is still open
-		// and we are deduplicating different-group tabs and there is no linked leaf.
+		// Only focus on the deduplicated tab if the active file is still open and there is no linked leaf.
 		const focus =
 			!!latestActiveLeaf &&
-			!deduplicateSameGroupTabs &&
 			!hasLinkedLeaf &&
 			getOpenFileOfLeaf(app, latestActiveLeaf) === activeFile;
 		const activeLeaf = deduplicateTab(

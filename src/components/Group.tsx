@@ -4,6 +4,7 @@ import { IconButton } from "./IconButton";
 import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
 import { useApp, useSettings } from "src/models/PluginContext";
 import { GroupType } from "src/models/VTWorkspace";
+import { moveTabToEnd } from "src/services/MoveTab";
 import { Menu, WorkspaceParent } from "obsidian";
 import { EVENTS } from "src/constants/Events";
 import {
@@ -19,6 +20,11 @@ import {
 	setGroupViewType,
 } from "src/models/VTGroupView";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
+import {
+	getEmbedLinkFromLeaf,
+	getWikiLinkFromLeaf,
+} from "src/services/WikiLinks";
+import { insertToEditor } from "src/services/InsertText";
 
 interface GroupProps {
 	type: GroupType;
@@ -123,8 +129,24 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		isActiveGroup,
 	};
 
+	const createLeafNewTabAndOpen = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (!group) return;
+		const leaf = workspace.getLeaf("split");
+		moveTabToEnd(app, leaf.id, group);
+		workspace.setActiveLeaf(leaf, { focus: true });
+	};
+
 	const toolbar = (
 		<Fragment>
+			{!isSidebar && !isEditing && group && (
+				<IconButton
+					icon="plus"
+					action="new-tab"
+					tooltip="New tab"
+					onClick={createLeafNewTabAndOpen}
+				/>
+			)}
 			{!isSidebar && !isEditing && (
 				<IconButton
 					icon="pencil"
@@ -216,6 +238,80 @@ export const Group = ({ type, children, group }: GroupProps) => {
 		item.setSection("control")
 			.setTitle("Close all")
 			.onClick(() => group?.detach());
+	});
+	// Wiki links
+	menu.addSeparator();
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Copy as internal links")
+			.onClick(() => {
+				if (!group) return;
+				const links = group.children.map((child) =>
+					getWikiLinkFromLeaf(app, child)
+				);
+				if (links.length > 0)
+					navigator.clipboard.writeText(links.join("\n"));
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Copy as list")
+			.onClick(() => {
+				if (!group) return;
+				const links = group.children.map(
+					(child) => "- " + getWikiLinkFromLeaf(app, child)
+				);
+				if (links.length > 0)
+					navigator.clipboard.writeText(links.join("\n"));
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Copy as embeds")
+			.onClick(() => {
+				if (!group) return;
+				const links = group.children.map((child) =>
+					getEmbedLinkFromLeaf(app, child)
+				);
+				if (links.length > 0)
+					navigator.clipboard.writeText(links.join("\n"));
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Insert as internal links")
+			.onClick(() => {
+				if (!group) return;
+				const links = group.children.map((child) =>
+					getWikiLinkFromLeaf(app, child)
+				);
+				if (links.length > 0 && lastActiveLeaf)
+					insertToEditor(app, links.join("\n"), lastActiveLeaf);
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Insert as list")
+			.onClick(() => {
+				if (!group) return;
+				const links = group.children.map(
+					(child) => "- " + getWikiLinkFromLeaf(app, child)
+				);
+				if (links.length > 0 && lastActiveLeaf)
+					insertToEditor(app, links.join("\n"), lastActiveLeaf);
+			});
+	});
+	menu.addItem((item) => {
+		item.setSection("wiki-link")
+			.setTitle("Insert as embeds")
+			.onClick(() => {
+				if (!group) return;
+				const links = group.children.map((child) =>
+					getEmbedLinkFromLeaf(app, child)
+				);
+				if (links.length > 0 && lastActiveLeaf)
+					insertToEditor(app, links.join("\n"), lastActiveLeaf);
+			});
 	});
 
 	const { getLinkedFolder, removeLinkedGroup } = useViewState();

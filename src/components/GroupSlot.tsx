@@ -13,7 +13,6 @@ export const GroupSlot = () => {
 		const movedLeaf = await moveTabToNewGroup(app, leaf.id);
 		if (!movedLeaf) return;
 		workspace.setActiveLeaf(movedLeaf, { focus: true });
-		workspace.onLayoutChange();
 		lockFocusOnLeaf(app, movedLeaf);
 	};
 

@@ -1,0 +1,26 @@
+.obsidian-vertical-tabs-container {
+	.vt-tab-container {
+		position: relative;
+
+		.vt-tab-handle {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: transparent !important;
+			cursor: grab;
+		}
+
+		.vt-file-handle {
+			position: absolute;
+			top: 0;
+			left: 0.5em;
+			height: 100%;
+			width: var(--size-4-6);
+			background: transparent !important;
+			z-index: 1000;
+			cursor: copy;
+		}
+	}
+}

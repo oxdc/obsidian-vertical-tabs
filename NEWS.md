@@ -1,3 +1,37 @@
+# Vertical Tabs v0.16.2
+
+## 🎉 What's New:
+
+- **Improved UI & UX**: The old "new tab" button has been replaced with a plus icon in the group toolbar. Creating new tabs no longer causes annoying content shifts (Credit: @DovieW) (#173).
+
+## 🐛 Bug Fixes:
+
+- Resolved a critical issue where folded groups would become invisible in the UI.
+- Performance improvements.
+
+---
+
+# Vertical Tabs v0.16.1
+
+## 🎉 What's New:
+
+- **Power Drag**: Press the Alt/Option key (don't hold it; release immediately!) to enable advanced drag operations on tabs. Drag the tab title to rearrange the workspace layout. Drag the tab handle to insert file links directly into the editor or move the open file to another folder. Visually activated with a grip icon after the Alt key is pressed.
+- **Sort Tabs by Creation Date**: Added new sorting options to organize tabs by file creation time, with oldest-first and newest-first options available (#165).
+
+## 🐛 Bug Fixes:
+
+- Fixed "Reveal current file in file navigation" and "Files: show file explorer" commands not moving focus to the sidebar (#164)
+- Resolved conflict with Excalidraw Plugin where canvas content wasn't displaying properly when inserted into drawings (#166)
+- Corrected navigation button functionality issues (#171)
+- Fixed tab deduplication edge cases (#172, #163)
+
+## ✅ Improvements:
+
+- Updated build tools and development dependencies (security fix)
+- Code structure cleanup for better maintainability
+
+---
+
 # Vertical Tabs v0.16.0
 
 ## 🎉 What's New:
