@@ -118,7 +118,7 @@ export const NavigationContainer = () => {
 				refresh(app);
 				sort();
 			}
-		}, REFRESH_TIMEOUT);
+		});
 	};
 
 	const updateToggles = () => {
