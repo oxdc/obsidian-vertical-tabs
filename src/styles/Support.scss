@@ -13,7 +13,10 @@
 	.buttons {
 		display: flex;
 		flex-direction: row;
-		gap: var(--size-4-5);
+		column-gap: var(--size-4-5);
+		row-gap: var(--size-4-2);
+		flex-wrap: wrap;
+		justify-content: center;
 
 		a {
 			display: flex !important;
