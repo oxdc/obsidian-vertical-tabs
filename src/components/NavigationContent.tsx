@@ -22,6 +22,7 @@ import { GroupSlot } from "./GroupSlot";
 import { Identifier } from "src/models/VTWorkspace";
 import { WorkspaceLeaf } from "obsidian";
 import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
+import { TabSlot } from "./TabSlot";
 
 export const NavigationContent = () => {
 	const { groupIDs, content } = tabCacheStore.getState();
@@ -98,7 +99,7 @@ export const NavigationContent = () => {
 
 	const getLeaveIDs = (groupID: Identifier) => {
 		const group = content.get(groupID);
-		return [...group.leafIDs];
+		return [...group.leafIDs, `slot-${groupID}`];
 	};
 
 	const entryOf = (groupID: Identifier) => {
@@ -143,6 +144,7 @@ export const NavigationContent = () => {
 												);
 											}
 										)}
+										<TabSlot groupID={groupID} />
 									</SortableContext>
 								)}
 							</Group>

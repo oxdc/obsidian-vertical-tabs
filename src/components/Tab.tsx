@@ -65,7 +65,7 @@ export const Tab = (props: TabProps) => {
 		registerViewCueTab,
 	} = useViewState();
 
-	/* Relavent settings */
+	/* Relevant settings */
 	const enableTabZoom = useSettings((state) => state.enableTabZoom);
 	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
 	const isEditingTabs = useViewState((state) => state.isEditingTabs);

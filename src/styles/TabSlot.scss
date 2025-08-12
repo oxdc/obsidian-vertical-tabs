@@ -1,0 +1,14 @@
+.obsidian-vertical-tabs-container .tree-item.is-tab-slot {
+	.tree-item-self {
+		background: none !important;
+		outline: none !important;
+		border: none !important;
+		height: 6px;
+		padding: 0;
+		margin: 0;
+
+		div {
+			display: none;
+		}
+	}
+}

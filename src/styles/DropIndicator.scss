@@ -33,6 +33,10 @@
 		}
 
 		.tree-item.is-group.vt-is-being-dragged-over {
+			.is-tab-slot::before {
+				background: var(--interactive-accent);
+			}
+
 			& {
 				background: hsla(var(--interactive-accent-hsl), 0.1);
 			}
