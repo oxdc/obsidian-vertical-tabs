@@ -1,7 +1,7 @@
 .vertical-tabs.tab-index-view-cue {
 	.obsidian-vertical-tabs-container {
 		.tree-item.is-group.is-active-group {
-			.tree-item.is-tab {
+			.tree-item.is-tab:not(.is-tab-slot) {
 				.tree-item-self {
 					&[data-index]::before {
 						content: attr(data-index);

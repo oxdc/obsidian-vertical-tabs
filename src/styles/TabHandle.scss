@@ -23,4 +23,12 @@
 			cursor: copy;
 		}
 	}
+
+	// TODO: Handle dangling groups. This might be because we refresh the tab cache
+	// while Obsidian is updating the workspace layout.
+	.tree-item.is-group:not(.is-group-slot):not(
+			:has(.tree-item.is-tab:not(.is-tab-slot))
+		) {
+		display: none;
+	}
 }

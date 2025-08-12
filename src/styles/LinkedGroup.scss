@@ -1,4 +1,10 @@
 .obsidian-vertical-tabs-container {
+	.tree-item.is-group.is-linked-group {
+		.tree-item.is-tab.is-tab-slot {
+			display: none;
+		}
+	}
+
 	.tree-item.is-linked-btn .tree-item-self {
 		color: var(--text-faint);
 		word-break: break-all;
