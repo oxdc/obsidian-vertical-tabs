@@ -522,7 +522,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			const pluginInfo = { version, settings };
 			pluginInfo.settings.installationID = "[Redacted]";
 			await navigator.clipboard.writeText(
-				JSON.stringify(pluginInfo, null, 2)
+				"```json\n" + JSON.stringify(pluginInfo, null, 2) + "\n```"
 			);
 			new Notice("Plugin settings copied to clipboard");
 		};
