@@ -1,3 +1,22 @@
+# Vertical Tabs v0.16.3
+
+## 🎉 What's New:
+
+- **Copy as Wikilinks**: New context menu options to copy individual tabs and entire tab groups as wikilinks `[[note]]` or embed links `![[note]]` (#135).
+
+## 🐛 Bug Fixes:
+
+- Fixed window dragging issue when the upper group is hidden. Users can now properly drag the Obsidian window by the tab container area (#174).
+- Resolved tab list refresh problems in Obsidian 1.9+.
+- Fixed issue where tabs could not be dragged to the end of tab groups.
+
+## ✅ Improvements:
+
+- Added debugging tools to the settings tab to assist with troubleshooting.
+- Code structure improvements and cleanup.
+
+---
+
 # Vertical Tabs v0.16.2
 
 ## 🎉 What's New:
