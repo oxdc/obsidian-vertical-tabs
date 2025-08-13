@@ -476,18 +476,18 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		support.createDiv({ cls: "buttons" }).innerHTML = `
 			<a id="vt-support-btn-kofi" href="https://ko-fi.com/oxdcq" target="_blank">
 				<img
-					height="16"
+					width="24"
 					border="0"
-					style="border: 0px; height: 16px; mix-blend-mode: multiply;"
+					style="border: 0px; width: 24px; mix-blend-mode: multiply;"
 					src="https://storage.ko-fi.com/cdn/brandasset/v2/kofi_symbol.png"
 				/>
 				<span>Buy me a coffee</span>
 			</a>
 			<a id="vt-support-btn-github" href="https://github.com/oxdc/obsidian-vertical-tabs" target="_blank">
 				<img
-					height="16"
+					width="24"
 					border="0"
-					style="border: 0px; height: 16px; mix-blend-mode: multiply;"
+					style="border: 0px; width: 24px; mix-blend-mode: multiply;"
 					src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
 				/>
 				<span>Star on GitHub</span>
@@ -560,9 +560,11 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		reloadPluginBtn.onclick = async () => {
 			try {
 				const id = this.plugin.manifest.id;
+				const scorllTop = this.containerEl.scrollTop;
 				await this.app.plugins.disablePlugin(id);
 				await this.app.plugins.enablePlugin(id);
-				this.app.setting.openTabById(id);
+				const newSettingTab = this.app.setting.openTabById(id);
+				newSettingTab.containerEl.scrollTop = scorllTop;
 				new Notice("Vertical Tabs reloaded");
 			} catch (error) {
 				console.error(error);
