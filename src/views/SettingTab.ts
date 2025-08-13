@@ -9,6 +9,7 @@ import {
 	TabNavigationCopyOptions,
 } from "../models/TabNavigation";
 import { linkedFolderSortStrategyOptions } from "../services/OpenFolder";
+import { getLatestVersion } from "src/services/Version";
 
 export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	plugin: ObsidianVerticalTabs;
@@ -27,6 +28,49 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
+
+		// Update check setting
+		const updateSetting = new Setting(containerEl)
+			.setName("Updates")
+			.setDesc("Checking for updates...");
+
+		// Async update check
+		(async () => {
+			const errorMessage =
+				"Failed to check for updates. Please check your internet connection.";
+			try {
+				const versions = await getLatestVersion(this.plugin);
+				const { current_version, latest_version } = versions;
+				const pluginId = this.plugin.manifest.id;
+
+				if (!latest_version) {
+					updateSetting.setDesc(errorMessage);
+				} else if (current_version !== latest_version) {
+					updateSetting
+						.setDesc(
+							`New version available! You have ${current_version}, latest is ${latest_version}`
+						)
+						.addButton((button) => {
+							button
+								.setButtonText("View in plugin store")
+								.setCta()
+								.onClick(() => {
+									window.open(
+										`obsidian://show-plugin?id=${pluginId}`,
+										"_blank",
+										"noopener noreferrer"
+									);
+								});
+						});
+				} else {
+					updateSetting.setDesc(
+						`You're up to date! Current version: ${current_version}`
+					);
+				}
+			} catch (error) {
+				updateSetting.setDesc(errorMessage);
+			}
+		})();
 
 		if (this.plugin.settings.backgroundMode) {
 			const warning = containerEl.createDiv({
@@ -467,6 +511,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			},
 		});
 		bugReport.appendText(".");
+
 		const debuggingHelper = support.createDiv({ cls: "debugging-helper" });
 		const copySettingsBtn = debuggingHelper.createEl("button");
 		setIcon(copySettingsBtn, "copy");
