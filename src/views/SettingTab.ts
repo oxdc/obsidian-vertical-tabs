@@ -1,4 +1,4 @@
-import { App, Platform, PluginSettingTab, Setting } from "obsidian";
+import { App, Platform, PluginSettingTab, setIcon, Setting } from "obsidian";
 import ObsidianVerticalTabs from "../main";
 import { useSettings } from "../models/PluginContext";
 import { EVENTS } from "../constants/Events";
@@ -427,32 +427,155 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					});
 			});
 
-		containerEl.createDiv({ cls: "vt-support" }).innerHTML = `
-			<div class="title">Enjoying Vertical Tabs?</div>
-			<div class="buttons">
-				<a id="vt-support-btn-kofi" href="https://ko-fi.com/oxdcq" target="_blank">
-					<img
-						height="16"
-						border="0"
-						style="border: 0px; height: 16px;"
-						src="https://storage.ko-fi.com/cdn/brandasset/v2/kofi_symbol.png"
-					/>
-					<span>Buy me a coffee</span>
-				</a>
-				<a id="vt-support-btn-github" href="https://github.com/oxdc/obsidian-vertical-tabs" target="_blank">
-					<img
-						height="16"
-						border="0"
-						style="border: 0px; height: 16px;"
-						src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-					/>
-					<span>Star on GitHub</span>
-				</a>
-			</div>
-			<div class="bug-report">
-				Facing issues or have suggestions? <a href="https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose" target="_blank">Submit a report</a>.
-			</div>
+		const support = containerEl.createDiv({ cls: "vt-support" });
+		support.createDiv({ cls: "title", text: "Enjoying Vertical Tabs?" });
+		support.createDiv({ cls: "buttons" }).innerHTML = `
+			<a id="vt-support-btn-kofi" href="https://ko-fi.com/oxdcq" target="_blank">
+				<img
+					height="16"
+					border="0"
+					style="border: 0px; height: 16px; mix-blend-mode: multiply;"
+					src="https://storage.ko-fi.com/cdn/brandasset/v2/kofi_symbol.png"
+				/>
+				<span>Buy me a coffee</span>
+			</a>
+			<a id="vt-support-btn-github" href="https://github.com/oxdc/obsidian-vertical-tabs" target="_blank">
+				<img
+					height="16"
+					border="0"
+					style="border: 0px; height: 16px; mix-blend-mode: multiply;"
+					src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+				/>
+				<span>Star on GitHub</span>
+			</a>
 		`;
+		const bugReport = support.createDiv({ cls: "bug-report" });
+		bugReport.appendText("Facing issues or have suggestions? ");
+		bugReport.createEl("a", {
+			text: "Check out the documentation",
+			attr: {
+				href: "https://oxdc.github.io/obsidian-vertical-tabs-docs/",
+				target: "_blank",
+			},
+		});
+		bugReport.appendText(" or ");
+		bugReport.createEl("a", {
+			text: "submit a report",
+			attr: {
+				href: "https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose",
+				target: "_blank",
+			},
+		});
+		bugReport.appendText(".");
+		const debuggingHelper = support.createDiv({ cls: "debugging-helper" });
+		const copySettingsBtn = debuggingHelper.createEl("button");
+		setIcon(copySettingsBtn, "copy");
+		copySettingsBtn.appendText("Copy plugin settings");
+		copySettingsBtn.onclick = async () => {
+			const settings = this.plugin.settings;
+			const version = this.plugin.manifest.version;
+			const pluginInfo = { version, settings };
+			pluginInfo.settings.installationID = "[Redacted]";
+			await navigator.clipboard.writeText(
+				JSON.stringify(pluginInfo, null, 2)
+			);
+			new Notice("Plugin settings copied to clipboard");
+		};
+		const showDebugInfoBtn = debuggingHelper.createEl("button");
+		setIcon(showDebugInfoBtn, "bug");
+		showDebugInfoBtn.appendText("Show debug info");
+		showDebugInfoBtn.onclick = () => {
+			this.app.commands.executeCommandById("app:show-debug-info");
+		};
+		if (Platform.isDesktopApp) {
+			const openDevConsoleBtn = debuggingHelper.createEl("button");
+			setIcon(openDevConsoleBtn, "square-terminal");
+			openDevConsoleBtn.appendText("Open dev console");
+			openDevConsoleBtn.onclick = () => {
+				try {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					(window as any)
+						.require("electron")
+						.remote.getCurrentWebContents()
+						.openDevTools();
+				} catch (error) {
+					console.error(error);
+				}
+			};
+		}
+		const openSandboxBtn = debuggingHelper.createEl("button");
+		setIcon(openSandboxBtn, "flask-conical");
+		openSandboxBtn.appendText("Open sandbox vault");
+		openSandboxBtn.onclick = () => {
+			this.app.commands.executeCommandById("app:open-sandbox-vault");
+		};
+		const reloadPluginBtn = debuggingHelper.createEl("button");
+		setIcon(reloadPluginBtn, "rotate-ccw");
+		reloadPluginBtn.appendText("Reload Vertical Tabs");
+		reloadPluginBtn.onclick = async () => {
+			try {
+				const id = this.plugin.manifest.id;
+				await this.app.plugins.disablePlugin(id);
+				await this.app.plugins.enablePlugin(id);
+				this.app.setting.openTabById(id);
+				new Notice("Vertical Tabs reloaded");
+			} catch (error) {
+				console.error(error);
+			}
+		};
+
+		const reloadAppBtn = debuggingHelper.createEl("button", {
+			cls: "mod-destructive",
+		});
+		const reloadAppBtnIcon = reloadAppBtn.createEl("span");
+		setIcon(reloadAppBtnIcon, "app-window-mac");
+		const reloadAppBtnText = reloadAppBtn.createEl("span");
+		reloadAppBtnText.appendText("Reload Obsidian without saving");
+		let clickedOnce = false;
+		let firstClickTime = 0;
+		let countdownInterval: NodeJS.Timeout;
+		// Require clicking twice to reload Obsidian
+		reloadAppBtn.onclick = () => {
+			const currentTime = Date.now();
+			if (!clickedOnce) {
+				// First click
+				clickedOnce = true;
+				firstClickTime = currentTime;
+				let countdown = 5;
+				const updateButtonText = () => {
+					setIcon(reloadAppBtnIcon, "timer");
+					reloadAppBtnText.setText(
+						`Click again to confirm (in ${countdown}s)`
+					);
+				};
+				updateButtonText();
+				// Countdown timer that updates every second
+				countdownInterval = setInterval(() => {
+					countdown--;
+					if (countdown > 0) {
+						updateButtonText();
+					} else {
+						// Reset when countdown reaches 0
+						clearInterval(countdownInterval);
+						clickedOnce = false;
+						firstClickTime = 0;
+						setIcon(reloadAppBtnIcon, "app-window-mac");
+						reloadAppBtnText.setText(
+							"Reload Obsidian without saving"
+						);
+					}
+				}, 1000);
+			} else {
+				// Second click - check if at least 1 second has passed
+				const timeSinceFirstClick = currentTime - firstClickTime;
+				if (timeSinceFirstClick >= 1000) {
+					// Execute the command only if at least 1 second has passed
+					clearInterval(countdownInterval);
+					this.app.commands.executeCommandById("app:reload");
+				}
+				// If less than 1 second has passed, ignore the click
+			}
+		};
 	}
 
 	private displayCustomNavigationStrategy(containerEl: HTMLElement) {
