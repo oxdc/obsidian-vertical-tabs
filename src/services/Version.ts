@@ -8,7 +8,7 @@ interface CachedVersionData {
 }
 
 const CACHE_KEY = "version-cache";
-const CACHE_DURATION = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+const CACHE_DURATION = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
 
 export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 	current_version: string;
