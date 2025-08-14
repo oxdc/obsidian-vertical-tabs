@@ -67,6 +67,18 @@ export function setGroupViewType(
 		if (!leafEl) return;
 		normalizeGroupViewType(group?.containerEl, GroupViewType.Default);
 	};
+	const scrollToActiveLeaf = () => {
+		if (!group) return;
+		const activeIndex = group.currentTab;
+		if (activeIndex < 0 || activeIndex >= group.children.length) return;
+		const activeLeaf = group.children[activeIndex];
+		if (!activeLeaf) return;
+		activeLeaf.containerEl.scrollIntoView({
+			behavior: "smooth",
+			block: "center",
+			inline: "center",
+		});
+	};
 	switch (viewType) {
 		case GroupViewType.ContinuousView:
 		case GroupViewType.ColumnView:
@@ -76,6 +88,7 @@ export function setGroupViewType(
 			group?.containerEl?.addEventListener("dblclick", autoExit, {
 				once: true,
 			});
+			scrollToActiveLeaf();
 			break;
 	}
 }
