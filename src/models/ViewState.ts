@@ -723,6 +723,10 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			if (checking) return true;
 			set({ latestActiveLeaf: target });
 			app.workspace.setActiveLeaf(target, { focus: true });
+			const viewType = identifyGroupViewType(target.parent);
+			if (viewType === GroupViewType.MissionControlView) {
+				setGroupViewType(target.parent, GroupViewType.Default);
+			}
 		} else {
 			// Prevent infinite recursion by using a guard
 			if (callbackGuard.has(userIndex)) return false;
@@ -775,10 +779,15 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	scorllToViewCueFirstTab(app: App) {
 		const { latestActiveLeaf, viewCueFirstTabs } = get();
 		let targetTab: HTMLElement | null = null;
+		let targetLeaf: WorkspaceLeaf | null = null;
 		if (!latestActiveLeaf && viewCueFirstTabs.size === 1) {
 			// If latestActiveLeaf is not set and viewCueFirstTabs has only one entry,
 			// we should scroll to that tab
-			targetTab = viewCueFirstTabs.values().next().value;
+			const firstEntry = viewCueFirstTabs.entries().next().value;
+			if (!firstEntry) return; // should never happen
+			const [id, tab] = firstEntry;
+			targetTab = tab;
+			targetLeaf = app.workspace.getLeafById(id);
 		} else if (latestActiveLeaf) {
 			// If latestActiveLeaf is set, we should scroll to the tab that has the
 			// same parent as the latestActiveLeaf
@@ -789,6 +798,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 				if (!leaf || !tab || !leaf.parent) continue;
 				if (activeGroup.id === leaf.parent.id) {
 					targetTab = tab;
+					targetLeaf = leaf;
 					break;
 				}
 			}
@@ -798,6 +808,18 @@ export const useViewState = create<ViewState>()((set, get) => ({
 				behavior: "smooth",
 				block: "start",
 				inline: "nearest",
+			});
+		}
+		if (targetLeaf) {
+			targetLeaf.tabHeaderEl.scrollIntoView({
+				behavior: "smooth",
+				block: "start",
+				inline: "start",
+			});
+			targetLeaf.containerEl.scrollIntoView({
+				behavior: "smooth",
+				block: "start",
+				inline: "start",
 			});
 		}
 	},

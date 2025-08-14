@@ -107,12 +107,8 @@ export function refreshGroupViewTypes(app: App) {
 export function syncUIForGroupView(group: WorkspaceParent | null) {
 	if (!group) return;
 	const viewType = identifyGroupViewType(group);
-	if (
-		viewType === GroupViewType.ContinuousView ||
-		viewType === GroupViewType.ColumnView
-	) {
-		sortLeafDomsInGroup(group);
-	}
+	if (viewType === GroupViewType.Default) return;
+	sortLeafDomsInGroup(group);
 }
 
 export const setColumnViewMinWidth = debounce((value: number) => {

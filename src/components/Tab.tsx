@@ -32,7 +32,10 @@ import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 import { byPinned } from "src/services/SortTabs";
 import { cloneNavButtons } from "src/services/NavButtons";
 import { onDragFile, onDragLeaf } from "src/services/PowerDrag";
-import { getEmbedLinkFromLeaf, getWikiLinkFromLeaf } from "src/services/WikiLinks";
+import {
+	getEmbedLinkFromLeaf,
+	getWikiLinkFromLeaf,
+} from "src/services/WikiLinks";
 import { insertToEditor } from "src/services/InsertText";
 
 interface TabProps {
@@ -304,6 +307,11 @@ export const Tab = (props: TabProps) => {
 			} else {
 				delete leaf.tabHeaderInnerTitleEl.dataset.index;
 			}
+		}
+		if (viewCueIndex) {
+			leaf.containerEl.dataset.index = viewCueIndex.toString();
+		} else {
+			delete leaf.containerEl.dataset.index;
 		}
 	}, [viewCueIndex, ref]);
 	// Replace the default navigation buttons with our own
