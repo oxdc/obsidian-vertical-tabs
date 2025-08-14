@@ -19,6 +19,7 @@ import {
 	identifyGroupViewType,
 	setGroupViewType,
 } from "src/models/VTGroupView";
+import { addMissionControlToggle } from "src/services/MissionControlToggle";
 import {
 	getEmbedLinkFromLeaf,
 	getWikiLinkFromLeaf,
@@ -200,6 +201,10 @@ export const Group = (props: GroupProps) => {
 			unlinkGroup();
 		}
 	}, [group]);
+	// Add mission control toggle button to group tab header
+	useEffect(() => {
+		if (!isSidebar) addMissionControlToggle(group);
+	}, [group, isSidebar]);
 
 	/* Menu */
 	const menu = new Menu();
