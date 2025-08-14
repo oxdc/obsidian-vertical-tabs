@@ -33,6 +33,11 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		const updateSetting = new Setting(containerEl)
 			.setName("Updates")
 			.setDesc("Checking for updates...");
+		const updateIndicator = updateSetting.controlEl.createDiv({
+			cls: "vt-update-indicator",
+		});
+		setIcon(updateIndicator, "refresh-ccw");
+		updateIndicator.toggleClass("vt-update-indicator-loading", true);
 
 		// Async update check
 		(async () => {
@@ -46,25 +51,38 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				if (!latest_version) {
 					updateSetting.setDesc(errorMessage);
 				} else if (current_version !== latest_version) {
-					updateSetting
-						.setDesc(
-							`New version available! You have ${current_version}, latest is ${latest_version}`
-						)
-						.addButton((button) => {
-							button
-								.setButtonText("View in plugin store")
-								.setCta()
-								.onClick(() => {
-									window.open(
-										`obsidian://show-plugin?id=${pluginId}`,
-										"_blank",
-										"noopener noreferrer"
-									);
-								});
-						});
+					updateSetting.setDesc(
+						`New version available! You have ${current_version}, latest is ${latest_version}. `
+					);
+					updateSetting.descEl.createEl("a", {
+						text: "Release notes",
+						href: `https://github.com/oxdc/obsidian-vertical-tabs/releases/tag/${latest_version}`,
+						attr: {
+							target: "_blank",
+							rel: "noopener noreferrer",
+						},
+					});
+					updateSetting.addButton((button) => {
+						button
+							.setButtonText("View in plugin store")
+							.setCta()
+							.onClick(() => {
+								window.open(
+									`obsidian://show-plugin?id=${pluginId}`,
+									"_blank",
+									"noopener noreferrer"
+								);
+							});
+					});
+					updateIndicator.hide();
 				} else {
 					updateSetting.setDesc(
 						`You're up to date! Current version: ${current_version}`
+					);
+					setIcon(updateIndicator, "circle-check");
+					updateIndicator.toggleClass(
+						"vt-update-indicator-loading",
+						false
 					);
 				}
 			} catch (error) {

@@ -3,3 +3,25 @@
 	color: var(--text-muted);
 	padding-bottom: 0.75em;
 }
+
+.vt-update-indicator {
+	--icon-size: 24px;
+	color: var(--text-success);
+
+	&.vt-update-indicator-loading {
+		color: var(--text-accent);
+
+		svg {
+			animation: rotate 1s linear infinite;
+
+			@keyframes rotate {
+				from {
+					transform: rotate(0deg);
+				}
+				to {
+					transform: rotate(360deg);
+				}
+			}
+		}
+	}
+}
