@@ -6,11 +6,9 @@
 
 .vt-update-indicator {
 	--icon-size: 24px;
-	color: var(--text-success);
+	color: var(--text-accent);
 
-	&.vt-update-indicator-loading {
-		color: var(--text-accent);
-
+	&.mod-loading {
 		svg {
 			animation: rotate 1s linear infinite;
 
@@ -23,5 +21,13 @@
 				}
 			}
 		}
+	}
+
+	&.mod-error {
+		color: var(--text-error);
+	}
+
+	&.mod-success {
+		color: var(--text-success);
 	}
 }

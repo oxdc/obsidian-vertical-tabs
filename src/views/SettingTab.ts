@@ -29,66 +29,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		// Update check setting
-		const updateSetting = new Setting(containerEl)
-			.setName("Updates")
-			.setDesc("Checking for updates...");
-		const updateIndicator = updateSetting.controlEl.createDiv({
-			cls: "vt-update-indicator",
-		});
-		setIcon(updateIndicator, "refresh-ccw");
-		updateIndicator.toggleClass("vt-update-indicator-loading", true);
-
-		// Async update check
-		(async () => {
-			const errorMessage =
-				"Failed to check for updates. Please check your internet connection.";
-			try {
-				const versions = await getLatestVersion(this.plugin);
-				const { current_version, latest_version } = versions;
-				const pluginId = this.plugin.manifest.id;
-
-				if (!latest_version) {
-					updateSetting.setDesc(errorMessage);
-				} else if (current_version !== latest_version) {
-					updateSetting.setDesc(
-						`New version available! You have ${current_version}, latest is ${latest_version}. `
-					);
-					updateSetting.descEl.createEl("a", {
-						text: "Release notes",
-						href: `https://github.com/oxdc/obsidian-vertical-tabs/releases/tag/${latest_version}`,
-						attr: {
-							target: "_blank",
-							rel: "noopener noreferrer",
-						},
-					});
-					updateSetting.addButton((button) => {
-						button
-							.setButtonText("View in plugin store")
-							.setCta()
-							.onClick(() => {
-								window.open(
-									`obsidian://show-plugin?id=${pluginId}`,
-									"_blank",
-									"noopener noreferrer"
-								);
-							});
-					});
-					updateIndicator.hide();
-				} else {
-					updateSetting.setDesc(
-						`You're up to date! Current version: ${current_version}`
-					);
-					setIcon(updateIndicator, "circle-check");
-					updateIndicator.toggleClass(
-						"vt-update-indicator-loading",
-						false
-					);
-				}
-			} catch (error) {
-				updateSetting.setDesc(errorMessage);
-			}
-		})();
+		this.displayUpdateIndicator(containerEl);
 
 		if (this.plugin.settings.backgroundMode) {
 			const warning = containerEl.createDiv({
@@ -705,6 +646,95 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				// If less than 1 second has passed, ignore the click
 			}
 		};
+	}
+
+	private displayUpdateIndicator(containerEl: HTMLElement) {
+		const entry = new Setting(containerEl).setName("Updates");
+		const indicator = entry.controlEl.createDiv();
+		this.showLoadingState(entry, indicator);
+		this.checkForUpdates(entry, indicator);
+	}
+
+	private showLoadingState(entry: Setting, indicator: HTMLElement) {
+		entry.setDesc("Checking for updates...");
+		entry.settingEl.toggleClass("mod-toggle", true);
+		indicator.className = "vt-update-indicator mod-loading";
+		setIcon(indicator, "refresh-ccw");
+	}
+
+	private async checkForUpdates(entry: Setting, indicator: HTMLElement) {
+		try {
+			const versions = await getLatestVersion(this.plugin);
+			const { currentVersion, latestVersion } = versions;
+			if (!latestVersion) {
+				this.showErrorState(entry, indicator);
+			} else if (currentVersion !== latestVersion) {
+				this.showUpdateAvailable(
+					entry,
+					indicator,
+					currentVersion,
+					latestVersion
+				);
+			} else {
+				this.showUpToDateState(entry, indicator, currentVersion);
+			}
+		} catch (error) {
+			this.showErrorState(entry, indicator);
+		}
+	}
+
+	private showErrorState(entry: Setting, indicator: HTMLElement) {
+		entry.setDesc(
+			"Failed to check for updates. Please check your internet connection."
+		);
+		entry.settingEl.toggleClass("mod-toggle", true);
+		indicator.className = "vt-update-indicator mod-error";
+		setIcon(indicator, "circle-x");
+	}
+
+	private showUpdateAvailable(
+		entry: Setting,
+		indicator: HTMLElement,
+		currentVersion: string,
+		latestVersion: string
+	) {
+		entry.setDesc(
+			`New version available! You have ${currentVersion}, latest is ${latestVersion}. `
+		);
+		this.addReleaseNotesLink(entry, latestVersion);
+		this.addPluginStoreButton(entry);
+		entry.settingEl.toggleClass("mod-toggle", false);
+		indicator.hide();
+	}
+
+	private showUpToDateState(
+		entry: Setting,
+		indicator: HTMLElement,
+		currentVersion: string
+	) {
+		entry.setDesc(`You're up to date! Current version: ${currentVersion}`);
+		entry.settingEl.toggleClass("mod-toggle", true);
+		indicator.className = "vt-update-indicator mod-success";
+		setIcon(indicator, "circle-check");
+	}
+
+	private addReleaseNotesLink(entry: Setting, latestVersion: string) {
+		const releaseUrl = `https://github.com/oxdc/obsidian-vertical-tabs/releases/tag/${latestVersion}`;
+		const linkHtml = `<a href="${releaseUrl}" target="_blank" rel="noopener noreferrer">Release notes</a>`;
+		entry.descEl.createSpan().innerHTML = linkHtml;
+	}
+
+	private addPluginStoreButton(entry: Setting) {
+		const pluginId = this.plugin.manifest.id;
+		const url = `obsidian://show-plugin?id=${pluginId}`;
+		const showPage = () =>
+			window.open(url, "_blank", "noopener noreferrer");
+		entry.addButton((button) => {
+			button
+				.setButtonText("View in plugin store")
+				.setCta()
+				.onClick(showPage);
+		});
 	}
 
 	private displayCustomNavigationStrategy(containerEl: HTMLElement) {

@@ -3,7 +3,7 @@ import ObsidianVerticalTabs from "src/main";
 import { PersistenceManager } from "src/models/PersistenceManager";
 
 interface CachedVersionData {
-	latest_version: string;
+	latestVersion: string;
 	timestamp: number;
 }
 
@@ -11,17 +11,17 @@ const CACHE_KEY = "version-cache";
 const CACHE_DURATION = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
 
 export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
-	current_version: string;
-	latest_version: string | null;
+	currentVersion: string;
+	latestVersion: string | null;
 }> {
-	const current_version = plugin.manifest.version;
+	const currentVersion = plugin.manifest.version;
 
 	// Ensure installationID is available
 	if (!plugin.settings.installationID) {
 		console.error("InstallationID not found in plugin settings");
 		return {
-			current_version,
-			latest_version: null,
+			currentVersion,
+			latestVersion: null,
 		};
 	}
 
@@ -39,8 +39,8 @@ export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 			// If cache is still valid (less than 6 hours old)
 			if (now - cachedData.timestamp < CACHE_DURATION) {
 				return {
-					current_version,
-					latest_version: cachedData.latest_version,
+					currentVersion,
+					latestVersion: cachedData.latestVersion,
 				};
 			}
 		}
@@ -54,12 +54,12 @@ export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 			url: "https://api.github.com/repos/oxdc/obsidian-vertical-tabs/releases/latest",
 			method: "GET",
 		});
-		const latest_version = response.json.tag_name;
+		const latestVersion = response.json.tag_name;
 
 		// Cache the result
 		try {
 			const cacheData: CachedVersionData = {
-				latest_version,
+				latestVersion,
 				timestamp: Date.now(),
 			};
 			persistence.device.set(CACHE_KEY, cacheData);
@@ -68,8 +68,8 @@ export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 		}
 
 		return {
-			current_version,
-			latest_version,
+			currentVersion,
+			latestVersion,
 		};
 	} catch (error) {
 		console.error("Failed to fetch latest version:", error);
@@ -80,8 +80,8 @@ export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 				persistence.device.get<CachedVersionData>(CACHE_KEY);
 			if (cachedData) {
 				return {
-					current_version,
-					latest_version: cachedData.latest_version,
+					currentVersion,
+					latestVersion: cachedData.latestVersion,
 				};
 			}
 		} catch (cacheError) {
@@ -92,8 +92,8 @@ export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 		}
 
 		return {
-			current_version,
-			latest_version: null,
+			currentVersion,
+			latestVersion: null,
 		};
 	}
 }
