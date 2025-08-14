@@ -258,6 +258,9 @@ const getCornerContainers = (tabContainers: Array<Element>) => {
 	return { topLeftContainer, topRightContainer, allTopContainers };
 };
 
+// Guard to prevent recursive callback calls
+const callbackGuard = new Set<number>();
+
 export const useViewState = create<ViewState>()((set, get) => ({
 	groupTitles: loadViewState() ?? createNewGroupTitles(),
 	hiddenGroups: loadHiddenGroups(),
@@ -721,8 +724,17 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			set({ latestActiveLeaf: target });
 			app.workspace.setActiveLeaf(target, { focus: true });
 		} else {
+			// Prevent infinite recursion by using a guard
+			if (callbackGuard.has(userIndex)) return false;
 			const defaultCallback = viewCueNativeCallbacks.get(userIndex);
-			if (defaultCallback) return defaultCallback(checking);
+			if (defaultCallback) {
+				callbackGuard.add(userIndex);
+				try {
+					return defaultCallback(checking);
+				} finally {
+					callbackGuard.delete(userIndex);
+				}
+			}
 		}
 	},
 	modifyViewCueCallback(app: App) {
