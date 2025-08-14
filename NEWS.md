@@ -1,3 +1,16 @@
+# Vertical Tabs v0.16.4
+
+## 🐛 Bug Fixes:
+
+- **Auto-unhide last remaining group**: Automatically shows the final hidden group when all others are closed (#175).
+- **Fixed folded groups visibility**: Resolved issue where folded groups would disappear from view (#176).
+
+## ✅ Improvements:
+
+- Improved settings tab and debugging tools.
+
+---
+
 # Vertical Tabs v0.16.3
 
 ## 🎉 What's New:
