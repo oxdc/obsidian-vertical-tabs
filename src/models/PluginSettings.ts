@@ -31,6 +31,8 @@ interface ObsidianVerticalTabsSettings {
 	missionControlViewZoomFactor: number;
 	disablePointerInMissionControlView: boolean;
 	backgroundMode: boolean;
+	scrollableTabs: boolean;
+	scrollableTabsMinWidth: number;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -63,6 +65,8 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	missionControlViewZoomFactor: 0.5,
 	disablePointerInMissionControlView: true,
 	backgroundMode: false,
+	scrollableTabs: false,
+	scrollableTabsMinWidth: 100,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;

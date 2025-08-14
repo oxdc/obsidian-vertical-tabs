@@ -122,8 +122,57 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 							useSettings
 								.getState()
 								.setSettings({ showActiveTabs: value });
+							this.refresh();
 						});
 				});
+
+			if (!this.plugin.settings.showActiveTabs) {
+				new Setting(containerEl)
+					.setName("Scrollable tabs")
+					.setDesc(
+						"Enable horizontal scrolling for tab headers when they exceed available width."
+					)
+					.addToggle((toggle) => {
+						toggle
+							.setValue(this.plugin.settings.scrollableTabs)
+							.onChange(async (value) => {
+								useSettings
+									.getState()
+									.setSettings({ scrollableTabs: value });
+								this.refresh();
+							});
+					});
+
+				if (this.plugin.settings.scrollableTabs) {
+					new Setting(containerEl)
+						.setName("Tab minimum width")
+						.setDesc("Minimum width of each tab header in pixels.")
+						.addExtraButton((button) => {
+							button
+								.setIcon("reset")
+								.setTooltip("Reset to default")
+								.onClick(async () => {
+									useSettings.getState().setSettings({
+										scrollableTabsMinWidth: 100,
+									});
+									this.display();
+								});
+						})
+						.addSlider((slider) => {
+							slider
+								.setLimits(50, 300, 10)
+								.setValue(
+									this.plugin.settings.scrollableTabsMinWidth
+								)
+								.setDynamicTooltip()
+								.onChange(async (value) => {
+									useSettings.getState().setSettings({
+										scrollableTabsMinWidth: value,
+									});
+								});
+						});
+				}
+			}
 
 			new Setting(containerEl)
 				.setName("Hide inactive tabs in Zen Mode")

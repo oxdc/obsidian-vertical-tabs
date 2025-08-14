@@ -1,0 +1,18 @@
+body.vt-scrollable-tabs:not(.vt-show-active-tabs) {
+	--vt-scrollable-tabs-min-width: 100px;
+
+	.workspace-split.mod-root {
+		.workspace-tab-header-container-inner {
+			margin-right: var(--size-4-2);
+		}
+
+		.workspace-tab-header {
+			min-width: var(--vt-scrollable-tabs-min-width);
+
+			&.is-active {
+				flex-shrink: 0;
+				flex-basis: auto;
+			}
+		}
+	}
+}

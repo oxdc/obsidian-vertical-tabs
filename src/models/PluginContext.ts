@@ -28,6 +28,7 @@ import {
 import { EVENTS } from "src/constants/Events";
 import { PersistenceManager } from "./PersistenceManager";
 import { setShowActiveTabs, getShowActiveTabs } from "src/history/Migration";
+import { setScrollableTabsMinWidth } from "src/services/ScrollableTabs";
 
 export type SettingsContext = [Settings, (mutator: SettingsMutator) => void];
 
@@ -86,6 +87,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			setMissionControlViewZoomFactor(
 				settings.missionControlViewZoomFactor
 			);
+			setScrollableTabsMinWidth(settings.scrollableTabsMinWidth);
 			return settings;
 		},
 		setSettings: (mutator: SettingsMutator) => {
@@ -189,7 +191,8 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 		setGroupViewOptions(app: App, options: GroupViewOptions) {
 			get().setSettings(options);
 			refreshGroupViewTypes(app);
-			const { columnViewMinWidth, missionControlViewZoomFactor } = options;
+			const { columnViewMinWidth, missionControlViewZoomFactor } =
+				options;
 			if (columnViewMinWidth) {
 				setColumnViewMinWidth(columnViewMinWidth);
 			}
