@@ -25,6 +25,7 @@
 @use "styles/Support.scss";
 @use "styles/FramelessWindowTitle.scss";
 @use "styles/ScrollableTabs.scss";
+@use "styles/AutoHideHorizontalTabs.scss";
 
 .vertical-tabs {
 	display: flex;

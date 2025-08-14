@@ -1,0 +1,9 @@
+// Hide horizontal tabs in the root split when left sidebar is open (#176)
+body.vt-auto-hide-horizontal-tabs {
+	.mod-sidedock.mod-left-split:not(.is-sidedock-collapsed)
+		~ .workspace-split.mod-root {
+		.workspace-tabs > .workspace-tab-header-container {
+			display: none;
+		}
+	}
+}

@@ -175,6 +175,21 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			}
 
 			new Setting(containerEl)
+				.setName("Auto hide horizontal tabs")
+				.setDesc(
+					"Automatically hide horizontal tabs when the left sidebar is open."
+				)
+				.addToggle((toggle) => {
+					toggle
+						.setValue(this.plugin.settings.autoHideHorizontalTabs)
+						.onChange(async (value) => {
+							useSettings.getState().setSettings({
+								autoHideHorizontalTabs: value,
+							});
+						});
+				});
+
+			new Setting(containerEl)
 				.setName("Hide inactive tabs in Zen Mode")
 				.setDesc(
 					"Hide inactive horizontal tabs when Zen Mode is enabled."

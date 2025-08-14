@@ -33,6 +33,7 @@ interface ObsidianVerticalTabsSettings {
 	backgroundMode: boolean;
 	scrollableTabs: boolean;
 	scrollableTabsMinWidth: number;
+	autoHideHorizontalTabs: boolean;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -67,6 +68,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	backgroundMode: false,
 	scrollableTabs: false,
 	scrollableTabsMinWidth: 100,
+	autoHideHorizontalTabs: false,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;

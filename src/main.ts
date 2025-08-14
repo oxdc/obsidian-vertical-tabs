@@ -122,6 +122,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.toggle("vt-hide-sidebars", this.settings.hideSidebars);
 		this.toggle("vt-show-active-tabs", this.settings.showActiveTabs);
 		this.toggle("vt-scrollable-tabs", this.settings.scrollableTabs);
+		this.toggle(
+			"vt-auto-hide-horizontal-tabs",
+			this.settings.autoHideHorizontalTabs
+		);
 		this.toggle("vt-exclude-self", this.settings.sidebarExcludeSelf);
 		this.toggle("vt-trim-tab-names", this.settings.trimTabNames);
 		this.toggle("vt-show-more-buttons", this.settings.showMoreButtons);
