@@ -1,4 +1,5 @@
-body.vt-scrollable-tabs:not(.vt-show-active-tabs) {
+body.vt-scrollable-tabs:not(.vt-show-active-tabs),
+body.vt-scrollable-tabs.is-popout-window {
 	--vt-scrollable-tabs-min-width: 100px;
 
 	.workspace-split.mod-root {
@@ -8,6 +9,9 @@ body.vt-scrollable-tabs:not(.vt-show-active-tabs) {
 
 		.workspace-tab-header {
 			min-width: var(--vt-scrollable-tabs-min-width);
+			max-width: 100%;
+			width: auto;
+			container-type: normal;
 
 			&.is-active {
 				flex-shrink: 0;
