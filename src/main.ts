@@ -24,7 +24,7 @@ import { patchQuickSwitcher } from "./services/EphemeralTabs";
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
 import { SAFE_DETACH_TIMEOUT } from "./services/CloseTabs";
-import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
+import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 import { PersistenceManager } from "./models/PersistenceManager";
 import { migrateAllData } from "./history/Migration";
 import { VERTICAL_TABS_ICON } from "./icon";
@@ -42,12 +42,11 @@ export default class ObsidianVerticalTabs extends Plugin {
 		await this.updateViewStates();
 		await this.patchViews();
 		this.addSettingTab(new ObsidianVerticalTabsSettingTab(this.app, this));
-		setTimeout(() => this.openVerticalTabs(), REFRESH_TIMEOUT);
 		this.app.workspace.onLayoutReady(() => {
-			setTimeout(
-				() => useViewState.getState().refreshToggleButtons(this.app),
-				REFRESH_TIMEOUT_LONG
-			);
+			this.openVerticalTabs();
+			setTimeout(() => {
+				useViewState.getState().refreshToggleButtons(this.app);
+			}, REFRESH_TIMEOUT_LONG);
 		});
 	}
 
