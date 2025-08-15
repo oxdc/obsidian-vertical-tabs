@@ -85,6 +85,7 @@ export function setGroupViewType(
 			sortLeafDomsInGroup(group);
 			break;
 		case GroupViewType.MissionControlView:
+			sortLeafDomsInGroup(group);
 			group?.containerEl?.addEventListener("dblclick", autoExit, {
 				once: true,
 			});
