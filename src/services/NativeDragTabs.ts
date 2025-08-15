@@ -454,17 +454,19 @@ export class NativeDragTabs {
 				parent.tabsContainerEl.getBoundingClientRect();
 
 			// Show vertical indicator (left/right) for Mission Control grid
+			// Position both indicators in center of gap (20px gap / 2 = 10px offset)
 			const leafCenterX = rect.left + rect.width / 2;
+			const gapOffset = 10; // Half of the 20px gap between tabs
 
 			if (clientX < leafCenterX) {
-				// Left of the leaf - show indicator on left side
+				// Left of the leaf - show indicator in center of left gap
 				this.dragState.dropIndicator.style.left = `${
-					rect.left - containerRect.left - 2
+					rect.left - containerRect.left - gapOffset
 				}px`;
 			} else {
-				// Right of the leaf - show indicator on right side
+				// Right of the leaf - show indicator in center of right gap
 				this.dragState.dropIndicator.style.left = `${
-					rect.right - containerRect.left - 1
+					rect.right - containerRect.left + gapOffset
 				}px`;
 			}
 
