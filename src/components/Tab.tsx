@@ -324,15 +324,13 @@ export const Tab = (props: TabProps) => {
 	menu.addItem((item) => {
 		item.setSection("bookmark")
 			.setTitle("Bookmark")
-			.onClick(() =>
-				createBookmarkForLeaf(app, leaf, leaf.getDisplayText())
-			);
+			.onClick(() => createBookmarkForLeaf(app, leaf, title));
 	});
 	menu.addItem((item) => {
 		item.setSection("bookmark")
 			.setTitle("Bookmark and close")
 			.onClick(async () => {
-				await createBookmarkForLeaf(app, leaf, leaf.getDisplayText());
+				await createBookmarkForLeaf(app, leaf, title);
 				leaf.detach();
 			});
 	});
