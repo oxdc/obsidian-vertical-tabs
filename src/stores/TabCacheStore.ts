@@ -138,8 +138,9 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 						(entry.leaves.length > 0
 							? entry.leaves[0].parent
 							: null);
-					if (group)
+					if (group) {
 						newTabs.get(key).leaves = sortTabs(group, sortStrategy);
+					}
 				}
 			}
 			set({ content: newTabs });
