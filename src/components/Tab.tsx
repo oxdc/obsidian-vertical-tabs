@@ -27,10 +27,15 @@ import { zoomIn, zoomOut, resetZoom } from "src/services/TabZoom";
 import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
 import { HistoryBrowserModal } from "src/views/HistoryBrowserModal";
 import { getOpenFileOfLeaf } from "src/services/GetTabs";
-import { GroupViewType, setGroupViewType } from "src/models/VTGroupView";
+import {
+	GroupViewType,
+	identifyGroupViewType,
+	setGroupViewType,
+} from "src/models/VTGroupView";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 import { byPinned } from "src/services/SortTabs";
 import { cloneNavButtons } from "src/services/NavButtons";
+import { addPinnedIndicator } from "src/services/PinnedIndicator";
 import { onDragFile, onDragLeaf } from "src/services/PowerDrag";
 import {
 	getEmbedLinkFromLeaf,
@@ -267,6 +272,297 @@ export const Tab = (props: TabProps) => {
 	const handleFileDrag = (e: React.DragEvent<HTMLDivElement>) =>
 		onDragFile(app, e, leaf);
 
+	/* Menu */
+	const buildMenu = (includeGroupViewControls = true) => {
+		/* Menu */
+		const menu = new Menu();
+		// Bookmark
+		// TODO: Add customizable title support for bookmarks
+		menu.addItem((item) => {
+			item.setSection("bookmark")
+				.setTitle("Bookmark")
+				.onClick(() => createBookmarkForLeaf(app, leaf, title));
+		});
+		menu.addItem((item) => {
+			item.setSection("bookmark")
+				.setTitle("Bookmark and close")
+				.onClick(async () => {
+					await createBookmarkForLeaf(app, leaf, title);
+					leaf.detach();
+				});
+		});
+		// Show group view options when there's a single group with visible tabs
+		// and group view controls are enabled
+		if (isSingleGroup && viewType && includeGroupViewControls) {
+			menu.addSeparator();
+			menu.addItem((item) => {
+				item.setSection("group-view")
+					.setTitle("Default view")
+					.setDisabled(viewType === GroupViewType.Default)
+					.onClick(() =>
+						setGroupViewType(leaf.parent, GroupViewType.Default)
+					);
+			});
+			menu.addItem((item) => {
+				item.setSection("group-view")
+					.setTitle("Continuous view")
+					.setDisabled(viewType === GroupViewType.ContinuousView)
+					.onClick(() =>
+						setGroupViewType(
+							leaf.parent,
+							GroupViewType.ContinuousView
+						)
+					);
+			});
+			menu.addItem((item) => {
+				item.setSection("group-view")
+					.setTitle("Column view")
+					.setDisabled(viewType === GroupViewType.ColumnView)
+					.onClick(() =>
+						setGroupViewType(leaf.parent, GroupViewType.ColumnView)
+					);
+			});
+			menu.addItem((item) => {
+				item.setSection("group-view")
+					.setTitle("Mission control view")
+					.setDisabled(viewType === GroupViewType.MissionControlView)
+					.onClick(() =>
+						setGroupViewType(
+							leaf.parent,
+							GroupViewType.MissionControlView
+						)
+					);
+			});
+		}
+		// Tab control
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("close")
+				.setTitle("Close")
+				.setDisabled(isPinned)
+				.onClick(() => leaf.detach());
+		});
+		menu.addItem((item) => {
+			item.setSection("close")
+				.setTitle("Close Others")
+				.onClick(() => {
+					closeOthersInGroup(app, leaf);
+					makeLeafNonEphemeral(leaf);
+				});
+		});
+		menu.addItem((item) => {
+			item.setSection("close")
+				.setTitle("Close tabs to the top")
+				.onClick(() => closeTabsToTopInGroup(app, leaf));
+		});
+		menu.addItem((item) => {
+			item.setSection("close")
+				.setTitle("Close tabs to the bottom")
+				.onClick(() => closeTabsToBottomInGroup(app, leaf));
+		});
+		menu.addItem((item) => {
+			item.setSection("close")
+				.setTitle("Close all")
+				.setDisabled(isPinned)
+				.onClick(() => leaf.parent.detach());
+		});
+		// Pinning
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("pin")
+				.setTitle(isPinned ? "Unpin" : "Pin")
+				.onClick(togglePinned);
+		});
+		// Workspace control
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("leaf")
+				.setTitle("Move to new window")
+				.onClick(() => {
+					workspace.duplicateLeaf(leaf, "window");
+					leaf.detach();
+				});
+		});
+		menu.addItem((item) => {
+			item.setSection("leaf")
+				.setTitle("Split right")
+				.onClick(() =>
+					workspace.duplicateLeaf(leaf, "split", "vertical")
+				);
+		});
+		menu.addItem((item) => {
+			item.setSection("leaf")
+				.setTitle("Split down")
+				.onClick(() =>
+					workspace.duplicateLeaf(leaf, "split", "horizontal")
+				);
+		});
+		menu.addItem((item) => {
+			item.setSection("leaf")
+				.setTitle("Open in new window")
+				.onClick(() => {
+					workspace.duplicateLeaf(leaf, "window");
+				});
+		});
+		// Wiki links
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("wiki-link")
+				.setTitle("Copy as internal link")
+				.onClick(() => {
+					const link = getWikiLinkFromLeaf(app, leaf);
+					if (link) navigator.clipboard.writeText(link);
+				});
+		});
+		menu.addItem((item) => {
+			item.setSection("wiki-link")
+				.setTitle("Copy as embed")
+				.onClick(() => {
+					const link = getEmbedLinkFromLeaf(app, leaf);
+					if (link) navigator.clipboard.writeText(link);
+				});
+		});
+		menu.addItem((item) => {
+			item.setSection("wiki-link")
+				.setTitle("Insert as internal link")
+				.onClick(() => {
+					const link = getWikiLinkFromLeaf(app, leaf);
+					if (link && lastActiveLeaf)
+						insertToEditor(app, link, lastActiveLeaf);
+				});
+		});
+		menu.addItem((item) => {
+			item.setSection("wiki-link")
+				.setTitle("Insert as embed")
+				.onClick(() => {
+					const link = getEmbedLinkFromLeaf(app, leaf);
+					if (link && lastActiveLeaf)
+						insertToEditor(app, link, lastActiveLeaf);
+				});
+		});
+		// If the tab is navigatable, show history options
+		if (leaf.view.navigation && !alwaysOpenInNewTab) {
+			const historyLength =
+				leaf.history.backHistory.length +
+				leaf.history.forwardHistory.length;
+			menu.addSeparator();
+			menu.addItem((item) => {
+				item.setSection("history")
+					.setTitle(`Back`)
+					.setDisabled(leaf.history.backHistory.length === 0)
+					.onClick(() => leaf.history.back());
+			});
+			menu.addItem((item) => {
+				item.setSection("history")
+					.setTitle("Forward")
+					.setDisabled(leaf.history.forwardHistory.length === 0)
+					.onClick(() => leaf.history.forward());
+			});
+			menu.addItem((item) => {
+				item.setSection("history").setTitle("Browse history");
+				if (Platform.isDesktop) {
+					// On desktop, we show tab history in a submenu
+					const submenu = item.setSubmenu();
+					addHistoryBrowserToMenu(leaf, submenu);
+				} else {
+					// On mobile, we show it as a modal (submenus are not supported)
+					item.setDisabled(historyLength === 0);
+					item.onClick(() =>
+						new HistoryBrowserModal(app, leaf).open()
+					);
+				}
+			});
+			menu.addItem((item) => {
+				item.setSection("history")
+					.setTitle("Bookmark history")
+					.setDisabled(historyLength === 0)
+					.onClick(() => createBookmarkForLeafHistory(app, leaf));
+			});
+			menu.addItem((item) => {
+				item.setSection("history")
+					.setTitle("Open history in new group")
+					.setDisabled(historyLength === 0)
+					.onClick(openHistoryInNewGroup);
+			});
+			menu.addItem((item) => {
+				item.setSection("history")
+					.setTitle("Clear history")
+					.setDisabled(historyLength === 0)
+					.onClick(() => {
+						leaf.history.backHistory = [];
+						leaf.history.forwardHistory = [];
+						setTimeout(() => refresh(app), REFRESH_TIMEOUT);
+					});
+			});
+		}
+		// Placeholder for deferred (inactive) tabs
+		if (isDeferredLeaf(leaf) && !alwaysOpenInNewTab) {
+			menu.addSeparator();
+			menu.addItem((item) => {
+				item.setSection("history")
+					.setTitle("(Inactive)")
+					.setDisabled(true);
+			});
+			menu.addItem((item) => {
+				item.setSection("history")
+					.setTitle("Load history")
+					.onClick(async () => await loadDeferredLeaf(leaf));
+			});
+		}
+		// Per-tab zoom
+		if (enableTabZoom) {
+			menu.addSeparator();
+			if (Platform.isDesktop) {
+				// On desktop, we show zoom options in a submenu
+				menu.addItem((item) => {
+					item.setSection("zoom").setTitle("Zoom");
+					const submenu = item.setSubmenu();
+					if (isWebViewer) {
+						const view = leaf.view as BrowserView;
+						addZoomOptionsToMenu(view, submenu);
+					} else {
+						addZoomOptionsToMenu(leaf, submenu);
+					}
+				});
+			} else {
+				// On mobile, we add them directly to the parent menu (submenus are not supported)
+				addZoomOptionsToMenu(leaf, menu);
+			}
+		}
+		// Show tab options
+		if (Platform.isDesktop) {
+			menu.addSeparator();
+			menu.addItem((item) => {
+				item.setSection("more").setTitle("More options");
+				const submenu = item.setSubmenu();
+				if (isWebViewer) {
+					const webview = leaf.view as BrowserView;
+					submenu.addItem((item) => {
+						item.setSection("webview")
+							.setTitle("Toggle reader mode")
+							.onClick(() => webview.toggleReaderMode());
+					});
+					submenu.addItem((item) => {
+						item.setSection("webview")
+							.setTitle("Save to vault")
+							.onClick(() => saveAsMarkdown(webview));
+					});
+				} else {
+					// For non-webview tabs, we copy those provided by Obsidian
+					leaf.view.onPaneMenu(submenu, "more-options");
+					const excludedSections = ["open", "find", "pane"];
+					submenu.items = submenu.items.filter(
+						(item) =>
+							item.section === undefined ||
+							!excludedSections.includes(item.section)
+					);
+				}
+			});
+		}
+
+		return menu;
+	};
+
 	/* Effects */
 	// Bind and track the events that used for syncing with Obsidian,
 	// when the states are changed outside of the component.
@@ -316,282 +612,31 @@ export const Tab = (props: TabProps) => {
 	}, [viewCueIndex, ref]);
 	// Replace the default navigation buttons with our own
 	useEffect(() => cloneNavButtons(leaf, app), [leaf.id, leaf.view]);
-
-	/* Menu */
-	const menu = new Menu();
-	// Bookmark
-	// TODO: Add customizable title support for bookmarks
-	menu.addItem((item) => {
-		item.setSection("bookmark")
-			.setTitle("Bookmark")
-			.onClick(() => createBookmarkForLeaf(app, leaf, title));
-	});
-	menu.addItem((item) => {
-		item.setSection("bookmark")
-			.setTitle("Bookmark and close")
-			.onClick(async () => {
-				await createBookmarkForLeaf(app, leaf, title);
-				leaf.detach();
-			});
-	});
-	// Show group view options when there's only one group and only tabs are visible
-	if (isSingleGroup && viewType) {
-		menu.addSeparator();
-		menu.addItem((item) => {
-			item.setSection("group-view")
-				.setTitle("Default view")
-				.setDisabled(viewType === GroupViewType.Default)
-				.onClick(() =>
-					setGroupViewType(leaf.parent, GroupViewType.Default)
-				);
-		});
-		menu.addItem((item) => {
-			item.setSection("group-view")
-				.setTitle("Continuous view")
-				.setDisabled(viewType === GroupViewType.ContinuousView)
-				.onClick(() =>
-					setGroupViewType(leaf.parent, GroupViewType.ContinuousView)
-				);
-		});
-		menu.addItem((item) => {
-			item.setSection("group-view")
-				.setTitle("Column view")
-				.setDisabled(viewType === GroupViewType.ColumnView)
-				.onClick(() =>
-					setGroupViewType(leaf.parent, GroupViewType.ColumnView)
-				);
-		});
-		menu.addItem((item) => {
-			item.setSection("group-view")
-				.setTitle("Mission control view")
-				.setDisabled(viewType === GroupViewType.MissionControlView)
-				.onClick(() =>
-					setGroupViewType(
-						leaf.parent,
-						GroupViewType.MissionControlView
-					)
-				);
-		});
-	}
-	// Tab control
-	menu.addSeparator();
-	menu.addItem((item) => {
-		item.setSection("close")
-			.setTitle("Close")
-			.setDisabled(isPinned)
-			.onClick(() => leaf.detach());
-	});
-	menu.addItem((item) => {
-		item.setSection("close")
-			.setTitle("Close Others")
-			.onClick(() => {
-				closeOthersInGroup(app, leaf);
-				makeLeafNonEphemeral(leaf);
-			});
-	});
-	menu.addItem((item) => {
-		item.setSection("close")
-			.setTitle("Close tabs to the top")
-			.onClick(() => closeTabsToTopInGroup(app, leaf));
-	});
-	menu.addItem((item) => {
-		item.setSection("close")
-			.setTitle("Close tabs to the bottom")
-			.onClick(() => closeTabsToBottomInGroup(app, leaf));
-	});
-	menu.addItem((item) => {
-		item.setSection("close")
-			.setTitle("Close all")
-			.setDisabled(isPinned)
-			.onClick(() => leaf.parent.detach());
-	});
-	// Pinning
-	menu.addSeparator();
-	menu.addItem((item) => {
-		item.setSection("pin")
-			.setTitle(isPinned ? "Unpin" : "Pin")
-			.onClick(togglePinned);
-	});
-	// Workspace control
-	menu.addSeparator();
-	menu.addItem((item) => {
-		item.setSection("leaf")
-			.setTitle("Move to new window")
-			.onClick(() => {
-				workspace.duplicateLeaf(leaf, "window");
-				leaf.detach();
-			});
-	});
-	menu.addItem((item) => {
-		item.setSection("leaf")
-			.setTitle("Split right")
-			.onClick(() => workspace.duplicateLeaf(leaf, "split", "vertical"));
-	});
-	menu.addItem((item) => {
-		item.setSection("leaf")
-			.setTitle("Split down")
-			.onClick(() =>
-				workspace.duplicateLeaf(leaf, "split", "horizontal")
-			);
-	});
-	menu.addItem((item) => {
-		item.setSection("leaf")
-			.setTitle("Open in new window")
-			.onClick(() => {
-				workspace.duplicateLeaf(leaf, "window");
-			});
-	});
-	// Wiki links
-	menu.addSeparator();
-	menu.addItem((item) => {
-		item.setSection("wiki-link")
-			.setTitle("Copy as internal link")
-			.onClick(() => {
-				const link = getWikiLinkFromLeaf(app, leaf);
-				if (link) navigator.clipboard.writeText(link);
-			});
-	});
-	menu.addItem((item) => {
-		item.setSection("wiki-link")
-			.setTitle("Copy as embed")
-			.onClick(() => {
-				const link = getEmbedLinkFromLeaf(app, leaf);
-				if (link) navigator.clipboard.writeText(link);
-			});
-	});
-	menu.addItem((item) => {
-		item.setSection("wiki-link")
-			.setTitle("Insert as internal link")
-			.onClick(() => {
-				const link = getWikiLinkFromLeaf(app, leaf);
-				if (link && lastActiveLeaf)
-					insertToEditor(app, link, lastActiveLeaf);
-			});
-	});
-	menu.addItem((item) => {
-		item.setSection("wiki-link")
-			.setTitle("Insert as embed")
-			.onClick(() => {
-				const link = getEmbedLinkFromLeaf(app, leaf);
-				if (link && lastActiveLeaf)
-					insertToEditor(app, link, lastActiveLeaf);
-			});
-	});
-	// If the tab is navigatable, show history options
-	if (leaf.view.navigation && !alwaysOpenInNewTab) {
-		const historyLength =
-			leaf.history.backHistory.length +
-			leaf.history.forwardHistory.length;
-		menu.addSeparator();
-		menu.addItem((item) => {
-			item.setSection("history")
-				.setTitle(`Back`)
-				.setDisabled(leaf.history.backHistory.length === 0)
-				.onClick(() => leaf.history.back());
-		});
-		menu.addItem((item) => {
-			item.setSection("history")
-				.setTitle("Forward")
-				.setDisabled(leaf.history.forwardHistory.length === 0)
-				.onClick(() => leaf.history.forward());
-		});
-		menu.addItem((item) => {
-			item.setSection("history").setTitle("Browse history");
-			if (Platform.isDesktop) {
-				// On desktop, we show tab history in a submenu
-				const submenu = item.setSubmenu();
-				addHistoryBrowserToMenu(leaf, submenu);
-			} else {
-				// On mobile, we show it as a modal (submenus are not supported)
-				item.setDisabled(historyLength === 0);
-				item.onClick(() => new HistoryBrowserModal(app, leaf).open());
+	// Add pinned indicator for mission control view
+	useEffect(() => {
+		addPinnedIndicator(leaf, isPinned, unPin);
+	}, [isPinned, leaf, viewType]);
+	// Show the context menu in mission control view
+	useEffect(() => {
+		const showMenu = (e: MouseEvent) => {
+			const groupType = identifyGroupViewType(leaf.parent);
+			if (groupType === GroupViewType.MissionControlView) {
+				buildMenu(false).showAtMouseEvent(e);
 			}
-		});
-		menu.addItem((item) => {
-			item.setSection("history")
-				.setTitle("Bookmark history")
-				.setDisabled(historyLength === 0)
-				.onClick(() => createBookmarkForLeafHistory(app, leaf));
-		});
-		menu.addItem((item) => {
-			item.setSection("history")
-				.setTitle("Open history in new group")
-				.setDisabled(historyLength === 0)
-				.onClick(openHistoryInNewGroup);
-		});
-		menu.addItem((item) => {
-			item.setSection("history")
-				.setTitle("Clear history")
-				.setDisabled(historyLength === 0)
-				.onClick(() => {
-					leaf.history.backHistory = [];
-					leaf.history.forwardHistory = [];
-					setTimeout(() => refresh(app), REFRESH_TIMEOUT);
-				});
-		});
-	}
-	// Placeholder for deferred (inactive) tabs
-	if (isDeferredLeaf(leaf) && !alwaysOpenInNewTab) {
-		menu.addSeparator();
-		menu.addItem((item) => {
-			item.setSection("history").setTitle("(Inactive)").setDisabled(true);
-		});
-		menu.addItem((item) => {
-			item.setSection("history")
-				.setTitle("Load history")
-				.onClick(async () => await loadDeferredLeaf(leaf));
-		});
-	}
-	// Per-tab zoom
-	if (enableTabZoom) {
-		menu.addSeparator();
-		if (Platform.isDesktop) {
-			// On desktop, we show zoom options in a submenu
-			menu.addItem((item) => {
-				item.setSection("zoom").setTitle("Zoom");
-				const submenu = item.setSubmenu();
-				if (isWebViewer) {
-					const view = leaf.view as BrowserView;
-					addZoomOptionsToMenu(view, submenu);
-				} else {
-					addZoomOptionsToMenu(leaf, submenu);
-				}
-			});
-		} else {
-			// On mobile, we add them directly to the parent menu (submenus are not supported)
-			addZoomOptionsToMenu(leaf, menu);
-		}
-	}
-	// Show tab options
-	if (Platform.isDesktop) {
-		menu.addSeparator();
-		menu.addItem((item) => {
-			item.setSection("more").setTitle("More options");
-			const submenu = item.setSubmenu();
-			if (isWebViewer) {
-				const webview = leaf.view as BrowserView;
-				submenu.addItem((item) => {
-					item.setSection("webview")
-						.setTitle("Toggle reader mode")
-						.onClick(() => webview.toggleReaderMode());
-				});
-				submenu.addItem((item) => {
-					item.setSection("webview")
-						.setTitle("Save to vault")
-						.onClick(() => saveAsMarkdown(webview));
-				});
-			} else {
-				// For non-webview tabs, we copy those provided by Obsidian
-				leaf.view.onPaneMenu(submenu, "more-options");
-				const excludedSections = ["open", "find", "pane"];
-				submenu.items = submenu.items.filter(
-					(item) =>
-						item.section === undefined ||
-						!excludedSections.includes(item.section)
-				);
-			}
-		});
-	}
+		};
+		leaf.containerEl.addEventListener("contextmenu", showMenu);
+		return () => {
+			leaf.containerEl.removeEventListener("contextmenu", showMenu);
+		};
+	}, [
+		leaf.id,
+		isPinned,
+		title,
+		isSingleGroup,
+		viewType,
+		alwaysOpenInNewTab,
+		enableTabZoom,
+	]);
 
 	const { listeners } = useTouchSensor({
 		minDistance: 10,
@@ -645,6 +690,8 @@ export const Tab = (props: TabProps) => {
 			/>
 		</Fragment>
 	);
+
+	const menu = buildMenu();
 
 	return (
 		<div
