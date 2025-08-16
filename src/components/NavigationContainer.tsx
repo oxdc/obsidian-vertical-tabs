@@ -147,6 +147,7 @@ export const NavigationContainer = () => {
 
 		// Initialize native drag and drop for tab rearrangement
 		nativeDragTabsRef.current = new NativeDragTabs(app);
+		useViewState.getState().setNativeDragTabs(nativeDragTabsRef.current);
 		nativeDragTabsRef.current.initialize();
 
 		autoRefresh();

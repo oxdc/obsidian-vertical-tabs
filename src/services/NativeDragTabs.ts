@@ -185,11 +185,8 @@ export class NativeDragTabs {
 			return;
 		}
 
-		// Only allow dropping within the same parent and only in Mission Control view
-		if (
-			parent.id !== this.dragState.draggedLeaf.parent.id ||
-			!this.isGridLayout(parent)
-		) {
+		// Only allow dropping in Mission Control view
+		if (!this.isGridLayout(parent)) {
 			this.hideDropIndicator();
 			return;
 		}
@@ -234,11 +231,7 @@ export class NativeDragTabs {
 		const parent = this.findParentFromTabContainer(
 			tabContainer as HTMLElement
 		);
-		if (
-			!parent ||
-			parent.id !== this.dragState.draggedLeaf.parent.id ||
-			!this.isGridLayout(parent)
-		) {
+		if (!parent || !this.isGridLayout(parent)) {
 			this.clearDragState();
 			return;
 		}
@@ -379,30 +372,48 @@ export class NativeDragTabs {
 	}
 
 	/**
-	 * Move a leaf to a specific position within its parent
+	 * Move a leaf to a specific position within its parent or to a different parent
 	 */
 	private moveLeafToPosition(
 		leaf: WorkspaceLeaf,
 		parent: WorkspaceParent,
 		index: number
 	): void {
-		const currentIndex = parent.children.indexOf(leaf);
-		if (currentIndex === -1 || currentIndex === index) return;
+		const originalParent = leaf.parent;
+		const isSameParent = originalParent.id === parent.id;
 
-		// Adjust index if moving within same parent
-		const targetIndex = currentIndex < index ? index - 1 : index;
+		if (isSameParent) {
+			const currentIndex = parent.children.indexOf(leaf);
+			if (currentIndex === -1 || currentIndex === index) return;
 
-		// Remove from current position
-		parent.removeChild(leaf);
-		leaf.setDimension(null);
+			// Adjust index if moving within same parent
+			const targetIndex = currentIndex < index ? index - 1 : index;
 
-		// Insert at new position
-		parent.insertChild(targetIndex, leaf);
+			// Remove from current position
+			parent.removeChild(leaf);
+			leaf.setDimension(null);
+
+			// Insert at new position
+			parent.insertChild(targetIndex, leaf);
+		} else {
+			// Moving to a different parent
+			// Remove from original parent
+			originalParent.removeChild(leaf);
+			leaf.setDimension(null);
+
+			// Insert at new position in target parent
+			parent.insertChild(index, leaf);
+		}
+
+		// Select the moved leaf
 		parent.selectTab(leaf);
 		parent.recomputeChildrenDimensions();
 
-		// Update DOM order
+		// Update DOM order for both parents if different
 		this.updateDOMOrder(parent);
+		if (!isSameParent) {
+			this.updateDOMOrder(originalParent);
+		}
 
 		// Request workspace resize
 		this.app.workspace.requestResize();
@@ -430,6 +441,9 @@ export class NativeDragTabs {
 		clientY: number,
 		clientX?: number
 	): void {
+		const isCrossGroupDrop =
+			this.dragState.draggedLeaf &&
+			this.dragState.draggedLeaf.parent.id !== parent.id;
 		if (!parent.tabsContainerEl) return;
 
 		// Create drop indicator if it doesn't exist
@@ -446,6 +460,15 @@ export class NativeDragTabs {
 				z-index: 1000;
 				pointer-events: none;
 			`;
+		}
+
+		// Update indicator color for cross-group drops
+		if (isCrossGroupDrop) {
+			this.dragState.dropIndicator.style.backgroundColor =
+				"var(--interactive-success)";
+		} else {
+			this.dragState.dropIndicator.style.backgroundColor =
+				"var(--interactive-accent)";
 		}
 
 		if (closestLeaf && closestLeaf.containerEl && clientX !== undefined) {

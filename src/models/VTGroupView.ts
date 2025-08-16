@@ -1,5 +1,6 @@
 import { App, debounce, WorkspaceParent } from "obsidian";
 import { useSettings } from "./PluginContext";
+import { useViewState } from "./ViewState";
 import { Identifier } from "./VTWorkspace";
 import { EVENTS } from "src/constants/Events";
 import { sortLeafDomsInGroup } from "src/services/SortTabDom";
@@ -79,6 +80,10 @@ export function setGroupViewType(
 			inline: "center",
 		});
 	};
+
+	// Get the native drag tabs instance from ViewState
+	const { makeAllMissionControlGroupsDraggable } = useViewState.getState();
+
 	switch (viewType) {
 		case GroupViewType.ContinuousView:
 		case GroupViewType.ColumnView:
@@ -90,6 +95,9 @@ export function setGroupViewType(
 				once: true,
 			});
 			scrollToActiveLeaf();
+
+			// Make all leaves in all Mission Control groups draggable
+			makeAllMissionControlGroupsDraggable();
 			break;
 	}
 }
