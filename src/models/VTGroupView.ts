@@ -82,9 +82,14 @@ export function setGroupViewType(
 	};
 
 	// Get the native drag tabs instance from ViewState
-	const { makeAllMissionControlGroupsDraggable } = useViewState.getState();
+	const { makeAllMissionControlGroupsDraggable, disableDraggingForGroup } =
+		useViewState.getState();
 
 	switch (viewType) {
+		case GroupViewType.Default:
+			// Disable dragging for this group when exiting Mission Control view
+			disableDraggingForGroup(group);
+			break;
 		case GroupViewType.ContinuousView:
 		case GroupViewType.ColumnView:
 			sortLeafDomsInGroup(group);

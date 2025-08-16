@@ -187,6 +187,8 @@ interface ViewState {
 	getNativeDragTabs: () => NativeDragTabsInstance | null;
 	makeLeavesDraggableForGroup: (group: WorkspaceParent) => void;
 	makeAllMissionControlGroupsDraggable: () => void;
+	disableDraggingForGroup: (group: WorkspaceParent) => void;
+	findGroupFromContainer: (container: HTMLElement) => WorkspaceParent | null;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -887,7 +889,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			document
 				.querySelectorAll(".vt-mission-control-view")
 				.forEach((container) => {
-					const group = this.findGroupFromContainer(
+					const group = get().findGroupFromContainer(
 						container as HTMLElement
 					);
 					if (group) {
@@ -911,5 +913,17 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			}
 		});
 		return foundGroup;
+	},
+	disableDraggingForGroup(group: WorkspaceParent) {
+		const { nativeDragTabs } = get();
+		if (nativeDragTabs) {
+			group.children.forEach((leaf: WorkspaceLeaf) => {
+				// Disable dragging for leaves in this group
+				if (leaf.containerEl) {
+					leaf.containerEl.draggable = false;
+					leaf.containerEl.style.cursor = "";
+				}
+			});
+		}
 	},
 }));
