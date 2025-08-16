@@ -453,6 +453,10 @@ export class NativeDragTabs {
 			const containerRect =
 				parent.tabsContainerEl.getBoundingClientRect();
 
+			// Get scroll offsets to account for scrollable containers
+			const containerScrollLeft = parent.tabsContainerEl.scrollLeft || 0;
+			const containerScrollTop = parent.tabsContainerEl.scrollTop || 0;
+
 			// Show vertical indicator (left/right) for Mission Control grid
 			// Position both indicators in center of gap (20px gap / 2 = 10px offset)
 			const leafCenterX = rect.left + rect.width / 2;
@@ -461,18 +465,24 @@ export class NativeDragTabs {
 			if (clientX < leafCenterX) {
 				// Left of the leaf - show indicator in center of left gap
 				this.dragState.dropIndicator.style.left = `${
-					rect.left - containerRect.left - gapOffset
+					rect.left -
+					containerRect.left -
+					gapOffset +
+					containerScrollLeft
 				}px`;
 			} else {
 				// Right of the leaf - show indicator in center of right gap
 				this.dragState.dropIndicator.style.left = `${
-					rect.right - containerRect.left + gapOffset
+					rect.right -
+					containerRect.left +
+					gapOffset +
+					containerScrollLeft
 				}px`;
 			}
 
 			// Span the height of the leaf for better visibility
 			this.dragState.dropIndicator.style.top = `${
-				rect.top - containerRect.top
+				rect.top - containerRect.top + containerScrollTop
 			}px`;
 			this.dragState.dropIndicator.style.width = "3px";
 			this.dragState.dropIndicator.style.height = `${rect.height}px`;
