@@ -180,7 +180,7 @@ export class NativeDragTabs {
 		const parent = this.findParentFromTabContainer(
 			tabContainer as HTMLElement
 		);
-		if (!parent || parent !== this.dragState.targetParent) {
+		if (!parent) {
 			this.hideDropIndicator();
 			return;
 		}
@@ -517,8 +517,18 @@ export class NativeDragTabs {
 			this.dragState.dropIndicator.style.height = "100%";
 		}
 
-		// Add to container if not already added
-		if (!this.dragState.dropIndicator.parentElement) {
+		// Ensure the drop indicator is in the correct container
+		if (
+			this.dragState.dropIndicator.parentElement !==
+			parent.tabsContainerEl
+		) {
+			// Remove from previous container if it exists
+			if (this.dragState.dropIndicator.parentElement) {
+				this.dragState.dropIndicator.parentElement.removeChild(
+					this.dragState.dropIndicator
+				);
+			}
+			// Add to the current target container
 			parent.tabsContainerEl.style.position = "relative";
 			parent.tabsContainerEl.appendChild(this.dragState.dropIndicator);
 		}
