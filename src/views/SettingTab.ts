@@ -10,6 +10,7 @@ import {
 } from "../models/TabNavigation";
 import { linkedFolderSortStrategyOptions } from "../services/OpenFolder";
 import { getLatestVersion } from "src/services/Version";
+import * as semver from "semver";
 
 export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	plugin: ObsidianVerticalTabs;
@@ -668,7 +669,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			const { currentVersion, latestVersion } = versions;
 			if (!latestVersion) {
 				this.showErrorState(entry, indicator);
-			} else if (currentVersion !== latestVersion) {
+			} else if (semver.lt(currentVersion, latestVersion)) {
 				this.showUpdateAvailable(
 					entry,
 					indicator,

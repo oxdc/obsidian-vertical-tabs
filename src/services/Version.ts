@@ -8,7 +8,7 @@ interface CachedVersionData {
 }
 
 const CACHE_KEY = "version-cache";
-const CACHE_DURATION = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
+const CACHE_DURATION = 60 * 1000; // 1 minute in milliseconds
 
 export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 	currentVersion: string;
@@ -51,10 +51,10 @@ export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 	// Cache is invalid or doesn't exist, fetch from API
 	try {
 		const response = await requestUrl({
-			url: "https://api.github.com/repos/oxdc/obsidian-vertical-tabs/releases/latest",
+			url: "https://github.com/oxdc/obsidian-vertical-tabs/raw/refs/heads/master/manifest.json",
 			method: "GET",
 		});
-		const latestVersion = response.json.tag_name;
+		const latestVersion = response.json.version;
 
 		// Cache the result
 		try {
