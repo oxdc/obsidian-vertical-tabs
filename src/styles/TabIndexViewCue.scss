@@ -28,7 +28,7 @@
 }
 
 body.vt-tab-index-view-cue {
-	.workspace-tab-header-inner-title {
+	.workspace-tabs.mod-active .workspace-tab-header-inner-title {
 		&[data-index]::before {
 			content: attr(data-index);
 			display: inline-block;
@@ -50,7 +50,7 @@ body.vt-tab-index-view-cue {
 		}
 	}
 
-	.workspace-tabs.vt-mission-control-view {
+	.workspace-tabs.mod-active.vt-mission-control-view {
 		.workspace-leaf {
 			&[data-index]::before {
 				position: absolute;
