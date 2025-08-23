@@ -44,6 +44,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.addSettingTab(new ObsidianVerticalTabsSettingTab(this.app, this));
 		this.app.workspace.onLayoutReady(() => {
 			this.openVerticalTabs();
+			setTimeout(() => this.app.workspace.leftSplit.collapse());
 			setTimeout(() => {
 				useViewState.getState().refreshToggleButtons(this.app);
 			}, REFRESH_TIMEOUT_LONG);
