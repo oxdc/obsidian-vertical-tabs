@@ -29,6 +29,7 @@ import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 import { PersistenceManager } from "./models/PersistenceManager";
 import { migrateAllData } from "./history/Migration";
 import { VERTICAL_TABS_ICON } from "./icon";
+import { DISABLE_KEY } from "./models/PluginContext";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -38,6 +39,15 @@ export default class ObsidianVerticalTabs extends Plugin {
 		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
 		await this.loadSettings();
 		await this.setupPersistenceManager();
+		const disableOnThisDevice =
+			this.persistenceManager.device.get<boolean>(DISABLE_KEY) ?? false;
+		if (disableOnThisDevice) {
+			useSettings.getState().loadSettings(this);
+			this.addSettingTab(
+				new ObsidianVerticalTabsSettingTab(this.app, this)
+			);
+			return;
+		}
 		await this.registerEventsAndViews();
 		await this.setupCommands();
 		await this.updateViewStates();

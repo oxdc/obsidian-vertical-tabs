@@ -1,6 +1,13 @@
-import { App, Platform, PluginSettingTab, setIcon, Setting } from "obsidian";
+import {
+	App,
+	Notice,
+	Platform,
+	PluginSettingTab,
+	setIcon,
+	Setting,
+} from "obsidian";
 import ObsidianVerticalTabs from "../main";
-import { useSettings } from "../models/PluginContext";
+import { DISABLE_KEY, useSettings } from "../models/PluginContext";
 import { EVENTS } from "../constants/Events";
 import {
 	TabNavigationPresets,
@@ -11,6 +18,7 @@ import {
 import { linkedFolderSortStrategyOptions } from "../services/OpenFolder";
 import { getLatestVersion } from "src/services/Version";
 import * as semver from "semver";
+import { VERTICAL_TABS_VIEW } from "./VerticalTabsView";
 
 export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	plugin: ObsidianVerticalTabs;
@@ -479,6 +487,35 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl).setName("Miscellaneous").setHeading();
+
+		new Setting(containerEl)
+			.setName("Disable on this device")
+			.setDesc(
+				`Disable Vertical Tabs on this device only. The plugin will remain enabled on other devices.
+				This setting is stored locally and will not sync across devices.`
+			)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(
+						this.plugin.persistenceManager.device.get<boolean>(
+							DISABLE_KEY
+						) ?? false
+					)
+					.onChange(async (value) => {
+						useSettings.getState().toggleDisableOnThisDevice(value);
+						if (value) {
+							this.app.workspace
+								.getLeavesOfType(VERTICAL_TABS_VIEW)
+								.forEach((leaf) => leaf.detach());
+						}
+						new Notice(
+							`Vertical Tabs has been ${
+								value ? "disabled" : "enabled"
+							} on this device. Please reload Obsidian for changes to take effect.`
+						);
+						this.refresh();
+					});
+			});
 
 		new Setting(containerEl)
 			.setName("Background mode")
