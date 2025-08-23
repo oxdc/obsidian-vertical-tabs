@@ -59,7 +59,32 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			warning.appendText(" it.");
 		}
 
-		if (!this.plugin.settings.backgroundMode) {
+		const disableOnThisDevice =
+			this.plugin.persistenceManager.device.get<boolean>(DISABLE_KEY) ??
+			false;
+		if (disableOnThisDevice) {
+			const warning = containerEl.createDiv({
+				cls: "vt-background-mode-warning",
+			});
+			warning.appendText(`
+				* Warning: Vertical Tabs is disabled on this device.
+				To access plugin features and settings,
+				you must first 
+			`);
+			const linkButton = warning.createEl("a", {
+				text: "enable",
+			});
+			linkButton.onclick = () => {
+				useSettings.getState().toggleDisableOnThisDevice(false);
+				new Notice(
+					"Vertical Tabs has been enabled on this device. Please reload Obsidian for changes to take effect."
+				);
+				this.refresh();
+			};
+			warning.appendText(" it on this device.");
+		}
+
+		if (!disableOnThisDevice && !this.plugin.settings.backgroundMode) {
 			new Setting(containerEl)
 				.setName("Show active tabs only")
 				.setDesc(
@@ -235,256 +260,281 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			}
 		}
 
-		new Setting(containerEl)
-			.setName("Enable tab zoom")
-			.setDesc("Enable per tab zooming.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.enableTabZoom)
-					.onChange(async (value) => {
-						useSettings
-							.getState()
-							.setSettings({ enableTabZoom: value });
-					});
-			});
-
-		if (!this.plugin.settings.backgroundMode) {
-			new Setting(containerEl).setName("Tab switching").setHeading();
-
+		if (!disableOnThisDevice) {
 			new Setting(containerEl)
-				.setName("Enhanced keyboard tab switching")
-				.setDesc("Use Ctrl/Cmd + 1-9 to switch between tabs.")
+				.setName("Enable tab zoom")
+				.setDesc("Enable per tab zooming.")
 				.addToggle((toggle) => {
 					toggle
-						.setValue(
-							this.plugin.settings.enhancedKeyboardTabSwitch
-						)
+						.setValue(this.plugin.settings.enableTabZoom)
 						.onChange(async (value) => {
 							useSettings
 								.getState()
-								.toggleEnhancedKeyboardTabSwitch(
-									this.app,
-									value
-								);
+								.setSettings({ enableTabZoom: value });
 						});
 				});
-		}
 
-		new Setting(containerEl).setName("Tab navigation").setHeading();
+			if (!this.plugin.settings.backgroundMode) {
+				new Setting(containerEl).setName("Tab switching").setHeading();
 
-		new Setting(containerEl)
-			.setName("Navigation strategy")
-			.setDesc(
-				"Controls the navigation behavior when new notes are opened."
-			)
-			.addDropdown((dropdown) =>
-				dropdown
-					.addOptions(TabNavigationStrategyOptions)
-					.setValue(this.plugin.settings.navigationStrategy)
-					.onChange(async (value) => {
-						useSettings
-							.getState()
-							.setTabNavigationStrategy(this.app, value);
-						this.refresh();
-					})
-			);
+				new Setting(containerEl)
+					.setName("Enhanced keyboard tab switching")
+					.setDesc("Use Ctrl/Cmd + 1-9 to switch between tabs.")
+					.addToggle((toggle) => {
+						toggle
+							.setValue(
+								this.plugin.settings.enhancedKeyboardTabSwitch
+							)
+							.onChange(async (value) => {
+								useSettings
+									.getState()
+									.toggleEnhancedKeyboardTabSwitch(
+										this.app,
+										value
+									);
+							});
+					});
+			}
 
-		switch (this.plugin.settings.navigationStrategy) {
-			case TabNavigationStrategy.Obsidian:
-				containerEl.createDiv({
-					cls: "vt-navigation-description",
-					text: `
+			new Setting(containerEl).setName("Tab navigation").setHeading();
+
+			new Setting(containerEl)
+				.setName("Navigation strategy")
+				.setDesc(
+					"Controls the navigation behavior when new notes are opened."
+				)
+				.addDropdown((dropdown) =>
+					dropdown
+						.addOptions(TabNavigationStrategyOptions)
+						.setValue(this.plugin.settings.navigationStrategy)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setTabNavigationStrategy(this.app, value);
+							this.refresh();
+						})
+				);
+
+			switch (this.plugin.settings.navigationStrategy) {
+				case TabNavigationStrategy.Obsidian:
+					containerEl.createDiv({
+						cls: "vt-navigation-description",
+						text: `
 						Use the default navigation strategy of Obsidian.
 						When working with multiple tab groups, 
 						new tabs may appear in unexpected locations.
 					`,
-				});
-				break;
-			case TabNavigationStrategy.ObsidianPlus:
-				containerEl.createDiv({
-					cls: "vt-navigation-description",
-					text: `
+					});
+					break;
+				case TabNavigationStrategy.ObsidianPlus:
+					containerEl.createDiv({
+						cls: "vt-navigation-description",
+						text: `
 						Use enhanced navigation strategy implemented by Vertical Tabs. 
 						New tabs will be opened in a consistent and intuitive manner.
 					`,
-				});
-				break;
-			case TabNavigationStrategy.IDE:
-				containerEl.createDiv({
-					cls: "vt-navigation-description",
-					text: `
+					});
+					break;
+				case TabNavigationStrategy.IDE:
+					containerEl.createDiv({
+						cls: "vt-navigation-description",
+						text: `
 						Use IDE-like navigation strategy. 
 						Recommended for users familiar with VSCode, Xcode, or other IDEs.
 					`,
-				});
-				break;
-			case TabNavigationStrategy.Explorer:
-				containerEl.createDiv({
-					cls: "vt-navigation-description",
-					text: `
+					});
+					break;
+				case TabNavigationStrategy.Explorer:
+					containerEl.createDiv({
+						cls: "vt-navigation-description",
+						text: `
 						Explorer mode uses ephemeral tabs to avoid opening too many tabs.
 					`,
-				});
-				break;
-			case TabNavigationStrategy.Notebook:
-				containerEl.createDiv({
-					cls: "vt-navigation-description",
-					text: `
+					});
+					break;
+				case TabNavigationStrategy.Notebook:
+					containerEl.createDiv({
+						cls: "vt-navigation-description",
+						text: `
 						Notebook mode ensures consistent navigation behavior while avoiding duplication.
 					`,
-				});
-				break;
-			case TabNavigationStrategy.PreferNewTab:
-				containerEl.createDiv({
-					cls: "vt-navigation-description",
-					text: `
+					});
+					break;
+				case TabNavigationStrategy.PreferNewTab:
+					containerEl.createDiv({
+						cls: "vt-navigation-description",
+						text: `
 						Always open the new note in a new tab.
 					`,
+					});
+					break;
+				case TabNavigationStrategy.Custom:
+					this.displayCustomNavigationStrategy(containerEl);
+					break;
+			}
+
+			new Setting(containerEl).setName("Linked Folder").setHeading();
+
+			new Setting(containerEl)
+				.setName("Load order")
+				.setDesc(
+					"Determines the order in which files are loaded, such as by name or date."
+				)
+				.addDropdown((dropdown) =>
+					dropdown
+						.addOptions(linkedFolderSortStrategyOptions)
+						.setValue(this.plugin.settings.linkedFolderSortStrategy)
+						.onChange(async (value) => {
+							useSettings.getState().setSettings({
+								linkedFolderSortStrategy: value,
+							});
+						})
+				);
+
+			new Setting(containerEl)
+				.setName("Files per load")
+				.setDesc(
+					"Files loaded per click when opening a folder as a group."
+				)
+				.addExtraButton((button) => {
+					button
+						.setIcon("reset")
+						.setTooltip("Reset to default")
+						.onClick(async () => {
+							useSettings.getState().setSettings({
+								linkedFolderLimit: 5,
+							});
+							this.display();
+						});
+				})
+				.addSlider((slider) => {
+					slider
+						.setLimits(5, 50, 1)
+						.setValue(this.plugin.settings.linkedFolderLimit)
+						.setDynamicTooltip()
+						.onChange(async (value) => {
+							useSettings.getState().setSettings({
+								linkedFolderLimit: value,
+							});
+						});
 				});
-				break;
-			case TabNavigationStrategy.Custom:
-				this.displayCustomNavigationStrategy(containerEl);
-				break;
+
+			new Setting(containerEl).setName("Group View").setHeading();
+
+			new Setting(containerEl)
+				.setName("Show metadata in continuous view")
+				.addToggle((toggle) => {
+					toggle
+						.setValue(
+							this.plugin.settings.continuousViewShowMetadata
+						)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setGroupViewOptions(this.app, {
+									continuousViewShowMetadata: value,
+								});
+						});
+				});
+
+			new Setting(containerEl)
+				.setName("Show backlinks in continuous view")
+				.addToggle((toggle) => {
+					toggle
+						.setValue(
+							this.plugin.settings.continuousViewShowBacklinks
+						)
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setGroupViewOptions(this.app, {
+									continuousViewShowBacklinks: value,
+								});
+						});
+				});
+
+			new Setting(containerEl)
+				.setName("Column view tab width")
+				.setDesc(
+					"Minimum width of each tab in the column view in pixels."
+				)
+				.addExtraButton((button) => {
+					button
+						.setIcon("reset")
+						.setTooltip("Reset to default")
+						.onClick(async () => {
+							useSettings
+								.getState()
+								.setGroupViewOptions(this.app, {
+									columnViewMinWidth: 300,
+								});
+							this.display();
+						});
+				})
+				.addSlider((slider) => {
+					slider
+						.setLimits(200, 1000, 10)
+						.setValue(this.plugin.settings.columnViewMinWidth)
+						.setDynamicTooltip()
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setGroupViewOptions(this.app, {
+									columnViewMinWidth: value,
+								});
+						});
+				});
+
+			new Setting(containerEl)
+				.setName("Zoom factor in mission control view")
+				.setDesc("Adjust the page size in mission control view.")
+				.addExtraButton((button) => {
+					button
+						.setIcon("reset")
+						.setTooltip("Reset to default")
+						.onClick(async () => {
+							useSettings
+								.getState()
+								.setGroupViewOptions(this.app, {
+									missionControlViewZoomFactor: 0.5,
+								});
+							this.display();
+						});
+				})
+				.addSlider((slider) => {
+					slider
+						.setLimits(0.5, 1, 0.1)
+						.setValue(
+							this.plugin.settings.missionControlViewZoomFactor
+						)
+						.setDynamicTooltip()
+						.onChange(async (value) => {
+							useSettings
+								.getState()
+								.setGroupViewOptions(this.app, {
+									missionControlViewZoomFactor: value,
+								});
+						});
+				});
+
+			new Setting(containerEl)
+				.setName("Disable pointer in mission control view")
+				.setDesc(
+					"Prevents interaction with tab content when in mission control view, allowing easier navigation between tabs."
+				)
+				.addToggle((toggle) => {
+					toggle
+						.setValue(
+							this.plugin.settings
+								.disablePointerInMissionControlView
+						)
+						.onChange(async (value) => {
+							useSettings.getState().setSettings({
+								disablePointerInMissionControlView: value,
+							});
+						});
+				});
 		}
-
-		new Setting(containerEl).setName("Linked Folder").setHeading();
-
-		new Setting(containerEl)
-			.setName("Load order")
-			.setDesc(
-				"Determines the order in which files are loaded, such as by name or date."
-			)
-			.addDropdown((dropdown) =>
-				dropdown
-					.addOptions(linkedFolderSortStrategyOptions)
-					.setValue(this.plugin.settings.linkedFolderSortStrategy)
-					.onChange(async (value) => {
-						useSettings.getState().setSettings({
-							linkedFolderSortStrategy: value,
-						});
-					})
-			);
-
-		new Setting(containerEl)
-			.setName("Files per load")
-			.setDesc("Files loaded per click when opening a folder as a group.")
-			.addExtraButton((button) => {
-				button
-					.setIcon("reset")
-					.setTooltip("Reset to default")
-					.onClick(async () => {
-						useSettings.getState().setSettings({
-							linkedFolderLimit: 5,
-						});
-						this.display();
-					});
-			})
-			.addSlider((slider) => {
-				slider
-					.setLimits(5, 50, 1)
-					.setValue(this.plugin.settings.linkedFolderLimit)
-					.setDynamicTooltip()
-					.onChange(async (value) => {
-						useSettings.getState().setSettings({
-							linkedFolderLimit: value,
-						});
-					});
-			});
-
-		new Setting(containerEl).setName("Group View").setHeading();
-
-		new Setting(containerEl)
-			.setName("Show metadata in continuous view")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.continuousViewShowMetadata)
-					.onChange(async (value) => {
-						useSettings.getState().setGroupViewOptions(this.app, {
-							continuousViewShowMetadata: value,
-						});
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Show backlinks in continuous view")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(this.plugin.settings.continuousViewShowBacklinks)
-					.onChange(async (value) => {
-						useSettings.getState().setGroupViewOptions(this.app, {
-							continuousViewShowBacklinks: value,
-						});
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Column view tab width")
-			.setDesc("Minimum width of each tab in the column view in pixels.")
-			.addExtraButton((button) => {
-				button
-					.setIcon("reset")
-					.setTooltip("Reset to default")
-					.onClick(async () => {
-						useSettings.getState().setGroupViewOptions(this.app, {
-							columnViewMinWidth: 300,
-						});
-						this.display();
-					});
-			})
-			.addSlider((slider) => {
-				slider
-					.setLimits(200, 1000, 10)
-					.setValue(this.plugin.settings.columnViewMinWidth)
-					.setDynamicTooltip()
-					.onChange(async (value) => {
-						useSettings.getState().setGroupViewOptions(this.app, {
-							columnViewMinWidth: value,
-						});
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Zoom factor in mission control view")
-			.setDesc("Adjust the page size in mission control view.")
-			.addExtraButton((button) => {
-				button
-					.setIcon("reset")
-					.setTooltip("Reset to default")
-					.onClick(async () => {
-						useSettings.getState().setGroupViewOptions(this.app, {
-							missionControlViewZoomFactor: 0.5,
-						});
-						this.display();
-					});
-			})
-			.addSlider((slider) => {
-				slider
-					.setLimits(0.5, 1, 0.1)
-					.setValue(this.plugin.settings.missionControlViewZoomFactor)
-					.setDynamicTooltip()
-					.onChange(async (value) => {
-						useSettings.getState().setGroupViewOptions(this.app, {
-							missionControlViewZoomFactor: value,
-						});
-					});
-			});
-
-		new Setting(containerEl)
-			.setName("Disable pointer in mission control view")
-			.setDesc(
-				"Prevents interaction with tab content when in mission control view, allowing easier navigation between tabs."
-			)
-			.addToggle((toggle) => {
-				toggle
-					.setValue(
-						this.plugin.settings.disablePointerInMissionControlView
-					)
-					.onChange(async (value) => {
-						useSettings.getState().setSettings({
-							disablePointerInMissionControlView: value,
-						});
-					});
-			});
 
 		new Setting(containerEl).setName("Miscellaneous").setHeading();
 
@@ -503,11 +553,6 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					)
 					.onChange(async (value) => {
 						useSettings.getState().toggleDisableOnThisDevice(value);
-						if (value) {
-							this.app.workspace
-								.getLeavesOfType(VERTICAL_TABS_VIEW)
-								.forEach((leaf) => leaf.detach());
-						}
 						new Notice(
 							`Vertical Tabs has been ${
 								value ? "disabled" : "enabled"
