@@ -26,6 +26,7 @@
 @use "styles/FramelessWindowTitle.scss";
 @use "styles/ScrollableTabs.scss";
 @use "styles/AutoHideHorizontalTabs.scss";
+@use "styles/SettingWarningBanner.scss";
 
 .vertical-tabs {
 	display: flex;

@@ -27,6 +27,19 @@ export const TabNavigationCopyOptions: Record<string, string> = {
 	...TabNavigationStrategyPresetOptions,
 };
 
+export const TabNavigationStrategyDescriptions: Record<string, string> = {
+	[TabNavigationStrategy.ObsidianPlus]: `Use enhanced navigation strategy implemented by Vertical Tabs. 
+																		     New tabs will be opened in a consistent and intuitive manner.`,
+	[TabNavigationStrategy.Obsidian]: `Use the default navigation strategy of Obsidian.
+																		 When working with multiple tab groups, 
+																		 new tabs may appear in unexpected locations.`,
+	[TabNavigationStrategy.IDE]: `Use IDE-like navigation strategy. 
+															  Recommended for users familiar with VSCode, Xcode, or other IDEs.`,
+	[TabNavigationStrategy.Explorer]: `Explorer mode uses ephemeral tabs to avoid opening too many tabs.`,
+	[TabNavigationStrategy.Notebook]: `Notebook mode ensures consistent navigation behavior while avoiding duplication.`,
+	[TabNavigationStrategy.PreferNewTab]: `Always open the new note in a new tab.`,
+};
+
 export function convertNameToStrategy(name: string): TabNavigationStrategy {
 	return name as TabNavigationStrategy;
 }
