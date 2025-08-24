@@ -253,8 +253,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		this.createWarningBanner(containerEl, {
 			template: `Background mode is enabled. To see Vertical Tabs and access its core features,
 								 you must first {disable} it.`,
-			onClick: () =>
-				useSettings.getState().toggleBackgroundMode(this.app, false),
+			onClick: () => this.toggleBackgroundMode(false),
 		});
 	}
 
@@ -262,8 +261,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		this.createWarningBanner(containerEl, {
 			template: `Vertical Tabs is disabled on this device. To access plugin features and settings,
 							   you must first {enable} it.`,
-			onClick: () =>
-				useSettings.getState().toggleDisableOnThisDevice(false),
+			onClick: () => this.toggleDisableOnThisDevice(false),
 		});
 	}
 
@@ -789,7 +787,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			desc: `Enable to keep features like tab navigation without showing vertical tabs.
 					   This will disable Zen Mode and reset your workspace to the default layout.`,
 			value: this.plugin.settings.backgroundMode,
-			onChange: () => this.toggleBackgroundMode(),
+			onChange: (value) => this.toggleBackgroundMode(value),
 		});
 	}
 
@@ -804,9 +802,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		}
 	}
 
-	private async toggleBackgroundMode() {
-		useSettings.getState().toggleBackgroundMode(this.app);
-		this.refresh();
+	private async toggleBackgroundMode(isBackgroundMode: boolean) {
+		useSettings.getState().toggleBackgroundMode(this.app, isBackgroundMode);
+		this.reloadSelf();
 	}
 
 	// Feedback and Bug Report
