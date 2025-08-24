@@ -31,6 +31,10 @@ interface ObsidianVerticalTabsSettings {
 	missionControlViewZoomFactor: number;
 	disablePointerInMissionControlView: boolean;
 	backgroundMode: boolean;
+	scrollableTabs: boolean;
+	scrollableTabsMinWidth: number;
+	autoHideHorizontalTabs: boolean;
+	disableOnThisDevice: boolean;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -43,7 +47,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	showMoreButtons: false,
 	useTabEditing: true,
 	zenMode: false,
-	showActiveTabsInZenMode: true,
+	showActiveTabsInZenMode: false,
 	enableTabZoom: false,
 	enhancedKeyboardTabSwitch: false,
 	alwaysOpenInNewTab: false,
@@ -63,6 +67,10 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	missionControlViewZoomFactor: 0.5,
 	disablePointerInMissionControlView: true,
 	backgroundMode: false,
+	scrollableTabs: true,
+	scrollableTabsMinWidth: 100,
+	autoHideHorizontalTabs: false,
+	disableOnThisDevice: false,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;

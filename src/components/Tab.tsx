@@ -32,7 +32,10 @@ import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 import { byPinned } from "src/services/SortTabs";
 import { cloneNavButtons } from "src/services/NavButtons";
 import { onDragFile, onDragLeaf } from "src/services/PowerDrag";
-import { getEmbedLinkFromLeaf, getWikiLinkFromLeaf } from "src/services/WikiLinks";
+import {
+	getEmbedLinkFromLeaf,
+	getWikiLinkFromLeaf,
+} from "src/services/WikiLinks";
 import { insertToEditor } from "src/services/InsertText";
 
 interface TabProps {
@@ -305,6 +308,11 @@ export const Tab = (props: TabProps) => {
 				delete leaf.tabHeaderInnerTitleEl.dataset.index;
 			}
 		}
+		if (viewCueIndex) {
+			leaf.containerEl.dataset.index = viewCueIndex.toString();
+		} else {
+			delete leaf.containerEl.dataset.index;
+		}
 	}, [viewCueIndex, ref]);
 	// Replace the default navigation buttons with our own
 	useEffect(() => cloneNavButtons(leaf, app), [leaf.id, leaf.view]);
@@ -316,15 +324,13 @@ export const Tab = (props: TabProps) => {
 	menu.addItem((item) => {
 		item.setSection("bookmark")
 			.setTitle("Bookmark")
-			.onClick(() =>
-				createBookmarkForLeaf(app, leaf, leaf.getDisplayText())
-			);
+			.onClick(() => createBookmarkForLeaf(app, leaf, title));
 	});
 	menu.addItem((item) => {
 		item.setSection("bookmark")
 			.setTitle("Bookmark and close")
 			.onClick(async () => {
-				await createBookmarkForLeaf(app, leaf, leaf.getDisplayText());
+				await createBookmarkForLeaf(app, leaf, title);
 				leaf.detach();
 			});
 	});

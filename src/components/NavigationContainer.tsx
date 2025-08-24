@@ -146,6 +146,17 @@ export const NavigationContainer = () => {
 		plugin.registerEvent(
 			workspace.on("active-leaf-change", autoUncollapseGroup)
 		);
+		plugin.registerEvent(
+			workspace.on("active-leaf-change", (leaf) => {
+				setTimeout(() => {
+					leaf?.tabHeaderEl.scrollIntoView({
+						behavior: "smooth",
+						block: "center",
+						inline: "center",
+					});
+				}, REFRESH_TIMEOUT);
+			})
+		);
 		plugin.registerEvent(workspace.on("resize", debounce(updateToggles)));
 		plugin.registerEvent(workspace.on(EVENTS.UPDATE_TOGGLE, updateToggles));
 		plugin.registerEvent(

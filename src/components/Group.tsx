@@ -19,6 +19,7 @@ import {
 	identifyGroupViewType,
 	setGroupViewType,
 } from "src/models/VTGroupView";
+import { addMissionControlToggle } from "src/services/MissionControlToggle";
 import {
 	getEmbedLinkFromLeaf,
 	getWikiLinkFromLeaf,
@@ -83,8 +84,8 @@ export const Group = (props: GroupProps) => {
 	const isCollapsed =
 		(!!group && collapsedGroups.includes(group.id)) ||
 		(isSidebar && collapsedGroups.includes(type));
-	const isSingleGroup =
-		hasOnlyOneGroup() && hideSidebars && !isSidebar && !!group;
+	const isSingleGroupInRoot = hasOnlyOneGroup() && !isSidebar && !!group;
+	const isSingleGroupInView = hideSidebars && isSingleGroupInRoot;
 	const isActiveGroup = group?.id === lastActiveLeaf?.parent?.id;
 	const hasMore =
 		!!linkedFolder && linkedFolder.files.length > linkedFolder.offset;
@@ -100,10 +101,16 @@ export const Group = (props: GroupProps) => {
 		const modifiedID = isSidebar ? type : group.id;
 		toggleCollapsedGroup(modifiedID, !isCollapsed);
 	};
-	const toggleHidden = () => {
+	const setHidden = (hidden: boolean) => {
 		if (isSidebar || !group) return;
-		toggleHiddenGroup(group.id, !isHidden);
+		toggleHiddenGroup(group.id, hidden);
 		workspace.trigger(EVENTS.UPDATE_TOGGLE);
+	};
+	const toggleHidden = () => {
+		setHidden(!isHidden);
+	};
+	const unhideGroup = () => {
+		setHidden(false);
 	};
 	/* Commands - Title */
 	const startEditing = () => {
@@ -172,9 +179,11 @@ export const Group = (props: GroupProps) => {
 	});
 	// Manage the visibility of the group
 	useEffect(() => {
+		// Automatically unhide the group if it's the only one in the root split (#175)
+		if (isSingleGroupInRoot) unhideGroup();
 		group?.containerEl.toggleClass("is-hidden", isHidden);
 		return () => group?.containerEl.removeClass("is-hidden");
-	}, [isHidden]);
+	}, [isHidden, isSingleGroupInRoot]);
 	// Bind and track the events that used for syncing with Obsidian,
 	// when the states are changed outside of the component.
 	useEffect(() => {
@@ -192,6 +201,10 @@ export const Group = (props: GroupProps) => {
 			unlinkGroup();
 		}
 	}, [group]);
+	// Add mission control toggle button to group tab header
+	useEffect(() => {
+		if (!isSidebar) addMissionControlToggle(group);
+	}, [group, isSidebar]);
 
 	/* Menu */
 	const menu = new Menu();
@@ -388,9 +401,9 @@ export const Group = (props: GroupProps) => {
 			dataType={type}
 			toolbar={toolbar}
 			icon="right-triangle"
-			isCollapsed={isCollapsed && !isSingleGroup} // Single group should not be collapsed
+			isCollapsed={isCollapsed && !isSingleGroupInView} // Single group should not be collapsed
 			isSidebar={isSidebar}
-			isSingleGroup={isSingleGroup}
+			isSingleGroup={isSingleGroupInView}
 			isActiveGroup={isActiveGroup}
 		>
 			{!!linkedFolder && (
@@ -400,7 +413,7 @@ export const Group = (props: GroupProps) => {
 					onClick={unlinkGroup}
 				/>
 			)}
-			{children && children(isSingleGroup, viewType)}
+			{children && children(isSingleGroupInView, viewType)}
 			{hasMore && (
 				<LinkedGroupButton
 					title="Load more"

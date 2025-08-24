@@ -3,6 +3,7 @@ import {
 	ItemView,
 	MarkdownView,
 	OpenViewState,
+	Platform,
 	Plugin,
 	View,
 	Workspace,
@@ -24,10 +25,11 @@ import { patchQuickSwitcher } from "./services/EphemeralTabs";
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
 import { SAFE_DETACH_TIMEOUT } from "./services/CloseTabs";
-import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
+import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 import { PersistenceManager } from "./models/PersistenceManager";
 import { migrateAllData } from "./history/Migration";
 import { VERTICAL_TABS_ICON } from "./icon";
+import { DISABLE_KEY } from "./models/PluginContext";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -37,17 +39,28 @@ export default class ObsidianVerticalTabs extends Plugin {
 		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
 		await this.loadSettings();
 		await this.setupPersistenceManager();
+		const disableOnThisDevice =
+			this.persistenceManager.device.get<boolean>(DISABLE_KEY) ?? false;
+		if (disableOnThisDevice) {
+			useSettings.getState().loadSettings(this);
+			this.addSettingTab(
+				new ObsidianVerticalTabsSettingTab(this.app, this)
+			);
+			return;
+		}
 		await this.registerEventsAndViews();
 		await this.setupCommands();
 		await this.updateViewStates();
 		await this.patchViews();
 		this.addSettingTab(new ObsidianVerticalTabsSettingTab(this.app, this));
-		setTimeout(() => this.openVerticalTabs(), REFRESH_TIMEOUT);
 		this.app.workspace.onLayoutReady(() => {
-			setTimeout(
-				() => useViewState.getState().refreshToggleButtons(this.app),
-				REFRESH_TIMEOUT_LONG
-			);
+			this.openVerticalTabs();
+			if (Platform.isMobile && !Platform.isTablet) {
+				setTimeout(() => this.app.workspace.leftSplit.collapse());
+			}
+			setTimeout(() => {
+				useViewState.getState().refreshToggleButtons(this.app);
+			}, REFRESH_TIMEOUT_LONG);
 		});
 	}
 
@@ -121,6 +134,11 @@ export default class ObsidianVerticalTabs extends Plugin {
 	async updateViewStates() {
 		this.toggle("vt-hide-sidebars", this.settings.hideSidebars);
 		this.toggle("vt-show-active-tabs", this.settings.showActiveTabs);
+		this.toggle("vt-scrollable-tabs", this.settings.scrollableTabs);
+		this.toggle(
+			"vt-auto-hide-horizontal-tabs",
+			this.settings.autoHideHorizontalTabs
+		);
 		this.toggle("vt-exclude-self", this.settings.sidebarExcludeSelf);
 		this.toggle("vt-trim-tab-names", this.settings.trimTabNames);
 		this.toggle("vt-show-more-buttons", this.settings.showMoreButtons);

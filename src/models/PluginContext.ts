@@ -28,6 +28,9 @@ import {
 import { EVENTS } from "src/constants/Events";
 import { PersistenceManager } from "./PersistenceManager";
 import { setShowActiveTabs, getShowActiveTabs } from "src/history/Migration";
+import { setScrollableTabsMinWidth } from "src/services/ScrollableTabs";
+
+export const DISABLE_KEY = "disable-on-this-device";
 
 export type SettingsContext = [Settings, (mutator: SettingsMutator) => void];
 
@@ -70,6 +73,9 @@ interface SettingsActions {
 	toggleBackgroundMode: (app: App, enable?: boolean) => void;
 	toggleEnhancedKeyboardTabSwitch: (app: App, enable?: boolean) => void;
 	setGroupViewOptions: (app: App, options: GroupViewOptions) => void;
+	loadDeviceSpecificSettings: () => void;
+	saveDeviceSpecificSettings: () => void;
+	toggleDisableOnThisDevice: (enable?: boolean) => void;
 }
 
 export const useSettingsBase = create<Settings & SettingsActions>(
@@ -82,10 +88,12 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			const settings = plugin.settings;
 			plugin.saveSettings();
 			set(settings);
+			get().loadDeviceSpecificSettings();
 			setColumnViewMinWidth(settings.columnViewMinWidth);
 			setMissionControlViewZoomFactor(
 				settings.missionControlViewZoomFactor
 			);
+			setScrollableTabsMinWidth(settings.scrollableTabsMinWidth);
 			return settings;
 		},
 		setSettings: (mutator: SettingsMutator) => {
@@ -189,13 +197,36 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 		setGroupViewOptions(app: App, options: GroupViewOptions) {
 			get().setSettings(options);
 			refreshGroupViewTypes(app);
-			const { columnViewMinWidth, missionControlViewZoomFactor } = options;
+			const { columnViewMinWidth, missionControlViewZoomFactor } =
+				options;
 			if (columnViewMinWidth) {
 				setColumnViewMinWidth(columnViewMinWidth);
 			}
 			if (missionControlViewZoomFactor) {
 				setMissionControlViewZoomFactor(missionControlViewZoomFactor);
 			}
+		},
+		loadDeviceSpecificSettings() {
+			const { plugin } = get();
+			if (!plugin) return;
+			const disableOnThisDevice =
+				plugin.persistenceManager.device.get<boolean>(DISABLE_KEY) ??
+				false;
+			set({ disableOnThisDevice });
+		},
+		saveDeviceSpecificSettings() {
+			const { plugin, disableOnThisDevice } = get();
+			if (!plugin) return;
+			plugin.persistenceManager.device.set(
+				DISABLE_KEY,
+				disableOnThisDevice
+			);
+		},
+		toggleDisableOnThisDevice(enable?: boolean) {
+			const { disableOnThisDevice } = get();
+			const newValue = enable ?? !disableOnThisDevice;
+			set({ disableOnThisDevice: newValue });
+			get().saveDeviceSpecificSettings();
 		},
 	})
 );

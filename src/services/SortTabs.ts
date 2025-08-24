@@ -1,4 +1,5 @@
 import { FileView, WorkspaceLeaf, WorkspaceParent } from "obsidian";
+import { GroupViewType, identifyGroupViewType, syncUIForGroupView } from "src/models/VTGroupView";
 
 export type TabCompareFn = (a: WorkspaceLeaf, b: WorkspaceLeaf) => number;
 
@@ -13,6 +14,9 @@ export function sortTabs(group: WorkspaceParent, sortStrategy: SortStrategy) {
 	if (sortStrategy.reverse) group.children.reverse();
 	group.recomputeChildrenDimensions();
 	if (group.selectTab) group.selectTab(activeLeaf);
+	if (identifyGroupViewType(group) !== GroupViewType.Default) {
+		syncUIForGroupView(group);
+	}
 	return group.children;
 }
 

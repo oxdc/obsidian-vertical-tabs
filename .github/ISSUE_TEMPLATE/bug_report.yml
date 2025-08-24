@@ -35,8 +35,8 @@ body:
     label: Bug Description
     description: |-
       Please provide a clear and concise description of the bug. What is the expected behavior? What is the actual behavior?
-      
-      **Note:** If English is not your first language, please consider use ChatGPT or similar AI tools to translate your text.
+
+      **Note:** If English is not your first language, please consider using ChatGPT or similar AI tools to translate your text.
     placeholder: Describe the bug here...
   validations:
     required: true
@@ -54,8 +54,15 @@ body:
   attributes:
     label: Debug Information
     description: |-
-      Please copy and paste Obsidian's Debug Information here. You may follow these steps:
-      
+      Please copy and paste Obsidian's Debug Information here. You can access this in multiple ways:
+
+      **Method 1 (Recommended): Using Vertical Tabs Debugging Tools**
+      1. Open Obsidian settings, then scroll to the section named "Community plugins", find and open the tab called "Vertical Tabs".
+      2. Scroll to the bottom and click "Show debug info".
+      3. Click "Copy to clipboard".
+      4. Paste the copied text here.
+
+      **Method 2: Using Command Palette**
       1. Press `Ctrl+P` (or `Cmd+P` on macOS) to open the "Command palette". On mobile, you can pull down from the top of the screen to open the "Command palette".
       2. Type "Show debug info".
       3. Select the highlighted "Show debug info" option.
@@ -64,17 +71,37 @@ body:
     placeholder: Paste the debug information here...
   validations:
     required: true
+- type: textarea
+  id: plugin-settings
+  attributes:
+    label: Plugin Settings
+    description: |-
+      Please copy and paste your Vertical Tabs plugin settings. This helps us understand your configuration and reproduce the issue more accurately:
+
+      1. Open Obsidian settings, then scroll to the section named "Community plugins", find and open the tab called "Vertical Tabs".
+      2. Scroll to the bottom and click "Copy plugin settings".
+      3. Paste the copied text here.
+
+      **Note:** Your installation ID will be automatically redacted for privacy. The installation ID is generated and stored locally, and will never be transferred over the internet or shared with anyone. It is only used by Vertical Tabs to identify and manage tab session data across your devices in upcoming features.
+    placeholder: Paste the plugin settings here...
+  validations:
+    required: true
 - type: dropdown
   id: sandbox
   attributes:
     label: Can you reproduce the bug in the "Sandbox vault"? Please skip this for mobile platforms by selecting "Not applicable".
     description: |-
-      You can access the "Sandbox vault" by following these steps:
-      
+      You can access the "Sandbox vault" in multiple ways:
+
+      **Method 1: Using Vertical Tabs Debugging Tools (Recommended)**
+      1. Open Obsidian settings, then scroll to the section named "Community plugins", find and open the tab called "Vertical Tabs"
+      2. Scroll to the bottom and click "Open sandbox vault"
+
+      **Method 2: Using Command Palette**
       1. Press `Ctrl+P` (or `Cmd+P` on macOS) to open the "Command palette".
       2. Type "Open sandbox vault".
       3. Select the highlighted "Open sandbox vault" option.
-      
+
       In the "Sandbox vault", you can install the Vertical Tabs plugin and test if the bug can be reproduced.
     options:
       - "--- Select an option ---"
@@ -96,4 +123,9 @@ body:
     label: Additional Information (Optional)
     description: |-
       Please provide any additional information that you think might be helpful in solving the bug.
+
+      **Tip:** If you're experiencing issues, you can also try the debugging tools available in the Vertical Tabs settings:
+      - "Reload Vertical Tabs" - restarts the plugin without restarting Obsidian
+      - "Open dev console" - opens the developer console for checking error messages and advanced debugging (desktop only)
+      - "Reload Obsidian without saving" - performs a full app restart if needed
     placeholder: Add any additional information here...

@@ -67,15 +67,29 @@ export function setGroupViewType(
 		if (!leafEl) return;
 		normalizeGroupViewType(group?.containerEl, GroupViewType.Default);
 	};
+	const scrollToActiveLeaf = () => {
+		if (!group) return;
+		const activeIndex = group.currentTab;
+		if (activeIndex < 0 || activeIndex >= group.children.length) return;
+		const activeLeaf = group.children[activeIndex];
+		if (!activeLeaf) return;
+		activeLeaf.containerEl.scrollIntoView({
+			behavior: "smooth",
+			block: "center",
+			inline: "center",
+		});
+	};
 	switch (viewType) {
 		case GroupViewType.ContinuousView:
 		case GroupViewType.ColumnView:
 			sortLeafDomsInGroup(group);
 			break;
 		case GroupViewType.MissionControlView:
+			sortLeafDomsInGroup(group);
 			group?.containerEl?.addEventListener("dblclick", autoExit, {
 				once: true,
 			});
+			scrollToActiveLeaf();
 			break;
 	}
 }
@@ -94,12 +108,8 @@ export function refreshGroupViewTypes(app: App) {
 export function syncUIForGroupView(group: WorkspaceParent | null) {
 	if (!group) return;
 	const viewType = identifyGroupViewType(group);
-	if (
-		viewType === GroupViewType.ContinuousView ||
-		viewType === GroupViewType.ColumnView
-	) {
-		sortLeafDomsInGroup(group);
-	}
+	if (viewType === GroupViewType.Default) return;
+	sortLeafDomsInGroup(group);
 }
 
 export const setColumnViewMinWidth = debounce((value: number) => {
