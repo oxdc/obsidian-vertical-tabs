@@ -50,6 +50,11 @@ interface DropdownProps {
 	onReset?: () => void;
 }
 
+interface WarningBannerProps {
+	template: string;
+	onClick: () => void;
+}
+
 export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	plugin: ObsidianVerticalTabs;
 
@@ -62,6 +67,35 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		const scorllTop = this.containerEl.scrollTop;
 		this.display();
 		this.containerEl.scrollTop = scorllTop;
+	}
+
+	display(): void {
+		const { containerEl } = this;
+		containerEl.empty();
+
+		const store = this.plugin.persistenceManager.device;
+		const disableOnThisDevice = store.get<boolean>(DISABLE_KEY) ?? false;
+
+		this.displayUpdateIndicator(containerEl);
+
+		if (this.plugin.settings.backgroundMode) {
+			this.displayBackgroundModeWarningBanner(containerEl);
+		}
+
+		if (disableOnThisDevice) {
+			this.displayPluginDisabledWarningBanner(containerEl);
+		}
+
+		if (!disableOnThisDevice && !this.plugin.settings.backgroundMode) {
+			this.displayBasicSettingsSection(containerEl);
+			this.displayTabSwitchingSection(containerEl);
+			this.displayNavigationStrategySection(containerEl);
+			this.displayLinkedFolderSection(containerEl);
+			this.displayGroupViewSection(containerEl);
+		}
+
+		this.displayMiscellaneousSection(containerEl);
+		this.displaySupportSection(containerEl);
 	}
 
 	// Setting Components
@@ -120,277 +154,6 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			);
 		}
 		return dropdownEl;
-	}
-
-	display(): void {
-		const { containerEl } = this;
-		containerEl.empty();
-
-		this.displayUpdateIndicator(containerEl);
-
-		if (this.plugin.settings.backgroundMode) {
-			const warning = containerEl.createDiv({
-				cls: "vt-background-mode-warning",
-			});
-			warning.appendText(`
-				* Warning: Background mode is enabled.
-				To see Vertical Tabs and access its core features,
-				you must first 
-			`);
-			const linkButton = warning.createEl("a", {
-				text: "disable",
-			});
-			linkButton.onclick = () => {
-				useSettings.getState().toggleBackgroundMode(this.app, false);
-				this.refresh();
-			};
-			warning.appendText(" it.");
-		}
-
-		const disableOnThisDevice =
-			this.plugin.persistenceManager.device.get<boolean>(DISABLE_KEY) ??
-			false;
-		if (disableOnThisDevice) {
-			const warning = containerEl.createDiv({
-				cls: "vt-background-mode-warning",
-			});
-			warning.appendText(`
-				* Warning: Vertical Tabs is disabled on this device.
-				To access plugin features and settings,
-				you must first 
-			`);
-			const linkButton = warning.createEl("a", {
-				text: "enable",
-			});
-			linkButton.onclick = () => {
-				useSettings.getState().toggleDisableOnThisDevice(false);
-				new Notice(
-					"Vertical Tabs has been enabled on this device. Please reload Obsidian for changes to take effect."
-				);
-				this.refresh();
-			};
-			warning.appendText(" it on this device.");
-		}
-
-		if (!disableOnThisDevice && !this.plugin.settings.backgroundMode) {
-			new Setting(containerEl)
-				.setName("Show active tabs only")
-				.setDesc(
-					"Hide inactive horizontal tabs to make workspace cleaner."
-				)
-				.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.showActiveTabs)
-						.onChange(async (value) => {
-							useSettings
-								.getState()
-								.setSettings({ showActiveTabs: value });
-							this.refresh();
-						});
-				});
-
-			if (!this.plugin.settings.showActiveTabs) {
-				new Setting(containerEl)
-					.setName("Scrollable tabs")
-					.setDesc(
-						"Enable horizontal scrolling for tab headers when they exceed available width."
-					)
-					.addToggle((toggle) => {
-						toggle
-							.setValue(this.plugin.settings.scrollableTabs)
-							.onChange(async (value) => {
-								useSettings
-									.getState()
-									.setSettings({ scrollableTabs: value });
-								this.refresh();
-							});
-					});
-
-				if (this.plugin.settings.scrollableTabs) {
-					new Setting(containerEl)
-						.setName("Tab minimum width")
-						.setDesc("Minimum width of each tab header in pixels.")
-						.addExtraButton((button) => {
-							button
-								.setIcon("reset")
-								.setTooltip("Reset to default")
-								.onClick(async () => {
-									useSettings.getState().setSettings({
-										scrollableTabsMinWidth: 100,
-									});
-									this.display();
-								});
-						})
-						.addSlider((slider) => {
-							slider
-								.setLimits(50, 300, 10)
-								.setValue(
-									this.plugin.settings.scrollableTabsMinWidth
-								)
-								.setDynamicTooltip()
-								.onChange(async (value) => {
-									useSettings.getState().setSettings({
-										scrollableTabsMinWidth: value,
-									});
-								});
-						});
-				}
-			}
-
-			new Setting(containerEl)
-				.setName("Auto hide horizontal tabs")
-				.setDesc(
-					"Automatically hide horizontal tabs when the left sidebar is open."
-				)
-				.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.autoHideHorizontalTabs)
-						.onChange(async (value) => {
-							useSettings.getState().setSettings({
-								autoHideHorizontalTabs: value,
-							});
-						});
-				});
-
-			new Setting(containerEl)
-				.setName("Hide inactive tabs in Zen Mode")
-				.setDesc(
-					"Hide inactive horizontal tabs when Zen Mode is enabled."
-				)
-				.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.showActiveTabsInZenMode)
-						.onChange(async (value) => {
-							useSettings.getState().setSettings({
-								showActiveTabsInZenMode: value,
-							});
-						});
-				});
-
-			new Setting(containerEl)
-				.setName("Auto uncollapse active group")
-				.setDesc(
-					"Automatically uncollapse the active groups when switching tabs."
-				)
-				.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.autoUncollapseGroup)
-						.onChange(async (value) => {
-							useSettings
-								.getState()
-								.setSettings({ autoUncollapseGroup: value });
-						});
-				});
-
-			new Setting(containerEl)
-				.setName("Hide sidebar tabs")
-				.setDesc("Don't show sidebar tabs in Vertical Tabs.")
-				.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.hideSidebars)
-						.onChange(async (value) => {
-							useSettings
-								.getState()
-								.setSettings({ hideSidebars: value });
-						});
-				});
-
-			new Setting(containerEl)
-				.setName("Trim tab names")
-				.setDesc("Use ellipsis to fit tab names on a single line.")
-				.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.trimTabNames)
-						.onChange(async (value) => {
-							useSettings
-								.getState()
-								.setSettings({ trimTabNames: value });
-						});
-				});
-
-			new Setting(containerEl)
-				.setName("Show more actions")
-				.setDesc("Show more control buttons in the toolbar.")
-				.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.showMoreButtons)
-						.onChange(async (value) => {
-							useSettings
-								.getState()
-								.setSettings({ showMoreButtons: value });
-						});
-				});
-
-			if (Platform.isMobile) {
-				new Setting(containerEl)
-					.setName("Mobile action preference")
-					.setDesc(
-						this.plugin.settings.useTabEditing
-							? "Enable tab editing mode to show control buttons on mobile."
-							: "Show control buttons such as new-tab buttons and close icons on mobile."
-					)
-					.addDropdown((dropdown) =>
-						dropdown
-							.addOption("show-all", "Show all buttons")
-							.addOption("tab-editing", "Enable tab editing mode")
-							.setValue(
-								this.plugin.settings.useTabEditing
-									? "tab-editing"
-									: "show-all"
-							)
-							.onChange(async (value) => {
-								useSettings.getState().setSettings({
-									useTabEditing: value === "tab-editing",
-								});
-								this.refresh();
-							})
-					);
-			}
-		}
-
-		if (!disableOnThisDevice) {
-			new Setting(containerEl)
-				.setName("Enable tab zoom")
-				.setDesc("Enable per tab zooming.")
-				.addToggle((toggle) => {
-					toggle
-						.setValue(this.plugin.settings.enableTabZoom)
-						.onChange(async (value) => {
-							useSettings
-								.getState()
-								.setSettings({ enableTabZoom: value });
-						});
-				});
-
-			if (!this.plugin.settings.backgroundMode) {
-				new Setting(containerEl).setName("Tab switching").setHeading();
-
-				new Setting(containerEl)
-					.setName("Enhanced keyboard tab switching")
-					.setDesc("Use Ctrl/Cmd + 1-9 to switch between tabs.")
-					.addToggle((toggle) => {
-						toggle
-							.setValue(
-								this.plugin.settings.enhancedKeyboardTabSwitch
-							)
-							.onChange(async (value) => {
-								useSettings
-									.getState()
-									.toggleEnhancedKeyboardTabSwitch(
-										this.app,
-										value
-									);
-							});
-					});
-			}
-
-			this.displayNavigationStrategySection(containerEl);
-			this.displayLinkedFolderSection(containerEl);
-			this.displayGroupViewSection(containerEl);
-		}
-
-		this.displayMiscellaneousSection(containerEl);
-		this.displaySupportSection(containerEl);
 	}
 
 	// Update Checker
@@ -481,6 +244,223 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				.setButtonText("View in plugin store")
 				.setCta()
 				.onClick(showPage);
+		});
+	}
+
+	// Warning Banners
+
+	private displayBackgroundModeWarningBanner(containerEl: HTMLElement) {
+		this.createWarningBanner(containerEl, {
+			template: `Background mode is enabled. To see Vertical Tabs and access its core features,
+								 you must first {disable} it.`,
+			onClick: () =>
+				useSettings.getState().toggleBackgroundMode(this.app, false),
+		});
+	}
+
+	private displayPluginDisabledWarningBanner(containerEl: HTMLElement) {
+		this.createWarningBanner(containerEl, {
+			template: `Vertical Tabs is disabled on this device. To access plugin features and settings,
+							   you must first {enable} it.`,
+			onClick: () =>
+				useSettings.getState().toggleDisableOnThisDevice(false),
+		});
+	}
+
+	private createWarningBanner(
+		containerEl: HTMLElement,
+		props: WarningBannerProps
+	) {
+		const { template, onClick } = props;
+		// template format: "prefix {buttonText} suffix"
+		const buttonTextMatch = template.match(/\{([^}]+)\}/);
+		const buttonText = buttonTextMatch ? buttonTextMatch[1] : "";
+		const [prefix, suffix] = template.split(/\{[^}]+\}/);
+		const warning = containerEl.createDiv({ cls: "vt-warning-banner" });
+		warning.appendText(`* Warning: ${prefix}`);
+		const linkButton = warning.createEl("a", { text: buttonText });
+		warning.appendText(suffix);
+		linkButton.onclick = () => {
+			onClick();
+			this.refresh();
+		};
+	}
+
+	// Basic Settings
+
+	private displayBasicSettingsSection(containerEl: HTMLElement) {
+		this.displayCommonSettingsSection(containerEl);
+		if (Platform.isMobile) {
+			this.displayMobileSettingsSection(containerEl);
+		}
+	}
+
+	private displayCommonSettingsSection(containerEl: HTMLElement) {
+		this.displayHorizontalTabsOptions(containerEl);
+		this.displayVisualOptions(containerEl);
+		this.displayTabZoomOptions(containerEl);
+	}
+
+	private displayHorizontalTabsOptions(containerEl: HTMLElement) {
+		this.createToggle(containerEl, {
+			name: "Show active tabs only",
+			desc: "Hide inactive horizontal tabs to make workspace cleaner.",
+			value: this.plugin.settings.showActiveTabs,
+			onChange: (value) => {
+				useSettings.getState().setSettings({
+					showActiveTabs: value,
+				});
+				this.refresh();
+			},
+		});
+
+		this.createToggle(containerEl, {
+			name: "Auto hide horizontal tabs",
+			desc: "Automatically hide horizontal tabs when the left sidebar is open.",
+			value: this.plugin.settings.autoHideHorizontalTabs,
+			onChange: (value) => {
+				useSettings.getState().setSettings({
+					autoHideHorizontalTabs: value,
+				});
+			},
+		});
+
+		this.createToggle(containerEl, {
+			name: "Hide inactive tabs in Zen Mode",
+			desc: "Hide inactive horizontal tabs when Zen Mode is enabled.",
+			value: this.plugin.settings.showActiveTabsInZenMode,
+			onChange: (value) => {
+				useSettings.getState().setSettings({
+					showActiveTabsInZenMode: value,
+				});
+			},
+		});
+	}
+
+	private displayVisualOptions(containerEl: HTMLElement) {
+		this.createToggle(containerEl, {
+			name: "Hide sidebar tabs",
+			desc: "Don't show sidebar tabs in Vertical Tabs.",
+			value: this.plugin.settings.hideSidebars,
+			onChange: (value) => {
+				useSettings.getState().setSettings({ hideSidebars: value });
+			},
+		});
+
+		this.createToggle(containerEl, {
+			name: "Trim tab names",
+			desc: "Use ellipsis to fit tab names on a single line.",
+			value: this.plugin.settings.trimTabNames,
+			onChange: (value) => {
+				useSettings.getState().setSettings({ trimTabNames: value });
+			},
+		});
+
+		this.createToggle(containerEl, {
+			name: "Auto uncollapse active group",
+			desc: "Automatically uncollapse the active groups when switching tabs.",
+			value: this.plugin.settings.autoUncollapseGroup,
+			onChange: (value) => {
+				useSettings
+					.getState()
+					.setSettings({ autoUncollapseGroup: value });
+			},
+		});
+
+		this.createToggle(containerEl, {
+			name: "Show more actions",
+			desc: "Show more control buttons in the toolbar.",
+			value: this.plugin.settings.showMoreButtons,
+			onChange: (value) => {
+				useSettings.getState().setSettings({ showMoreButtons: value });
+			},
+		});
+	}
+
+	private displayTabZoomOptions(containerEl: HTMLElement) {
+		this.createToggle(containerEl, {
+			name: "Enable tab zoom",
+			desc: "Enable per tab zooming.",
+			value: this.plugin.settings.enableTabZoom,
+			onChange: (value) =>
+				useSettings.getState().setSettings({ enableTabZoom: value }),
+		});
+	}
+
+	private displayMobileSettingsSection(containerEl: HTMLElement) {
+		this.createDropdown(containerEl, {
+			name: "Mobile action preference",
+			desc: this.plugin.settings.useTabEditing
+				? "Enable tab editing mode to show control buttons on mobile."
+				: "Show control buttons such as new-tab buttons and close icons on mobile.",
+			options: {
+				"show-all": "Show all buttons",
+				"tab-editing": "Enable tab editing mode",
+			},
+			value: this.plugin.settings.useTabEditing
+				? "tab-editing"
+				: "show-all",
+			onChange: (value) => {
+				useSettings.getState().setSettings({
+					useTabEditing: value === "tab-editing",
+				});
+				this.refresh();
+			},
+		});
+	}
+
+	// Tab Switching
+
+	private displayTabSwitchingSection(containerEl: HTMLElement) {
+		new Setting(containerEl).setName("Tab switching").setHeading();
+
+		this.displayEnhancedKeyboardTabSwitchToggle(containerEl);
+
+		if (!this.plugin.settings.showActiveTabs) {
+			this.displayScrollableTabsToggle(containerEl);
+			if (this.plugin.settings.scrollableTabs) {
+				this.displayScrollableTabsOptions(containerEl);
+			}
+		}
+	}
+
+	private displayEnhancedKeyboardTabSwitchToggle(containerEl: HTMLElement) {
+		this.createToggle(containerEl, {
+			name: "Enhanced keyboard tab switching",
+			desc: "Use Ctrl/Cmd + 1-9 to switch between tabs.",
+			value: this.plugin.settings.enhancedKeyboardTabSwitch,
+			onChange: (value) =>
+				useSettings
+					.getState()
+					.toggleEnhancedKeyboardTabSwitch(this.app, value),
+		});
+	}
+
+	private displayScrollableTabsToggle(containerEl: HTMLElement) {
+		this.createToggle(containerEl, {
+			name: "Scrollable tabs",
+			desc: "Enable horizontal scrolling for tab headers when they exceed available width.",
+			value: this.plugin.settings.scrollableTabs,
+			onChange: (value) => {
+				useSettings.getState().setSettings({ scrollableTabs: value });
+				this.refresh();
+			},
+		});
+	}
+
+	private displayScrollableTabsOptions(containerEl: HTMLElement) {
+		this.createSlider(containerEl, {
+			name: "Tab minimum width",
+			desc: "Minimum width of each tab header in pixels.",
+			value: {
+				currentValue: this.plugin.settings.scrollableTabsMinWidth,
+				defaultValue: 100,
+				limits: { min: 50, max: 300, step: 10 },
+			},
+			onChange: (value) =>
+				useSettings.getState().setSettings({
+					scrollableTabsMinWidth: value,
+				}),
 		});
 	}
 
