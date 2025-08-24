@@ -623,117 +623,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		});
 		bugReport.appendText(".");
 
-		const debuggingHelper = support.createDiv({ cls: "debugging-helper" });
-		const copySettingsBtn = debuggingHelper.createEl("button");
-		setIcon(copySettingsBtn, "copy");
-		copySettingsBtn.appendText("Copy plugin settings");
-		copySettingsBtn.onclick = async () => {
-			const settings = this.plugin.settings;
-			const version = this.plugin.manifest.version;
-			const pluginInfo = { version, settings };
-			pluginInfo.settings.installationID = "[Redacted]";
-			await navigator.clipboard.writeText(
-				"```json\n" + JSON.stringify(pluginInfo, null, 2) + "\n```"
-			);
-			new Notice("Plugin settings copied to clipboard");
-		};
-		const showDebugInfoBtn = debuggingHelper.createEl("button");
-		setIcon(showDebugInfoBtn, "bug");
-		showDebugInfoBtn.appendText("Show debug info");
-		showDebugInfoBtn.onclick = () => {
-			this.app.commands.executeCommandById("app:show-debug-info");
-		};
-		if (Platform.isDesktopApp) {
-			const openDevConsoleBtn = debuggingHelper.createEl("button");
-			setIcon(openDevConsoleBtn, "square-terminal");
-			openDevConsoleBtn.appendText("Open dev console");
-			openDevConsoleBtn.onclick = () => {
-				try {
-					// eslint-disable-next-line @typescript-eslint/no-explicit-any
-					(window as any)
-						.require("electron")
-						.remote.getCurrentWebContents()
-						.openDevTools();
-				} catch (error) {
-					console.error(error);
-				}
-			};
-		}
-		const openSandboxBtn = debuggingHelper.createEl("button");
-		setIcon(openSandboxBtn, "flask-conical");
-		openSandboxBtn.appendText("Open sandbox vault");
-		openSandboxBtn.onclick = () => {
-			this.app.commands.executeCommandById("app:open-sandbox-vault");
-		};
-		const reloadPluginBtn = debuggingHelper.createEl("button");
-		setIcon(reloadPluginBtn, "rotate-ccw");
-		reloadPluginBtn.appendText("Reload Vertical Tabs");
-		reloadPluginBtn.onclick = async () => {
-			try {
-				const id = this.plugin.manifest.id;
-				const scorllTop = this.containerEl.scrollTop;
-				await this.app.plugins.disablePlugin(id);
-				await this.app.plugins.enablePlugin(id);
-				const newSettingTab = this.app.setting.openTabById(id);
-				newSettingTab.containerEl.scrollTop = scorllTop;
-				new Notice("Vertical Tabs reloaded");
-			} catch (error) {
-				console.error(error);
-			}
-		};
-
-		const reloadAppBtn = debuggingHelper.createEl("button", {
-			cls: "mod-destructive",
-		});
-		const reloadAppBtnIcon = reloadAppBtn.createEl("span");
-		setIcon(reloadAppBtnIcon, "app-window-mac");
-		const reloadAppBtnText = reloadAppBtn.createEl("span");
-		reloadAppBtnText.appendText("Reload Obsidian without saving");
-		let clickedOnce = false;
-		let firstClickTime = 0;
-		let countdownInterval: NodeJS.Timeout;
-		// Require clicking twice to reload Obsidian
-		reloadAppBtn.onclick = () => {
-			const currentTime = Date.now();
-			if (!clickedOnce) {
-				// First click
-				clickedOnce = true;
-				firstClickTime = currentTime;
-				let countdown = 5;
-				const updateButtonText = () => {
-					setIcon(reloadAppBtnIcon, "timer");
-					reloadAppBtnText.setText(
-						`Click again to confirm (in ${countdown}s)`
-					);
-				};
-				updateButtonText();
-				// Countdown timer that updates every second
-				countdownInterval = setInterval(() => {
-					countdown--;
-					if (countdown > 0) {
-						updateButtonText();
-					} else {
-						// Reset when countdown reaches 0
-						clearInterval(countdownInterval);
-						clickedOnce = false;
-						firstClickTime = 0;
-						setIcon(reloadAppBtnIcon, "app-window-mac");
-						reloadAppBtnText.setText(
-							"Reload Obsidian without saving"
-						);
-					}
-				}, 1000);
-			} else {
-				// Second click - check if at least 1 second has passed
-				const timeSinceFirstClick = currentTime - firstClickTime;
-				if (timeSinceFirstClick >= 1000) {
-					// Execute the command only if at least 1 second has passed
-					clearInterval(countdownInterval);
-					this.app.commands.executeCommandById("app:reload");
-				}
-				// If less than 1 second has passed, ignore the click
-			}
-		};
+		this.displayDebugTools(support);
 	}
 
 	private displayUpdateIndicator(containerEl: HTMLElement) {
@@ -1004,5 +894,174 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 						});
 				});
 		}
+	}
+
+	// Debugging Tools
+
+	private async copyPluginSettingsToClipboard() {
+		const settings = this.plugin.settings;
+		const version = this.plugin.manifest.version;
+		const pluginInfo = { version, settings };
+		const json = JSON.stringify(pluginInfo, null, 2);
+		const markdown = "```json\n" + json + "\n```";
+		pluginInfo.settings.installationID = "[Redacted]";
+		await navigator.clipboard.writeText(markdown);
+		new Notice("Plugin settings copied to clipboard");
+	}
+
+	private openDevConsole() {
+		try {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(window as any)
+				.require("electron")
+				.remote.getCurrentWebContents()
+				.openDevTools();
+		} catch (error) {
+			console.error(error);
+		}
+	}
+
+	private async reloadSelf() {
+		try {
+			const id = this.plugin.manifest.id;
+			const scorllTop = this.containerEl.scrollTop;
+			await this.app.plugins.disablePlugin(id);
+			await this.app.plugins.enablePlugin(id);
+			const newSettingTab = this.app.setting.openTabById(id);
+			newSettingTab.containerEl.scrollTop = scorllTop;
+			new Notice("Vertical Tabs reloaded");
+		} catch (error) {
+			console.error(error);
+		}
+	}
+
+	private createDebugButton(
+		parentEl: HTMLElement,
+		props: { icon: string; text: string },
+		onClick?: () => void
+	) {
+		const buttonEl = parentEl.createEl("button");
+		const iconEl = buttonEl.createEl("span");
+		const textEl = buttonEl.createEl("span");
+		setIcon(iconEl, props.icon);
+		textEl.setText(props.text);
+		if (onClick) buttonEl.onclick = onClick;
+		return { buttonEl, iconEl, textEl };
+	}
+
+	private createConfirmationButton(
+		parentEl: HTMLElement,
+		props: {
+			icon: string;
+			text: string;
+			destructive?: boolean;
+			countdownSeconds?: number;
+			confirmationTextFormat?: (countdown: number) => string;
+		},
+		onClick: () => void
+	) {
+		let clickedOnce = false;
+		let firstClickTime = 0;
+		let countdownInterval: NodeJS.Timeout;
+		const countdownSeconds = props.countdownSeconds ?? 5;
+
+		const confirmationTextFormat = (countdown: number) => {
+			return props.confirmationTextFormat
+				? props.confirmationTextFormat(countdown)
+				: `Click again to confirm (in ${countdown}s)`;
+		};
+
+		const updateButtonText = (text: string, icon = "timer") => {
+			setIcon(iconEl, icon);
+			textEl.setText(text);
+		};
+
+		const button = this.createDebugButton(parentEl, props);
+		const { buttonEl, iconEl, textEl } = button;
+		if (props.destructive) buttonEl.classList.add("mod-destructive");
+
+		buttonEl.onclick = () => {
+			const currentTime = Date.now();
+			if (!clickedOnce) {
+				// First click
+				clickedOnce = true;
+				firstClickTime = currentTime;
+				let countdown = countdownSeconds;
+				updateButtonText(confirmationTextFormat(countdown));
+				// Countdown timer that updates every second
+				countdownInterval = setInterval(() => {
+					countdown--;
+					if (countdown > 0) {
+						updateButtonText(confirmationTextFormat(countdown));
+					} else {
+						// Reset when countdown reaches 0
+						clearInterval(countdownInterval);
+						clickedOnce = false;
+						firstClickTime = 0;
+						updateButtonText(props.text, props.icon);
+					}
+				}, 1000);
+			} else {
+				// Second click - check if at least 1 second has passed
+				const timeSinceFirstClick = currentTime - firstClickTime;
+				if (timeSinceFirstClick >= 1000) {
+					// Execute the command only if at least 1 second has passed
+					clearInterval(countdownInterval);
+					onClick();
+				}
+				// If less than 1 second has passed, ignore the click
+			}
+		};
+
+		return { buttonEl, iconEl, textEl };
+	}
+
+	private displayDebugTools(parentEl: HTMLElement) {
+		const containerEl = parentEl.createDiv({
+			cls: "debugging-helper",
+		});
+
+		this.createDebugButton(
+			containerEl,
+			{ icon: "copy", text: "Copy plugin settings" },
+			() => this.copyPluginSettingsToClipboard()
+		);
+
+		this.createDebugButton(
+			containerEl,
+			{ icon: "bug", text: "Show debug info" },
+			() => this.app.commands.executeCommandById("app:show-debug-info")
+		);
+
+		if (Platform.isDesktopApp) {
+			this.createDebugButton(
+				containerEl,
+				{ icon: "square-terminal", text: "Open dev console" },
+				() => this.openDevConsole()
+			);
+		}
+
+		this.createDebugButton(
+			containerEl,
+			{ icon: "flask-conical", text: "Open sandbox vault" },
+			() => this.app.commands.executeCommandById("app:open-sandbox-vault")
+		);
+
+		this.createDebugButton(
+			containerEl,
+			{ icon: "rotate-ccw", text: "Reload Vertical Tabs" },
+			() => this.reloadSelf()
+		);
+
+		this.createConfirmationButton(
+			containerEl,
+			{
+				icon: "app-window-mac",
+				text: "Reload Obsidian without saving",
+				destructive: true,
+				countdownSeconds: 5,
+			},
+			() => this.app.commands.executeCommandById("app:reload")
+		);
 	}
 }
