@@ -30,6 +30,7 @@ import { PersistenceManager } from "./models/PersistenceManager";
 import { migrateAllData } from "./history/Migration";
 import { VERTICAL_TABS_ICON } from "./icon";
 import { DISABLE_KEY } from "./models/PluginContext";
+import { scrollToActiveTab } from "./services/ScrollableTabs";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -80,6 +81,26 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.registerView(
 			VERTICAL_TABS_VIEW,
 			(leaf) => new VerticalTabsView(leaf, this)
+		);
+		this.registerEvents();
+	}
+
+	registerEvents() {
+		this.registerScrollableTabsEvents();
+	}
+
+	registerScrollableTabsEvents() {
+		this.registerEvent(
+			this.app.workspace.on("active-leaf-change", (leaf) => {
+				scrollToActiveTab(leaf);
+			})
+		);
+		this.registerEvent(
+			this.app.workspace.on("editor-change", (_, info) => {
+				if (info instanceof MarkdownView) {
+					scrollToActiveTab(info.leaf);
+				}
+			})
 		);
 	}
 

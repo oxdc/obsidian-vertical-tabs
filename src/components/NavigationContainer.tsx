@@ -8,7 +8,7 @@ import {
 	ALT_KEY_EFFECT_DURATION,
 	VIEW_CUE_DELAY,
 } from "src/models/ViewState";
-import { debounce, ItemView, MarkdownView, Platform, TFolder } from "obsidian";
+import { debounce, ItemView, Platform, TFolder } from "obsidian";
 import { EVENTS } from "src/constants/Events";
 import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 import {
@@ -145,32 +145,6 @@ export const NavigationContainer = () => {
 		plugin.registerEvent(workspace.on("active-leaf-change", autoRefresh));
 		plugin.registerEvent(
 			workspace.on("active-leaf-change", autoUncollapseGroup)
-		);
-		plugin.registerEvent(
-			workspace.on("active-leaf-change", (leaf) => {
-				setTimeout(() => {
-					leaf?.tabHeaderEl.scrollIntoView({
-						behavior: "smooth",
-						block: "center",
-						inline: "center",
-					});
-				}, REFRESH_TIMEOUT);
-			})
-		);
-		plugin.registerEvent(
-			workspace.on("editor-change", (_, info) => {
-				if (info instanceof MarkdownView) {
-					setTimeout(
-						() =>
-							info.leaf.tabHeaderEl.scrollIntoView({
-								behavior: "smooth",
-								block: "center",
-								inline: "center",
-							}),
-						REFRESH_TIMEOUT
-					);
-				}
-			})
 		);
 		plugin.registerEvent(workspace.on("resize", debounce(updateToggles)));
 		plugin.registerEvent(workspace.on(EVENTS.UPDATE_TOGGLE, updateToggles));
