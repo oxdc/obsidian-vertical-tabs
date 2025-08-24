@@ -72,6 +72,7 @@ interface SettingsActions {
 	) => void;
 	toggleBackgroundMode: (app: App, enable?: boolean) => void;
 	toggleEnhancedKeyboardTabSwitch: (app: App, enable?: boolean) => void;
+	setScrollableTabsMinWidth: (value: number) => void;
 	setGroupViewOptions: (app: App, options: GroupViewOptions) => void;
 	loadDeviceSpecificSettings: () => void;
 	saveDeviceSpecificSettings: () => void;
@@ -193,6 +194,10 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				app.workspace.trigger(EVENTS.RESET_KEYBOARD_TAB_SWITCH);
 			}
 			get().setSettings({ enhancedKeyboardTabSwitch: toEnable });
+		},
+		setScrollableTabsMinWidth(value: number) {
+			get().setSettings({ scrollableTabsMinWidth: value });
+			setScrollableTabsMinWidth(value);
 		},
 		setGroupViewOptions(app: App, options: GroupViewOptions) {
 			get().setSettings(options);

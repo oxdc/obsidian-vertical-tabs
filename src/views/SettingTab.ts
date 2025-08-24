@@ -456,9 +456,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				limits: { min: 50, max: 300, step: 10 },
 			},
 			onChange: (value) =>
-				useSettings.getState().setSettings({
-					scrollableTabsMinWidth: value,
-				}),
+				useSettings.getState().setScrollableTabsMinWidth(value),
 		});
 	}
 
