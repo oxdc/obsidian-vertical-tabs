@@ -553,12 +553,17 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					)
 					.onChange(async (value) => {
 						useSettings.getState().toggleDisableOnThisDevice(value);
-						new Notice(
-							`Vertical Tabs has been ${
-								value ? "disabled" : "enabled"
-							} on this device. Please reload Obsidian for changes to take effect.`
-						);
-						this.refresh();
+						const id = this.plugin.manifest.id;
+						const scorllTop = this.containerEl.scrollTop;
+						await this.app.plugins.disablePlugin(id);
+						await this.app.plugins.enablePlugin(id);
+						const newSettingTab = this.app.setting.openTabById(id);
+						newSettingTab.containerEl.scrollTop = scorllTop;
+						if (value) {
+							this.app.workspace
+								.getLeavesOfType(VERTICAL_TABS_VIEW)
+								.forEach((leaf) => leaf.detach());
+						}
 					});
 			});
 
