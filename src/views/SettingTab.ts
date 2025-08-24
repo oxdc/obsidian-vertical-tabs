@@ -582,49 +582,10 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					});
 			});
 
-		const support = containerEl.createDiv({ cls: "vt-support" });
-		support.createDiv({ cls: "title", text: "Enjoying Vertical Tabs?" });
-		support.createDiv({ cls: "buttons" }).innerHTML = `
-			<a id="vt-support-btn-kofi" href="https://ko-fi.com/oxdcq" target="_blank">
-				<img
-					width="24"
-					border="0"
-					style="border: 0px; width: 24px; mix-blend-mode: multiply;"
-					src="https://storage.ko-fi.com/cdn/brandasset/v2/kofi_symbol.png"
-				/>
-				<span>Buy me a coffee</span>
-			</a>
-			<a id="vt-support-btn-github" href="https://github.com/oxdc/obsidian-vertical-tabs" target="_blank">
-				<img
-					width="24"
-					border="0"
-					style="border: 0px; width: 24px; mix-blend-mode: multiply;"
-					src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-				/>
-				<span>Star on GitHub</span>
-			</a>
-		`;
-		const bugReport = support.createDiv({ cls: "bug-report" });
-		bugReport.appendText("Facing issues or have suggestions? ");
-		bugReport.createEl("a", {
-			text: "Check out the documentation",
-			attr: {
-				href: "https://oxdc.github.io/obsidian-vertical-tabs-docs/",
-				target: "_blank",
-			},
-		});
-		bugReport.appendText(" or ");
-		bugReport.createEl("a", {
-			text: "submit a report",
-			attr: {
-				href: "https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose",
-				target: "_blank",
-			},
-		});
-		bugReport.appendText(".");
-
-		this.displayDebugTools(support);
+		this.displaySupportSection(containerEl);
 	}
+
+	// Update Checker
 
 	private displayUpdateIndicator(containerEl: HTMLElement) {
 		const entry = new Setting(containerEl).setName("Updates");
@@ -714,6 +675,8 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				.onClick(showPage);
 		});
 	}
+
+	// Navigation Strategy
 
 	private displayCustomNavigationStrategy(containerEl: HTMLElement) {
 		new Setting(containerEl)
@@ -896,125 +859,61 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		}
 	}
 
+	// Feedback and Bug Report
+
+	private displaySupportSection(parentEl: HTMLElement) {
+		const containerEl = parentEl.createDiv({ cls: "vt-support" });
+		this.displayFeedbackContent(containerEl);
+		this.displayBugReport(containerEl);
+		this.displayDebugTools(containerEl);
+	}
+
+	private displayFeedbackContent(parentEl: HTMLElement) {
+		parentEl.createDiv({ cls: "title", text: "Enjoying Vertical Tabs?" });
+		parentEl.createDiv({ cls: "buttons" }).innerHTML = `
+			<a id="vt-support-btn-kofi" href="https://ko-fi.com/oxdcq" target="_blank">
+				<img
+					width="24"
+					border="0"
+					style="border: 0px; width: 24px; mix-blend-mode: multiply;"
+					src="https://storage.ko-fi.com/cdn/brandasset/v2/kofi_symbol.png"
+				/>
+				<span>Buy me a coffee</span>
+			</a>
+			<a id="vt-support-btn-github" href="https://github.com/oxdc/obsidian-vertical-tabs" target="_blank">
+				<img
+					width="24"
+					border="0"
+					style="border: 0px; width: 24px; mix-blend-mode: multiply;"
+					src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+				/>
+				<span>Star on GitHub</span>
+			</a>
+		`;
+	}
+
+	private displayBugReport(parentEl: HTMLElement) {
+		const containerEl = parentEl.createDiv({ cls: "bug-report" });
+		containerEl.appendText("Facing issues or have suggestions? ");
+		containerEl.createEl("a", {
+			text: "Check out the documentation",
+			attr: {
+				href: "https://oxdc.github.io/obsidian-vertical-tabs-docs/",
+				target: "_blank",
+			},
+		});
+		containerEl.appendText(" or ");
+		containerEl.createEl("a", {
+			text: "submit a report",
+			attr: {
+				href: "https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose",
+				target: "_blank",
+			},
+		});
+		containerEl.appendText(".");
+	}
+
 	// Debugging Tools
-
-	private async copyPluginSettingsToClipboard() {
-		const settings = this.plugin.settings;
-		const version = this.plugin.manifest.version;
-		const pluginInfo = { version, settings };
-		const json = JSON.stringify(pluginInfo, null, 2);
-		const markdown = "```json\n" + json + "\n```";
-		pluginInfo.settings.installationID = "[Redacted]";
-		await navigator.clipboard.writeText(markdown);
-		new Notice("Plugin settings copied to clipboard");
-	}
-
-	private openDevConsole() {
-		try {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(window as any)
-				.require("electron")
-				.remote.getCurrentWebContents()
-				.openDevTools();
-		} catch (error) {
-			console.error(error);
-		}
-	}
-
-	private async reloadSelf() {
-		try {
-			const id = this.plugin.manifest.id;
-			const scorllTop = this.containerEl.scrollTop;
-			await this.app.plugins.disablePlugin(id);
-			await this.app.plugins.enablePlugin(id);
-			const newSettingTab = this.app.setting.openTabById(id);
-			newSettingTab.containerEl.scrollTop = scorllTop;
-			new Notice("Vertical Tabs reloaded");
-		} catch (error) {
-			console.error(error);
-		}
-	}
-
-	private createDebugButton(
-		parentEl: HTMLElement,
-		props: { icon: string; text: string },
-		onClick?: () => void
-	) {
-		const buttonEl = parentEl.createEl("button");
-		const iconEl = buttonEl.createEl("span");
-		const textEl = buttonEl.createEl("span");
-		setIcon(iconEl, props.icon);
-		textEl.setText(props.text);
-		if (onClick) buttonEl.onclick = onClick;
-		return { buttonEl, iconEl, textEl };
-	}
-
-	private createConfirmationButton(
-		parentEl: HTMLElement,
-		props: {
-			icon: string;
-			text: string;
-			destructive?: boolean;
-			countdownSeconds?: number;
-			confirmationTextFormat?: (countdown: number) => string;
-		},
-		onClick: () => void
-	) {
-		let clickedOnce = false;
-		let firstClickTime = 0;
-		let countdownInterval: NodeJS.Timeout;
-		const countdownSeconds = props.countdownSeconds ?? 5;
-
-		const confirmationTextFormat = (countdown: number) => {
-			return props.confirmationTextFormat
-				? props.confirmationTextFormat(countdown)
-				: `Click again to confirm (in ${countdown}s)`;
-		};
-
-		const updateButtonText = (text: string, icon = "timer") => {
-			setIcon(iconEl, icon);
-			textEl.setText(text);
-		};
-
-		const button = this.createDebugButton(parentEl, props);
-		const { buttonEl, iconEl, textEl } = button;
-		if (props.destructive) buttonEl.classList.add("mod-destructive");
-
-		buttonEl.onclick = () => {
-			const currentTime = Date.now();
-			if (!clickedOnce) {
-				// First click
-				clickedOnce = true;
-				firstClickTime = currentTime;
-				let countdown = countdownSeconds;
-				updateButtonText(confirmationTextFormat(countdown));
-				// Countdown timer that updates every second
-				countdownInterval = setInterval(() => {
-					countdown--;
-					if (countdown > 0) {
-						updateButtonText(confirmationTextFormat(countdown));
-					} else {
-						// Reset when countdown reaches 0
-						clearInterval(countdownInterval);
-						clickedOnce = false;
-						firstClickTime = 0;
-						updateButtonText(props.text, props.icon);
-					}
-				}, 1000);
-			} else {
-				// Second click - check if at least 1 second has passed
-				const timeSinceFirstClick = currentTime - firstClickTime;
-				if (timeSinceFirstClick >= 1000) {
-					// Execute the command only if at least 1 second has passed
-					clearInterval(countdownInterval);
-					onClick();
-				}
-				// If less than 1 second has passed, ignore the click
-			}
-		};
-
-		return { buttonEl, iconEl, textEl };
-	}
 
 	private displayDebugTools(parentEl: HTMLElement) {
 		const containerEl = parentEl.createDiv({
@@ -1063,5 +962,125 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			},
 			() => this.app.commands.executeCommandById("app:reload")
 		);
+	}
+
+	private createDebugButton(
+		parentEl: HTMLElement,
+		props: { icon: string; text: string },
+		onClick?: () => void
+	) {
+		const buttonEl = parentEl.createEl("button");
+		const iconEl = buttonEl.createEl("span");
+		const textEl = buttonEl.createEl("span");
+		setIcon(iconEl, props.icon);
+		textEl.setText(props.text);
+		if (onClick) buttonEl.onclick = onClick;
+		return { buttonEl, iconEl, textEl };
+	}
+
+	private createConfirmationButton(
+		parentEl: HTMLElement,
+		props: {
+			icon: string;
+			text: string;
+			destructive?: boolean;
+			countdownSeconds?: number;
+			delaySeconds?: number;
+			confirmationTextFormat?: (countdown: number) => string;
+		},
+		onClick: () => void
+	) {
+		let clickedOnce = false;
+		let firstClickTime = 0;
+		let countdownInterval: NodeJS.Timeout;
+		const countdownSeconds = props.countdownSeconds ?? 5;
+		const delaySeconds = props.delaySeconds ?? 1;
+	
+		const confirmationTextFormat = (countdown: number) => {
+			return props.confirmationTextFormat
+				? props.confirmationTextFormat(countdown)
+				: `Click again to confirm (in ${countdown}s)`;
+		};
+
+		const updateButtonText = (text: string, icon = "timer") => {
+			setIcon(iconEl, icon);
+			textEl.setText(text);
+		};
+
+		const button = this.createDebugButton(parentEl, props);
+		const { buttonEl, iconEl, textEl } = button;
+		if (props.destructive) buttonEl.classList.add("mod-destructive");
+
+		buttonEl.onclick = () => {
+			const currentTime = Date.now();
+			if (!clickedOnce) {
+				// First click
+				clickedOnce = true;
+				firstClickTime = currentTime;
+				let countdown = countdownSeconds;
+				updateButtonText(confirmationTextFormat(countdown));
+				// Countdown timer that updates every second
+				countdownInterval = setInterval(() => {
+					countdown--;
+					if (countdown > 0) {
+						updateButtonText(confirmationTextFormat(countdown));
+					} else {
+						// Reset when countdown reaches 0
+						clearInterval(countdownInterval);
+						clickedOnce = false;
+						firstClickTime = 0;
+						updateButtonText(props.text, props.icon);
+					}
+				}, 1000);
+			} else {
+				// Second click - check if at least 1 second has passed
+				const timeSinceFirstClick = currentTime - firstClickTime;
+				if (timeSinceFirstClick >= delaySeconds * 1000) {
+					// Execute the command only if at least 1 second has passed
+					clearInterval(countdownInterval);
+					onClick();
+				}
+				// If less than 1 second has passed, ignore the click
+			}
+		};
+
+		return { buttonEl, iconEl, textEl };
+	}
+
+	private async copyPluginSettingsToClipboard() {
+		const settings = this.plugin.settings;
+		const version = this.plugin.manifest.version;
+		const pluginInfo = { version, settings };
+		const json = JSON.stringify(pluginInfo, null, 2);
+		const markdown = "```json\n" + json + "\n```";
+		pluginInfo.settings.installationID = "[Redacted]";
+		await navigator.clipboard.writeText(markdown);
+		new Notice("Plugin settings copied to clipboard");
+	}
+
+	private openDevConsole() {
+		try {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(window as any)
+				.require("electron")
+				.remote.getCurrentWebContents()
+				.openDevTools();
+		} catch (error) {
+			console.error(error);
+		}
+	}
+
+	private async reloadSelf() {
+		try {
+			const id = this.plugin.manifest.id;
+			const scorllTop = this.containerEl.scrollTop;
+			await this.app.plugins.disablePlugin(id);
+			await this.app.plugins.enablePlugin(id);
+			const newSettingTab = this.app.setting.openTabById(id);
+			newSettingTab.containerEl.scrollTop = scorllTop;
+			new Notice("Vertical Tabs reloaded");
+		} catch (error) {
+			console.error(error);
+		}
 	}
 }
