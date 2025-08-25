@@ -14,7 +14,7 @@ import { moveTab, reapplyEphemeralState } from "./MoveTab";
 import { safeDetach } from "./CloseTabs";
 import { linkTasksStore } from "src/stores/LinkTaskStore";
 
-const INCLUDE_LIST = new Set(["markdown", "canvas", "image", "video", "pdf"]);
+const INCLUDE_LIST = new Set(["markdown", "canvas", "image", "video", "pdf", "bases"]);
 
 interface DeduplicateOptions {
 	deduplicateSidebarTabs: boolean;

@@ -29,5 +29,13 @@ export function safeDetach(leaf: WorkspaceLeaf) {
 	if (leaf.view instanceof FileView) {
 		leaf.view.isDetachingFromVT = true;
 	}
-	leaf.detach();
+	try {
+		leaf.detach();
+	} catch {
+		// ignore
+		// Detaching Bases during tab deduplication will cause an error,
+		// which is safe to ignore. Potentially a bug in Obsidian v1.9.
+		// We would never reach the wrapped method `FileView.prototype.close`
+		// at this point.
+	}
 }
