@@ -222,7 +222,14 @@ export const NavigationContainer = () => {
 			}
 			const { enhancedKeyboardTabSwitch } = useSettings.getState();
 			if (!enhancedKeyboardTabSwitch) return;
-			if (event.ctrlKey || event.metaKey) {
+			console.log("keydown", event);
+			if (
+				(event.ctrlKey || event.metaKey) &&
+				(event.key === "Control" ||
+					event.key === "Meta" ||
+					event.key === "ArrowRight" ||
+					event.key === "ArrowLeft")
+			) {
 				setCtrlKeyState(true);
 				if (event.key === "ArrowRight") {
 					increaseViewCueOffset();
@@ -246,10 +253,12 @@ export const NavigationContainer = () => {
 				}, REFRESH_TIMEOUT_LONG);
 			}
 		});
-		plugin.registerDomEvent(window, "keyup", () => {
-			setCtrlKeyState(false);
-			ref.current?.toggleClass("tab-index-view-cue", false);
-			document.body.toggleClass("vt-tab-index-view-cue", false);
+		plugin.registerDomEvent(window, "keyup", (event) => {
+			if (event.key === "Control" || event.key === "Meta") {
+				setCtrlKeyState(false);
+				ref.current?.toggleClass("tab-index-view-cue", false);
+				document.body.toggleClass("vt-tab-index-view-cue", false);
+			}
 		});
 		plugin.registerDomEvent(document, "dblclick", (event) => {
 			makeDblclickedFileNonEphemeral(app, event);
