@@ -405,6 +405,10 @@ export const Group = (props: GroupProps) => {
 			isSidebar={isSidebar}
 			isSingleGroup={isSingleGroupInView}
 			isActiveGroup={isActiveGroup}
+			classNames={{
+				"is-hidden": isHidden,
+				"is-active-group": isActiveGroup,
+			}}
 		>
 			{!!linkedFolder && (
 				<LinkedGroupButton

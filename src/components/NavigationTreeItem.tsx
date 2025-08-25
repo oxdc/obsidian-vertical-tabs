@@ -43,6 +43,7 @@ interface NavigationTreeItemProps {
 	onMouseOver?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 	dataType?: string;
 	dataId?: string;
+	classNames?: Record<string, boolean>;
 }
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
@@ -75,7 +76,9 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		"is-linked-group": props.isLinkedGroup,
 		"is-slot": props.isTabSlot || props.isGroupSlot,
 		"is-highlighted": props.isHighlighted,
+		...props.classNames,
 	};
+
 	const selfElClasses: CssClasses = {
 		"tree-item-self": true,
 		"is-clickable": true,
