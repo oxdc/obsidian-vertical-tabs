@@ -38,7 +38,12 @@ export class HistoryBrowserModal extends SuggestModal<HistoryItem> {
 
 	onOpen(): void {
 		super.onOpen();
-		this.chooser.setSelectedItem(this.leaf.history.backHistory.length);
+		// Create a synthetic keyboard event for programmatic selection
+		const syntheticEvent = new KeyboardEvent("keydown");
+		this.chooser.setSelectedItem(
+			this.leaf.history.backHistory.length,
+			syntheticEvent
+		);
 	}
 
 	getSuggestions(query: string): HistoryItem[] {
