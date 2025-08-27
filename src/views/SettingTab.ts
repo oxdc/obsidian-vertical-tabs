@@ -88,7 +88,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 
 		if (!disableOnThisDevice && !this.plugin.settings.backgroundMode) {
 			this.displayBasicSettingsSection(containerEl);
-			this.displayTabSwitchingSection(containerEl);
+			this.displayHorizontalTabControlSection(containerEl);
 			this.displayNavigationStrategySection(containerEl);
 			this.displayLinkedFolderSection(containerEl);
 			this.displayGroupViewSection(containerEl);
@@ -294,45 +294,8 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	}
 
 	private displayCommonSettingsSection(containerEl: HTMLElement) {
-		this.displayHorizontalTabsOptions(containerEl);
 		this.displayVisualOptions(containerEl);
 		this.displayTabZoomOptions(containerEl);
-	}
-
-	private displayHorizontalTabsOptions(containerEl: HTMLElement) {
-		this.createToggle(containerEl, {
-			name: "Show active tabs only",
-			desc: "Hide inactive horizontal tabs to make workspace cleaner.",
-			value: this.plugin.settings.showActiveTabs,
-			onChange: (value) => {
-				useSettings.getState().setSettings({
-					showActiveTabs: value,
-				});
-				this.refresh();
-			},
-		});
-
-		this.createToggle(containerEl, {
-			name: "Auto hide horizontal tabs",
-			desc: "Automatically hide horizontal tabs when the left sidebar is open.",
-			value: this.plugin.settings.autoHideHorizontalTabs,
-			onChange: (value) => {
-				useSettings.getState().setSettings({
-					autoHideHorizontalTabs: value,
-				});
-			},
-		});
-
-		this.createToggle(containerEl, {
-			name: "Hide inactive tabs in Zen Mode",
-			desc: "Hide inactive horizontal tabs when Zen Mode is enabled.",
-			value: this.plugin.settings.showActiveTabsInZenMode,
-			onChange: (value) => {
-				useSettings.getState().setSettings({
-					showActiveTabsInZenMode: value,
-				});
-			},
-		});
 	}
 
 	private displayVisualOptions(containerEl: HTMLElement) {
@@ -407,11 +370,12 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		});
 	}
 
-	// Tab Switching
+	// Horizontal Tab Control
 
-	private displayTabSwitchingSection(containerEl: HTMLElement) {
-		new Setting(containerEl).setName("Tab switching").setHeading();
+	private displayHorizontalTabControlSection(containerEl: HTMLElement) {
+		new Setting(containerEl).setName("Horizontal tab control").setHeading();
 
+		this.displayHorizontalTabsOptions(containerEl);
 		this.displayEnhancedKeyboardTabSwitchToggle(containerEl);
 
 		if (!this.plugin.settings.showActiveTabs) {
@@ -420,6 +384,42 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				this.displayScrollableTabsOptions(containerEl);
 			}
 		}
+	}
+
+	private displayHorizontalTabsOptions(containerEl: HTMLElement) {
+		this.createToggle(containerEl, {
+			name: "Show active tabs only",
+			desc: "Hide inactive horizontal tabs to make workspace cleaner.",
+			value: this.plugin.settings.showActiveTabs,
+			onChange: (value) => {
+				useSettings.getState().setSettings({
+					showActiveTabs: value,
+				});
+				this.refresh();
+			},
+		});
+
+		this.createToggle(containerEl, {
+			name: "Auto hide horizontal tabs",
+			desc: "Automatically hide horizontal tabs when the left sidebar is open.",
+			value: this.plugin.settings.autoHideHorizontalTabs,
+			onChange: (value) => {
+				useSettings.getState().setSettings({
+					autoHideHorizontalTabs: value,
+				});
+			},
+		});
+
+		this.createToggle(containerEl, {
+			name: "Hide inactive tabs in Zen Mode",
+			desc: "Hide inactive horizontal tabs when Zen Mode is enabled.",
+			value: this.plugin.settings.showActiveTabsInZenMode,
+			onChange: (value) => {
+				useSettings.getState().setSettings({
+					showActiveTabsInZenMode: value,
+				});
+			},
+		});
 	}
 
 	private displayEnhancedKeyboardTabSwitchToggle(containerEl: HTMLElement) {
@@ -665,7 +665,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	// Linked Folder
 
 	private displayLinkedFolderSection(parentEl: HTMLElement) {
-		new Setting(parentEl).setName("Linked Folder").setHeading();
+		new Setting(parentEl).setName("Linked folder").setHeading();
 
 		this.createDropdown(parentEl, {
 			name: "Load order",
@@ -696,7 +696,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	// Group View
 
 	private displayGroupViewSection(parentEl: HTMLElement) {
-		new Setting(parentEl).setName("Group View").setHeading();
+		new Setting(parentEl).setName("Group view").setHeading();
 		this.displayOptionsForContinuousView(parentEl);
 		this.displayOptionsForColumnView(parentEl);
 		this.displayOptionsForMissionControlView(parentEl);
