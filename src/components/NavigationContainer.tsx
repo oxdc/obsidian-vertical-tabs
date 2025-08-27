@@ -2,7 +2,7 @@ import { NavigationContent } from "./NavigationContent";
 import { NavigationHeader } from "./NavigationHeader";
 import { tabCacheStore } from "src/stores/TabCacheStore";
 import { usePlugin, useSettings } from "src/models/PluginContext";
-import { useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import {
 	useViewState,
 	ALT_KEY_EFFECT_DURATION,
@@ -394,14 +394,16 @@ export const NavigationContainer = () => {
 	});
 
 	return (
-		<div
-			className="vertical-tabs"
-			onMouseDown={disableMiddleClickScrolling}
-			ref={ref}
-			{...listeners}
-		>
+		<Fragment>
 			<NavigationHeader container={ref.current} />
-			<NavigationContent />
-		</div>
+			<div
+				className="vertical-tabs"
+				onMouseDown={disableMiddleClickScrolling}
+				ref={ref}
+				{...listeners}
+			>
+				<NavigationContent />
+			</div>
+		</Fragment>
 	);
 };

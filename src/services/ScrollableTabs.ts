@@ -1,5 +1,8 @@
 import { debounce, WorkspaceLeaf } from "obsidian";
-import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
+import {
+	REFRESH_TIMEOUT_LONG,
+	REFRESH_TIMEOUT_LONGER,
+} from "src/constants/Timeouts";
 import { useSettings } from "src/models/PluginContext";
 
 export const setScrollableTabsMinWidth = debounce((value: number) => {
@@ -18,6 +21,6 @@ export const scrollToActiveTab = (leaf: WorkspaceLeaf | null) => {
 				block: "center",
 				inline: "center",
 			}),
-		REFRESH_TIMEOUT
+		REFRESH_TIMEOUT_LONGER // Longer timeout to avoid interference with CSS transitions
 	);
 };

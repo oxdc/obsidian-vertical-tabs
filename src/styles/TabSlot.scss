@@ -1,15 +1,16 @@
+// Override the styles to improve compatibility with community themes
 .obsidian-vertical-tabs-container .tree-item.is-tab-slot {
 	.tree-item-self {
 		background: none !important;
 		outline: none !important;
 		border: none !important;
-		height: 6px;
-		padding: 0;
-		margin: 0;
+		height: 6px !important;
+		padding: 0 !important;
+		margin: 0 !important;
 		cursor: initial !important;
 
 		div {
-			display: none;
+			display: none !important;
 		}
 	}
 }
