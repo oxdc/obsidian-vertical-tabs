@@ -61,6 +61,10 @@ export type GroupViewToggleEventCallback = (viewType: GroupViewType) => void;
 export const createNewGroupViewToggleEvents = () =>
 	new DefaultRecord(() => null) as GroupViewToggleEvents;
 
+export type GroupUnhideTimes = DefaultRecord<Identifier, number>;
+export const createNewGroupUnhideTimes = () =>
+	new DefaultRecord(() => 0) as GroupUnhideTimes;
+
 export type LinkedGroups = DefaultRecord<Identifier, LinkedFolder | null>;
 export const createNewLinkedGroups = () =>
 	new DefaultRecord(() => null) as LinkedGroups;
@@ -85,6 +89,7 @@ interface ViewState {
 	hiddenGroups: Array<Identifier>;
 	collapsedGroups: Array<Identifier>;
 	nonEphemeralTabs: Array<Identifier>;
+	groupUnhideTimes: GroupUnhideTimes;
 	latestActiveLeaf: WorkspaceLeaf | null;
 	latestActiveTab: HTMLElement | null;
 	pinningEvents: PinningEvents;
@@ -232,6 +237,18 @@ const clearNonEphemeralTabs = () => {
 	localStorage.removeItem("nonephemeral-tabs");
 };
 
+const saveGroupUnhideTimes = (times: GroupUnhideTimes) => {
+	const data = Array.from(times.entries());
+	localStorage.setItem("group-unhide-times", JSON.stringify(data));
+};
+
+const loadGroupUnhideTimes = (): GroupUnhideTimes => {
+	const data = localStorage.getItem("group-unhide-times");
+	if (!data) return createNewGroupUnhideTimes();
+	const entries = JSON.parse(data) as [Identifier, number][];
+	return new DefaultRecord(() => 0, entries);
+};
+
 const getCornerContainers = (tabContainers: Array<Element>) => {
 	const visibleTabContainers = tabContainers.filter(
 		(tabContainer) =>
@@ -270,6 +287,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	hiddenGroups: loadHiddenGroups(),
 	collapsedGroups: loadCollapsedGroups(),
 	nonEphemeralTabs: loadNonEphemeralTabs(),
+	groupUnhideTimes: loadGroupUnhideTimes(),
 	latestActiveLeaf: null,
 	latestActiveTab: null,
 	pinningEvents: createNewPinningEvents(),
@@ -299,9 +317,17 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		if (isHidden) {
 			set((state) => ({ hiddenGroups: [...state.hiddenGroups, id] }));
 		} else {
-			set((state) => ({
-				hiddenGroups: state.hiddenGroups.filter((gid) => gid !== id),
-			}));
+			set((state) => {
+				// Record the unhide time when showing a group
+				state.groupUnhideTimes.set(id, Date.now());
+				return {
+					hiddenGroups: state.hiddenGroups.filter(
+						(gid) => gid !== id
+					),
+					groupUnhideTimes: state.groupUnhideTimes,
+				};
+			});
+			saveGroupUnhideTimes(get().groupUnhideTimes);
 			// When showing a group, enforce the 2-group limit on phone
 			if (app) setTimeout(() => get().limitVisibleGroupsOnPhone(app));
 		}
@@ -865,8 +891,19 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		}
 	},
 	getMostRecentActivityTime(group: WorkspaceParent): number {
-		const activeTimes = group.children.map((leaf) => leaf.activeTime ?? NaN);
-		return Math.max(...activeTimes);
+		// First, try to get the most recent activeTime from children
+		const activeTimes = group.children
+			.map((leaf) => leaf.activeTime ?? 0)
+			.filter((time) => time > 0);
+		if (activeTimes.length > 0) return Math.max(...activeTimes);
+
+		// If no active times available, use the recorded unhide time
+		const { groupUnhideTimes } = get();
+		const unhideTime = groupUnhideTimes.get(group.id);
+		if (unhideTime > 0) return unhideTime;
+
+		// If both are unavailable, return 0 (will be sorted by tabCache index)
+		return 0;
 	},
 	limitVisibleGroupsOnPhone(app: App) {
 		const { allowWorkspaceSplitOnPhone } = useSettings.getState();
@@ -878,16 +915,37 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		const visibleRootGroups: Array<{
 			id: Identifier;
 			lastActivity: number;
+			tabCacheIndex: number;
 		}> = [];
-		for (const [groupID, entry] of tabCache.entries()) {
+		const groupIDs = Array.from(tabCache.keys());
+		for (let index = 0; index < groupIDs.length; index++) {
+			const groupID = groupIDs[index];
+			const entry = tabCache.get(groupID);
 			if (entry.groupType !== GroupType.RootSplit) continue;
 			if (hiddenGroups.includes(groupID)) continue;
 			if (!entry.group) continue;
 			const lastActivity = get().getMostRecentActivityTime(entry.group);
-			visibleRootGroups.push({ id: groupID, lastActivity });
+			visibleRootGroups.push({
+				id: groupID,
+				lastActivity,
+				tabCacheIndex: index,
+			});
 		}
+
 		if (visibleRootGroups.length > 2) {
-			visibleRootGroups.sort((a, b) => b.lastActivity - a.lastActivity);
+			// Sort by activity time first, then by tabCache index if activity times are equal or unavailable
+			visibleRootGroups.sort((a, b) => {
+				// Both have activity times - sort by activity time (most recent first)
+				if (a.lastActivity > 0 && b.lastActivity > 0) {
+					return b.lastActivity - a.lastActivity;
+				}
+				// Only one has activity time - prioritize the one with activity
+				if (a.lastActivity > 0 && b.lastActivity === 0) return -1;
+				if (a.lastActivity === 0 && b.lastActivity > 0) return 1;
+				// Neither has activity time - sort by tabCache index (earlier index first)
+				return a.tabCacheIndex - b.tabCacheIndex;
+			});
+
 			const groupsToHide = visibleRootGroups.slice(2);
 			groupsToHide.forEach((group) => {
 				get().toggleHiddenGroup(group.id, true);
