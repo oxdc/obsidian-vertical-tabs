@@ -69,6 +69,8 @@ export type LinkedGroups = DefaultRecord<Identifier, LinkedFolder | null>;
 export const createNewLinkedGroups = () =>
 	new DefaultRecord(() => null) as LinkedGroups;
 
+export type NativeDragTabsInstance = any; // Will be the NativeDragTabs class instance
+
 export type ViewCueIndex = number | string | undefined;
 export const MIN_INDEX_KEY = 1;
 export const MAX_INDEX_KEY = 8;
@@ -102,6 +104,7 @@ interface ViewState {
 	viewCueOffset: number;
 	viewCueNativeCallbacks: ViewCueNativeCallbackMap;
 	viewCueFirstTabs: ViewCueFirstTabs;
+	nativeDragTabs: NativeDragTabsInstance | null;
 	setGroupTitle: (id: Identifier, name: string) => void;
 	toggleCollapsedGroup: (id: Identifier, isCollapsed: boolean) => void;
 	toggleHiddenGroup: (id: Identifier, isHidden: boolean, app?: App) => void;
@@ -187,6 +190,12 @@ interface ViewState {
 	isLinkedGroup: (groupID: Identifier) => boolean;
 	setGroupViewTypeForCurrentGroup: (viewType: GroupViewType) => void;
 	exitMissionControlForCurrentGroup: () => void;
+	setNativeDragTabs: (instance: NativeDragTabsInstance) => void;
+	getNativeDragTabs: () => NativeDragTabsInstance | null;
+	makeLeavesDraggableForGroup: (group: WorkspaceParent) => void;
+	makeAllMissionControlGroupsDraggable: () => void;
+	disableDraggingForGroup: (group: WorkspaceParent) => void;
+	findGroupFromContainer: (container: HTMLElement) => WorkspaceParent | null;
 	limitVisibleGroupsOnPhone: (app: App) => void;
 	getMostRecentActivityTime: (group: WorkspaceParent) => number;
 }
@@ -301,6 +310,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	viewCueNativeCallbacks: new Map(),
 	viewCueFirstTabs: createNewViewCueFirstTabs(),
 	linkedGroups: createNewLinkedGroups(),
+	nativeDragTabs: null,
 	leftButtonClone: null,
 	rightButtonClone: null,
 	topLeftContainer: null,
@@ -888,6 +898,64 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		const viewType = identifyGroupViewType(group);
 		if (viewType === GroupViewType.MissionControlView) {
 			setGroupViewType(group, GroupViewType.Default);
+		}
+	},
+	setNativeDragTabs(instance: NativeDragTabsInstance) {
+		set({ nativeDragTabs: instance });
+	},
+	getNativeDragTabs() {
+		return get().nativeDragTabs;
+	},
+	makeLeavesDraggableForGroup(group: WorkspaceParent) {
+		const { nativeDragTabs } = get();
+		if (nativeDragTabs) {
+			group.children.forEach((leaf) => {
+				nativeDragTabs.refreshLeaf(leaf);
+			});
+		}
+	},
+	makeAllMissionControlGroupsDraggable() {
+		const { nativeDragTabs } = get();
+		if (nativeDragTabs) {
+			// Find all groups in Mission Control view and make their leaves draggable
+			document
+				.querySelectorAll(".vt-mission-control-view")
+				.forEach((container) => {
+					const group = get().findGroupFromContainer(
+						container as HTMLElement
+					);
+					if (group) {
+						group.children.forEach((leaf: WorkspaceLeaf) => {
+							nativeDragTabs.refreshLeaf(leaf);
+						});
+					}
+				});
+		}
+	},
+	findGroupFromContainer(container: HTMLElement): WorkspaceParent | null {
+		// Find the group that contains this container
+		// This is a simplified version - in practice, you might need a more robust approach
+		const workspace = (window as any).app?.workspace;
+		if (!workspace) return null;
+
+		let foundGroup: WorkspaceParent | null = null;
+		workspace.iterateAllLeaves((leaf: WorkspaceLeaf) => {
+			if (leaf.parent?.containerEl === container) {
+				foundGroup = leaf.parent;
+			}
+		});
+		return foundGroup;
+	},
+	disableDraggingForGroup(group: WorkspaceParent) {
+		const { nativeDragTabs } = get();
+		if (nativeDragTabs) {
+			group.children.forEach((leaf: WorkspaceLeaf) => {
+				// Disable dragging for leaves in this group
+				if (leaf.containerEl) {
+					leaf.containerEl.draggable = false;
+					leaf.containerEl.style.cursor = "";
+				}
+			});
 		}
 	},
 	getMostRecentActivityTime(group: WorkspaceParent): number {
