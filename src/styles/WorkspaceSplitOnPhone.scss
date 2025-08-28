@@ -1,0 +1,36 @@
+body.is-phone {
+	&.vt-allow-workspace-split {
+		.mod-root {
+			.workspace-split,
+			.workspace-tabs {
+				display: flex !important;
+			}
+		}
+	}
+
+	&.vt-landscape {
+		.mod-root {
+			.workspace-split {
+				flex-direction: row !important;
+
+				& > * {
+					width: 0 !important;
+					height: 100% !important;
+				}
+			}
+		}
+	}
+
+	&.vt-portrait {
+		.mod-root {
+			.workspace-split {
+				flex-direction: column !important;
+
+				& > * {
+					width: 100% !important;
+					height: 0 !important;
+				}
+			}
+		}
+	}
+}

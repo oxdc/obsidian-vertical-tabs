@@ -35,6 +35,7 @@ interface ObsidianVerticalTabsSettings {
 	scrollableTabsMinWidth: number;
 	autoHideHorizontalTabs: boolean;
 	disableOnThisDevice: boolean;
+	allowWorkspaceSplitOnPhone: boolean;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -71,6 +72,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	scrollableTabsMinWidth: 100,
 	autoHideHorizontalTabs: false,
 	disableOnThisDevice: false,
+	allowWorkspaceSplitOnPhone: false,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;

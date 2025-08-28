@@ -31,6 +31,7 @@ import { migrateAllData } from "./history/Migration";
 import { VERTICAL_TABS_ICON } from "./icon";
 import { DISABLE_KEY } from "./models/PluginContext";
 import { scrollToActiveTab } from "./services/ScrollableTabs";
+import { updateOrientationLabel } from "./services/Orientation";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -87,6 +88,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 
 	registerEvents() {
 		this.registerScrollableTabsEvents();
+		this.registerOrientationEvents();
 	}
 
 	registerScrollableTabsEvents() {
@@ -102,6 +104,13 @@ export default class ObsidianVerticalTabs extends Plugin {
 				}
 			})
 		);
+	}
+
+	registerOrientationEvents() {
+		if (Platform.isPhone) {
+			updateOrientationLabel();
+			this.registerDomEvent(window, "resize", updateOrientationLabel);
+		}
 	}
 
 	async setupCommands() {
@@ -172,6 +181,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.toggle(
 			"vt-mission-control-view-disable-pointer",
 			this.settings.disablePointerInMissionControlView
+		);
+		this.toggle(
+			"vt-allow-workspace-split",
+			this.settings.allowWorkspaceSplitOnPhone
 		);
 	}
 

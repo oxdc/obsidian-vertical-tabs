@@ -21,6 +21,7 @@ export const NavigationHeader = (props: NavigationHeaderProps) => {
 	const zenMode = useSettings.use.zenMode();
 	const toggleZenMode = useSettings.use.toggleZenMode();
 	const useTabEditing = useSettings.use.useTabEditing();
+	const allowWorkspaceSplit = useSettings.use.allowWorkspaceSplitOnPhone();
 	const sortStrategy = tabCacheStore((state) => state.sortStrategy);
 	const { setSortStrategy } = tabCacheStore.getActions();
 	const { lockFocus, setAllCollapsed, setAllExpanded, scorllToActiveTab } =
@@ -54,6 +55,10 @@ export const NavigationHeader = (props: NavigationHeaderProps) => {
 		setTimeout(() => {
 			scorllToActiveTab();
 		}, REFRESH_TIMEOUT_LONG);
+	};
+
+	const toggleAllowWorkspaceSplit = () => {
+		setSettings({ allowWorkspaceSplitOnPhone: !allowWorkspaceSplit });
 	};
 
 	const sortMenu = new Menu();
@@ -172,6 +177,20 @@ export const NavigationHeader = (props: NavigationHeaderProps) => {
 						tooltip="Edit tabs"
 						onClick={toggleEditingTabs}
 						isActive={isEditingTabs}
+						isNavAction={true}
+					/>
+				)}
+				{Platform.isPhone && (
+					<IconButton
+						icon="layout-panel-left"
+						action="allow-workspace-split"
+						tooltip={
+							allowWorkspaceSplit
+								? "Disable workspace split"
+								: "Enable workspace split"
+						}
+						onClick={toggleAllowWorkspaceSplit}
+						isActive={allowWorkspaceSplit}
 						isNavAction={true}
 					/>
 				)}
