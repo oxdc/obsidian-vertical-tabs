@@ -1,0 +1,108 @@
+name: Obsidian Team Code Review Request
+description: Official request from the Obsidian team for code review or compliance verification.
+labels:
+  - obsidian-team
+  - code-review
+projects:
+  - oxdc/1
+body:
+- type: checkboxes
+  id: team-verification
+  attributes:
+    label: Obsidian Team Verification
+    description: |-
+      This template is intended exclusively for official Obsidian team members. If you are not an official Obsidian team member, please use the appropriate issue template for your request.
+    options:
+      - label: I am an official member of the Obsidian team
+        required: true
+      - label: This is an official request for code review or compliance verification
+        required: true
+- type: input
+  id: team-member
+  attributes:
+    label: Team Member Information
+    description: Please provide your name and role within the Obsidian team for verification purposes.
+    placeholder: Your name and role at Obsidian...
+  validations:
+    required: true
+- type: dropdown
+  id: review-type
+  attributes:
+    label: Review Type
+    description: Please select the type of review you are requesting.
+    options:
+      - "--- Select an option ---"
+      - "Code Review - Beta Version"
+      - "Compliance Verification"
+      - "Security Audit"
+      - "Policy Compliance Check"
+      - "Complete Plugin Review"
+      - "Other (please specify)"
+  validations:
+    required: true
+- type: checkboxes
+  id: components-to-review
+  attributes:
+    label: Components to Review
+    description: Please select which components you would like to review (select all that apply).
+    options:
+      - label: Beta Version of Vertical Tabs (requires access)
+      - label: Beta Program Infrastructure (if applicable)
+      - label: Documentation and Privacy Policies
+- type: textarea
+  id: review-scope
+  attributes:
+    label: Review Scope and Requirements
+    description: |-
+      Please specify the scope of your review, any specific areas of concern, compliance requirements to verify, or particular aspects you want to focus on.
+    placeholder: Describe the scope and requirements of your review...
+  validations:
+    required: true
+- type: dropdown
+  id: priority
+  attributes:
+    label: Review Priority
+    description: Please indicate the priority level of this review request.
+    options:
+      - "--- Select an option ---"
+      - "Urgent - Compliance Issue"
+      - "High - Pre-approval Required"
+      - "Medium - Routine Review"
+      - "Low - General Inquiry"
+  validations:
+    required: true
+- type: input
+  id: timeline
+  attributes:
+    label: Required Timeline
+    description: Please specify when you need this review completed (if there are specific deadlines).
+    placeholder: e.g., "Within 7 days" or "Before next plugin update"
+- type: textarea
+  id: access-requirements
+  attributes:
+    label: Access Requirements
+    description: |-
+      If you need access to private repositories, beta versions, or other restricted materials, please specify what access you require and how you would like it provided.
+    placeholder: Specify any access requirements...
+- type: textarea
+  id: specific-concerns
+  attributes:
+    label: Specific Concerns or Focus Areas
+    description: |-
+      If you have specific concerns, policy violations to investigate, or particular areas to focus on, please detail them here.
+    placeholder: Describe any specific concerns or focus areas...
+- type: input
+  id: contact-method
+  attributes:
+    label: Preferred Contact Method
+    description: Please provide your preferred contact method for coordinating this review (official Obsidian email, direct contact, etc.).
+    placeholder: Your preferred contact method...
+  validations:
+    required: true
+- type: textarea
+  id: additional-context
+  attributes:
+    label: Additional Context (Optional)
+    description: |-
+      Please provide any additional context, background information, or special instructions relevant to this review request.
+    placeholder: Provide additional context or instructions...

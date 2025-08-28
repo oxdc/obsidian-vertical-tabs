@@ -1,0 +1,107 @@
+name: Developer Beta Request
+description: I am a plugin or theme developer and would like to request free beta access for development purposes.
+labels:
+  - developer-beta
+projects:
+  - oxdc/1
+body:
+- type: checkboxes
+  id: checklist
+  attributes:
+    label: Developer Beta Request Checklist
+    options:
+      - label: I am a developer of an Obsidian plugin or theme
+        required: true
+      - label: I have read the [Beta Program documentation](https://oxdc.github.io/obsidian-vertical-tabs-docs/Beta-Versions/beta-program) and understand the terms
+        required: true
+      - label: I need beta access for legitimate development purposes (compatibility testing, integration, etc.)
+        required: true
+      - label: I understand that this access is for development purposes and personal use only
+        required: true
+      - label: I agree to provide constructive feedback if requested
+        required: true
+- type: dropdown
+  id: developer-type
+  attributes:
+    label: Developer Type
+    description: Please select what type of developer you are.
+    options:
+      - "--- Select an option ---"
+      - "Plugin Developer"
+      - "Theme Developer"
+      - "Both Plugin and Theme Developer"
+  validations:
+    required: true
+- type: input
+  id: project-name
+  attributes:
+    label: Project Name
+    description: Please provide the name of your main plugin or theme that requires Vertical Tabs compatibility testing.
+    placeholder: Enter your project name...
+  validations:
+    required: true
+- type: input
+  id: project-repo
+  attributes:
+    label: Project Repository
+    description: Please provide the GitHub repository URL of your plugin or theme.
+    placeholder: https://github.com/yourusername/your-project
+  validations:
+    required: true
+- type: checkboxes
+  id: project-status
+  attributes:
+    label: Project Status
+    description: Please confirm your project meets these requirements for developer beta access.
+    options:
+      - label: My project is actively maintained and publicly available
+        required: true
+      - label: My project is available in the Obsidian community store (or will be submitted soon)
+        required: true
+      - label: My project has legitimate compatibility concerns with Vertical Tabs or would benefit from integration
+        required: true
+- type: textarea
+  id: development-purpose
+  attributes:
+    label: Development Purpose
+    description: |-
+      Please explain specifically why you need beta access for development purposes. What compatibility issues are you trying to solve? What integration features are you working on?
+      
+      **Note:** If English is not your first language, please consider using ChatGPT or similar AI tools to translate your text.
+    placeholder: Explain your development use case here...
+  validations:
+    required: true
+- type: textarea
+  id: integration-details
+  attributes:
+    label: Integration Details
+    description: |-
+      Please provide details about how your plugin/theme interacts with or depends on Vertical Tabs functionality. This helps me understand the scope of your testing needs.
+    placeholder: Describe the integration or compatibility aspects...
+  validations:
+    required: true
+- type: input
+  id: contact-info
+  attributes:
+    label: Contact Information
+    description: Please provide your preferred contact method (GitHub username, Discord, email, etc.) for beta access coordination.
+    placeholder: Your preferred contact method...
+  validations:
+    required: true
+- type: textarea
+  id: timeline
+  attributes:
+    label: Development Timeline (Optional)
+    description: If you have specific development milestones or release timelines that depend on beta access, please share them here.
+    placeholder: Describe your development timeline...
+- type: textarea
+  id: additional-info
+  attributes:
+    label: Additional Information (Optional)
+    description: |-
+      Please provide any additional information that supports your request, such as:
+      - Links to existing compatibility discussions or issues
+      - Screenshots of integration work in progress
+      - Community impact or user base size
+      - Previous collaboration experience
+    placeholder: Provide additional supporting information...
