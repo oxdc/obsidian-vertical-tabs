@@ -37,6 +37,8 @@ import {
 import { managedLeafStore } from "src/stores/ManagedLeafStore";
 import { EVENTS } from "src/constants/Events";
 import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
+import { getTabs } from "src/services/GetTabs";
+import { useSettings } from "./PluginContext";
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
 
@@ -97,7 +99,7 @@ interface ViewState {
 	viewCueFirstTabs: ViewCueFirstTabs;
 	setGroupTitle: (id: Identifier, name: string) => void;
 	toggleCollapsedGroup: (id: Identifier, isCollapsed: boolean) => void;
-	toggleHiddenGroup: (id: Identifier, isHidden: boolean) => void;
+	toggleHiddenGroup: (id: Identifier, isHidden: boolean, app?: App) => void;
 	rememberNonephemeralTab: (app: App, id: Identifier) => void;
 	forgetNonephemeralTabs: () => void;
 	setLatestActiveLeaf: (
@@ -180,6 +182,8 @@ interface ViewState {
 	isLinkedGroup: (groupID: Identifier) => boolean;
 	setGroupViewTypeForCurrentGroup: (viewType: GroupViewType) => void;
 	exitMissionControlForCurrentGroup: () => void;
+	limitVisibleGroupsOnPhone: (app: App) => void;
+	getMostRecentActivityTime: (group: WorkspaceParent) => number;
 }
 
 const saveViewState = (titles: GroupTitles) => {
@@ -291,13 +295,15 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			saveViewState(state.groupTitles);
 			return state;
 		}),
-	toggleHiddenGroup: (id: Identifier, isHidden: boolean) => {
+	toggleHiddenGroup: (id: Identifier, isHidden: boolean, app?: App) => {
 		if (isHidden) {
 			set((state) => ({ hiddenGroups: [...state.hiddenGroups, id] }));
 		} else {
 			set((state) => ({
 				hiddenGroups: state.hiddenGroups.filter((gid) => gid !== id),
 			}));
+			// When showing a group, enforce the 2-group limit on phone
+			if (app) setTimeout(() => get().limitVisibleGroupsOnPhone(app));
 		}
 		saveHiddenGroups(get().hiddenGroups);
 	},
@@ -856,6 +862,36 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		const viewType = identifyGroupViewType(group);
 		if (viewType === GroupViewType.MissionControlView) {
 			setGroupViewType(group, GroupViewType.Default);
+		}
+	},
+	getMostRecentActivityTime(group: WorkspaceParent): number {
+		const activeTimes = group.children.map((leaf) => leaf.activeTime ?? NaN);
+		return Math.max(...activeTimes);
+	},
+	limitVisibleGroupsOnPhone(app: App) {
+		const { allowWorkspaceSplitOnPhone } = useSettings.getState();
+		if (!Platform.isPhone || !allowWorkspaceSplitOnPhone) {
+			return;
+		}
+		const { hiddenGroups } = get();
+		const tabCache = getTabs(app);
+		const visibleRootGroups: Array<{
+			id: Identifier;
+			lastActivity: number;
+		}> = [];
+		for (const [groupID, entry] of tabCache.entries()) {
+			if (entry.groupType !== GroupType.RootSplit) continue;
+			if (hiddenGroups.includes(groupID)) continue;
+			if (!entry.group) continue;
+			const lastActivity = get().getMostRecentActivityTime(entry.group);
+			visibleRootGroups.push({ id: groupID, lastActivity });
+		}
+		if (visibleRootGroups.length > 2) {
+			visibleRootGroups.sort((a, b) => b.lastActivity - a.lastActivity);
+			const groupsToHide = visibleRootGroups.slice(2);
+			groupsToHide.forEach((group) => {
+				get().toggleHiddenGroup(group.id, true);
+			});
 		}
 	},
 }));

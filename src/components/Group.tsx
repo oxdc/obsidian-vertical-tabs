@@ -103,7 +103,7 @@ export const Group = (props: GroupProps) => {
 	};
 	const setHidden = (hidden: boolean) => {
 		if (isSidebar || !group) return;
-		toggleHiddenGroup(group.id, hidden);
+		toggleHiddenGroup(group.id, hidden, app);
 		workspace.trigger(EVENTS.UPDATE_TOGGLE);
 	};
 	const toggleHidden = () => {

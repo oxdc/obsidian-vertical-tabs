@@ -186,6 +186,13 @@ export default class ObsidianVerticalTabs extends Plugin {
 			"vt-allow-workspace-split",
 			this.settings.allowWorkspaceSplitOnPhone
 		);
+
+		// Limit visible groups to 2 when allowWorkspaceSplitOnPhone is enabled on mobile
+		if (Platform.isMobile && this.settings.allowWorkspaceSplitOnPhone) {
+			setTimeout(() =>
+				useViewState.getState().limitVisibleGroupsOnPhone(this.app)
+			);
+		}
 	}
 
 	async patchViews() {

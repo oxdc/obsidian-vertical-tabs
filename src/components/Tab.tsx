@@ -119,7 +119,7 @@ export const Tab = (props: TabProps) => {
 		const focus = viewType !== GroupViewType.MissionControlView;
 		workspace.setActiveLeaf(leaf, { focus });
 		// Automatically unhide the group containing the tab
-		toggleHiddenGroup(leaf.parent.id, false);
+		toggleHiddenGroup(leaf.parent.id, false, app);
 		// Lock the focus for Zen mode
 		lockFocusOnLeaf(app, leaf);
 		// Center the tab in the mission control view
