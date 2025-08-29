@@ -10,7 +10,7 @@ body.vt-scrollable-tabs.is-popout-window {
 		.workspace-tab-header {
 			width: auto;
 			min-width: var(--vt-scrollable-tabs-min-width, 100px) !important;
-			max-width: 100% !important;
+			max-width: max-content !important;
 			container-type: normal !important;
 
 			&.is-active {
