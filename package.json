@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "vertical-tabs",
 	"version": "0.16.4",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Offer an alternative view that displays open tabs vertically, allowing users to group and organize tabs for a better navigation experience.",
 	"main": "main.js",
 	"packageManager": "bun@1.2.21",
 	"scripts": {
