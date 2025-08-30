@@ -222,7 +222,6 @@ export const NavigationContainer = () => {
 			}
 			const { enhancedKeyboardTabSwitch } = useSettings.getState();
 			if (!enhancedKeyboardTabSwitch) return;
-			console.log("keydown", event);
 			if (
 				(event.ctrlKey || event.metaKey) &&
 				(event.key === "Control" ||
