@@ -1,14 +1,16 @@
 {
-	"name": "obsidian-sample-plugin",
-	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"name": "vertical-tabs",
+	"version": "0.16.4",
+	"description": "Offer an alternative view that displays open tabs vertically, allowing users to group and organize tabs for a better navigation experience.",
 	"main": "main.js",
+	"packageManager": "bun@1.2.21",
 	"scripts": {
 		"build:dev": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs dev && cp manifest.json dist/manifest.json",
 		"build:beta": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs beta && cp manifest.json dist/manifest.json",
 		"build:production": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && cp manifest.json dist/manifest.json",
 		"build": "npm run build:production",
-		"version": "node version-bump.mjs && git add manifest.json versions.json"
+		"version": "node version-bump.mjs && git add manifest.json versions.json",
+		"version:beta": "node version-beta-bump.mjs && git add manifest.json versions.json"
 	},
 	"keywords": [],
 	"author": "",
