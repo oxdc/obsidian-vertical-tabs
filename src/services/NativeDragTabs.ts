@@ -156,8 +156,6 @@ export class NativeDragTabs {
 		if (leaf.parent.tabsContainerEl) {
 			leaf.parent.tabsContainerEl.classList.add("vt-drag-active");
 		}
-
-		console.log("Drag started for leaf:", leaf.id);
 	}
 
 	/**
@@ -252,10 +250,6 @@ export class NativeDragTabs {
 		// Perform the move
 		this.moveLeafToPosition(this.dragState.draggedLeaf, parent, dropIndex);
 
-		console.log(
-			`Dropped leaf ${this.dragState.draggedLeaf.id} at index ${dropIndex}`
-		);
-
 		this.clearDragState();
 	}
 
@@ -263,7 +257,6 @@ export class NativeDragTabs {
 	 * Handle drag end event
 	 */
 	private handleDragEnd(leaf: WorkspaceLeaf, event: DragEvent): void {
-		console.log("Drag ended for leaf:", leaf.id);
 		this.clearDragState();
 	}
 
