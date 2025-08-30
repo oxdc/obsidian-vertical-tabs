@@ -3,6 +3,7 @@
 	"version": "0.16.4",
 	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
 	"main": "main.js",
+	"packageManager": "bun@1.2.21",
 	"scripts": {
 		"build:dev": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs dev && cp manifest.json dist/manifest.json",
 		"build:beta": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs beta && cp manifest.json dist/manifest.json",

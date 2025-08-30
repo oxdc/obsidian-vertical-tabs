@@ -18,16 +18,16 @@ jobs:
         with:
           ref: beta
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: "21.x"
+          bun-version: latest
 
       - name: Install dependencies
-        run: npm install
+        run: bun install --frozen-lockfile
 
       - name: Build beta version
-        run: npm run build:beta
+        run: bun run build:beta
 
       - name: Create release
         uses: akkuman/gitea-release-action@v1
