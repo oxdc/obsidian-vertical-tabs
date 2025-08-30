@@ -1,0 +1,202 @@
+name: Process Release and Upload
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to process"
+        required: true
+        type: string
+  repository_dispatch:
+    types: [process-release]
+  release:
+    types: [published]
+
+jobs:
+  process_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+  
+      - name: Set tag variable
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
+            echo "TAG=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
+          elif [ "${{ github.event_name }}" == "release" ]; then
+            echo "TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+          fi
+          echo "Processing tag: $TAG"
+
+      - name: Download release files
+        run: |
+          # Create dist directory
+          mkdir -p ./dist
+
+          # Get release information using Gitea API
+          echo "Fetching release information for tag: $TAG"
+          RELEASE_INFO=$(curl -s \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/json" \
+            "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases/tags/$TAG")
+          
+          echo "Release info response: $RELEASE_INFO"
+          
+          RELEASE_ID=$(echo "$RELEASE_INFO" | grep -o '"id":[0-9]*' | head -1 | cut -d':' -f2)
+          echo "Release ID: $RELEASE_ID"
+
+          if [ -z "$RELEASE_ID" ]; then
+            echo "Error: Could not find release ID for tag $TAG"
+            exit 1
+          fi
+
+          # Download release assets
+          ASSETS_INFO=$(curl -s \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/json" \
+            "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases/$RELEASE_ID/assets")
+
+          echo "Assets info: $ASSETS_INFO"
+
+          # Parse and download each asset with proper authentication
+          echo "$ASSETS_INFO" | grep -o '"browser_download_url":"[^"]*"' | cut -d'"' -f4 | while read -r url; do
+            if [ ! -z "$url" ]; then
+              filename=$(basename "$url")
+              echo "Downloading $filename from $url"
+              
+              # Download with proper authentication and error handling
+              if curl -f -L -o "./dist/$filename" \
+                -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}" \
+                -H "Accept: application/octet-stream" \
+                "$url"; then
+                echo "Successfully downloaded $filename"
+                
+                # Verify file size
+                file_size=$(stat -c%s "./dist/$filename" 2>/dev/null || stat -f%z "./dist/$filename" 2>/dev/null || echo "0")
+                echo "$filename size: $file_size bytes"
+              else
+                echo "Failed to download $filename"
+                exit 1
+              fi
+            fi
+          done
+
+          # List downloaded files with sizes
+          echo "Downloaded files:"
+          ls -la ./dist/
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run mangling process
+        run: |
+          # Check if main.js exists and has reasonable size
+          if [ ! -f "dist/main.js" ]; then
+            echo "Error: dist/main.js not found"
+            exit 1
+          fi
+          
+          file_size=$(stat -c%s "dist/main.js" 2>/dev/null || stat -f%z "dist/main.js" 2>/dev/null || echo "0")
+          echo "main.js size: $file_size bytes"
+          
+          if [ "$file_size" -eq 0 ]; then
+            echo "Error: main.js is empty ($file_size bytes), likely a download error"
+            echo "File contents:"
+            cat "dist/main.js"
+            exit 1
+          fi
+          
+          # Run mangling process with Bun
+          echo "Running mangle.mjs with Bun..."
+          MANGLED_HASH=$(bun run mangle.mjs)
+          echo "Successfully ran with Bun"
+          
+          echo "MANGLED_HASH=$MANGLED_HASH" >> $GITHUB_ENV
+          echo "Mangled main.js hash: $MANGLED_HASH"
+
+      - name: Read SHA256 hashes from files
+        run: |
+          # Read hashes from .sha256 files
+          if [ -f "dist/manifest.json.sha256" ]; then
+            MANIFEST_HASH=$(cat dist/manifest.json.sha256 | tr -d '\n\r')
+            echo "MANIFEST_HASH=$MANIFEST_HASH" >> $GITHUB_ENV
+            echo "Manifest hash: $MANIFEST_HASH"
+          else
+            echo "Warning: manifest.json.sha256 not found"
+          fi
+
+          if [ -f "dist/styles.css.sha256" ]; then
+            STYLES_HASH=$(cat dist/styles.css.sha256 | tr -d '\n\r')
+            echo "STYLES_HASH=$STYLES_HASH" >> $GITHUB_ENV
+            echo "Styles hash: $STYLES_HASH"
+          else
+            echo "Warning: styles.css.sha256 not found"
+          fi
+
+      - name: Initialize upload session
+        env:
+          SERVER_URL: ${{ secrets.SERVER_URL }}
+          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
+        run: |
+          echo "Initializing upload session..."
+          response=$(curl -s -X POST "$SERVER_URL/init" \
+            -H "Authorization: Bearer $AUTH_TOKEN" \
+            -H "Content-Type: application/json")
+          
+          echo "Init response: $response"
+          
+          # Extract UUID from response
+          SESSION_UUID=$(echo "$response" | grep -o '"uuid":"[^"]*"' | cut -d'"' -f4)
+          echo "SESSION_UUID=$SESSION_UUID" >> $GITHUB_ENV
+          echo "Session UUID: $SESSION_UUID"
+
+      - name: Upload files to server
+        env:
+          SERVER_URL: ${{ secrets.SERVER_URL }}
+          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
+        run: |
+          # Upload main.js with mangled hash
+          if [ -f "dist/main.js" ] && [ ! -z "$MANGLED_HASH" ]; then
+            echo "Uploading main.js with hash: $MANGLED_HASH"
+            response=$(curl -s -X POST "$SERVER_URL/upload" \
+              -H "Authorization: Bearer $AUTH_TOKEN" \
+              -H "X-Upload-UUID: $SESSION_UUID" \
+              -F "file=@dist/main.js" \
+              -F "hash=$MANGLED_HASH")
+            echo "Response: $response"
+          fi
+
+          # Upload manifest.json with its hash
+          if [ -f "dist/manifest.json" ] && [ ! -z "$MANIFEST_HASH" ]; then
+            echo "Uploading manifest.json with hash: $MANIFEST_HASH"
+            response=$(curl -s -X POST "$SERVER_URL/upload" \
+              -H "Authorization: Bearer $AUTH_TOKEN" \
+              -H "X-Upload-UUID: $SESSION_UUID" \
+              -F "file=@dist/manifest.json" \
+              -F "hash=$MANIFEST_HASH")
+            echo "Response: $response"
+          fi
+
+          # Upload styles.css with its hash
+          if [ -f "dist/styles.css" ] && [ ! -z "$STYLES_HASH" ]; then
+            echo "Uploading styles.css with hash: $STYLES_HASH"
+            response=$(curl -s -X POST "$SERVER_URL/upload" \
+              -H "Authorization: Bearer $AUTH_TOKEN" \
+              -H "X-Upload-UUID: $SESSION_UUID" \
+              -F "file=@dist/styles.css" \
+              -F "hash=$STYLES_HASH")
+            echo "Response: $response"
+          fi
+
+      - name: Upload summary
+        run: |
+          echo "Upload process completed for tag: $TAG"
+          echo "Files processed:"
+          ls -la dist/ | grep -v "\.sha256$"
