@@ -898,13 +898,16 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				{ icon: "square-terminal", text: "Open dev console" },
 				() => this.openDevConsole()
 			);
-		}
 
-		this.createDebugButton(
-			containerEl,
-			{ icon: "flask-conical", text: "Open sandbox vault" },
-			() => this.app.commands.executeCommandById("app:open-sandbox-vault")
-		);
+			this.createDebugButton(
+				containerEl,
+				{ icon: "flask-conical", text: "Open sandbox vault" },
+				() =>
+					this.app.commands.executeCommandById(
+						"app:open-sandbox-vault"
+					)
+			);
+		}
 
 		this.createDebugButton(
 			containerEl,
