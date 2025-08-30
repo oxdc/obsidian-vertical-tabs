@@ -160,9 +160,23 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 
 	private displayUpdateIndicator(containerEl: HTMLElement) {
 		const entry = new Setting(containerEl).setName("Updates");
-		const indicator = entry.controlEl.createDiv();
-		this.showLoadingState(entry, indicator);
-		this.checkForUpdates(entry, indicator);
+		if (this.isBetaVersion(this.plugin.manifest.version)) {
+			entry.descEl.innerHTML = `
+				You are running beta version ${this.plugin.manifest.version}.
+				Beta updates are managed by the
+				<a href="https://github.com/oxdc/obsidian-vertical-tabs-beta-helper" target="_blank">Beta Helper</a>
+				plugin. For more information, please refer to the
+				<a href="https://oxdc.github.io/obsidian-vertical-tabs-docs/Beta-Versions/beta-program" target="_blank">Beta Program documentation</a>.
+			`;
+		} else {
+			const indicator = entry.controlEl.createDiv();
+			this.showLoadingState(entry, indicator);
+			this.checkForUpdates(entry, indicator);
+		}
+	}
+
+	private isBetaVersion(version: string): boolean {
+		return version.includes("-beta-");
 	}
 
 	private showLoadingState(entry: Setting, indicator: HTMLElement) {
