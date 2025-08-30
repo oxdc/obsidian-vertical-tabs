@@ -1,0 +1,38 @@
+name: Beta Build & Hash
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [beta-build]
+  push:
+    tags:
+      - "*-beta-*"
+
+jobs:
+  build-beta:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout beta branch
+        uses: actions/checkout@v4
+        with:
+          ref: beta
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "21.x"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build beta version
+        run: npm run build:beta
+
+      - name: Create release
+        uses: akkuman/gitea-release-action@v1
+        with:
+          files: |-
+            dist/**
+          prerelease: true
+          sha256sum: true

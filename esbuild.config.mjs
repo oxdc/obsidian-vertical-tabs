@@ -9,8 +9,13 @@ if you want to view the source, please visit the github repository of this plugi
 */
 `;
 
-const prod = process.argv[2] === "production";
-const nowatch = process.argv[2] === "nowatch";
+const mode = process.argv[2];
+
+if (!["dev", "beta", "production"].includes(mode)) {
+	throw new Error(`Invalid mode: ${mode}`);
+}
+
+console.log(`Building in ${mode} mode`);
 
 const context = await esbuild.context({
 	banner: {
@@ -18,7 +23,7 @@ const context = await esbuild.context({
 	},
 	entryPoints: ["src/styles.scss", "src/main.ts"],
 	bundle: true,
-	minify: prod,
+	minify: mode === "production",
 	external: [
 		"obsidian",
 		"electron",
@@ -38,18 +43,15 @@ const context = await esbuild.context({
 	format: "cjs",
 	target: "es2018",
 	logLevel: "info",
-	sourcemap: prod ? false : "inline",
+	sourcemap: mode === "dev" ? "inline" : false,
 	treeShaking: true,
 	outdir: "dist",
 	plugins: [sassPlugin()],
 });
 
-if (prod) {
-	await context.rebuild();
-	process.exit(0);
-} else if (nowatch) {
-	await context.rebuild();
-	process.exit(0);
-} else {
+if (mode === "dev") {
 	await context.watch();
+} else {
+	await context.rebuild();
+	process.exit(0);
 }
