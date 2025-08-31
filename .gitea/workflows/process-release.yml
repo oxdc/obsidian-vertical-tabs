@@ -7,6 +7,11 @@ on:
         description: "Tag to process"
         required: true
         type: string
+      batch_count:
+        description: "Number of mangled variants to generate"
+        required: false
+        default: "1"
+        type: string
   repository_dispatch:
     types: [process-release]
   release:
@@ -19,16 +24,22 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
   
-      - name: Set tag variable
+      - name: Set tag and batch count variables
         run: |
+          echo "Processing tag and batch count"
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+            echo "BATCH_COUNT=${{ github.event.inputs.batch_count }}" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
             echo "TAG=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
+            echo "BATCH_COUNT=${{ github.event.client_payload.batch_count || '1' }}" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" == "release" ]; then
             echo "TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+            echo "BATCH_COUNT=1" >> $GITHUB_ENV
           fi
-          echo "Processing tag: $TAG"
+
+      - name: Install jq for JSON processing
+        run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Download release files
         run: |
@@ -37,31 +48,32 @@ jobs:
 
           # Get release information using Gitea API
           echo "Fetching release information for tag: $TAG"
-          RELEASE_INFO=$(curl -s \
+          release_info=$(curl -s \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/json" \
             "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases/tags/$TAG")
           
-          echo "Release info response: $RELEASE_INFO"
+          echo "Release info response: $release_info"
           
-          RELEASE_ID=$(echo "$RELEASE_INFO" | grep -o '"id":[0-9]*' | head -1 | cut -d':' -f2)
-          echo "Release ID: $RELEASE_ID"
+          # Extract release ID
+          release_id=$(echo "$release_info" | jq -r '.id // empty')
+          echo "Release ID: $release_id"
 
-          if [ -z "$RELEASE_ID" ]; then
+          if [ -z "$release_id" ]; then
             echo "Error: Could not find release ID for tag $TAG"
             exit 1
           fi
 
           # Download release assets
-          ASSETS_INFO=$(curl -s \
+          assets_info=$(curl -s \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/json" \
-            "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases/$RELEASE_ID/assets")
+            "${{ github.server_url }}/api/v1/repos/${{ github.repository }}/releases/$release_id/assets")
 
-          echo "Assets info: $ASSETS_INFO"
+          echo "Assets info: $assets_info"
 
-          # Parse and download each asset with proper authentication
-          echo "$ASSETS_INFO" | grep -o '"browser_download_url":"[^"]*"' | cut -d'"' -f4 | while read -r url; do
+          # Parse and download each asset using jq
+          echo "$assets_info" | jq -r '.[] | .browser_download_url' | while read -r url; do
             if [ ! -z "$url" ]; then
               filename=$(basename "$url")
               echo "Downloading $filename from $url"
@@ -76,6 +88,11 @@ jobs:
                 # Verify file size
                 file_size=$(stat -c%s "./dist/$filename" 2>/dev/null || stat -f%z "./dist/$filename" 2>/dev/null || echo "0")
                 echo "$filename size: $file_size bytes"
+                
+                if [ "$file_size" -eq 0 ]; then
+                  echo "Error: $filename is empty ($file_size bytes), likely a download error"
+                  exit 1
+                fi
               else
                 echo "Failed to download $filename"
                 exit 1
@@ -87,6 +104,44 @@ jobs:
           echo "Downloaded files:"
           ls -la ./dist/
 
+      - name: Verify file integrity
+        run: |
+          echo "Verifying file integrity using SHA256 hashes..."
+          
+          # Check each .sha256 file and verify corresponding file
+          for sha_file in ./dist/*.sha256; do
+            if [ -f "$sha_file" ]; then
+              # Get the base filename without .sha256 extension
+              base_file="${sha_file%.sha256}"
+              filename=$(basename "$base_file")
+              
+              if [ -f "$base_file" ]; then
+                # Read expected hash from .sha256 file
+                expected_hash=$(cat "$sha_file" | tr -d '\n\r')
+                
+                # Calculate actual hash of the file
+                actual_hash=$(sha256sum "$base_file" | cut -d' ' -f1)
+                
+                echo "Verifying $filename:"
+                echo "  Expected: $expected_hash"
+                echo "  Actual:   $actual_hash"
+                
+                if [ "$expected_hash" = "$actual_hash" ]; then
+                  echo "  ✓ Hash verification passed for $filename"
+                else
+                  echo "  ✗ Hash verification failed for $filename"
+                  echo "Error: File integrity check failed for $filename"
+                  exit 1
+                fi
+              else
+                echo "Error: File $base_file not found for hash verification"
+                exit 1
+              fi
+            fi
+          done
+          
+          echo "All file integrity checks passed!"
+
       - name: Set up Bun
         uses: oven-sh/setup-bun@v1
         with:
@@ -97,48 +152,51 @@ jobs:
 
       - name: Run mangling process
         run: |
-          # Check if main.js exists and has reasonable size
+          # Check if main.js exists
           if [ ! -f "dist/main.js" ]; then
             echo "Error: dist/main.js not found"
             exit 1
           fi
           
-          file_size=$(stat -c%s "dist/main.js" 2>/dev/null || stat -f%z "dist/main.js" 2>/dev/null || echo "0")
-          echo "main.js size: $file_size bytes"
+          echo "Generating $BATCH_COUNT mangled variants..."
           
-          if [ "$file_size" -eq 0 ]; then
-            echo "Error: main.js is empty ($file_size bytes), likely a download error"
-            echo "File contents:"
-            cat "dist/main.js"
+          # Run mangling process once with batch count
+          mangle_output=$(bun run mangle.mjs "dist/main.js" "$BATCH_COUNT")
+          echo "Mangling output: $mangle_output"
+          
+          # Extract and validate JSON using jq
+          json_results=$(echo "$mangle_output" | grep '^\[' | jq '.')
+          if [ $? -ne 0 ]; then
+            echo "Error: Invalid JSON output from mangle.mjs"
             exit 1
           fi
+                    
+          # Verify each generated file using jq
+          echo "$json_results" | jq -r '.[] | .filename' | while read -r filename; do
+            if [ -f "$filename" ]; then
+              echo "✓ Generated file: $filename"
+              
+              # Get expected hash using jq
+              expected_hash=$(echo "$json_results" | jq -r --arg fname "$filename" '.[] | select(.filename == $fname) | .hash')
+              
+              # Calculate actual hash
+              actual_hash=$(sha256sum "$filename" | cut -d' ' -f1)
+              
+              if [ "$expected_hash" = "$actual_hash" ]; then
+                echo "✓ Hash verified for $filename: $expected_hash"
+              else
+                echo "Error: Hash mismatch for $filename"
+                echo "Expected: $expected_hash"
+                echo "Actual:   $actual_hash"
+                exit 1
+              fi
+            else
+              echo "Error: Expected file $filename not found"
+              exit 1
+            fi
+          done
           
-          # Run mangling process with Bun
-          echo "Running mangle.mjs with Bun..."
-          MANGLED_HASH=$(bun run mangle.mjs)
-          echo "Successfully ran with Bun"
-          
-          echo "MANGLED_HASH=$MANGLED_HASH" >> $GITHUB_ENV
-          echo "Mangled main.js hash: $MANGLED_HASH"
-
-      - name: Read SHA256 hashes from files
-        run: |
-          # Read hashes from .sha256 files
-          if [ -f "dist/manifest.json.sha256" ]; then
-            MANIFEST_HASH=$(cat dist/manifest.json.sha256 | tr -d '\n\r')
-            echo "MANIFEST_HASH=$MANIFEST_HASH" >> $GITHUB_ENV
-            echo "Manifest hash: $MANIFEST_HASH"
-          else
-            echo "Warning: manifest.json.sha256 not found"
-          fi
-
-          if [ -f "dist/styles.css.sha256" ]; then
-            STYLES_HASH=$(cat dist/styles.css.sha256 | tr -d '\n\r')
-            echo "STYLES_HASH=$STYLES_HASH" >> $GITHUB_ENV
-            echo "Styles hash: $STYLES_HASH"
-          else
-            echo "Warning: styles.css.sha256 not found"
-          fi
+          echo "All $BATCH_COUNT mangled variants generated and verified successfully"
 
       - name: Initialize upload session
         env:
@@ -152,51 +210,114 @@ jobs:
           
           echo "Init response: $response"
           
-          # Extract UUID from response
-          SESSION_UUID=$(echo "$response" | grep -o '"uuid":"[^"]*"' | cut -d'"' -f4)
+          # Extract UUID from response using jq
+          SESSION_UUID=$(echo "$response" | jq -r '.uuid // empty')
+          if [ -z "$SESSION_UUID" ]; then
+            echo "Error: Failed to extract session UUID from response"
+            exit 1
+          fi
           echo "SESSION_UUID=$SESSION_UUID" >> $GITHUB_ENV
           echo "Session UUID: $SESSION_UUID"
 
-      - name: Upload files to server
+      - name: Create compressed archives
+        run: |
+          echo "Creating $BATCH_COUNT compressed archives of release files..."
+          
+          # Create temporary directory for archive preparation
+          mkdir -p temp_archive
+          
+          # Copy non-main.js files to temp directory (excluding .sha256 files)
+          cd dist
+          for file in *; do
+            if [[ "$file" != "main"* && "$file" != *.sha256 ]]; then
+              cp "$file" "../temp_archive/"
+            fi
+          done
+          cd ..
+          
+          # Create multiple archives, each with a different mangled main.js
+          for i in $(seq 1 $BATCH_COUNT); do
+            echo "Creating archive $i/$BATCH_COUNT..."
+            
+            # Copy the mangled main file as main.js in temp directory
+            cp "dist/main-$i.js" "temp_archive/main.js"
+            
+            # Create archive
+            cd temp_archive
+            tar -czf "../release-$TAG-$i.tar.gz" .
+            cd ..
+            
+            # Calculate hash of the archive
+            archive_hash=$(sha256sum "release-$TAG-$i.tar.gz" | cut -d' ' -f1)
+            echo "ARCHIVE_HASH_$i=$archive_hash" >> $GITHUB_ENV
+            echo "Archive $i hash: $archive_hash"
+            
+            # List contents of archive
+            echo "Archive $i contents:"
+            tar -tzf "release-$TAG-$i.tar.gz"
+          done
+          
+          # Clean up temp directory
+          rm -rf temp_archive
+          
+          echo "All $BATCH_COUNT archives created successfully"
+
+      - name: Upload compressed archives to server
         env:
           SERVER_URL: ${{ secrets.SERVER_URL }}
           AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
         run: |
-          # Upload main.js with mangled hash
-          if [ -f "dist/main.js" ] && [ ! -z "$MANGLED_HASH" ]; then
-            echo "Uploading main.js with hash: $MANGLED_HASH"
-            response=$(curl -s -X POST "$SERVER_URL/upload" \
-              -H "Authorization: Bearer $AUTH_TOKEN" \
-              -H "X-Upload-UUID: $SESSION_UUID" \
-              -F "file=@dist/main.js" \
-              -F "hash=$MANGLED_HASH")
-            echo "Response: $response"
+          echo "Uploading $BATCH_COUNT release archives..."
+          
+          upload_success=true
+          
+          # Upload each archive
+          for i in $(seq 1 $BATCH_COUNT); do
+            archive_file="release-$TAG-$i.tar.gz"
+            archive_hash_var="ARCHIVE_HASH_$i"
+            archive_hash="${!archive_hash_var}"
+            
+            if [ -f "$archive_file" ] && [ ! -z "$archive_hash" ]; then
+              echo "Uploading archive $i/$BATCH_COUNT: $archive_file with hash: $archive_hash"
+              response=$(curl -s -X POST "$SERVER_URL/upload" \
+                -H "Authorization: Bearer $AUTH_TOKEN" \
+                -H "X-Upload-UUID: $SESSION_UUID" \
+                -F "file=@$archive_file" \
+                -F "hash=$archive_hash")
+              echo "Response for archive $i: $response"
+              
+              # Check if upload was successful using jq
+              if echo "$response" | jq -e '.error // .Error' > /dev/null 2>&1; then
+                error_msg=$(echo "$response" | jq -r '.error // .Error // "Unknown error"')
+                echo "Error uploading archive $i: $error_msg"
+                upload_success=false
+              elif echo "$response" | jq -e '.success // .status' > /dev/null 2>&1; then
+                echo "Successfully uploaded archive $i"
+              else
+                echo "Warning: Unclear response for archive $i, assuming success: $response"
+              fi
+            else
+              echo "Error: Archive file $archive_file not found or hash not calculated"
+              upload_success=false
+            fi
+          done
+          
+          if [ "$upload_success" = false ]; then
+            echo "One or more uploads failed"
+            exit 1
           fi
-
-          # Upload manifest.json with its hash
-          if [ -f "dist/manifest.json" ] && [ ! -z "$MANIFEST_HASH" ]; then
-            echo "Uploading manifest.json with hash: $MANIFEST_HASH"
-            response=$(curl -s -X POST "$SERVER_URL/upload" \
-              -H "Authorization: Bearer $AUTH_TOKEN" \
-              -H "X-Upload-UUID: $SESSION_UUID" \
-              -F "file=@dist/manifest.json" \
-              -F "hash=$MANIFEST_HASH")
-            echo "Response: $response"
-          fi
-
-          # Upload styles.css with its hash
-          if [ -f "dist/styles.css" ] && [ ! -z "$STYLES_HASH" ]; then
-            echo "Uploading styles.css with hash: $STYLES_HASH"
-            response=$(curl -s -X POST "$SERVER_URL/upload" \
-              -H "Authorization: Bearer $AUTH_TOKEN" \
-              -H "X-Upload-UUID: $SESSION_UUID" \
-              -F "file=@dist/styles.css" \
-              -F "hash=$STYLES_HASH")
-            echo "Response: $response"
-          fi
+          
+          echo "All $BATCH_COUNT archives uploaded successfully"
 
       - name: Upload summary
         run: |
           echo "Upload process completed for tag: $TAG"
-          echo "Files processed:"
-          ls -la dist/ | grep -v "\.sha256$"
+          echo "Number of variants generated: $BATCH_COUNT"
+          echo "Archives created:"
+          for i in $(seq 1 $BATCH_COUNT); do
+            archive_file="release-$TAG-$i.tar.gz"
+            archive_hash_var="ARCHIVE_HASH_$i"
+            archive_hash="${!archive_hash_var}"
+            echo "  $archive_file (hash: $archive_hash)"
+            ls -lh "$archive_file"
+          done

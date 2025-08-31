@@ -66,7 +66,7 @@ class RandomNameGenerator {
 	}
 }
 
-async function mangle() {
+async function mangle(outputFilename = "dist/main.js", batchCount = 1) {
 	const options = {
 		mangle: {
 			properties: false,
@@ -75,21 +75,30 @@ async function mangle() {
 	};
 	const code = readFileSync("dist/main.js", "utf8");
 	const nameCache = {};
-	await minify(code, { ...options, nameCache });
-	const randomSeed = Math.random().toString(36).substring(2);
-	const nameGenerator = new RandomNameGenerator(randomSeed);
-	for (const name of Object.keys(nameCache.vars.props)) {
-		const newName = nameGenerator.generateName();
-		nameCache.vars.props[name] = newName;
+	await minify(code, { ...options, nameCache: nameCache });
+	const results = [];
+	for (let i = 1; i <= batchCount; i++) {
+		const filename = outputFilename.replace(/\.js$/, `-${i}.js`);
+		const randomSeed = Math.random().toString(36).substring(2);
+		const nameGenerator = new RandomNameGenerator(randomSeed);
+		for (const name of Object.keys(nameCache.vars.props)) {
+			const newName = nameGenerator.generateName();
+			nameCache.vars.props[name] = newName;
+		}
+		const result = await minify(code, { ...options, nameCache });
+		const finalCode = result.code;
+		const hash = crypto
+			.createHash("sha256")
+			.update(finalCode)
+			.digest("hex");
+		writeFileSync(filename, finalCode);
+		console.log(filename, hash);
+		results.push({ filename, hash });
 	}
-	const result = await minify(code, { ...options, nameCache });
-	const finalCode = result.code;
-	const finalCodeHash = crypto
-		.createHash("sha256")
-		.update(finalCode)
-		.digest("hex");
-	console.log(finalCodeHash);
-	writeFileSync("dist/main.js", finalCode);
+	console.log(JSON.stringify(results));
+	return results;
 }
 
-mangle();
+const outputFilename = process.argv[2] || "dist/main.js";
+const batchCount = parseInt(process.argv[3]) || 1;
+mangle(outputFilename, batchCount);
