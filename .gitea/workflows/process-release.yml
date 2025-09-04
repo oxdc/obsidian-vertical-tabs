@@ -283,6 +283,9 @@ jobs:
             # Copy the mangled main file as main.js in temp directory
             cp "dist/main-$i.js" "temp_archive/main.js"
             
+            # Update manifest.json for this archive
+            bun run update-manifest.mjs "temp_archive"
+            
             # Create archive
             cd temp_archive
             tar -czf "../release-$TAG-$i.tar.gz" .

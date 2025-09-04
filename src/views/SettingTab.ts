@@ -21,6 +21,7 @@ import { linkedFolderSortStrategyOptions } from "../services/OpenFolder";
 import { getLatestVersion } from "src/services/Version";
 import * as semver from "semver";
 import { VERTICAL_TABS_VIEW } from "./VerticalTabsView";
+import { VerticalTabsManifest } from "src/services/Manifest";
 
 interface ToggleProps {
 	name: string;
@@ -160,7 +161,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 
 	private displayUpdateIndicator(containerEl: HTMLElement) {
 		const entry = new Setting(containerEl).setName("Updates");
-		if (this.isBetaVersion(this.plugin.manifest.version)) {
+		if (this.isBetaVersion(this.plugin.manifest)) {
 			entry.descEl.innerHTML = `
 				You are running beta version ${this.plugin.manifest.version}.
 				Beta updates are managed by the
@@ -175,8 +176,8 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		}
 	}
 
-	private isBetaVersion(version: string): boolean {
-		return version.includes("-beta-");
+	private isBetaVersion(manifest: VerticalTabsManifest): boolean {
+		return manifest.version.includes("-beta-") || manifest.isBeta === true;
 	}
 
 	private showLoadingState(entry: Setting, indicator: HTMLElement) {
