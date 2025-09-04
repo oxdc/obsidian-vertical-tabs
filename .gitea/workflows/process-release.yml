@@ -12,6 +12,10 @@ on:
         required: false
         default: "1"
         type: string
+      identities:
+        description: "Comma-separated list of user identities for reproducible mangling (must match batch_count)"
+        required: false
+        type: string
   repository_dispatch:
     types: [process-release]
   release:
@@ -30,12 +34,15 @@ jobs:
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
             echo "BATCH_COUNT=${{ github.event.inputs.batch_count }}" >> $GITHUB_ENV
+            echo "IDENTITIES=${{ github.event.inputs.identities }}" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
             echo "TAG=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
             echo "BATCH_COUNT=${{ github.event.client_payload.batch_count || '1' }}" >> $GITHUB_ENV
+            echo "IDENTITIES=${{ github.event.client_payload.identities }}" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" == "release" ]; then
             echo "TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
             echo "BATCH_COUNT=1" >> $GITHUB_ENV
+            echo "IDENTITIES=" >> $GITHUB_ENV
           fi
 
       - name: Install jq for JSON processing
@@ -150,6 +157,34 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Validate identities parameter
+        run: |
+          echo "Validating identities parameter..."
+          
+          # Parse identities if provided
+          if [ ! -z "$IDENTITIES" ]; then
+            # Convert comma-separated string to array and count
+            IFS=',' read -ra IDENTITY_ARRAY <<< "$IDENTITIES"
+            IDENTITY_COUNT=${#IDENTITY_ARRAY[@]}
+            
+            echo "Provided identities: ${IDENTITY_ARRAY[*]}"
+            echo "Identity count: $IDENTITY_COUNT"
+            echo "Batch count: $BATCH_COUNT"
+            
+            # Validate that identity count matches batch count
+            if [ "$IDENTITY_COUNT" -ne "$BATCH_COUNT" ]; then
+              echo "Error: Number of identities ($IDENTITY_COUNT) must match batch_count ($BATCH_COUNT)"
+              exit 1
+            fi
+            
+            # Store identities as JSON array for mangle.mjs
+            IDENTITIES_JSON=$(printf '%s\n' "${IDENTITY_ARRAY[@]}" | jq -R . | jq -s .)
+            echo "IDENTITIES_JSON=$IDENTITIES_JSON" >> $GITHUB_ENV
+          else
+            echo "No identities provided, will use random seeds"
+            echo "IDENTITIES_JSON=null" >> $GITHUB_ENV
+          fi
+
       - name: Run mangling process
         run: |
           # Check if main.js exists
@@ -160,8 +195,14 @@ jobs:
           
           echo "Generating $BATCH_COUNT mangled variants..."
           
-          # Run mangling process once with batch count
-          mangle_output=$(bun run mangle.mjs "dist/main.js" "$BATCH_COUNT")
+          # Run mangling process with identities if provided
+          if [ "$IDENTITIES_JSON" != "null" ]; then
+            echo "Using provided identities: $IDENTITIES_JSON"
+            mangle_output=$(bun run mangle.mjs "dist/main.js" "$BATCH_COUNT" "$IDENTITIES_JSON" "$TAG")
+          else
+            echo "Using random seeds"
+            mangle_output=$(bun run mangle.mjs "dist/main.js" "$BATCH_COUNT" null "$TAG")
+          fi
           echo "Mangling output: $mangle_output"
           
           # Extract and validate JSON using jq
