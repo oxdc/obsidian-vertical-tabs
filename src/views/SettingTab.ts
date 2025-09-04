@@ -21,7 +21,7 @@ import { linkedFolderSortStrategyOptions } from "../services/OpenFolder";
 import { getLatestVersion } from "src/services/Version";
 import * as semver from "semver";
 import { VERTICAL_TABS_VIEW } from "./VerticalTabsView";
-import { VerticalTabsManifest } from "src/services/Manifest";
+import { verifyBetaIntegrity } from "../services/Integrity";
 
 interface ToggleProps {
 	name: string;
@@ -159,25 +159,45 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 
 	// Update Checker
 
-	private displayUpdateIndicator(containerEl: HTMLElement) {
+	private async displayUpdateIndicator(containerEl: HTMLElement) {
 		const entry = new Setting(containerEl).setName("Updates");
-		if (this.isBetaVersion(this.plugin.manifest)) {
+		if (await this.plugin.isBetaVersion()) {
 			entry.descEl.innerHTML = `
-				You are running beta version ${this.plugin.manifest.version}.
-				Beta updates are managed by the
-				<a href="https://github.com/oxdc/obsidian-vertical-tabs-beta-helper" target="_blank">Beta Helper</a>
-				plugin. For more information, please refer to the
-				<a href="https://oxdc.github.io/obsidian-vertical-tabs-docs/Beta-Versions/beta-program" target="_blank">Beta Program documentation</a>.
+			  <span class="vt-beta-version-info">
+					You are running beta version ${this.plugin.manifest.version}.
+					Beta updates are managed by the
+					<a href="https://github.com/oxdc/obsidian-vertical-tabs-beta-helper" target="_blank">Beta Helper</a>
+					plugin. For more information, please refer to the
+					<a href="https://oxdc.github.io/obsidian-vertical-tabs-docs/Beta-Versions/beta-program" target="_blank">Beta Program documentation</a>.
+				</span>
 			`;
+			if (!(await verifyBetaIntegrity(this.plugin))) {
+				const container = entry.descEl.createDiv({
+					cls: "vt-beta-version-security-warning",
+				});
+				const titleEl = container.createDiv({
+					cls: "vt-beta-version-security-warning-title",
+				});
+				const iconEl = titleEl.createEl("span");
+				setIcon(iconEl, "siren");
+				const textEl = titleEl.createEl("span");
+				textEl.innerHTML = "Security Warning:";
+				const warningText = container.createEl("span");
+				warningText.innerHTML = `
+					The integrity of this beta version could not be verified.
+					The plugin files may have been modified or corrupted, which poses a potential security risk.
+					To resolve this issue, please reinstall the plugin using the
+					<a href="https://github.com/oxdc/obsidian-vertical-tabs-beta-helper" target="_blank">Beta Helper</a>
+					plugin or
+					<a href="https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose" target="_blank">report this issue</a>
+					to the developer.
+				`;
+			}
 		} else {
 			const indicator = entry.controlEl.createDiv();
 			this.showLoadingState(entry, indicator);
 			this.checkForUpdates(entry, indicator);
 		}
-	}
-
-	private isBetaVersion(manifest: VerticalTabsManifest): boolean {
-		return manifest.version.includes("-beta-") || manifest.isBeta === true;
 	}
 
 	private showLoadingState(entry: Setting, indicator: HTMLElement) {

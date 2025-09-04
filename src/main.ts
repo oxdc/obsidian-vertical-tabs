@@ -32,6 +32,7 @@ import { VERTICAL_TABS_ICON } from "./icon";
 import { DISABLE_KEY } from "./models/PluginContext";
 import { scrollToActiveTab } from "./services/ScrollableTabs";
 import { updateOrientationLabel } from "./services/Orientation";
+import { normalizePath } from "obsidian";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -339,5 +340,20 @@ export default class ObsidianVerticalTabs extends Plugin {
 		);
 
 		this.register(patchQuickSwitcher(this.app));
+	}
+
+	async refreshManifest() {
+		const app = this.app;
+		const root = app.plugins.getPluginFolder();
+		const id = this.manifest.id;
+		const path = normalizePath(`${root}/${id}/manifest.json`);
+		const manifest = JSON.parse(await app.vault.adapter.read(path));
+		this.manifest = manifest;
+		return manifest;
+	}
+
+	async isBetaVersion(): Promise<boolean> {
+		const manifest = await this.refreshManifest();
+		return manifest.version.includes("-beta-") || manifest.isBeta === true;
 	}
 }

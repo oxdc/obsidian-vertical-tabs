@@ -239,6 +239,19 @@ jobs:
           
           echo "All $BATCH_COUNT mangled variants generated and verified successfully"
 
+      - name: Setup signing key
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_PRIVATE_KEY }}
+        run: |
+          if [ ! -z "$SIGNING_KEY" ]; then
+            echo "Setting up Ed25519 private key for signing..."
+            echo "$SIGNING_KEY" > private_key.pem
+            chmod 600 private_key.pem
+            echo "Private key file created successfully"
+          else
+            echo "No signing key provided, archives will not be signed"
+          fi
+
       - name: Initialize upload session
         env:
           SERVER_URL: ${{ secrets.SERVER_URL }}
@@ -261,6 +274,8 @@ jobs:
           echo "Session UUID: $SESSION_UUID"
 
       - name: Create compressed archives
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_PRIVATE_KEY }}
         run: |
           echo "Creating $BATCH_COUNT compressed archives of release files..."
           
@@ -284,7 +299,13 @@ jobs:
             cp "dist/main-$i.js" "temp_archive/main.js"
             
             # Update manifest.json for this archive
-            bun run update-manifest.mjs "temp_archive"
+            if [ ! -z "$SIGNING_KEY" ]; then
+              echo "Signing manifest with Ed25519 private key..."
+              bun run update-manifest.mjs "temp_archive" "private_key.pem"
+            else
+              echo "No signing key provided, skipping signature generation..."
+              bun run update-manifest.mjs "temp_archive"
+            fi
             
             # Create archive
             cd temp_archive
@@ -305,6 +326,12 @@ jobs:
           rm -rf temp_archive
           
           echo "All $BATCH_COUNT archives created successfully"
+          
+          # Clean up private key file
+          if [ -f "private_key.pem" ]; then
+            rm -f private_key.pem
+            echo "Private key file cleaned up"
+          fi
 
       - name: Upload compressed archives to server
         env:

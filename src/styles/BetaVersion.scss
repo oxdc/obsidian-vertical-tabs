@@ -1,0 +1,21 @@
+.vt-beta-version-security-warning {
+	background: var(--background-modifier-error);
+	padding: var(--size-4-2) var(--size-4-3) var(--size-4-3) var(--size-4-3);
+	margin: var(--size-4-2) 0;
+
+	&,
+	& a {
+		color: var(--text-on-accent) !important;
+		font-size: var(--font-ui-small);
+		font-weight: var(--font-bold);
+	}
+
+	.vt-beta-version-security-warning-title {
+		display: flex;
+		align-items: center;
+		gap: var(--size-4-2);
+		font-size: var(--font-ui-medium);
+		color: var(--text-on-accent) !important;
+		margin-bottom: var(--size-4-1);
+	}
+}
