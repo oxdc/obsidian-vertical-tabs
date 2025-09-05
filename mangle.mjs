@@ -91,28 +91,33 @@ function parseIdentities(identities, batchCount) {
 	}
 }
 
-function generateSecureSeed(identity, tag) {
+function generateSecureSeed(identity, tag, commitHash) {
 	const nonce = crypto.randomBytes(16).toString("hex");
-	const combined = identity + tag + nonce;
+	const combined = identity + tag + commitHash + nonce;
 	const seed = crypto.createHash("sha256").update(combined).digest("hex");
 	return { seed, nonce };
 }
 
-function createBuildInfoBanner(identity, nonce, tag) {
+function createBuildInfoBanner(identity, nonce, tag, commitHash) {
 	return `/*
 ${banner}
 
 BUILD INFO:
 Identity: ${identity}
 Tag: ${tag}
+Commit: ${commitHash}
 Nonce: ${nonce}
 Generated: ${new Date().toISOString()}
 */`;
 }
 
-function generateSeedAndInfo(identity = "anonymous", tag = "unknown") {
-	const { seed, nonce } = generateSecureSeed(identity, tag);
-	const buildInfo = createBuildInfoBanner(identity, nonce, tag);
+function generateSeedAndInfo(
+	identity = "anonymous",
+	tag = "unknown",
+	commitHash = "unknown"
+) {
+	const { seed, nonce } = generateSecureSeed(identity, tag, commitHash);
+	const buildInfo = createBuildInfoBanner(identity, nonce, tag, commitHash);
 	return { seed, buildInfo };
 }
 
@@ -124,7 +129,8 @@ async function mangle(
 	outputFilename = "dist/main.js",
 	batchCount = 1,
 	identities = null,
-	tag = "unknown"
+	tag = "unknown",
+	commitHash = "unknown"
 ) {
 	const options = {
 		mangle: {
@@ -140,7 +146,8 @@ async function mangle(
 	for (let i = 1; i <= batchCount; i++) {
 		const filename = outputFilename.replace(/\.js$/, `-${i}.js`);
 		const identity = identityArray ? identityArray[i - 1] : "anonymous";
-		const { seed, buildInfo } = generateSeedAndInfo(identity, tag);
+		const info = generateSeedAndInfo(identity, tag, commitHash);
+		const { seed, buildInfo } = info;
 		const nameGenerator = new RandomNameGenerator(seed);
 		for (const name of Object.keys(nameCache.vars.props)) {
 			const newName = nameGenerator.generateName();
@@ -161,4 +168,5 @@ const outputFilename = process.argv[2] || "dist/main.js";
 const batchCount = parseInt(process.argv[3]) || 1;
 const identities = process.argv[4] || null;
 const tag = process.argv[5] || "unknown";
-mangle(outputFilename, batchCount, identities, tag);
+const commitHash = process.argv[6] || "unknown";
+mangle(outputFilename, batchCount, identities, tag, commitHash);
