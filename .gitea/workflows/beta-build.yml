@@ -26,6 +26,19 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Setup environment with public key
+        env:
+          PUBLIC_KEY: ${{ secrets.SIGNING_PUBLIC_KEY }}
+        run: |
+          if [ ! -z "$PUBLIC_KEY" ]; then
+            echo "Setting up public key for build..."
+            echo "EMBEDDED_PUBLIC_KEY=$PUBLIC_KEY" >> .env
+            echo "Public key configured successfully"
+          else
+            echo "Error: No public key provided, builds require embedded public key"
+            exit 1
+          fi
+
       - name: Build beta version
         run: bun run build:beta
 
