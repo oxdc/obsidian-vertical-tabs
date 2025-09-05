@@ -71,28 +71,24 @@ class RandomNameGenerator {
 
 function parseIdentities(identities, batchCount) {
 	if (!identities || identities === "null") return null;
-
 	try {
-		const identityArray = JSON.parse(identities);
-		if (!Array.isArray(identityArray)) {
-			console.error("Error: Identities must be an array");
-			process.exit(1);
-		}
-		if (identityArray.length !== batchCount) {
+		const identityArray = identities.split(",").map((id) => id.trim());
+		const filteredArray = identityArray.filter((id) => id.length > 0);
+		if (filteredArray.length !== batchCount) {
 			console.error(
-				`Error: Number of identities (${identityArray.length}) must match batch count (${batchCount})`
+				`Error: Number of identities (${filteredArray.length}) must match batch count (${batchCount})`
 			);
 			process.exit(1);
 		}
-		return identityArray;
+		return filteredArray;
 	} catch (error) {
 		console.error("Error parsing identities:", error.message);
 		process.exit(1);
 	}
 }
 
-function generateSecureSeed(identity, tag, commitHash) {
-	const nonce = crypto.randomBytes(16).toString("hex");
+function generateSecureSeed(identity, tag, commitHash, suppliedNonce = null) {
+	const nonce = suppliedNonce || crypto.randomBytes(16).toString("hex");
 	const combined = identity + tag + commitHash + nonce;
 	const seed = crypto.createHash("sha256").update(combined).digest("hex");
 	return { seed, nonce };
@@ -114,9 +110,11 @@ Generated: ${new Date().toISOString()}
 function generateSeedAndInfo(
 	identity = "anonymous",
 	tag = "unknown",
-	commitHash = "unknown"
+	commitHash = "unknown",
+	suppliedNonce = null
 ) {
-	const { seed, nonce } = generateSecureSeed(identity, tag, commitHash);
+	// prettier-ignore
+	const { seed, nonce } = generateSecureSeed(identity, tag, commitHash, suppliedNonce);
 	const buildInfo = createBuildInfoBanner(identity, nonce, tag, commitHash);
 	return { seed, buildInfo };
 }
@@ -130,7 +128,8 @@ async function mangle(
 	batchCount = 1,
 	identities = null,
 	tag = "unknown",
-	commitHash = "unknown"
+	commitHash = "unknown",
+	suppliedNonce = null
 ) {
 	const options = {
 		mangle: {
@@ -146,7 +145,8 @@ async function mangle(
 	for (let i = 1; i <= batchCount; i++) {
 		const filename = outputFilename.replace(/\.js$/, `-${i}.js`);
 		const identity = identityArray ? identityArray[i - 1] : "anonymous";
-		const info = generateSeedAndInfo(identity, tag, commitHash);
+		// prettier-ignore
+		const info = generateSeedAndInfo(identity, tag, commitHash, suppliedNonce);
 		const { seed, buildInfo } = info;
 		const nameGenerator = new RandomNameGenerator(seed);
 		for (const name of Object.keys(nameCache.vars.props)) {
@@ -169,4 +169,5 @@ const batchCount = parseInt(process.argv[3]) || 1;
 const identities = process.argv[4] || null;
 const tag = process.argv[5] || "unknown";
 const commitHash = process.argv[6] || "unknown";
-mangle(outputFilename, batchCount, identities, tag, commitHash);
+const nonce = process.argv[7] || null;
+mangle(outputFilename, batchCount, identities, tag, commitHash, nonce);

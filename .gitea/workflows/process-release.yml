@@ -198,13 +198,8 @@ jobs:
               echo "Error: Number of identities ($IDENTITY_COUNT) must match batch_count ($BATCH_COUNT)"
               exit 1
             fi
-            
-            # Store identities as JSON array for mangle.mjs
-            IDENTITIES_JSON=$(printf '%s\n' "${IDENTITY_ARRAY[@]}" | jq -R . | jq -s .)
-            echo "IDENTITIES_JSON=$IDENTITIES_JSON" >> $GITHUB_ENV
           else
             echo "No identities provided, will use random seeds"
-            echo "IDENTITIES_JSON=null" >> $GITHUB_ENV
           fi
 
       - name: Run mangling process
@@ -218,9 +213,9 @@ jobs:
           echo "Generating $BATCH_COUNT mangled variants..."
           
           # Run mangling process with identities if provided
-          if [ "$IDENTITIES_JSON" != "null" ]; then
-            echo "Using provided identities: $IDENTITIES_JSON"
-            mangle_output=$(bun run mangle.mjs "dist/main.js" "$BATCH_COUNT" "$IDENTITIES_JSON" "$TAG" "$COMMIT_HASH")
+          if [ ! -z "$IDENTITIES" ]; then
+            echo "Using provided identities: $IDENTITIES"
+            mangle_output=$(bun run mangle.mjs "dist/main.js" "$BATCH_COUNT" "$IDENTITIES" "$TAG" "$COMMIT_HASH")
           else
             echo "Using random seeds"
             mangle_output=$(bun run mangle.mjs "dist/main.js" "$BATCH_COUNT" null "$TAG" "$COMMIT_HASH")
