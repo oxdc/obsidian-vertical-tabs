@@ -6,6 +6,15 @@ function getFileHash(filePath) {
 	return crypto.createHash("sha256").update(content).digest("hex");
 }
 
+function deepSortKeys(obj) {
+	if (obj === null || typeof obj !== "object") return obj;
+	if (Array.isArray(obj)) return obj.map(deepSortKeys);
+	const sortedKeys = Object.keys(obj).sort();
+	const sortedObj = {};
+	for (const key of sortedKeys) sortedObj[key] = deepSortKeys(obj[key]);
+	return sortedObj;
+}
+
 function signManifest(manifestPath, privateKeyPath) {
 	if (!privateKeyPath) {
 		console.log("No private key provided, skipping signature generation");
@@ -14,14 +23,21 @@ function signManifest(manifestPath, privateKeyPath) {
 	try {
 		const privateKeyPem = readFileSync(privateKeyPath, "utf8");
 		const manifestContent = readFileSync(manifestPath, "utf8");
+		const manifest = JSON.parse(manifestContent);
+		delete manifest.signature;
+		const sortedManifest = deepSortKeys(manifest);
+		const canonicalJson = JSON.stringify(sortedManifest);
 		const privateKey = crypto.createPrivateKey(privateKeyPem);
 		const signature = crypto
-			.sign(null, Buffer.from(manifestContent, "utf8"), privateKey)
+			.sign(null, Buffer.from(canonicalJson, "utf8"), privateKey)
 			.toString("hex");
+		manifest.signature = signature;
+		writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
 		const sigPath = `${manifestPath}.sig`;
 		writeFileSync(sigPath, signature);
 		console.log(`Generated Ed25519 signature: ${sigPath}`);
 		console.log(`Signature: ${signature}`);
+		console.log(`Embedded signature in manifest.json`);
 	} catch (error) {
 		console.error(`Error signing manifest: ${error.message}`);
 		process.exit(1);

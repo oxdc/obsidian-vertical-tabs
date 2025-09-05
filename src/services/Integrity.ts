@@ -31,13 +31,12 @@ function getPluginPath(plugin: ObsidianVerticalTabs): string {
 async function checkFileHashes(plugin: ObsidianVerticalTabs): Promise<boolean> {
 	const manifest = plugin.manifest;
 	if (!manifest.files) return false;
-	const app = plugin.app;
 	const pluginPath = getPluginPath(plugin);
 	for (const [filename, expectedHash] of Object.entries(manifest.files)) {
 		if (!expectedHash.startsWith("sha256:")) return false;
 		try {
 			const filePath = normalizePath(`${pluginPath}/${filename}`);
-			const actualHash = await getFileHash(app, filePath);
+			const actualHash = await getFileHash(plugin.app, filePath);
 			if (actualHash !== expectedHash) return false;
 		} catch {
 			return false;
@@ -46,16 +45,31 @@ async function checkFileHashes(plugin: ObsidianVerticalTabs): Promise<boolean> {
 	return true;
 }
 
+function deepSortKeys(obj: unknown): unknown {
+	if (obj === null || typeof obj !== "object") return obj;
+	if (Array.isArray(obj)) return obj.map(deepSortKeys);
+	const sortedKeys = Object.keys(obj as Record<string, unknown>).sort();
+	const sortedObj: Record<string, unknown> = {};
+	for (const key of sortedKeys) {
+		sortedObj[key] = deepSortKeys((obj as Record<string, unknown>)[key]);
+	}
+	return sortedObj;
+}
+
 async function checkSignature(plugin: ObsidianVerticalTabs): Promise<boolean> {
 	const pluginPath = getPluginPath(plugin);
 	const manifestPath = normalizePath(`${pluginPath}/manifest.json`);
-	const sigPath = normalizePath(`${pluginPath}/manifest.json.sig`);
-	const app = plugin.app;
-	const manifestContent = await app.vault.adapter.read(manifestPath);
-	const signatureHex = await app.vault.adapter.read(sigPath);
+	const manifestContent = await plugin.app.vault.adapter.read(manifestPath);
+	const manifest = JSON.parse(manifestContent);
+	const signatureHex = manifest.signature;
+	if (!signatureHex) return false;
+	const manifestWithoutSignature = { ...manifest };
+	delete manifestWithoutSignature.signature;
+	const sortedManifest = deepSortKeys(manifestWithoutSignature);
+	const canonicalJson = JSON.stringify(sortedManifest);
 	return await verifyEd25519Signature(
-		manifestContent,
-		signatureHex.trim(),
+		canonicalJson,
+		signatureHex,
 		EMBEDDED_PUBLIC_KEY
 	);
 }
