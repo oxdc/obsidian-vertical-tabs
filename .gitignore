@@ -29,3 +29,6 @@ references
 
 # docs (external)
 docs
+
+# Environment variables
+.env

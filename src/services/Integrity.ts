@@ -1,7 +1,7 @@
 import { App, normalizePath } from "obsidian";
 import ObsidianVerticalTabs from "src/main";
 
-const EMBEDDED_PUBLIC_KEY = `TOBEREPLACED`;
+const EMBEDDED_PUBLIC_KEY = process.env.EMBEDDED_PUBLIC_KEY;
 
 async function getFileHash(app: App, filePath: string): Promise<string> {
 	const fileContent = await app.vault.adapter.readBinary(filePath);
@@ -78,8 +78,9 @@ async function checkSignature(plugin: ObsidianVerticalTabs): Promise<boolean> {
 async function verifyEd25519Signature(
 	message: string,
 	signatureHex: string,
-	publicKeyString: string
+	publicKeyString: string | undefined
 ): Promise<boolean> {
+	if (!publicKeyString) return false;
 	try {
 		const pemContents = publicKeyString.replace(/\s+/g, "");
 		const keyData = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
