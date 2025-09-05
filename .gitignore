@@ -32,3 +32,8 @@ docs
 
 # Environment variables
 .env
+
+# Dev only
+dev.sh
+dev_public_key.pem
+dev_private_key.pem
