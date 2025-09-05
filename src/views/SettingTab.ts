@@ -171,32 +171,43 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					<a href="https://oxdc.github.io/obsidian-vertical-tabs-docs/Beta-Versions/beta-program" target="_blank">Beta Program documentation</a>.
 				</span>
 			`;
-			if (!(await verifyBetaIntegrity(this.plugin))) {
-				const container = entry.descEl.createDiv({
-					cls: "vt-beta-version-security-warning",
-				});
-				const titleEl = container.createDiv({
-					cls: "vt-beta-version-security-warning-title",
-				});
-				const iconEl = titleEl.createEl("span");
-				setIcon(iconEl, "siren");
-				const textEl = titleEl.createEl("span");
-				textEl.innerHTML = "Security Warning:";
-				const warningText = container.createEl("span");
-				warningText.innerHTML = `
-					The integrity of this beta version could not be verified.
-					The plugin files may have been modified or corrupted, which poses a potential security risk.
-					To resolve this issue, please reinstall the plugin using the
-					<a href="https://github.com/oxdc/obsidian-vertical-tabs-beta-helper" target="_blank">Beta Helper</a>
-					plugin or
-					<a href="https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose" target="_blank">report this issue</a>
-					to the developer.
-				`;
-			}
+			await this.displayBetaSecurityInfo(entry.descEl);
 		} else {
 			const indicator = entry.controlEl.createDiv();
 			this.showLoadingState(entry, indicator);
 			this.checkForUpdates(entry, indicator);
+		}
+	}
+
+	private async displayBetaSecurityInfo(parentEl: HTMLElement) {
+		const container = parentEl.createDiv({ cls: "vt-beta-security" });
+		const titleEl = container.createDiv({ cls: "vt-beta-security-title" });
+		const iconEl = titleEl.createSpan();
+		const textEl = titleEl.createSpan();
+		const detailEl = container.createSpan({ cls: "vt-beta-detail" });
+		if (await verifyBetaIntegrity(this.plugin)) {
+			container.toggleClass("mod-warning", false);
+			container.toggleClass("mod-success", true);
+			setIcon(iconEl, "shield-check");
+			textEl.innerHTML = "Verified beta build";
+			detailEl.innerHTML = `
+				Learn more about 
+				<a href="https://oxdc.github.io/obsidian-vertical-tabs-docs/Beta-Versions/security" target="_blank">beta version security</a>.
+			`;
+		} else {
+			container.toggleClass("mod-warning", true);
+			container.toggleClass("mod-success", false);
+			setIcon(iconEl, "siren");
+			textEl.innerHTML = "Security Warning:";
+			detailEl.innerHTML = `
+				The integrity of this beta version could not be verified.
+				The plugin files may have been modified or corrupted, which poses a potential security risk.
+				To resolve this issue, please reinstall the plugin using the
+				<a href="https://github.com/oxdc/obsidian-vertical-tabs-beta-helper" target="_blank">Beta Helper</a>
+				plugin or
+				<a href="https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose" target="_blank">report this issue</a>
+				to the developer.
+			`;
 		}
 	}
 
@@ -954,8 +965,8 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		onClick?: () => void
 	) {
 		const buttonEl = parentEl.createEl("button");
-		const iconEl = buttonEl.createEl("span");
-		const textEl = buttonEl.createEl("span");
+		const iconEl = buttonEl.createSpan();
+		const textEl = buttonEl.createSpan();
 		setIcon(iconEl, props.icon);
 		textEl.setText(props.text);
 		if (onClick) buttonEl.onclick = onClick;

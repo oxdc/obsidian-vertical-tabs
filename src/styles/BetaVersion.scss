@@ -1,21 +1,36 @@
-.vt-beta-version-security-warning {
-	background: var(--background-modifier-error);
-	padding: var(--size-4-2) var(--size-4-3) var(--size-4-3) var(--size-4-3);
+.vt-beta-security {
+	font-size: var(--font-ui-small);
 	margin: var(--size-4-2) 0;
 
-	&,
-	& a {
-		color: var(--text-on-accent) !important;
-		font-size: var(--font-ui-small);
-		font-weight: var(--font-bold);
-	}
-
-	.vt-beta-version-security-warning-title {
+	.vt-beta-security-title {
 		display: flex;
 		align-items: center;
 		gap: var(--size-4-2);
-		font-size: var(--font-ui-medium);
-		color: var(--text-on-accent) !important;
 		margin-bottom: var(--size-4-1);
+	}
+
+	&.mod-success {
+		color: inherit;
+
+		.vt-beta-security-title {
+			color: var(--text-success) !important;
+		}
+	}
+
+	&.mod-warning {
+		padding: var(--size-4-2) var(--size-4-3) var(--size-4-3) var(--size-4-3);
+		font-weight: var(--font-bold);
+		background: var(--background-modifier-error);
+		color: var(--text-on-accent) !important;
+
+		.vt-beta-security-title {
+			font-size: var(--font-ui-medium) !important;
+		}
+
+		a,
+		.vt-beta-security-title {
+			font-weight: var(--font-bold);
+			color: var(--text-on-accent) !important;
+		}
 	}
 }
