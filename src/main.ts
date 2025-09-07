@@ -34,6 +34,7 @@ import { DISABLE_KEY } from "./models/PluginContext";
 import { scrollToActiveTab } from "./services/ScrollableTabs";
 import { updateOrientationLabel } from "./services/Orientation";
 import { normalizePath } from "obsidian";
+import { getOpenFileOfLeaf } from "./services/GetTabs";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -269,6 +270,28 @@ export default class ObsidianVerticalTabs extends Plugin {
 			}
 		};
 
+		const modifyOpenFile = (
+			target: WorkspaceLeaf,
+			file: TFile,
+			openState: OpenViewState,
+			fallback: () => void
+		) => {
+			if (!this.settings.deduplicateTabs) return fallback();
+			let found = false;
+			const callback = (leaf: WorkspaceLeaf) => {
+				if (leaf.id === target.id || found) return;
+				const leafFile = getOpenFileOfLeaf(this.app, leaf);
+				if (leafFile && leafFile.path === file.path) {
+					found = true;
+					leaf.openFile(file, openState);
+					this.app.workspace.setActiveLeaf(leaf, { focus: false });
+					target.detach();
+				}
+			};
+			this.app.workspace.iterateAllLeaves(callback);
+			if (!found) return fallback();
+		};
+
 		this.register(
 			around(WorkspaceLeaf.prototype, {
 				canNavigate(old) {
@@ -287,12 +310,12 @@ export default class ObsidianVerticalTabs extends Plugin {
 				},
 				openFile(old) {
 					return function (file: TFile, openState?: OpenViewState) {
+						const fallback = () => old.call(this, file, openState);
 						if (openState) {
-							const { addOpenFileTask } =
-								linkTasksStore.getActions();
-							addOpenFileTask(file, openState);
+							modifyOpenFile(this, file, openState, fallback);
+						} else {
+							return fallback();
 						}
-						return old.call(this, file, openState);
 					};
 				},
 			})
