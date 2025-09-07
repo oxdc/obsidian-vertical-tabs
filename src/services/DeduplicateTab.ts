@@ -14,7 +14,14 @@ import { moveTab, reapplyEphemeralState } from "./MoveTab";
 import { safeDetach } from "./CloseTabs";
 import { linkTasksStore } from "src/stores/LinkTaskStore";
 
-const INCLUDE_LIST = new Set(["markdown", "canvas", "image", "video", "pdf", "bases"]);
+const INCLUDE_LIST = new Set([
+	"markdown",
+	"canvas",
+	"image",
+	"video",
+	"pdf",
+	"bases",
+]);
 
 interface DeduplicateOptions {
 	deduplicateSidebarTabs: boolean;
@@ -79,9 +86,15 @@ export function deduplicateForTargets(
 	const { getTask, removeTask } = linkTasksStore.getActions();
 	const task = getTask(file.path);
 	if (task) {
-		const { subpath } = task;
-		leafToKeep.openLinkText(subpath, file.path);
-		removeTask(task.name);
+		if (task.type === "openLinkText") {
+			const { subpath } = task;
+			leafToKeep.openLinkText(subpath, file.path);
+			removeTask(task.name);
+		} else if (task.type === "openFile") {
+			const { file, openState } = task;
+			leafToKeep.openFile(file, openState);
+			removeTask(file.path);
+		}
 	}
 	// Only set focus when tabs were actually closed during deduplication.
 	// This prevents interference with focus management for sidebar tabs when

@@ -5,6 +5,7 @@ import {
 	OpenViewState,
 	Platform,
 	Plugin,
+	TFile,
 	View,
 	Workspace,
 	WorkspaceLeaf,
@@ -284,6 +285,16 @@ export default class ObsidianVerticalTabs extends Plugin {
 						old.call(this, parent);
 					};
 				},
+				openFile(old) {
+					return function (file: TFile, openState?: OpenViewState) {
+						if (openState) {
+							const { addOpenFileTask } =
+								linkTasksStore.getActions();
+							addOpenFileTask(file, openState);
+						}
+						return old.call(this, file, openState);
+					};
+				},
 			})
 		);
 
@@ -295,10 +306,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 					newLeaf?: boolean,
 					openViewState?: OpenViewState
 				) {
-					const { addTask } = linkTasksStore.getActions();
+					const { addOpenLinkTextTask } = linkTasksStore.getActions();
 					const { path, subpath } = parseLink(linkText);
 					const name = path ? `${path}.md` : sourcePath;
-					addTask(name, subpath);
+					addOpenLinkTextTask(name, subpath);
 					return old.call(
 						this,
 						linkText,
