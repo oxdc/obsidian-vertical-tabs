@@ -25,7 +25,7 @@ import { nanoid } from "nanoid";
 import { patchQuickSwitcher } from "./services/EphemeralTabs";
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
-import { SAFE_DETACH_TIMEOUT } from "./services/CloseTabs";
+import { SAFE_DETACH_TIMEOUT, safeDetach } from "./services/CloseTabs";
 import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 import { PersistenceManager } from "./models/PersistenceManager";
 import { migrateAllData } from "./history/Migration";
@@ -274,22 +274,27 @@ export default class ObsidianVerticalTabs extends Plugin {
 			target: WorkspaceLeaf,
 			file: TFile,
 			openState: OpenViewState,
-			fallback: () => void
+			fallback: (
+				target: WorkspaceLeaf,
+				file: TFile,
+				openState?: OpenViewState
+			) => void
 		) => {
-			if (!this.settings.deduplicateTabs) return fallback();
+			if (!this.settings.deduplicateTabs)
+				return fallback(target, file, openState);
 			let found = false;
 			const callback = (leaf: WorkspaceLeaf) => {
 				if (leaf.id === target.id || found) return;
 				const leafFile = getOpenFileOfLeaf(this.app, leaf);
 				if (leafFile && leafFile.path === file.path) {
 					found = true;
-					leaf.openFile(file, openState);
+					fallback(leaf, file, openState);
 					this.app.workspace.setActiveLeaf(leaf, { focus: false });
-					target.detach();
+					safeDetach(target);
 				}
 			};
 			this.app.workspace.iterateAllLeaves(callback);
-			if (!found) return fallback();
+			if (!found) return fallback(target, file, openState);
 		};
 
 		this.register(
@@ -310,11 +315,15 @@ export default class ObsidianVerticalTabs extends Plugin {
 				},
 				openFile(old) {
 					return function (file: TFile, openState?: OpenViewState) {
-						const fallback = () => old.call(this, file, openState);
+						const fallback = (
+							target: WorkspaceLeaf,
+							file: TFile,
+							openState?: OpenViewState
+						) => old.call(target, file, openState);
 						if (openState) {
 							modifyOpenFile(this, file, openState, fallback);
 						} else {
-							return fallback();
+							return fallback(this, file, openState);
 						}
 					};
 				},
