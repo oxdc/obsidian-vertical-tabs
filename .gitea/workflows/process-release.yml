@@ -16,6 +16,10 @@ on:
         description: "Comma-separated list of user identities for reproducible mangling (must match batch_count)"
         required: false
         type: string
+      job_id:
+        description: "Job ID for tracking purposes"
+        required: false
+        type: string
   repository_dispatch:
     types: [process-release]
   release:
@@ -35,14 +39,17 @@ jobs:
             echo "TAG=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
             echo "BATCH_COUNT=${{ github.event.inputs.batch_count }}" >> $GITHUB_ENV
             echo "IDENTITIES=${{ github.event.inputs.identities }}" >> $GITHUB_ENV
+            echo "JOB_ID=${{ github.event.inputs.job_id }}" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" == "repository_dispatch" ]; then
             echo "TAG=${{ github.event.client_payload.tag }}" >> $GITHUB_ENV
             echo "BATCH_COUNT=${{ github.event.client_payload.batch_count || '1' }}" >> $GITHUB_ENV
             echo "IDENTITIES=${{ github.event.client_payload.identities }}" >> $GITHUB_ENV
+            echo "JOB_ID=${{ github.event.client_payload.job_id }}" >> $GITHUB_ENV
           elif [ "${{ github.event_name }}" == "release" ]; then
             echo "TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
             echo "BATCH_COUNT=1" >> $GITHUB_ENV
             echo "IDENTITIES=" >> $GITHUB_ENV
+            echo "JOB_ID=" >> $GITHUB_ENV
           fi
 
       - name: Get commit hash
@@ -277,7 +284,8 @@ jobs:
           echo "Initializing upload session..."
           response=$(curl -s -X POST "$SERVER_URL/init" \
             -H "Authorization: Bearer $AUTH_TOKEN" \
-            -H "Content-Type: application/json")
+            -H "Content-Type: application/json" \
+            -H "X-JOB-ID: $JOB_ID")
           
           echo "Init response: $response"
           
