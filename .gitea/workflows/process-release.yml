@@ -334,17 +334,17 @@ jobs:
             
             # Create archive
             cd temp_archive
-            tar -czf "../release-$TAG-$i.tar.gz" .
+            zip -r "../release-$TAG-$i.zip" .
             cd ..
             
             # Calculate hash of the archive
-            archive_hash=$(sha256sum "release-$TAG-$i.tar.gz" | cut -d' ' -f1)
+            archive_hash=$(sha256sum "release-$TAG-$i.zip" | cut -d' ' -f1)
             echo "ARCHIVE_HASH_$i=$archive_hash" >> $GITHUB_ENV
             echo "Archive $i hash: $archive_hash"
             
             # List contents of archive
             echo "Archive $i contents:"
-            tar -tzf "release-$TAG-$i.tar.gz"
+            unzip -l "release-$TAG-$i.zip"
           done
           
           # Clean up temp directory
@@ -369,7 +369,7 @@ jobs:
           
           # Upload each archive
           for i in $(seq 1 $BATCH_COUNT); do
-            archive_file="release-$TAG-$i.tar.gz"
+            archive_file="release-$TAG-$i.zip"
             archive_hash_var="ARCHIVE_HASH_$i"
             archive_hash="${!archive_hash_var}"
             
@@ -411,7 +411,7 @@ jobs:
           echo "Number of variants generated: $BATCH_COUNT"
           echo "Archives created:"
           for i in $(seq 1 $BATCH_COUNT); do
-            archive_file="release-$TAG-$i.tar.gz"
+            archive_file="release-$TAG-$i.zip"
             archive_hash_var="ARCHIVE_HASH_$i"
             archive_hash="${!archive_hash_var}"
             echo "  $archive_file (hash: $archive_hash)"
