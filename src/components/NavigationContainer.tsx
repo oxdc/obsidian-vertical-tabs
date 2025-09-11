@@ -8,7 +8,7 @@ import {
 	ALT_KEY_EFFECT_DURATION,
 	VIEW_CUE_DELAY,
 } from "src/models/ViewState";
-import { debounce, ItemView, Platform, TFolder } from "obsidian";
+import { debounce, ItemView, Platform, TFile, TFolder } from "obsidian";
 import { EVENTS } from "src/constants/Events";
 import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 import {
@@ -36,6 +36,7 @@ import { getDrawer } from "src/services/MobileDrawer";
 import { addMenuItemsToFolderContextMenu } from "src/services/OpenFolder";
 import { GroupViewType } from "src/models/VTGroupView";
 import { NativeDragTabs } from "src/services/NativeDragTabs";
+import { addMenuItemsToFileContextMenu } from "src/services/OpenFile";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
@@ -211,6 +212,10 @@ export const NavigationContainer = () => {
 				if (fileOrFolder instanceof TFolder) {
 					const folder = fileOrFolder;
 					addMenuItemsToFolderContextMenu(app, menu, folder);
+				}
+				if (fileOrFolder instanceof TFile && Platform.isDesktop) {
+					const file = fileOrFolder;
+					addMenuItemsToFileContextMenu(app, menu, file);
 				}
 			})
 		);
