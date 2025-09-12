@@ -3,6 +3,7 @@ import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
 import { moveTabToEnd } from "./MoveTab";
 import { tabCacheStore } from "src/stores/TabCacheStore";
 import { GroupType } from "src/models/VTWorkspace";
+import { GroupNameModal } from "src/views/GroupNameModal";
 
 const MENU_SECTION = "file-navigation";
 
@@ -33,6 +34,29 @@ export function addMenuItemsToFileContextMenu(
 					leaf.openFile(file);
 					moveTabToEnd(app, leaf.id, group);
 				});
+			});
+		});
+		submenu.addSeparator();
+		submenu.addItem((item) => {
+			item.setTitle("New group").onClick(() => {
+				const leaf = app.workspace.getLeaf("split");
+				leaf.openFile(file);
+			});
+		});
+		submenu.addItem((item) => {
+			item.setTitle("New group with name...").onClick(() => {
+				new GroupNameModal(app, (groupName) => {
+					const leaf = app.workspace.getLeaf("split");
+					leaf.openFile(file);
+					setTimeout(() => {
+						const group = leaf.parent;
+						if (group) {
+							useViewState
+								.getState()
+								.setGroupTitle(group.id, groupName);
+						}
+					});
+				}).open();
 			});
 		});
 	});
