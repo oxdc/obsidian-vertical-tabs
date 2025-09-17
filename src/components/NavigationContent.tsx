@@ -30,13 +30,13 @@ import { Identifier } from "src/models/VTWorkspace";
 import { WorkspaceLeaf } from "obsidian";
 import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
 import { TabSlot } from "./TabSlot";
-import { useViewState } from "src/models/ViewState";
+import { useTabSelection } from "src/stores/TabSelectionStore";
 
 export const NavigationContent = () => {
 	const { groupIDs, content } = tabCacheStore.getState();
 	const { swapGroup, moveGroupToEnd } = tabCacheStore.getActions();
 	const { getSelectedTabs, isTabSelected, clearTabSelection } =
-		useViewState();
+		useTabSelection();
 	const app = useApp();
 	const sensors = useSensors(
 		useSensor(PointerSensor, {

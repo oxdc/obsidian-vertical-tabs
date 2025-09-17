@@ -12,6 +12,7 @@ import {
 } from "src/services/CloseTabs";
 import { tabCacheStore } from "src/stores/TabCacheStore";
 import { useViewState, VIEW_CUE_PREV } from "src/models/ViewState";
+import { useTabSelection } from "src/stores/TabSelectionStore";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 import {
 	createBookmarkForLeaf,
@@ -100,7 +101,8 @@ export const Tab = (props: TabProps) => {
 		clearTabSelection,
 		selectTabRange,
 		lastSelectedTab,
-	} = useViewState();
+		getSelectedTabs,
+	} = useTabSelection();
 	const isSelected = isTabSelected(leaf.id);
 
 	/* Derived states */
@@ -739,9 +741,7 @@ export const Tab = (props: TabProps) => {
 				icon={shouldShowHandle ? "grip" : leaf.getIcon()}
 				isActive={leaf.tabHeaderEl?.classList.contains("is-active")}
 				selectedCount={
-					isSelected
-						? useViewState.getState().getSelectedTabs().length
-						: undefined
+					isSelected ? getSelectedTabs().length : undefined
 				}
 				{...listeners}
 			/>
