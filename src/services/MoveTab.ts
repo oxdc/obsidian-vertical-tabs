@@ -158,8 +158,7 @@ export async function moveSelfToDefaultLocation(app: App) {
 export function moveMultipleTabs(
 	app: App,
 	sourceIDs: Identifier[],
-	targetID: Identifier | null,
-	insertAfter = true
+	targetID: Identifier | null
 ): WorkspaceLeaf[] {
 	if (!targetID || sourceIDs.length === 0) return [];
 
@@ -173,32 +172,41 @@ export function moveMultipleTabs(
 	if (sourceLeaves.length === 0) return [];
 
 	const targetParent = targetLeaf.parent;
-	const targetIndex = targetParent.children.indexOf(targetLeaf);
-	const insertIndex = insertAfter ? targetIndex + 1 : targetIndex;
+	const originalTargetIndex = targetParent.children.indexOf(targetLeaf);
 
-	// Remove all source leaves from their parents first
+	// Collect source data for removal (similar to single-tab logic)
 	const sourceData = sourceLeaves.map((leaf) => ({
 		leaf,
 		parent: leaf.parent,
 		index: leaf.parent.children.indexOf(leaf),
 	}));
 
-	// Sort by parent and index to remove from end to beginning
+	// Count how many source tabs are in the same parent and before the target
+	// This is crucial for calculating the correct insertion index
+	const sameParentBeforeTarget = sourceData.filter(
+		(s) => s.parent.id === targetParent.id && s.index < originalTargetIndex
+	).length;
+
+	// Calculate insertion index (matching single-tab logic)
+	const insertIndex = originalTargetIndex - sameParentBeforeTarget;
+
+	// Sort by parent and index to remove from end to beginning (preserves indices)
 	sourceData.sort((a, b) => {
 		if (a.parent.id !== b.parent.id) return 0;
 		return b.index - a.index;
 	});
 
-	// Remove leaves from their original parents
-	for (const { parent, index } of sourceData) {
-		removeChild(parent, index);
+	// Remove all source leaves from their parents
+	for (const { leaf, parent } of sourceData) {
+		parent.removeChild(leaf);
+		leaf.setDimension(null);
 	}
 
-	// Insert all leaves at target location
-	for (let i = sourceLeaves.length - 1; i >= 0; i--) {
+	// Insert all leaves at target location in correct order
+	// Insert in forward order to maintain the original sequence
+	for (let i = 0; i < sourceLeaves.length; i++) {
 		const leaf = sourceLeaves[i];
-		leaf.setDimension(null);
-		targetParent.insertChild(insertIndex, leaf);
+		targetParent.insertChild(insertIndex + i, leaf);
 	}
 
 	// Select the first moved tab and recompute dimensions
