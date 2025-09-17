@@ -5,6 +5,34 @@
 			font-weight: bold;
 		}
 
+		&.is-selected .tree-item-self {
+			background-color: var(--background-modifier-selected);
+			border: 1px solid var(--background-modifier-border-focus);
+			border-radius: var(--radius-s);
+		}
+
+		&.is-selected.is-highlighted .tree-item-self {
+			background-color: var(--background-modifier-active);
+		}
+
+		&.is-being-dragged.is-selected::after {
+			content: attr(data-selected-count);
+			position: absolute;
+			top: -8px;
+			right: -8px;
+			background: var(--interactive-accent);
+			color: var(--text-on-accent);
+			border-radius: 50%;
+			width: 20px;
+			height: 20px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 12px;
+			font-weight: bold;
+			z-index: 100;
+		}
+
 		.action-button {
 			visibility: hidden;
 		}

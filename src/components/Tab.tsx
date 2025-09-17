@@ -94,6 +94,14 @@ export const Tab = (props: TabProps) => {
 	/* Store states (managed by zustand, shared by components) */
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 	const hasAltKeyPressed = useViewState((state) => state.hasAltKeyPressed);
+	const {
+		toggleTabSelection,
+		isTabSelected,
+		clearTabSelection,
+		selectTabRange,
+		lastSelectedTab,
+	} = useViewState();
+	const isSelected = isTabSelected(leaf.id);
 
 	/* Derived states */
 	const isActiveTab = lastActiveLeaf?.id === leaf.id;
@@ -144,12 +152,22 @@ export const Tab = (props: TabProps) => {
 	const midClickCloseTab = (event: DivMouseEvent) => {
 		if (event.button === 1) closeTab();
 	};
-	// Alt-click closes the tab, otherwise opens it
+	// Alt-click closes the tab, otherwise handle selection or open tab
 	const activeOrCloseTab = (event: DivMouseEvent) => {
 		if (event.altKey) {
 			closeTab();
 		} else {
-			openTab();
+			const isMultiSelect = event?.ctrlKey || event?.metaKey;
+			const isRangeSelect = event?.shiftKey;
+
+			if (isRangeSelect && lastSelectedTab) {
+				selectTabRange(lastSelectedTab, leaf.id);
+			} else if (isMultiSelect) {
+				toggleTabSelection(leaf.id, true);
+			} else {
+				clearTabSelection();
+				openTab();
+			}
 		}
 	};
 	// Double clicking a tab makes it non-ephemeral and exits the mission control view
@@ -708,6 +726,7 @@ export const Tab = (props: TabProps) => {
 				isEphemeralTab={isEphemeral && !isPinned}
 				isPinned={isPinned}
 				isHighlighted={isActiveTab}
+				classNames={{ "is-selected": isSelected }}
 				toolbar={toolbar}
 				onClick={activeOrCloseTab}
 				onAuxClick={midClickCloseTab}
@@ -719,6 +738,11 @@ export const Tab = (props: TabProps) => {
 				webviewIcon={webviewIcon}
 				icon={shouldShowHandle ? "grip" : leaf.getIcon()}
 				isActive={leaf.tabHeaderEl?.classList.contains("is-active")}
+				selectedCount={
+					isSelected
+						? useViewState.getState().getSelectedTabs().length
+						: undefined
+				}
 				{...listeners}
 			/>
 			{shouldShowHandle && handles}

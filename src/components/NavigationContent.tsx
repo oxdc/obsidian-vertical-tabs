@@ -17,16 +17,26 @@ import { useState } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
 import { SortableContext } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
-import { moveTab, moveTabToEnd, moveTabToNewGroup } from "src/services/MoveTab";
+import {
+	moveTab,
+	moveTabToEnd,
+	moveTabToNewGroup,
+	moveMultipleTabs,
+	moveMultipleTabsToEnd,
+	moveMultipleTabsToNewGroup,
+} from "src/services/MoveTab";
 import { GroupSlot } from "./GroupSlot";
 import { Identifier } from "src/models/VTWorkspace";
 import { WorkspaceLeaf } from "obsidian";
 import { makeLeafNonEphemeral } from "src/services/EphemeralTabs";
 import { TabSlot } from "./TabSlot";
+import { useViewState } from "src/models/ViewState";
 
 export const NavigationContent = () => {
 	const { groupIDs, content } = tabCacheStore.getState();
 	const { swapGroup, moveGroupToEnd } = tabCacheStore.getActions();
+	const { getSelectedTabs, isTabSelected, clearTabSelection } =
+		useViewState();
 	const app = useApp();
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -54,22 +64,61 @@ export const NavigationContent = () => {
 		const isOverTab = (over.data.current as any).isTab;
 
 		if (isActiveTab) {
-			let movedTab: WorkspaceLeaf | null = null;
-			if (isOverTab) {
-				movedTab = moveTab(app, activeID, overID);
-			} else {
-				const groupID = overID.startsWith("slot")
-					? overID.slice(5)
-					: overID;
-				if (groupID === "new") {
-					movedTab = await moveTabToNewGroup(app, activeID);
+			const selectedTabs = getSelectedTabs();
+			const hasMultipleSelection =
+				selectedTabs.length > 1 && isTabSelected(activeID);
+
+			let movedTabs: WorkspaceLeaf[] = [];
+
+			if (hasMultipleSelection) {
+				// Handle multiple tab movement
+				if (isOverTab) {
+					movedTabs = moveMultipleTabs(app, selectedTabs, overID);
 				} else {
-					const parent = content.get(groupID).group;
-					if (parent) movedTab = moveTabToEnd(app, activeID, parent);
+					const groupID = overID.startsWith("slot")
+						? overID.slice(5)
+						: overID;
+					if (groupID === "new") {
+						movedTabs = await moveMultipleTabsToNewGroup(
+							app,
+							selectedTabs
+						);
+					} else {
+						const parent = content.get(groupID).group;
+						if (parent)
+							movedTabs = moveMultipleTabsToEnd(
+								app,
+								selectedTabs,
+								parent
+							);
+					}
 				}
+				clearTabSelection();
+			} else {
+				// Handle single tab movement
+				let movedTab: WorkspaceLeaf | null = null;
+				if (isOverTab) {
+					movedTab = moveTab(app, activeID, overID);
+				} else {
+					const groupID = overID.startsWith("slot")
+						? overID.slice(5)
+						: overID;
+					if (groupID === "new") {
+						movedTab = await moveTabToNewGroup(app, activeID);
+					} else {
+						const parent = content.get(groupID).group;
+						if (parent)
+							movedTab = moveTabToEnd(app, activeID, parent);
+					}
+				}
+				if (movedTab) movedTabs = [movedTab];
 			}
-			if (movedTab && useSettings.getState().ephemeralTabs) {
-				makeLeafNonEphemeral(movedTab);
+
+			// Make moved tabs non-ephemeral if setting is enabled
+			if (movedTabs.length > 0 && useSettings.getState().ephemeralTabs) {
+				for (const tab of movedTabs) {
+					makeLeafNonEphemeral(tab);
+				}
 			}
 		} else {
 			if (isOverTab) {

@@ -154,3 +154,147 @@ export async function moveSelfToDefaultLocation(app: App) {
 		moveTabToEnd(app, self.id, parent);
 	}
 }
+
+export function moveMultipleTabs(
+	app: App,
+	sourceIDs: Identifier[],
+	targetID: Identifier | null,
+	insertAfter = true
+): WorkspaceLeaf[] {
+	if (!targetID || sourceIDs.length === 0) return [];
+
+	const targetLeaf = app.workspace.getLeafById(targetID);
+	if (!targetLeaf) return [];
+
+	const sourceLeaves = sourceIDs
+		.map((id) => app.workspace.getLeafById(id))
+		.filter((leaf): leaf is WorkspaceLeaf => leaf !== null);
+
+	if (sourceLeaves.length === 0) return [];
+
+	const targetParent = targetLeaf.parent;
+	const targetIndex = targetParent.children.indexOf(targetLeaf);
+	const insertIndex = insertAfter ? targetIndex + 1 : targetIndex;
+
+	// Remove all source leaves from their parents first
+	const sourceData = sourceLeaves.map((leaf) => ({
+		leaf,
+		parent: leaf.parent,
+		index: leaf.parent.children.indexOf(leaf),
+	}));
+
+	// Sort by parent and index to remove from end to beginning
+	sourceData.sort((a, b) => {
+		if (a.parent.id !== b.parent.id) return 0;
+		return b.index - a.index;
+	});
+
+	// Remove leaves from their original parents
+	for (const { parent, index } of sourceData) {
+		removeChild(parent, index);
+	}
+
+	// Insert all leaves at target location
+	for (let i = sourceLeaves.length - 1; i >= 0; i--) {
+		const leaf = sourceLeaves[i];
+		leaf.setDimension(null);
+		targetParent.insertChild(insertIndex, leaf);
+	}
+
+	// Select the first moved tab and recompute dimensions
+	targetParent.selectTabIndex(insertIndex);
+	app.workspace.requestResize();
+
+	// Update UI for all affected parents
+	const affectedParents = new Set(sourceData.map((s) => s.parent));
+	affectedParents.add(targetParent);
+	for (const parent of affectedParents) {
+		syncUIForGroupView(parent);
+	}
+
+	return sourceLeaves;
+}
+
+export function moveMultipleTabsToEnd(
+	app: App,
+	sourceIDs: Identifier[],
+	targetParent: WorkspaceParent
+): WorkspaceLeaf[] {
+	if (sourceIDs.length === 0) return [];
+
+	const sourceLeaves = sourceIDs
+		.map((id) => app.workspace.getLeafById(id))
+		.filter((leaf): leaf is WorkspaceLeaf => leaf !== null);
+
+	if (sourceLeaves.length === 0) return [];
+
+	// Group source leaves by their parent for efficient removal
+	const sourceData = sourceLeaves.map((leaf) => ({
+		leaf,
+		parent: leaf.parent,
+		index: leaf.parent.children.indexOf(leaf),
+	}));
+
+	// Sort by parent and index to remove from end to beginning
+	sourceData.sort((a, b) => {
+		if (a.parent.id !== b.parent.id) return 0;
+		return b.index - a.index;
+	});
+
+	// Remove leaves from their original parents
+	for (const { parent, index } of sourceData) {
+		removeChild(parent, index);
+	}
+
+	// Insert all leaves at the end of target parent
+	for (const leaf of sourceLeaves) {
+		insertChild(targetParent, leaf);
+	}
+
+	app.workspace.onLayoutChange();
+
+	// Reapply ephemeral state for all moved leaves
+	for (const leaf of sourceLeaves) {
+		reapplyEphemeralState(leaf);
+	}
+
+	return sourceLeaves;
+}
+
+export async function moveMultipleTabsToNewGroup(
+	app: App,
+	sourceIDs: Identifier[]
+): Promise<WorkspaceLeaf[]> {
+	if (sourceIDs.length === 0) return [];
+
+	const firstSourceLeaf = app.workspace.getLeafById(sourceIDs[0]);
+	if (!firstSourceLeaf) return [];
+
+	const sourceParent = firstSourceLeaf.parent;
+	const height = sourceParent.containerEl.clientHeight;
+	const width = sourceParent.containerEl.clientWidth;
+	const preferredDirection = height > width ? "horizontal" : "vertical";
+
+	// Create new group with first tab
+	const firstTargetLeaf = await app.workspace.duplicateLeaf(
+		firstSourceLeaf,
+		"split",
+		preferredDirection
+	);
+	firstTargetLeaf.setPinned(!!firstSourceLeaf.getViewState().pinned);
+	reapplyEphemeralState(firstTargetLeaf, firstSourceLeaf.getEphemeralState());
+	firstSourceLeaf.detach();
+
+	// Move remaining tabs to the new group
+	if (sourceIDs.length > 1) {
+		const remainingIDs = sourceIDs.slice(1);
+		const movedLeaves = moveMultipleTabsToEnd(
+			app,
+			remainingIDs,
+			firstTargetLeaf.parent
+		);
+		return [firstTargetLeaf, ...movedLeaves];
+	}
+
+	return [firstTargetLeaf];
+}

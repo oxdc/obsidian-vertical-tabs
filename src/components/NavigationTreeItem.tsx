@@ -43,6 +43,7 @@ interface NavigationTreeItemProps {
 	onMouseOver?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
 	dataType?: string;
 	dataId?: string;
+	selectedCount?: number;
 	classNames?: Record<string, boolean>;
 }
 
@@ -111,6 +112,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				className={toClassName(itemElClasses)}
 				data-type={props.dataType}
 				data-id={props.dataId}
+				data-selected-count={props.selectedCount}
 				style={{ minHeight: props.isCollapsed ? 0 : height }}
 				ref={props.ref}
 			>
@@ -159,6 +161,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				className={toClassName(itemElClasses)}
 				data-type={props.dataType}
 				data-id={props.dataId}
+				data-selected-count={props.selectedCount}
 				style={{ minHeight: props.isCollapsed ? 0 : height }}
 				ref={props.ref}
 			>
