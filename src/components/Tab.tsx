@@ -12,6 +12,7 @@ import {
 } from "src/services/CloseTabs";
 import { tabCacheStore } from "src/stores/TabCacheStore";
 import { useViewState, VIEW_CUE_PREV } from "src/models/ViewState";
+import { useTabSelection } from "src/stores/TabSelectionStore";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 import {
 	createBookmarkForLeaf,
@@ -97,6 +98,17 @@ export const Tab = (props: TabProps) => {
 	/* Store states (managed by zustand, shared by components) */
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 	const hasAltKeyPressed = useViewState((state) => state.hasAltKeyPressed);
+	const {
+		toggleTabSelection,
+		isTabSelected,
+		clearTabSelection,
+		selectTabRange,
+		lastSelectedTab,
+		getSelectedTabs,
+		hasSelectedTabs,
+	} = useTabSelection();
+	const isSelected = isTabSelected(leaf.id);
+	const hasAnySelectedTabs = hasSelectedTabs();
 
 	/* Derived states */
 	const isActiveTab = lastActiveLeaf?.id === leaf.id;
@@ -107,6 +119,9 @@ export const Tab = (props: TabProps) => {
 	/* Commands */
 	/* Commands - Tab control */
 	const previewTab = (event: DivMouseEvent) => {
+		// Disable preview when tabs are selected to avoid interference with multi-selection
+		if (hasAnySelectedTabs) return;
+
 		const file = getOpenFileOfLeaf(app, leaf);
 		if (file && ref.current) {
 			// Signal Obsidian to show the preview
@@ -147,12 +162,22 @@ export const Tab = (props: TabProps) => {
 	const midClickCloseTab = (event: DivMouseEvent) => {
 		if (event.button === 1) closeTab();
 	};
-	// Alt-click closes the tab, otherwise opens it
+	// Alt-click closes the tab, otherwise handle selection or open tab
 	const activeOrCloseTab = (event: DivMouseEvent) => {
 		if (event.altKey) {
 			closeTab();
 		} else {
-			openTab();
+			const isMultiSelect = event?.ctrlKey || event?.metaKey;
+			const isRangeSelect = event?.shiftKey;
+
+			if (isRangeSelect && lastSelectedTab) {
+				selectTabRange(lastSelectedTab, leaf.id);
+			} else if (isMultiSelect) {
+				toggleTabSelection(leaf.id, true);
+			} else {
+				clearTabSelection();
+				openTab();
+			}
 		}
 	};
 	// Double clicking a tab makes it non-ephemeral and exits the mission control view
@@ -592,6 +617,14 @@ export const Tab = (props: TabProps) => {
 	}, [isActiveTab, ref]);
 	// Update view cue system for keyboard navigation and visual indicators
 	useEffect(() => {
+		// Disable view cue when tabs are selected to avoid interference with multi-selection
+		if (hasAnySelectedTabs) {
+			registerViewCueTab(leaf, null, false);
+			delete leaf.tabHeaderInnerTitleEl?.dataset.index;
+			delete leaf.containerEl.dataset.index;
+			return;
+		}
+
 		// Determine if this is the first tab for navigation purposes
 		const isFirstTab =
 			viewCueIndex === VIEW_CUE_PREV ||
@@ -612,7 +645,7 @@ export const Tab = (props: TabProps) => {
 		} else {
 			delete leaf.containerEl.dataset.index;
 		}
-	}, [viewCueIndex, ref]);
+	}, [viewCueIndex, ref, hasAnySelectedTabs]);
 	// Replace the default navigation buttons with our own
 	useEffect(() => cloneNavButtons(leaf, app), [leaf.id, leaf.view]);
 	// Add pinned indicator and close indicator for mission control view
@@ -706,12 +739,13 @@ export const Tab = (props: TabProps) => {
 			<NavigationTreeItem
 				ref={ref}
 				id={leaf.id}
-				index={viewCueIndex}
+				index={hasAnySelectedTabs ? undefined : viewCueIndex}
 				title={title}
 				isTab={true}
 				isEphemeralTab={isEphemeral && !isPinned}
 				isPinned={isPinned}
 				isHighlighted={isActiveTab}
+				classNames={{ "is-selected": isSelected }}
 				toolbar={toolbar}
 				onClick={activeOrCloseTab}
 				onAuxClick={midClickCloseTab}
@@ -723,6 +757,9 @@ export const Tab = (props: TabProps) => {
 				webviewIcon={webviewIcon}
 				icon={shouldShowHandle ? "grip" : leaf.getIcon()}
 				isActive={leaf.tabHeaderEl?.classList.contains("is-active")}
+				selectedCount={
+					isSelected ? getSelectedTabs().length : undefined
+				}
 				{...listeners}
 			/>
 			{shouldShowHandle && handles}

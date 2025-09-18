@@ -77,3 +77,13 @@ export function getOpenFileOfLeaf(app: App, leaf: WorkspaceLeaf): TFile | null {
 	}
 	return null;
 }
+
+export function getLeavesWithFile(app: App, file: TFile): WorkspaceLeaf[] {
+	const leaves: WorkspaceLeaf[] = [];
+	app.workspace.iterateAllLeaves((leaf) => {
+		if (getOpenFileOfLeaf(app, leaf) === file) {
+			leaves.push(leaf);
+		}
+	});
+	return leaves;
+}

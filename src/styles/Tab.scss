@@ -5,6 +5,29 @@
 			font-weight: bold;
 		}
 
+		&.is-selected .tree-item-self {
+			color: var(--nav-item-color-selected);
+			background-color: var(--nav-item-background-selected);
+		}
+
+		&.is-being-dragged.is-selected::after {
+			content: attr(data-selected-count);
+			position: absolute;
+			top: -8px;
+			right: -8px;
+			background: var(--interactive-accent);
+			color: var(--text-on-accent);
+			border-radius: 50%;
+			width: 20px;
+			height: 20px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 12px;
+			font-weight: bold;
+			z-index: 100;
+		}
+
 		.action-button {
 			visibility: hidden;
 		}
