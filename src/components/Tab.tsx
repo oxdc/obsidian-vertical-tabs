@@ -35,7 +35,10 @@ import {
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 import { byPinned } from "src/services/SortTabs";
 import { cloneNavButtons } from "src/services/NavButtons";
-import { addPinnedIndicator } from "src/services/PinnedIndicator";
+import {
+	addPinnedIndicator,
+	addCloseIndicator,
+} from "src/services/TabControlButtons";
 import { onDragFile, onDragLeaf } from "src/services/PowerDrag";
 import {
 	getEmbedLinkFromLeaf,
@@ -612,9 +615,10 @@ export const Tab = (props: TabProps) => {
 	}, [viewCueIndex, ref]);
 	// Replace the default navigation buttons with our own
 	useEffect(() => cloneNavButtons(leaf, app), [leaf.id, leaf.view]);
-	// Add pinned indicator for mission control view
+	// Add pinned indicator and close indicator for mission control view
 	useEffect(() => {
 		addPinnedIndicator(leaf, isPinned, unPin);
+		addCloseIndicator(leaf, !isPinned, closeTab);
 	}, [isPinned, leaf, viewType]);
 	// Show the context menu in mission control view
 	useEffect(() => {

@@ -2,13 +2,16 @@ body {
 	--vt-mission-control-view-leaf-zoom-factor: 0.5;
 
 	&.vt-mission-control-view-disable-pointer {
-		.workspace-tabs.vt-mission-control-view
-			.workspace-leaf-content {
+		.workspace-tabs.vt-mission-control-view .workspace-leaf-content {
 			pointer-events: none;
 		}
 	}
 
 	.vt-pinned-indicator {
+		display: none;
+	}
+
+	.vt-close-indicator {
 		display: none;
 	}
 }
@@ -51,6 +54,32 @@ body {
 			width: var(--vt-pinned-indicator-size);
 			height: var(--vt-pinned-indicator-size);
 			z-index: var(--layer-tooltip);
+		}
+
+		.vt-close-indicator.vt-can-close {
+			display: block;
+			position: absolute;
+			right: 0;
+			top: 0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			opacity: 0.5;
+			--vt-close-indicator-icon-size: calc(
+				var(--icon-size) /
+					var(--vt-mission-control-view-leaf-zoom-factor)
+			);
+			--vt-close-indicator-size: calc(
+				var(--vt-mission-control-view-leaf-width) * 0.3
+			);
+			width: var(--vt-close-indicator-size);
+			height: var(--vt-close-indicator-size);
+			z-index: var(--layer-tooltip);
+
+			svg {
+				--icon-size: var(--vt-close-indicator-icon-size);
+			}
 		}
 	}
 
