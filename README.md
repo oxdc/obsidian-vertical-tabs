@@ -23,6 +23,13 @@ As *the* workspace manager for Obsidian, Vertical Tabs provides many handy featu
       style="display: inline-block;"
     >
   </a>
+  <a href="https://oxdc.github.io/obsidian-vertical-tabs-docs/roadmap" style="text-decoration: none;">
+    <img
+      alt="Roadmap"
+      src="https://img.shields.io/badge/Roadmap-purple?style=for-the-badge&logo=git&logoColor=white"
+      style="display: inline-block;"
+    >
+  </a>
   <a href="https://github.com/oxdc/obsidian-vertical-tabs" style="text-decoration: none;">
     <img
       alt="Github Repo"

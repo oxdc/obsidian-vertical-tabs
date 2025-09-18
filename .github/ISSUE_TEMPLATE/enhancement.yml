@@ -16,8 +16,23 @@ body:
         required: true
       - label: I understand that proposals for new features should be discussed in the ‘Discussions’ tab
         required: true
-      - label: I understand that compatibility issues with other plugins should be posted as a ‘Compatibility’ issue
+      - label: I understand that compatibility issues with other plugins should be posted as a 'Compatibility' issue
         required: true
+- type: checkboxes
+  id: beta-version
+  attributes:
+    label: Beta Version
+    options:
+      - label: I am using a beta version of Vertical Tabs
+        required: false
+- type: input
+  id: beta-version-tag
+  attributes:
+    label: Beta Version Tag (if applicable)
+    description: If you checked the beta version box above, please provide the specific beta version tag you are using.
+    placeholder: e.g., 0.99.9-beta-20990909
+  validations:
+    required: false
 - type: dropdown
   id: type
   attributes:
