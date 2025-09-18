@@ -9,6 +9,7 @@ import { syncUIForGroupView } from "src/models/VTGroupView";
 import { Identifier } from "src/models/VTWorkspace";
 import { VERTICAL_TABS_VIEW } from "src/views/VerticalTabsView";
 import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
+import { tabCacheStore } from "src/stores/TabCacheStore";
 
 export function reapplyEphemeralState(
 	leaf: WorkspaceLeaf,
@@ -171,6 +172,21 @@ export function moveMultipleTabs(
 
 	if (sourceLeaves.length === 0) return [];
 
+	// Sort source leaves by their original document order (across all groups)
+	// This ensures consistent visual ordering regardless of selection order
+	sourceLeaves.sort((a, b) => {
+		const aGroupIndex = getGroupIndex(a.parent);
+		const bGroupIndex = getGroupIndex(b.parent);
+
+		// If in different groups, sort by group order
+		if (aGroupIndex !== bGroupIndex) {
+			return aGroupIndex - bGroupIndex;
+		}
+
+		// If in same group, sort by tab index within group
+		return a.parent.children.indexOf(a) - b.parent.children.indexOf(b);
+	});
+
 	const targetParent = targetLeaf.parent;
 	const originalTargetIndex = targetParent.children.indexOf(targetLeaf);
 
@@ -236,6 +252,18 @@ export function moveMultipleTabsToEnd(
 
 	if (sourceLeaves.length === 0) return [];
 
+	// Sort source leaves by their original document order
+	sourceLeaves.sort((a, b) => {
+		const aGroupIndex = getGroupIndex(a.parent);
+		const bGroupIndex = getGroupIndex(b.parent);
+
+		if (aGroupIndex !== bGroupIndex) {
+			return aGroupIndex - bGroupIndex;
+		}
+
+		return a.parent.children.indexOf(a) - b.parent.children.indexOf(b);
+	});
+
 	// Group source leaves by their parent for efficient removal
 	const sourceData = sourceLeaves.map((leaf) => ({
 		leaf,
@@ -275,7 +303,26 @@ export async function moveMultipleTabsToNewGroup(
 ): Promise<WorkspaceLeaf[]> {
 	if (sourceIDs.length === 0) return [];
 
-	const firstSourceLeaf = app.workspace.getLeafById(sourceIDs[0]);
+	// Sort tabs by original document order first
+	const allSourceLeaves = sourceIDs
+		.map((id) => app.workspace.getLeafById(id))
+		.filter((leaf): leaf is WorkspaceLeaf => leaf !== null);
+
+	if (allSourceLeaves.length === 0) return [];
+
+	// Sort by original document order
+	allSourceLeaves.sort((a, b) => {
+		const aGroupIndex = getGroupIndex(a.parent);
+		const bGroupIndex = getGroupIndex(b.parent);
+
+		if (aGroupIndex !== bGroupIndex) {
+			return aGroupIndex - bGroupIndex;
+		}
+
+		return a.parent.children.indexOf(a) - b.parent.children.indexOf(b);
+	});
+
+	const firstSourceLeaf = allSourceLeaves[0];
 	if (!firstSourceLeaf) return [];
 
 	const sourceParent = firstSourceLeaf.parent;
@@ -294,8 +341,9 @@ export async function moveMultipleTabsToNewGroup(
 	firstSourceLeaf.detach();
 
 	// Move remaining tabs to the new group
-	if (sourceIDs.length > 1) {
-		const remainingIDs = sourceIDs.slice(1);
+	if (allSourceLeaves.length > 1) {
+		const remainingLeaves = allSourceLeaves.slice(1);
+		const remainingIDs = remainingLeaves.map((leaf) => leaf.id);
 		const movedLeaves = moveMultipleTabsToEnd(
 			app,
 			remainingIDs,
@@ -305,4 +353,10 @@ export async function moveMultipleTabsToNewGroup(
 	}
 
 	return [firstTargetLeaf];
+}
+
+// Helper function to get the group index using tabCacheStore order
+function getGroupIndex(parent: WorkspaceParent): number {
+	const { groupIDs } = tabCacheStore.getState();
+	return groupIDs.indexOf(parent.id);
 }
