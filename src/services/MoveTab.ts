@@ -174,24 +174,13 @@ export function moveMultipleTabs(
 
 	// Sort source leaves by their original document order (across all groups)
 	// This ensures consistent visual ordering regardless of selection order
-	sourceLeaves.sort((a, b) => {
-		const aGroupIndex = getGroupIndex(a.parent);
-		const bGroupIndex = getGroupIndex(b.parent);
-
-		// If in different groups, sort by group order
-		if (aGroupIndex !== bGroupIndex) {
-			return aGroupIndex - bGroupIndex;
-		}
-
-		// If in same group, sort by tab index within group
-		return a.parent.children.indexOf(a) - b.parent.children.indexOf(b);
-	});
+	const sortedSourceLeaves = sortTabsByDocumentOrder(sourceLeaves);
 
 	const targetParent = targetLeaf.parent;
 	const originalTargetIndex = targetParent.children.indexOf(targetLeaf);
 
 	// Collect source data for removal (similar to single-tab logic)
-	const sourceData = sourceLeaves.map((leaf) => ({
+	const sourceData = sortedSourceLeaves.map((leaf) => ({
 		leaf,
 		parent: leaf.parent,
 		index: leaf.parent.children.indexOf(leaf),
@@ -220,8 +209,8 @@ export function moveMultipleTabs(
 
 	// Insert all leaves at target location in correct order
 	// Insert in forward order to maintain the original sequence
-	for (let i = 0; i < sourceLeaves.length; i++) {
-		const leaf = sourceLeaves[i];
+	for (let i = 0; i < sortedSourceLeaves.length; i++) {
+		const leaf = sortedSourceLeaves[i];
 		targetParent.insertChild(insertIndex + i, leaf);
 	}
 
@@ -236,7 +225,7 @@ export function moveMultipleTabs(
 		syncUIForGroupView(parent);
 	}
 
-	return sourceLeaves;
+	return sortedSourceLeaves;
 }
 
 export function moveMultipleTabsToEnd(
@@ -253,19 +242,10 @@ export function moveMultipleTabsToEnd(
 	if (sourceLeaves.length === 0) return [];
 
 	// Sort source leaves by their original document order
-	sourceLeaves.sort((a, b) => {
-		const aGroupIndex = getGroupIndex(a.parent);
-		const bGroupIndex = getGroupIndex(b.parent);
-
-		if (aGroupIndex !== bGroupIndex) {
-			return aGroupIndex - bGroupIndex;
-		}
-
-		return a.parent.children.indexOf(a) - b.parent.children.indexOf(b);
-	});
+	const sortedSourceLeaves = sortTabsByDocumentOrder(sourceLeaves);
 
 	// Group source leaves by their parent for efficient removal
-	const sourceData = sourceLeaves.map((leaf) => ({
+	const sourceData = sortedSourceLeaves.map((leaf) => ({
 		leaf,
 		parent: leaf.parent,
 		index: leaf.parent.children.indexOf(leaf),
@@ -283,18 +263,18 @@ export function moveMultipleTabsToEnd(
 	}
 
 	// Insert all leaves at the end of target parent
-	for (const leaf of sourceLeaves) {
+	for (const leaf of sortedSourceLeaves) {
 		insertChild(targetParent, leaf);
 	}
 
 	app.workspace.onLayoutChange();
 
 	// Reapply ephemeral state for all moved leaves
-	for (const leaf of sourceLeaves) {
+	for (const leaf of sortedSourceLeaves) {
 		reapplyEphemeralState(leaf);
 	}
 
-	return sourceLeaves;
+	return sortedSourceLeaves;
 }
 
 export async function moveMultipleTabsToNewGroup(
@@ -311,18 +291,9 @@ export async function moveMultipleTabsToNewGroup(
 	if (allSourceLeaves.length === 0) return [];
 
 	// Sort by original document order
-	allSourceLeaves.sort((a, b) => {
-		const aGroupIndex = getGroupIndex(a.parent);
-		const bGroupIndex = getGroupIndex(b.parent);
+	const sortedSourceLeaves = sortTabsByDocumentOrder(allSourceLeaves);
 
-		if (aGroupIndex !== bGroupIndex) {
-			return aGroupIndex - bGroupIndex;
-		}
-
-		return a.parent.children.indexOf(a) - b.parent.children.indexOf(b);
-	});
-
-	const firstSourceLeaf = allSourceLeaves[0];
+	const firstSourceLeaf = sortedSourceLeaves[0];
 	if (!firstSourceLeaf) return [];
 
 	const sourceParent = firstSourceLeaf.parent;
@@ -341,8 +312,8 @@ export async function moveMultipleTabsToNewGroup(
 	firstSourceLeaf.detach();
 
 	// Move remaining tabs to the new group
-	if (allSourceLeaves.length > 1) {
-		const remainingLeaves = allSourceLeaves.slice(1);
+	if (sortedSourceLeaves.length > 1) {
+		const remainingLeaves = sortedSourceLeaves.slice(1);
 		const remainingIDs = remainingLeaves.map((leaf) => leaf.id);
 		const movedLeaves = moveMultipleTabsToEnd(
 			app,
@@ -359,4 +330,20 @@ export async function moveMultipleTabsToNewGroup(
 function getGroupIndex(parent: WorkspaceParent): number {
 	const { groupIDs } = tabCacheStore.getState();
 	return groupIDs.indexOf(parent.id);
+}
+
+// Utility function to sort tabs by their original document order
+function sortTabsByDocumentOrder(tabs: WorkspaceLeaf[]): WorkspaceLeaf[] {
+	return [...tabs].sort((a, b) => {
+		const aGroupIndex = getGroupIndex(a.parent);
+		const bGroupIndex = getGroupIndex(b.parent);
+
+		// If in different groups, sort by group order
+		if (aGroupIndex !== bGroupIndex) {
+			return aGroupIndex - bGroupIndex;
+		}
+
+		// If in same group, sort by tab index within group
+		return a.parent.children.indexOf(a) - b.parent.children.indexOf(b);
+	});
 }
