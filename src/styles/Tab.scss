@@ -6,13 +6,8 @@
 		}
 
 		&.is-selected .tree-item-self {
-			background-color: var(--background-modifier-selected);
-			border: 1px solid var(--background-modifier-border-focus);
-			border-radius: var(--radius-s);
-		}
-
-		&.is-selected.is-highlighted .tree-item-self {
-			background-color: var(--background-modifier-active);
+			color: var(--nav-item-color-selected);
+			background-color: var(--nav-item-background-selected);
 		}
 
 		&.is-being-dragged.is-selected::after {

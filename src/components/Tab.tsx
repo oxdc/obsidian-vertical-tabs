@@ -102,8 +102,10 @@ export const Tab = (props: TabProps) => {
 		selectTabRange,
 		lastSelectedTab,
 		getSelectedTabs,
+		hasSelectedTabs,
 	} = useTabSelection();
 	const isSelected = isTabSelected(leaf.id);
+	const hasAnySelectedTabs = hasSelectedTabs();
 
 	/* Derived states */
 	const isActiveTab = lastActiveLeaf?.id === leaf.id;
@@ -114,6 +116,9 @@ export const Tab = (props: TabProps) => {
 	/* Commands */
 	/* Commands - Tab control */
 	const previewTab = (event: DivMouseEvent) => {
+		// Disable preview when tabs are selected to avoid interference with multi-selection
+		if (hasAnySelectedTabs) return;
+
 		const file = getOpenFileOfLeaf(app, leaf);
 		if (file && ref.current) {
 			// Signal Obsidian to show the preview
@@ -609,6 +614,14 @@ export const Tab = (props: TabProps) => {
 	}, [isActiveTab, ref]);
 	// Update view cue system for keyboard navigation and visual indicators
 	useEffect(() => {
+		// Disable view cue when tabs are selected to avoid interference with multi-selection
+		if (hasAnySelectedTabs) {
+			registerViewCueTab(leaf, null, false);
+			delete leaf.tabHeaderInnerTitleEl?.dataset.index;
+			delete leaf.containerEl.dataset.index;
+			return;
+		}
+
 		// Determine if this is the first tab for navigation purposes
 		const isFirstTab =
 			viewCueIndex === VIEW_CUE_PREV ||
@@ -629,7 +642,7 @@ export const Tab = (props: TabProps) => {
 		} else {
 			delete leaf.containerEl.dataset.index;
 		}
-	}, [viewCueIndex, ref]);
+	}, [viewCueIndex, ref, hasAnySelectedTabs]);
 	// Replace the default navigation buttons with our own
 	useEffect(() => cloneNavButtons(leaf, app), [leaf.id, leaf.view]);
 	// Add pinned indicator for mission control view
@@ -722,7 +735,7 @@ export const Tab = (props: TabProps) => {
 			<NavigationTreeItem
 				ref={ref}
 				id={leaf.id}
-				index={viewCueIndex}
+				index={hasAnySelectedTabs ? undefined : viewCueIndex}
 				title={title}
 				isTab={true}
 				isEphemeralTab={isEphemeral && !isPinned}
