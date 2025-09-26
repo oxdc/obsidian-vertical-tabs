@@ -10,13 +10,18 @@ on:
 
 jobs:
   build-beta:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout beta branch
         uses: actions/checkout@v4
         with:
           ref: beta
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
       - name: Setup environment with public key
         env:
@@ -34,10 +39,10 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: latest
+          bun-version: 1.2.21
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun ci
 
       - name: Build beta version
         run: bun run build:beta
