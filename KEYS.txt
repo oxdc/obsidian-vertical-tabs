@@ -1,0 +1,52 @@
+Vertical Tabs Plugin - Public Keys for Signature Verification
+==============================================================
+
+This file contains the Ed25519 public keys used to sign beta releases of the Vertical Tabs plugin.
+These keys are used to verify the authenticity and integrity of beta builds.
+
+Format: Each key entry contains:
+- Key ID: A unique identifier for the key
+- Valid From: The date this key became active
+- Valid Until: The date this key expires (if applicable)
+- Public Key: The Ed25519 public key in base64 format
+- Fingerprint: SHA256 fingerprint of the public key for verification
+
+ACTIVE KEYS:
+============
+
+Key ID: 
+Valid From: 
+Valid Until: 
+Public Key: 
+Fingerprint: 
+
+REVOKED KEYS:
+=============
+
+(No revoked keys at this time)
+
+VERIFICATION INSTRUCTIONS:
+==========================
+
+1. Extract the public key from your beta build's manifest.json:
+   jq -r '.publicKey' /path/to/your/plugin/manifest.json
+
+2. Compare the extracted key with the keys listed above.
+
+3. Verify the key fingerprint:
+   echo -n "[PUBLIC_KEY_YOU_RECEIVED]" | base64 -d | sha256sum
+
+4. The key should match one of the ACTIVE keys listed above.
+
+5. If the key is not found or matches a REVOKED key, do not trust the build.
+
+SECURITY NOTES:
+===============
+
+- This file is signed with the same private key used to sign releases
+- Always verify this file's authenticity by checking its Git commit signature
+- Report any suspicious keys or verification failures to: https://github.com/oxdc/obsidian-vertical-tabs/issues
+- For additional security, cross-reference with the verification guide: 
+  https://oxdc.github.io/obsidian-vertical-tabs-docs/Beta-Versions/Advanced/verify-build
+
+Last Updated: 

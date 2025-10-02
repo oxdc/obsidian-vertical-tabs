@@ -5,5 +5,6 @@ declare module "obsidian" {
 		isBeta?: boolean;
 		timestamp?: string;
 		files?: Record<string, string>;
+		publicKey?: string;
 	}
 }

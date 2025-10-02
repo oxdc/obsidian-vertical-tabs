@@ -24,20 +24,31 @@ function signManifest(manifestPath, privateKeyPath) {
 		const privateKeyPem = readFileSync(privateKeyPath, "utf8");
 		const manifestContent = readFileSync(manifestPath, "utf8");
 		const manifest = JSON.parse(manifestContent);
+
+		// Extract public key from private key and add to manifest
+		const privateKey = crypto.createPrivateKey(privateKeyPem);
+		const publicKey = crypto.createPublicKey(privateKey);
+		const publicKeyDer = publicKey.export({ type: "spki", format: "der" });
+		const publicKeyBase64 = publicKeyDer.toString("base64");
+		manifest.publicKey = publicKeyBase64;
+
+		// Create canonical JSON
 		delete manifest.signature;
 		const sortedManifest = deepSortKeys(manifest);
 		const canonicalJson = JSON.stringify(sortedManifest);
-		const privateKey = crypto.createPrivateKey(privateKeyPem);
+
+		// Generate signature
 		const signature = crypto
 			.sign(null, Buffer.from(canonicalJson, "utf8"), privateKey)
 			.toString("hex");
 		manifest.signature = signature;
+
 		writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
 		const sigPath = `${manifestPath}.sig`;
 		writeFileSync(sigPath, signature);
 		console.log(`Generated Ed25519 signature: ${sigPath}`);
 		console.log(`Signature: ${signature}`);
-		console.log(`Embedded signature in manifest.json`);
+		console.log(`Embedded public key and signature in manifest.json`);
 	} catch (error) {
 		console.error(`Error signing manifest: ${error.message}`);
 		process.exit(1);

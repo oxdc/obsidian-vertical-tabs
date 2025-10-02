@@ -62,16 +62,14 @@ async function checkSignature(plugin: ObsidianVerticalTabs): Promise<boolean> {
 	const manifestContent = await plugin.app.vault.adapter.read(manifestPath);
 	const manifest = JSON.parse(manifestContent);
 	const signatureHex = manifest.signature;
-	if (!signatureHex) return false;
+	const publicKey = manifest.publicKey;
+	if (!signatureHex || !publicKey) return false;
+	if (EMBEDDED_PUBLIC_KEY && publicKey !== EMBEDDED_PUBLIC_KEY) return false;
 	const manifestWithoutSignature = { ...manifest };
 	delete manifestWithoutSignature.signature;
 	const sortedManifest = deepSortKeys(manifestWithoutSignature);
 	const canonicalJson = JSON.stringify(sortedManifest);
-	return await verifyEd25519Signature(
-		canonicalJson,
-		signatureHex,
-		EMBEDDED_PUBLIC_KEY
-	);
+	return await verifyEd25519Signature(canonicalJson, signatureHex, publicKey);
 }
 
 // prettier-ignore
