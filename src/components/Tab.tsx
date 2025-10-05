@@ -11,7 +11,11 @@ import {
 	closeTabsToTopInGroup,
 } from "src/services/CloseTabs";
 import { tabCacheStore } from "src/stores/TabCacheStore";
-import { useViewState, VIEW_CUE_PREV } from "src/models/ViewState";
+import {
+	DEFAULT_GROUP_TITLE,
+	useViewState,
+	VIEW_CUE_PREV,
+} from "src/models/ViewState";
 import { useTabSelection } from "src/stores/TabSelectionStore";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 import {
@@ -46,6 +50,9 @@ import {
 	getWikiLinkFromLeaf,
 } from "src/services/WikiLinks";
 import { insertToEditor } from "src/services/InsertText";
+import { GroupType } from "src/models/VTWorkspace";
+import { moveTabToEnd, moveTabToNewGroup } from "src/services/MoveTab";
+import { GroupNameModal } from "src/views/GroupNameModal";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -300,6 +307,50 @@ export const Tab = (props: TabProps) => {
 	const handleFileDrag = (e: React.DragEvent<HTMLDivElement>) =>
 		onDragFile(app, e, leaf);
 
+	/* Commands - Move */
+	const addMoveOptionsToMenu = (menu: Menu) => {
+		const entries = tabCacheStore.getState().content.values();
+		const groups = entries
+			.filter(
+				(entry) =>
+					entry.groupType === GroupType.RootSplit &&
+					entry.group !== leaf.parent
+			)
+			.map((entry) => entry.group)
+			.filter((group) => group !== null);
+		const groupTitles = useViewState.getState().groupTitles;
+		groups.forEach((group) => {
+			menu.addItem((item) => {
+				const title = groupTitles.get(group.id) || DEFAULT_GROUP_TITLE;
+				item.setTitle(title).onClick(() =>
+					moveTabToEnd(app, leaf.id, group)
+				);
+			});
+		});
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setTitle("New group").onClick(() =>
+				moveTabToNewGroup(app, leaf.id)
+			);
+		});
+		menu.addItem((item) => {
+			item.setTitle("New group with name...").onClick(() => {
+				new GroupNameModal(app, async (groupName) => {
+					const movedLeaf = await moveTabToNewGroup(app, leaf.id);
+					if (!movedLeaf) return;
+					setTimeout(() => {
+						const group = movedLeaf.parent;
+						if (group) {
+							useViewState
+								.getState()
+								.setGroupTitle(group.id, groupName);
+						}
+					});
+				}).open();
+			});
+		});
+	};
+
 	/* Menu */
 	const buildMenu = (includeGroupViewControls = true) => {
 		/* Menu */
@@ -432,6 +483,16 @@ export const Tab = (props: TabProps) => {
 					workspace.duplicateLeaf(leaf, "window");
 				});
 		});
+		if (Platform.isDesktop) {
+			menu.addItem((item) => {
+				item.setSection("leaf").setTitle("Move this tab to...");
+				const submenu = item.setSubmenu();
+				addMoveOptionsToMenu(submenu);
+			});
+		} else {
+			menu.addSeparator();
+			addMoveOptionsToMenu(menu);
+		}
 		// Wiki links
 		menu.addSeparator();
 		menu.addItem((item) => {
