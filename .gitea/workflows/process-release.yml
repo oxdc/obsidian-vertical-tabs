@@ -287,7 +287,7 @@ jobs:
           AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
         run: |
           echo "Initializing upload session..."
-          response=$(curl -s -X POST "$SERVER_URL/init" \
+          response=$(curl -s -X POST "$SERVER_URL/sessions/init" \
             -H "Authorization: Bearer $AUTH_TOKEN" \
             -H "Content-Type: application/json" \
             -H "X-JOB-ID: $JOB_ID")
@@ -380,7 +380,7 @@ jobs:
             
             if [ -f "$archive_file" ] && [ ! -z "$archive_hash" ]; then
               echo "Uploading archive $i/$BATCH_COUNT: $archive_file with hash: $archive_hash"
-              response=$(curl -s -X POST "$SERVER_URL/upload" \
+              response=$(curl -s -X POST "$SERVER_URL/sessions/upload" \
                 -H "Authorization: Bearer $AUTH_TOKEN" \
                 -H "X-Upload-UUID: $SESSION_UUID" \
                 -F "file=@$archive_file" \
