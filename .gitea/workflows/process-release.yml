@@ -287,12 +287,30 @@ jobs:
           AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
         run: |
           echo "Initializing upload session..."
+          echo "Job ID: $JOB_ID"
+          echo "Expected count: $BATCH_COUNT"
+          
           response=$(curl -s -X POST "$SERVER_URL/sessions/init" \
             -H "Authorization: Bearer $AUTH_TOKEN" \
             -H "Content-Type: application/json" \
-            -H "X-JOB-ID: $JOB_ID")
+            -H "X-JOB-ID: $JOB_ID" \
+            -H "X-EXPECTED-COUNT: $BATCH_COUNT")
           
           echo "Init response: $response"
+          
+          # Check if response indicates success
+          if echo "$response" | jq -e '.success' > /dev/null 2>&1; then
+            success=$(echo "$response" | jq -r '.success')
+            if [ "$success" != "true" ]; then
+              echo "Error: Session initialization failed"
+              echo "$response" | jq -r '.error // "Unknown error"'
+              exit 1
+            fi
+          else
+            echo "Error: Invalid response format from session initialization"
+            echo "$response"
+            exit 1
+          fi
           
           # Extract UUID from response using jq
           SESSION_UUID=$(echo "$response" | jq -r '.uuid // empty')
@@ -388,14 +406,18 @@ jobs:
               echo "Response for archive $i: $response"
               
               # Check if upload was successful using jq
-              if echo "$response" | jq -e '.error // .Error' > /dev/null 2>&1; then
-                error_msg=$(echo "$response" | jq -r '.error // .Error // "Unknown error"')
-                echo "Error uploading archive $i: $error_msg"
-                upload_success=false
-              elif echo "$response" | jq -e '.success // .status' > /dev/null 2>&1; then
-                echo "Successfully uploaded archive $i"
+              if echo "$response" | jq -e '.success' > /dev/null 2>&1; then
+                success=$(echo "$response" | jq -r '.success')
+                if [ "$success" = "true" ]; then
+                  echo "Successfully uploaded archive $i"
+                else
+                  error_msg=$(echo "$response" | jq -r '.error // "Unknown error"')
+                  echo "Error uploading archive $i: $error_msg"
+                  upload_success=false
+                fi
               else
-                echo "Warning: Unclear response for archive $i, assuming success: $response"
+                echo "Error: Invalid response format for archive $i: $response"
+                upload_success=false
               fi
             else
               echo "Error: Archive file $archive_file not found or hash not calculated"
