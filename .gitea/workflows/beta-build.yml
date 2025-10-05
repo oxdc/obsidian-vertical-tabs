@@ -47,6 +47,51 @@ jobs:
       - name: Build beta version
         run: bun run build:beta
 
+      - name: Extract tag name
+        id: extract_tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [ -n "${{ github.ref }}" ]; then
+            # Extract tag from refs/tags/tag-name
+            TAG_NAME=$(echo "${{ github.ref }}" | sed 's|refs/tags/||')
+            echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
+            echo "Extracted tag: $TAG_NAME"
+          else
+            echo "Error: Unable to extract tag from push event"
+            exit 1
+          fi
+
+      - name: Create release on beta server
+        env:
+          BETA_SERVER_URL: ${{ secrets.BETA_SERVER_URL }}
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+        run: |
+          if [ -z "$BETA_SERVER_URL" ] || [ -z "$ADMIN_TOKEN" ]; then
+            echo "Error: BETA_SERVER_URL and ADMIN_TOKEN secrets must be configured"
+            exit 1
+          fi
+          
+          TAG_NAME="${{ steps.extract_tag.outputs.tag }}"
+          
+          echo "Creating release on beta server for tag: $TAG_NAME"
+          
+          response=$(curl -s -w "%{http_code}" -X POST \
+            "$BETA_SERVER_URL/api/v1/admin/releases/$TAG_NAME" \
+            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            -o /tmp/response.json)
+          
+          http_code=$(echo "$response" | tail -c 4)
+          
+          if [ "$http_code" -eq 201 ] || [ "$http_code" -eq 200 ]; then
+            echo "✅ Successfully created release on beta server"
+            cat /tmp/response.json
+          else
+            echo "❌ Failed to create release on beta server (HTTP $http_code)"
+            cat /tmp/response.json
+            exit 1
+          fi
+
       - name: Create release
         uses: akkuman/gitea-release-action@v1
         with:
