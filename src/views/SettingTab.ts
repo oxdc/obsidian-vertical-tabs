@@ -2,6 +2,7 @@ import {
 	App,
 	Notice,
 	Platform,
+	Plugin,
 	PluginSettingTab,
 	setIcon,
 	Setting,
@@ -54,6 +55,10 @@ interface DropdownProps {
 interface WarningBannerProps {
 	template: string;
 	onClick: () => void;
+}
+
+interface VerticalTabsBetaHelperPlugin extends Plugin {
+	requestSecurityContext: () => Promise<boolean>;
 }
 
 export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
@@ -180,11 +185,27 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	}
 
 	private async displayBetaSecurityInfo(parentEl: HTMLElement) {
-		const container = parentEl.createDiv({ cls: "vt-beta-security" });
-		const titleEl = container.createDiv({ cls: "vt-beta-security-title" });
-		const iconEl = titleEl.createSpan();
-		const textEl = titleEl.createSpan();
-		const detailEl = container.createSpan({ cls: "vt-beta-detail" });
+		const shouldDisplay = await this.shouldDisplayBetaSecurityInfo();
+		if (!shouldDisplay) return;
+		const visibleEl =
+			"visibility: visible !important; opacity: 1 !important;";
+		const visibleBlock = `display: block !important; ${visibleEl}`;
+		const visibleSpan = `display: inline-block !important; ${visibleEl}`;
+		const visibleFlex = `display: flex !important; ${visibleEl}`;
+		const container = parentEl.createDiv({
+			cls: "vt-beta-security",
+			attr: { style: visibleBlock },
+		});
+		const titleEl = container.createDiv({
+			cls: "vt-beta-security-title",
+			attr: { style: visibleFlex },
+		});
+		const iconEl = titleEl.createSpan({ attr: { style: visibleSpan } });
+		const textEl = titleEl.createSpan({ attr: { style: visibleSpan } });
+		const detailEl = container.createSpan({
+			cls: "vt-beta-detail",
+			attr: { style: visibleSpan },
+		});
 		if (await verifyBetaIntegrity(this.plugin)) {
 			container.toggleClass("mod-warning", false);
 			container.toggleClass("mod-success", true);
@@ -208,6 +229,19 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				<a href="https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose" target="_blank">report this issue</a>
 				to the developer.
 			`;
+		}
+	}
+
+	private async shouldDisplayBetaSecurityInfo() {
+		try {
+			const app = this.plugin.app;
+			const betaHelper = app.plugins.getPlugin(
+				"vertical-tabs-beta-helper"
+			) as VerticalTabsBetaHelperPlugin | null;
+			if (!betaHelper) return true;
+			return await betaHelper.requestSecurityContext();
+		} catch {
+			return true;
 		}
 	}
 
