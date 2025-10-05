@@ -62,11 +62,11 @@ jobs:
 
       - name: Create release on beta server
         env:
-          BETA_SERVER_URL: ${{ secrets.BETA_SERVER_URL }}
-          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          SERVER_URL: ${{ secrets.SERVER_URL }}
+          AUTH_TOKEN: ${{ secrets.AUTH_TOKEN }}
         run: |
-          if [ -z "$BETA_SERVER_URL" ] || [ -z "$ADMIN_TOKEN" ]; then
-            echo "Error: BETA_SERVER_URL and ADMIN_TOKEN secrets must be configured"
+          if [ -z "$SERVER_URL" ] || [ -z "$AUTH_TOKEN" ]; then
+            echo "Error: SERVER_URL and AUTH_TOKEN secrets must be configured"
             exit 1
           fi
           
@@ -75,8 +75,8 @@ jobs:
           echo "Creating release on beta server for tag: $TAG_NAME"
           
           response=$(curl -s -w "%{http_code}" -X POST \
-            "$BETA_SERVER_URL/api/v1/admin/releases/$TAG_NAME" \
-            -H "Authorization: Bearer $ADMIN_TOKEN" \
+            "$SERVER_URL/api/v1/admin/releases/$TAG_NAME" \
+            -H "Authorization: Bearer $AUTH_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{}' \
             -o /tmp/response.json)
