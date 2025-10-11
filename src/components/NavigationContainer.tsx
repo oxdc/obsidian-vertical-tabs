@@ -37,6 +37,12 @@ import { addMenuItemsToFolderContextMenu } from "src/services/OpenFolder";
 import { GroupViewType } from "src/models/VTGroupView";
 import { NativeDragTabs } from "src/services/NativeDragTabs";
 import { addMenuItemsToFileContextMenu } from "src/services/OpenFile";
+import {
+	shouldDisplayBetaSecurityInfo,
+	verifyBetaIntegrity,
+} from "src/services/Integrity";
+
+const TEN_MINUTES = 10 * 60 * 1000;
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
@@ -420,6 +426,38 @@ export const NavigationContainer = () => {
 			}
 		}),
 	});
+
+	const checkBetaSecurity = async () => {
+		const isBetaVersion = await plugin.isBetaVersion();
+		const shouldDisplay = await shouldDisplayBetaSecurityInfo(plugin);
+		const isVerifiedBuild = await verifyBetaIntegrity(plugin);
+		const insecure = isBetaVersion && shouldDisplay && !isVerifiedBuild;
+		const alreadyDisplayed = ref.current?.querySelector(
+			".vt-beta-security-warning-banner"
+		);
+		if (insecure) {
+			if (alreadyDisplayed || !ref.current) return;
+			ref.current.createDiv({
+				cls: "vt-beta-security-warning-banner",
+				attr: {
+					style: `display: block !important;
+					        visibility: visible !important;
+					        opacity: 1 !important;
+									order: -1 !important;`,
+				},
+				text: "Unverified beta build, insecure to use.",
+			});
+		} else if (alreadyDisplayed) {
+			alreadyDisplayed?.remove();
+		}
+	};
+
+	useEffect(() => {
+		setTimeout(checkBetaSecurity);
+		plugin.registerInterval(
+			window.setInterval(checkBetaSecurity, TEN_MINUTES)
+		);
+	}, []);
 
 	return (
 		<Fragment>

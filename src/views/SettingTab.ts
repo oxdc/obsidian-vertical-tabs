@@ -2,7 +2,6 @@ import {
 	App,
 	Notice,
 	Platform,
-	Plugin,
 	PluginSettingTab,
 	setIcon,
 	Setting,
@@ -22,7 +21,10 @@ import { linkedFolderSortStrategyOptions } from "../services/OpenFolder";
 import { getLatestVersion } from "src/services/Version";
 import * as semver from "semver";
 import { VERTICAL_TABS_VIEW } from "./VerticalTabsView";
-import { verifyBetaIntegrity } from "../services/Integrity";
+import {
+	shouldDisplayBetaSecurityInfo,
+	verifyBetaIntegrity,
+} from "../services/Integrity";
 
 interface ToggleProps {
 	name: string;
@@ -55,10 +57,6 @@ interface DropdownProps {
 interface WarningBannerProps {
 	template: string;
 	onClick: () => void;
-}
-
-interface VerticalTabsBetaHelperPlugin extends Plugin {
-	requestSecurityContext: () => Promise<boolean>;
 }
 
 export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
@@ -185,7 +183,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	}
 
 	private async displayBetaSecurityInfo(parentEl: HTMLElement) {
-		const shouldDisplay = await this.shouldDisplayBetaSecurityInfo();
+		const shouldDisplay = await shouldDisplayBetaSecurityInfo(this.plugin);
 		if (!shouldDisplay) return;
 		const visibleEl =
 			"visibility: visible !important; opacity: 1 !important;";
@@ -229,19 +227,6 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				<a href="https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose" target="_blank">report this issue</a>
 				to the developer.
 			`;
-		}
-	}
-
-	private async shouldDisplayBetaSecurityInfo() {
-		try {
-			const app = this.plugin.app;
-			const betaHelper = app.plugins.getPlugin(
-				"vertical-tabs-beta-helper"
-			) as VerticalTabsBetaHelperPlugin | null;
-			if (!betaHelper) return true;
-			return await betaHelper.requestSecurityContext();
-		} catch {
-			return true;
 		}
 	}
 

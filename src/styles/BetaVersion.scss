@@ -34,3 +34,13 @@
 		}
 	}
 }
+
+.vt-beta-security-warning-banner {
+	order: -1;
+	padding: var(--size-4-1) var(--size-4-3);
+	background: var(--background-modifier-error-hover);
+	color: var(--text-on-accent);
+	text-transform: uppercase;
+	font-size: var(--font-smallest);
+	text-align: center;
+}

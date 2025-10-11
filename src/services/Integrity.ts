@@ -105,3 +105,22 @@ export async function verifyBetaIntegrity(
 		return false;
 	}
 }
+
+interface VerticalTabsBetaHelperPlugin extends Plugin {
+	requestSecurityContext: () => Promise<boolean>;
+}
+
+export async function shouldDisplayBetaSecurityInfo(
+	plugin: ObsidianVerticalTabs
+): Promise<boolean> {
+	try {
+		const app = plugin.app;
+		const betaHelper = app.plugins.getPlugin(
+			"vertical-tabs-beta-helper"
+		) as VerticalTabsBetaHelperPlugin | null;
+		if (!betaHelper) return true;
+		return await betaHelper.requestSecurityContext();
+	} catch {
+		return true;
+	}
+}
