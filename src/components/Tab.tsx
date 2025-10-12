@@ -353,6 +353,7 @@ export const Tab = (props: TabProps) => {
 
 	/* Menu */
 	const buildMenu = (includeGroupViewControls = true) => {
+		if (hasAnySelectedTabs) return; // TODO: multi-select menu
 		/* Menu */
 		const menu = new Menu();
 		// Bookmark
@@ -719,7 +720,7 @@ export const Tab = (props: TabProps) => {
 		const showMenu = (e: MouseEvent) => {
 			const groupType = identifyGroupViewType(leaf.parent);
 			if (groupType === GroupViewType.MissionControlView) {
-				buildMenu(false).showAtMouseEvent(e);
+				buildMenu(false)?.showAtMouseEvent(e);
 			}
 		};
 		leaf.containerEl.addEventListener("contextmenu", showMenu);
@@ -811,7 +812,7 @@ export const Tab = (props: TabProps) => {
 				onClick={activeOrCloseTab}
 				onAuxClick={midClickCloseTab}
 				onDoubleClick={makeLeafNonEphemeralAndExitMissionControl}
-				onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
+				onContextMenu={(e) => menu?.showAtMouseEvent(e.nativeEvent)}
 				onMouseOver={previewTab}
 				dataType={leaf.getViewState().type}
 				dataId={leaf.id}
