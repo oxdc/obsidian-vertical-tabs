@@ -171,7 +171,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					Beta updates are managed by the
 					<a href="https://github.com/oxdc/obsidian-vertical-tabs-beta-helper" target="_blank">Beta Helper</a>
 					plugin. For more information, please refer to the
-					<a href="https://oxdc.github.io/obsidian-vertical-tabs-docs/Beta-Versions/beta-program" target="_blank">Beta Program documentation</a>.
+					<a href="https://vertical-tabs-docs.oxdc.dev/Beta-Versions/beta-program" target="_blank">Beta Program documentation</a>.
 				</span>
 			`;
 			await this.displayBetaSecurityInfo(entry.descEl);
@@ -211,7 +211,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			textEl.innerHTML = "Verified beta build";
 			detailEl.innerHTML = `
 				Learn more about 
-				<a href="https://oxdc.github.io/obsidian-vertical-tabs-docs/Beta-Versions/security" target="_blank">beta version security</a>.
+				<a href="https://vertical-tabs-docs.oxdc.dev/Beta-Versions/security" target="_blank">beta version security</a>.
 			`;
 		} else {
 			container.toggleClass("mod-warning", true);
@@ -909,7 +909,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		containerEl.createEl("a", {
 			text: "Check out the documentation",
 			attr: {
-				href: "https://oxdc.github.io/obsidian-vertical-tabs-docs/",
+				href: "https://vertical-tabs-docs.oxdc.dev/",
 				target: "_blank",
 			},
 		});

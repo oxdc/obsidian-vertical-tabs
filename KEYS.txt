@@ -47,6 +47,6 @@ SECURITY NOTES:
 - Always verify this file's authenticity by checking its Git commit signature
 - Report any suspicious keys or verification failures to: https://github.com/oxdc/obsidian-vertical-tabs/issues
 - For additional security, cross-reference with the verification guide: 
-  https://oxdc.github.io/obsidian-vertical-tabs-docs/Beta-Versions/Advanced/verify-build
+  https://vertical-tabs-docs.oxdc.dev/Beta-Versions/Advanced/verify-build
 
 Last Updated: 
