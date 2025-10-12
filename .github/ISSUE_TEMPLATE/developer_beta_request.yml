@@ -12,7 +12,7 @@ body:
     options:
       - label: I am a developer of an Obsidian plugin or theme
         required: true
-      - label: I have read the [Beta Program documentation](https://oxdc.github.io/obsidian-vertical-tabs-docs/Beta-Versions/beta-program) and understand the terms
+      - label: I have read the [Beta Program documentation](https://vertical-tabs-docs.oxdc.dev/Beta-Versions/beta-program) and understand the terms
         required: true
       - label: I need beta access for legitimate development purposes (compatibility testing, integration, etc.)
         required: true
