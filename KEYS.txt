@@ -14,11 +14,11 @@ Format: Each key entry contains:
 ACTIVE KEYS:
 ============
 
-Key ID: 
-Valid From: 
-Valid Until: 
-Public Key: 
-Fingerprint: 
+Key ID: 1
+Valid From: October 14, 2025
+Valid Until: October 14, 2026
+Public Key: MCowBQYDK2VwAyEAZ6wkONUHIlaX2KyhRIezAOKq3UcFgcs394HDHkVRRkQ=
+Fingerprint: b8b7530c0d91e9fc76d2f6c388e343de83779118a19685ecf7f976fcac63b50b
 
 REVOKED KEYS:
 =============
