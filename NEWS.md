@@ -1,3 +1,34 @@
+# Vertical Tabs v0.17.0-beta
+
+## 🎉 What's New:
+
+- **Scrollable tabs**: Introducing a new, intuitive way to interact with horizontal tabs.
+- **Mission Control View, redesigned**: The Mission Control View has been completely redesigned with full feature support and can now be activated with a single click.
+- **Multi-selection in vertical tabs**: You can now select multiple tabs simultaneously using Ctrl/Cmd+click for individual selection or Shift+click for range selection (#32).
+- **Device-specific disable option**: Added a new setting that allows you to disable Vertical Tabs on specific devices (#177).
+- **Mobile workspace split support**: Workspace split view is now available on mobile devices, automatically adjusting to horizontal or vertical splits based on screen orientation.
+- **New option: auto-hide horizontal tabs** when the sidebar is open.
+- **New menu options**: Added convenient options to open files or move tabs to specific tab groups directly from the context menu.
+- **Support for tab deduplication for Bases.**
+- **Experimental support for a new, more efficient tab deduplication implementation.**
+
+## 🐛 Bug Fixes:
+
+- Improved tab sorting and organization algorithms.
+- Enhanced mobile compatibility with improved touch interactions and responsiveness.
+- Addressed various edge cases in tab selection and navigation behavior.
+- Resolved infinite loop issue that occurred when patching default commands.
+- Cleaned up mobile interface by hiding unavailable debugging tools.
+
+## ✅ Improvements:
+
+- Built-in security feature for beta build integrity verification.
+- Optimized performance and user experience for keyboard navigation workflows.
+- Improved compatibility with community themes.
+- Improved integration with the built-in Search plugin when tab deduplication is enabled.
+
+---
+
 # Vertical Tabs v0.16.4
 
 ## 🐛 Bug Fixes:
