@@ -4,7 +4,7 @@
 
 **Subscription ($1.99/m) is only required to download beta versions. Once installed, you may use it as long as you want.**
 
-<img src="https://github.com/user-attachments/assets/caf6bc43-2ed9-4cb8-887d-a205b2f5fe6a" width="500">
+<video src="https://github.com/user-attachments/assets/caf6bc43-2ed9-4cb8-887d-a205b2f5fe6a" width="500" autoplay></video>
 
 ---
 
