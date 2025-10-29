@@ -169,9 +169,15 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				<a href="https://vertical-tabs-docs.oxdc.dev/Beta-Versions/beta-program" target="_blank">Beta Program documentation</a>.
 			`;
 		} else {
-			const indicator = entry.controlEl.createDiv();
-			this.showLoadingState(entry, indicator);
-			this.checkForUpdates(entry, indicator);
+			if (this.plugin.settings.enableUpdateCheck ?? true) {
+				const indicator = entry.controlEl.createDiv();
+				this.showLoadingState(entry, indicator);
+				this.checkForUpdates(entry, indicator);
+			} else {
+				entry.setDesc(
+					`Update checking is disabled. Current version: ${this.plugin.manifest.version}`
+				);
+			}
 		}
 	}
 
@@ -187,6 +193,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	}
 
 	private async checkForUpdates(entry: Setting, indicator: HTMLElement) {
+		if (!(this.plugin.settings.enableUpdateCheck ?? true)) return;
 		try {
 			const versions = await getLatestVersion(this.plugin);
 			const { currentVersion, latestVersion } = versions;
@@ -800,6 +807,18 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					   This will disable Zen Mode and reset your workspace to the default layout.`,
 			value: this.plugin.settings.backgroundMode,
 			onChange: (value) => this.toggleBackgroundMode(value),
+		});
+
+		this.createToggle(parentEl, {
+			name: "Check for updates",
+			desc: "Automatically check for plugin updates when opening settings.",
+			value: this.plugin.settings.enableUpdateCheck ?? true,
+			onChange: (value) => {
+				useSettings
+					.getState()
+					.setSettings({ enableUpdateCheck: value });
+				this.refresh();
+			},
 		});
 	}
 

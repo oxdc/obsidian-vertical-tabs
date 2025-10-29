@@ -16,6 +16,14 @@ export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 }> {
 	const currentVersion = plugin.manifest.version;
 
+	// Respect user's preference to disable update checks
+	if (!(plugin.settings.enableUpdateCheck ?? true)) {
+		return {
+			currentVersion,
+			latestVersion: null,
+		};
+	}
+
 	// Ensure installationID is available
 	if (!plugin.settings.installationID) {
 		console.error("InstallationID not found in plugin settings");
