@@ -1,3 +1,11 @@
+# Vertical Tabs v0.16.5
+
+## ✅ Improvements:
+
+- Added an option to disable automatic update checks in settings (#184).
+
+---
+
 # Vertical Tabs v0.16.4
 
 ## 🐛 Bug Fixes:
