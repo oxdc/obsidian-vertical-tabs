@@ -1,8 +1,21 @@
 # Vertical Tabs v0.16.5
 
+## 🎉 What's New:
+
+- **Scrollable Tabs** and **Mission Control Toggle** are now available for everyone.
+- **Device-specific disable option:** Added a new setting that allows you to disable Vertical Tabs on specific devices (#177).
+- **New option: auto-hide horizontal tabs** when the sidebar is open.
+
 ## ✅ Improvements:
 
 - Added an option to disable automatic update checks in settings (#184).
+- Support tab deduplication for Bases.
+- Improved compatibility with community themes.
+
+## 🐛 Bug Fixes:
+
+- Enhanced mobile compatibility with improved touch interactions and responsiveness.
+- Cleaned up mobile interface by hiding unavailable debugging tools.
 
 ---
 
