@@ -36,6 +36,7 @@ interface ObsidianVerticalTabsSettings {
 	autoHideHorizontalTabs: boolean;
 	disableOnThisDevice: boolean;
 	allowWorkspaceSplitOnPhone: boolean;
+	enableUpdateCheck: boolean;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -73,6 +74,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	autoHideHorizontalTabs: false,
 	disableOnThisDevice: false,
 	allowWorkspaceSplitOnPhone: false,
+	enableUpdateCheck: true,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;

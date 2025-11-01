@@ -176,9 +176,15 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			`;
 			await this.displayBetaSecurityInfo(entry.descEl);
 		} else {
-			const indicator = entry.controlEl.createDiv();
-			this.showLoadingState(entry, indicator);
-			this.checkForUpdates(entry, indicator);
+			if (this.plugin.settings.enableUpdateCheck ?? true) {
+				const indicator = entry.controlEl.createDiv();
+				this.showLoadingState(entry, indicator);
+				this.checkForUpdates(entry, indicator);
+			} else {
+				entry.setDesc(
+					`Update checking is disabled. Current version: ${this.plugin.manifest.version}`
+				);
+			}
 		}
 	}
 
@@ -238,6 +244,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	}
 
 	private async checkForUpdates(entry: Setting, indicator: HTMLElement) {
+		if (!(this.plugin.settings.enableUpdateCheck ?? true)) return;
 		try {
 			const versions = await getLatestVersion(this.plugin);
 			const { currentVersion, latestVersion } = versions;
@@ -852,6 +859,35 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			value: this.plugin.settings.backgroundMode,
 			onChange: (value) => this.toggleBackgroundMode(value),
 		});
+
+		this.displayUpdateCheckToggle(parentEl);
+	}
+
+	private async displayUpdateCheckToggle(parentEl: HTMLElement) {
+		const toggle = this.createToggle(parentEl, {
+			name: "Check for updates",
+			desc: "Automatically check for updates when opening the settings tab.",
+			value: this.plugin.settings.enableUpdateCheck ?? true,
+			onChange: (value) => {
+				useSettings
+					.getState()
+					.setSettings({ enableUpdateCheck: value });
+				this.refresh();
+			},
+		});
+
+		if (await this.plugin.isBetaVersion()) {
+			toggle
+				.setDisabled(true)
+				.setDesc(
+					`Update checking is managed by the Beta Helper for beta builds.
+					 If you don't have the Beta Helper plugin installed, you will
+					 need to check for updates manually.`
+				)
+				.clear();
+
+			useSettings.getState().setSettings({ enableUpdateCheck: true });
+		}
 	}
 
 	private async toggleDisableOnThisDevice(isDisabled: boolean) {
