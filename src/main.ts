@@ -36,6 +36,7 @@ import { updateOrientationLabel } from "./services/Orientation";
 import { normalizePath } from "obsidian";
 import { getOpenFileOfLeaf } from "./services/GetTabs";
 import { managedLeafStore } from "./stores/ManagedLeafStore";
+import { isHoverEditorEnabled } from "./services/HoverEditorTabs";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -334,6 +335,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 							file: TFile,
 							openState?: OpenViewState
 						) => old.call(target, file, openState);
+						if (isHoverEditorEnabled(this.app)) {
+							if (!this.parent.parentSplit)
+								return fallback(this, file, openState);
+						}
 						if (openState) {
 							modifyOpenFile(this, file, openState, fallback);
 						} else {
