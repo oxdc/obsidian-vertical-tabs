@@ -8,14 +8,13 @@ body.vt-scrollable-tabs.is-popout-window {
 		// Some themes (e.g., Cupertino) make scrollable tabs too wide and completely unusable
 		// in narrow splits. We have to override the styles with "!important".
 		.workspace-tab-header {
-			width: auto;
 			min-width: var(--vt-scrollable-tabs-min-width, 100px) !important;
-			max-width: max-content !important;
 			container-type: normal !important;
 
 			&.is-active {
 				flex-shrink: 0 !important;
 				flex-basis: auto !important;
+				max-width: max(max-content, var(--tab-width)) !important;
 			}
 		}
 	}
