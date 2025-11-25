@@ -7,6 +7,7 @@ import {
 	useViewState,
 	ALT_KEY_EFFECT_DURATION,
 	VIEW_CUE_DELAY,
+	DEFAULT_GROUP_TITLE,
 } from "src/models/ViewState";
 import { debounce, ItemView, Platform, TFolder } from "obsidian";
 import { EVENTS } from "src/constants/Events";
@@ -35,6 +36,7 @@ import { SwipeDirection, useTouchSensor } from "src/services/TouchSeneor";
 import { getDrawer } from "src/services/MobileDrawer";
 import { addMenuItemsToFolderContextMenu } from "src/services/OpenFolder";
 import { GroupViewType } from "src/models/VTGroupView";
+import { createBookmarkForGroup } from "src/models/VTBookmark";
 
 export const NavigationContainer = () => {
 	const plugin = usePlugin();
@@ -344,6 +346,35 @@ export const NavigationContainer = () => {
 				setGroupViewTypeForCurrentGroup(
 					GroupViewType.MissionControlView
 				);
+			},
+		});
+		plugin.addCommand({
+			id: "bookmark-current-group",
+			name: "Bookmark current group",
+			callback: async () => {
+				const group =
+					app.workspace.getActiveViewOfType(ItemView)?.leaf?.parent;
+				if (group) {
+					const title =
+						useViewState.getState().groupTitles.get(group.id) ||
+						DEFAULT_GROUP_TITLE;
+					await createBookmarkForGroup(app, group, title);
+				}
+			},
+		});
+		plugin.addCommand({
+			id: "bookmark-and-close-current-group",
+			name: "Bookmark and close current group",
+			callback: async () => {
+				const group =
+					app.workspace.getActiveViewOfType(ItemView)?.leaf?.parent;
+				if (group) {
+					const title =
+						useViewState.getState().groupTitles.get(group.id) ||
+						DEFAULT_GROUP_TITLE;
+					await createBookmarkForGroup(app, group, title);
+					group.detach();
+				}
 			},
 		});
 		plugin.registerHoverLinkSource("vertical-tabs", {
