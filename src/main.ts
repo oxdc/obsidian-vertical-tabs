@@ -35,6 +35,7 @@ import { scrollToActiveTab } from "./services/ScrollableTabs";
 import { updateOrientationLabel } from "./services/Orientation";
 import { normalizePath } from "obsidian";
 import { getOpenFileOfLeaf } from "./services/GetTabs";
+import { managedLeafStore } from "./stores/ManagedLeafStore";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -290,6 +291,8 @@ export default class ObsidianVerticalTabs extends Plugin {
 			let found = false;
 			const callback = (leaf: WorkspaceLeaf) => {
 				if (leaf.id === target.id || found) return;
+				// prettier-ignore
+				if (managedLeafStore.getState().actions.isManagedLeaf(this.app, leaf)) return;
 				// prettier-ignore
 				if (!deduplicateSidebarTabs && (leaf.getRoot() === this.app.workspace.leftSplit || leaf.getRoot() === this.app.workspace.rightSplit)) return;
 				// prettier-ignore
