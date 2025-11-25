@@ -291,11 +291,11 @@ export default class ObsidianVerticalTabs extends Plugin {
 			const callback = (leaf: WorkspaceLeaf) => {
 				if (leaf.id === target.id || found) return;
 				// prettier-ignore
-				if (!deduplicateSidebarTabs && leaf.getRoot() !== this.app.workspace.rootSplit) return;
+				if (!deduplicateSidebarTabs && (leaf.getRoot() === this.app.workspace.leftSplit || leaf.getRoot() === this.app.workspace.rightSplit)) return;
 				// prettier-ignore
-				if (!deduplicatePopupTabs && leaf.getRoot() !== this.app.workspace.floatingSplit) return;
+				if (!deduplicatePopupTabs && leaf.getRoot() === this.app.workspace.floatingSplit) return;
 				// prettier-ignore
-				if (!deduplicateSameGroupTabs && leaf.parent.id !== target.parent.id) return;
+				if (deduplicateSameGroupTabs && leaf.parent.id !== target.parent.id) return;
 				const leafFile = getOpenFileOfLeaf(this.app, leaf);
 				if (leafFile && leafFile.path === file.path) {
 					found = true;
