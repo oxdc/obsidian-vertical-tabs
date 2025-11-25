@@ -39,6 +39,7 @@ import { EVENTS } from "src/constants/Events";
 import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 import { getTabs } from "src/services/GetTabs";
 import { useSettings } from "./PluginContext";
+import { isHoverEditorEnabled } from "src/services/HoverEditorTabs";
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
 
@@ -425,6 +426,9 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		const { isManagedLeaf } = managedLeafStore.getActions();
 		const workspace = plugin.app.workspace;
 		const activeLeaf = get().latestActiveLeaf;
+		if (isHoverEditorEnabled(plugin.app)) {
+			if (activeLeaf && !activeLeaf.parent.parentSplit) return;
+		}
 		const isRootLeaf =
 			activeLeaf?.getRoot() === workspace.rootSplit &&
 			!isManagedLeaf(plugin.app, activeLeaf);
