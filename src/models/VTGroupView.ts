@@ -62,6 +62,7 @@ export function setGroupViewType(
 	if (!group || !group.containerEl) return;
 	normalizeGroupViewType(group.containerEl, viewType);
 	group.trigger(EVENTS.GROUP_VIEW_CHANGE, viewType);
+	group.setStacked(false);
 	const autoExit = (event: MouseEvent) => {
 		const targetEl = event.target as HTMLElement;
 		const leafEl = targetEl.matchParent(".workspace-leaf");
