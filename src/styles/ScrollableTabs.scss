@@ -1,6 +1,6 @@
 body.vt-scrollable-tabs:not(.vt-show-active-tabs),
 body.vt-scrollable-tabs.is-popout-window {
-	.workspace-split.mod-root {
+	.workspace-split.mod-root .workspace-tabs:not(.mod-stacked) {
 		.workspace-tab-header-container-inner {
 			margin-right: var(--size-4-2);
 		}
