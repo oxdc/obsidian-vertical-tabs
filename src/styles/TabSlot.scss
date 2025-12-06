@@ -1,5 +1,6 @@
 // Override the styles to improve compatibility with community themes
-.obsidian-vertical-tabs-container .tree-item.is-tab-slot {
+.obsidian-vertical-tabs-container
+	.tree-item.is-tab-slot:not(.as-new-tab-button) {
 	.tree-item-self {
 		background: none !important;
 		outline: none !important;

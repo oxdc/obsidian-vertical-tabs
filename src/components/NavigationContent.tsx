@@ -193,7 +193,10 @@ export const NavigationContent = () => {
 												);
 											}
 										)}
-										<TabSlot groupID={groupID} />
+										<TabSlot
+											group={entryOf(groupID).group}
+											groupID={groupID}
+										/>
 									</SortableContext>
 								)}
 							</Group>

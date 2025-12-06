@@ -401,6 +401,17 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		});
 
 		this.createToggle(containerEl, {
+			name: "Show new tab button at bottom",
+			desc: "Show the new tab button at the end of each tab group.",
+			value: this.plugin.settings.showNewTabButtonAtBottom,
+			onChange: (value) => {
+				useSettings
+					.getState()
+					.setSettings({ showNewTabButtonAtBottom: value });
+			},
+		});
+
+		this.createToggle(containerEl, {
 			name: "Show more actions",
 			desc: "Show more control buttons in the toolbar.",
 			value: this.plugin.settings.showMoreButtons,
