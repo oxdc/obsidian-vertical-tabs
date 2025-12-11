@@ -309,7 +309,7 @@ export const Tab = (props: TabProps) => {
 
 	/* Commands - Move */
 	const addMoveOptionsToMenu = (menu: Menu) => {
-		const entries = tabCacheStore.getState().content.values();
+		const entries = Array.from(tabCacheStore.getState().content.values());
 		const groups = entries
 			.filter(
 				(entry) =>
