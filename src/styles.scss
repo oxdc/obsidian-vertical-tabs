@@ -1,3 +1,4 @@
+@use "styles/Root.scss";
 @use "styles/ShowActiveTabs.scss";
 @use "styles/ZenMode.scss";
 @use "styles/TreeItem.scss";
@@ -32,26 +33,8 @@
 @use "styles/BetaVersion.scss";
 @use "styles/GroupNameModal.scss";
 
-.vertical-tabs {
-	display: flex;
-	flex-direction: column;
-	position: relative;
-	height: 100%;
-}
-
-.obsidian-vertical-tabs-container {
-	font-size: var(--font-ui-small);
-	padding: var(--size-4-3) var(--size-4-3) var(--size-4-8);
-	overflow-x: hidden;
-	overflow-y: auto;
-}
-
 .obsidian-vertical-tabs-container .is-tab {
 	margin-left: 0.5em;
-}
-
-.obsidian-vertical-tabs-container > div {
-	width: 100%;
 }
 
 .obsidian-vertical-tabs-container
@@ -89,10 +72,6 @@ body.vt-exclude-self
 	.obsidian-vertical-tabs-container
 	.tree-item.is-tab[data-type="vertical-tabs"] {
 	display: none;
-}
-
-.workspace-tab-header[data-type="vertical-tabs"] {
-	display: flex !important; // always show vertical tabs
 }
 
 .obsidian-vertical-tabs-container

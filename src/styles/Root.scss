@@ -1,0 +1,16 @@
+// "div" is necessary here to avoid selecting "svg.vertical-tabs" (since Obsidian Mobile v1.11.0)
+div.vertical-tabs {
+	position: relative;
+	flex-grow: 1;
+	padding: var(--size-4-3) var(--size-4-3) var(--size-4-8);
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.obsidian-vertical-tabs-container {
+	font-size: var(--font-ui-small);
+
+	& > div {
+		width: 100%;
+	}
+}
