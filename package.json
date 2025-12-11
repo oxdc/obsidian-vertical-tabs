@@ -17,8 +17,8 @@
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
-		"@types/react": "19.0.2",
-		"@types/react-dom": "19.0.2",
+		"@types/react": "^19.2.7",
+		"@types/react-dom": "^19.2.3",
 		"@types/semver": "^7.7.0",
 		"@typescript-eslint/eslint-plugin": "5.29.0",
 		"@typescript-eslint/parser": "5.29.0",
@@ -26,7 +26,7 @@
 		"dotenv": "^17.2.2",
 		"esbuild": "^0.25.0",
 		"esbuild-sass-plugin": "^3.3.1",
-		"obsidian": "latest",
+		"obsidian": "^1.10.3",
 		"obsidian-typings": "^2.35.0",
 		"terser": "^5.43.1",
 		"tslib": "2.4.0",
@@ -38,8 +38,8 @@
 		"@dnd-kit/utilities": "^3.2.2",
 		"monkey-around": "^3.0.0",
 		"nanoid": "^5.0.9",
-		"react": "19.0.0",
-		"react-dom": "19.0.0",
+		"react": "^19.2.1",
+		"react-dom": "^19.2.1",
 		"semver": "^7.7.2",
 		"zustand": "^4.5.4"
 	}
