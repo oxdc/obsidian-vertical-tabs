@@ -33,6 +33,7 @@ versions[targetVersion] = minAppVersion;
 writeFileSync("versions.json", JSON.stringify(versions, null, "\t"));
 
 // automatically commit and tag the release
+execSync(`npm i`);
 execSync(`git commit -am "release ${targetVersion}"`);
 try {
 	execSync(`git tag -d ${targetVersion}`, { stdio: "ignore" });
