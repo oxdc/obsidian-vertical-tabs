@@ -36,3 +36,5 @@ export type TabUpdates = PartialMetadata<TabMetadata>;
 export type GroupUpdates = PartialMetadata<GroupMetadata>;
 export type TabMetadataMap = Map<Identifier, TabMetadata>;
 export type GroupMetadataMap = Map<Identifier, GroupMetadata>;
+export type TabResult = Promise<TabMetadata | undefined>;
+export type GroupResult = Promise<GroupMetadata | undefined>;

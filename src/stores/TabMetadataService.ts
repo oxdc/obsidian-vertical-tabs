@@ -8,6 +8,8 @@ import {
 	GroupUpdates,
 	TabMetadataMap,
 	GroupMetadataMap,
+	TabResult,
+	GroupResult,
 } from "./TabMetadataDB";
 import { Table } from "dexie";
 import { Identifier } from "src/models/VTWorkspace";
@@ -116,13 +118,15 @@ class MetadataService {
 		type: Table<T>,
 		id: Identifier,
 		data: PartialMetadata<T>
-	): Promise<void> {
-		const fullMetadata = { id, ...data } as T;
+	): Promise<T | undefined> {
+		const fullMetadata = { ...data, id } as T;
 		cache.set(id, fullMetadata);
 		try {
-			await type.put(fullMetadata);
+			await type.put(fullMetadata, id);
+			return fullMetadata;
 		} catch (error) {
 			this.handleError("write", error);
+			return undefined;
 		}
 	}
 
@@ -160,7 +164,7 @@ class MetadataService {
 		}
 	}
 
-	async getTabMetadata(id: Identifier): Promise<TabMetadata | undefined> {
+	async getTabMetadata(id: Identifier): TabResult {
 		return this.get(this.tabDataCache, db.tabMetadata, id);
 	}
 
@@ -168,7 +172,7 @@ class MetadataService {
 		return this.batchGet(this.tabDataCache, db.tabMetadata, ids);
 	}
 
-	async setTabMetadata(id: Identifier, data: TabUpdates): Promise<void> {
+	async setTabMetadata(id: Identifier, data: TabUpdates): TabResult {
 		return this.set(this.tabDataCache, db.tabMetadata, id, data);
 	}
 
@@ -180,7 +184,7 @@ class MetadataService {
 		await this.cleanup(this.tabDataCache, db.tabMetadata, activeIDs);
 	}
 
-	async getGroupMetadata(id: Identifier): Promise<GroupMetadata | undefined> {
+	async getGroupMetadata(id: Identifier): GroupResult {
 		return this.get(this.groupDataCache, db.groupMetadata, id);
 	}
 
@@ -188,7 +192,7 @@ class MetadataService {
 		return this.batchGet(this.groupDataCache, db.groupMetadata, ids);
 	}
 
-	async setGroupMetadata(id: Identifier, data: GroupUpdates): Promise<void> {
+	async setGroupMetadata(id: Identifier, data: GroupUpdates): GroupResult {
 		return this.set(this.groupDataCache, db.groupMetadata, id, data);
 	}
 

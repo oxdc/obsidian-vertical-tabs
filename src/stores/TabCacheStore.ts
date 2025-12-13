@@ -4,20 +4,19 @@ import { getTabs } from "src/services/GetTabs";
 import { SortStrategy, sortTabs } from "src/services/SortTabs";
 import { GroupType, Identifier } from "../models/VTWorkspace";
 import { useStoreWithActions } from "../models/StoreWithActions";
-import { metadataService } from "./TabMetadataService";
-
-export interface CustomMetadata {
-	color?: string;
-	icon?: string;
-	customTitle?: string;
-}
+import { metadataService as ms } from "./TabMetadataService";
+import {
+	TabMetadata,
+	GroupMetadata,
+	TabUpdates,
+	GroupUpdates,
+} from "./TabMetadataDB";
 
 export type TabCacheEntry = {
 	groupType: GroupType;
 	group: WorkspaceParent | null;
 	leaves: WorkspaceLeaf[];
 	leafIDs: Identifier[];
-	customMetadata?: Map<Identifier, CustomMetadata>;
 };
 
 export const createTabCacheEntry = (): TabCacheEntry => ({
@@ -25,7 +24,6 @@ export const createTabCacheEntry = (): TabCacheEntry => ({
 	group: null,
 	leaves: [],
 	leafIDs: [],
-	customMetadata: new Map(),
 });
 
 const factory = () => createTabCacheEntry();
@@ -39,28 +37,23 @@ interface TabCacheState {
 	leafIDs: Identifier[];
 	leafToGroupMap: Map<Identifier, Identifier>;
 	sortStrategy: SortStrategy | null;
-	groupCustomMetadata: Map<Identifier, CustomMetadata>;
+	tabMetadata: Map<Identifier, TabMetadata>;
+	groupMetadata: Map<Identifier, GroupMetadata>;
 }
 
 interface TabCacheActions {
 	refresh: (app: App) => void;
 	swapGroup: (source: Identifier, target: Identifier) => void;
-	moveGroupToEnd: (groupID: Identifier) => void;
+	moveGroupToEnd: (id: Identifier) => void;
 	setSortStrategy: (strategy: SortStrategy | null) => void;
 	sort: () => void;
 	hasOnlyOneGroup: () => boolean;
-	loadCustomMetadata: (leafID: Identifier) => Promise<void>;
-	saveCustomMetadata: (
-		leafID: Identifier,
-		metadata: CustomMetadata
-	) => Promise<void>;
-	deleteCustomMetadata: (leafID: Identifier) => Promise<void>;
-	loadGroupMetadata: (groupID: Identifier) => Promise<void>;
-	saveGroupMetadata: (
-		groupID: Identifier,
-		metadata: CustomMetadata
-	) => Promise<void>;
-	deleteGroupMetadata: (groupID: Identifier) => Promise<void>;
+	loadTabMetadata: (id: Identifier) => Promise<void>;
+	saveTabMetadata: (id: Identifier, updates: TabUpdates) => Promise<void>;
+	deleteTabMetadata: (id: Identifier) => Promise<void>;
+	loadGroupMetadata: (id: Identifier) => Promise<void>;
+	saveGroupMetadata: (id: Identifier, updates: GroupUpdates) => Promise<void>;
+	deleteGroupMetadata: (id: Identifier) => Promise<void>;
 	loadAllVisibleMetadata: () => Promise<void>;
 	cleanupStaleMetadata: () => Promise<void>;
 }
@@ -75,7 +68,8 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 	leafIDs: [],
 	leafToGroupMap: new Map(),
 	sortStrategy: null,
-	groupCustomMetadata: new Map(),
+	tabMetadata: new Map(),
+	groupMetadata: new Map(),
 	actions: {
 		refresh: (app) => {
 			set((state) => {
@@ -117,12 +111,12 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 			newGroupIDs[targetIndex] = source;
 			set({ groupIDs: newGroupIDs });
 		},
-		moveGroupToEnd: (groupID) => {
+		moveGroupToEnd: (id) => {
 			const { groupIDs } = get();
 			const newGroupIDs = [...groupIDs];
-			const index = newGroupIDs.indexOf(groupID);
+			const index = newGroupIDs.indexOf(id);
 			newGroupIDs.splice(index, 1);
-			newGroupIDs.push(groupID);
+			newGroupIDs.push(id);
 			set({ groupIDs: newGroupIDs });
 		},
 		setSortStrategy: (strategy) => {
@@ -156,162 +150,68 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 			);
 			return rootGroupIDs.length === 1;
 		},
-		loadCustomMetadata: async (leafID) => {
-			const metadata = await metadataService.getTabMetadata(leafID);
+		loadTabMetadata: async (id) => {
+			const metadata = await ms.getTabMetadata(id);
 			if (!metadata) return;
-
+			set((state) => ({
+				tabMetadata: new Map(state.tabMetadata).set(id, metadata),
+			}));
+		},
+		saveTabMetadata: async (id, updates) => {
+			const metadata = await ms.setTabMetadata(id, updates);
+			if (!metadata) return;
+			set((state) => ({
+				tabMetadata: new Map(state.tabMetadata).set(id, metadata),
+			}));
+		},
+		deleteTabMetadata: async (id) => {
+			await ms.deleteTabMetadata(id);
 			set((state) => {
-				const groupID = state.leafToGroupMap.get(leafID);
-				if (!groupID) return state;
-
-				const entry = state.content.get(groupID);
-				if (!entry.leafIDs.includes(leafID)) return state;
-
-				const customMetadata = new Map(entry.customMetadata);
-				customMetadata.set(leafID, {
-					color: metadata.color,
-					icon: metadata.icon,
-					customTitle: metadata.customTitle,
-				});
-
-				const newContent = new DefaultRecord<Identifier, TabCacheEntry>(
-					() => createTabCacheEntry(),
-					Array.from(state.content.entries())
-				);
-				newContent.set(groupID, { ...entry, customMetadata });
-
-				return { ...state, content: newContent };
+				if (!state.tabMetadata.has(id)) return state;
+				const newMap = new Map(state.tabMetadata);
+				newMap.delete(id);
+				return { ...state, tabMetadata: newMap };
 			});
 		},
-		saveCustomMetadata: async (leafID, metadata) => {
-			await metadataService.setTabMetadata(leafID, metadata);
-
-			set((state) => {
-				const groupID = state.leafToGroupMap.get(leafID);
-				if (!groupID) return state;
-
-				const entry = state.content.get(groupID);
-				if (!entry.leafIDs.includes(leafID)) return state;
-
-				const customMetadata = new Map(entry.customMetadata);
-				customMetadata.set(leafID, metadata);
-
-				const newContent = new DefaultRecord<Identifier, TabCacheEntry>(
-					() => createTabCacheEntry(),
-					Array.from(state.content.entries())
-				);
-				newContent.set(groupID, { ...entry, customMetadata });
-
-				return { ...state, content: newContent };
-			});
+		loadGroupMetadata: async (id) => {
+			const metadata = await ms.getGroupMetadata(id);
+			if (!metadata) return;
+			set((state) => ({
+				groupMetadata: new Map(state.groupMetadata).set(id, metadata),
+			}));
 		},
-		deleteCustomMetadata: async (leafID) => {
-			await metadataService.deleteTabMetadata(leafID);
-
-			set((state) => {
-				const groupID = state.leafToGroupMap.get(leafID);
-				if (!groupID) return state;
-
-				const entry = state.content.get(groupID);
-				if (!entry.customMetadata?.has(leafID)) return state;
-
-				const customMetadata = new Map(entry.customMetadata);
-				customMetadata.delete(leafID);
-
-				const newContent = new DefaultRecord<Identifier, TabCacheEntry>(
-					() => createTabCacheEntry(),
-					Array.from(state.content.entries())
-				);
-				newContent.set(groupID, { ...entry, customMetadata });
-
-				return { ...state, content: newContent };
-			});
+		saveGroupMetadata: async (id, updates) => {
+			const metadata = await ms.setGroupMetadata(id, updates);
+			if (!metadata) return;
+			set((state) => ({
+				groupMetadata: new Map(state.groupMetadata).set(id, metadata),
+			}));
 		},
-		loadGroupMetadata: async (groupID) => {
-			const metadata = await metadataService.getGroupMetadata(groupID);
-			if (metadata) {
-				set((state) => {
-					const newMap = new Map(state.groupCustomMetadata);
-					newMap.set(groupID, {
-						color: metadata.color,
-						icon: metadata.icon,
-						customTitle: metadata.customTitle,
-					});
-					return { ...state, groupCustomMetadata: newMap };
-				});
-			}
-		},
-		saveGroupMetadata: async (groupID, metadata) => {
-			await metadataService.setGroupMetadata(groupID, metadata);
+		deleteGroupMetadata: async (id) => {
+			await ms.deleteGroupMetadata(id);
 			set((state) => {
-				const newMap = new Map(state.groupCustomMetadata);
-				newMap.set(groupID, metadata);
-				return { ...state, groupCustomMetadata: newMap };
-			});
-		},
-		deleteGroupMetadata: async (groupID) => {
-			await metadataService.deleteGroupMetadata(groupID);
-			set((state) => {
-				const newMap = new Map(state.groupCustomMetadata);
-				newMap.delete(groupID);
-				return { ...state, groupCustomMetadata: newMap };
+				if (!state.groupMetadata.has(id)) return state;
+				const newMap = new Map(state.groupMetadata);
+				newMap.delete(id);
+				return { ...state, groupMetadata: newMap };
 			});
 		},
 		loadAllVisibleMetadata: async () => {
 			const { leafIDs, groupIDs } = get();
-
 			const [tabMetadataMap, groupMetadataMap] = await Promise.all([
-				metadataService.batchGetTabMetadata(leafIDs),
-				metadataService.batchGetGroupMetadata(groupIDs),
+				ms.batchGetTabMetadata(leafIDs),
+				ms.batchGetGroupMetadata(groupIDs),
 			]);
-
-			set((state) => {
-				const newContent = new DefaultRecord<Identifier, TabCacheEntry>(
-					() => createTabCacheEntry(),
-					Array.from(state.content.entries())
-				);
-
-				for (const [groupID, entry] of state.content.entries()) {
-					const customMetadata = new Map<
-						Identifier,
-						CustomMetadata
-					>();
-					for (const leafID of entry.leafIDs) {
-						const metadata = tabMetadataMap.get(leafID);
-						if (metadata) {
-							customMetadata.set(leafID, {
-								color: metadata.color,
-								icon: metadata.icon,
-								customTitle: metadata.customTitle,
-							});
-						}
-					}
-					if (customMetadata.size > 0) {
-						newContent.set(groupID, { ...entry, customMetadata });
-					}
-				}
-
-				const newGroupMetadata = new Map<Identifier, CustomMetadata>();
-				for (const [groupID, metadata] of groupMetadataMap.entries()) {
-					newGroupMetadata.set(groupID, {
-						color: metadata.color,
-						icon: metadata.icon,
-						customTitle: metadata.customTitle,
-					});
-				}
-
-				return {
-					...state,
-					content: newContent,
-					groupCustomMetadata: newGroupMetadata,
-				};
+			set({
+				tabMetadata: new Map(tabMetadataMap),
+				groupMetadata: new Map(groupMetadataMap),
 			});
 		},
 		cleanupStaleMetadata: async () => {
 			const { leafIDs, groupIDs } = get();
 			await Promise.all([
-				metadataService.cleanupStaleTabMetadata(leafIDs),
-				metadataService.cleanupStaleGroupMetadata(groupIDs),
+				ms.cleanupStaleTabMetadata(leafIDs),
+				ms.cleanupStaleGroupMetadata(groupIDs),
 			]);
 		},
 	},
