@@ -53,6 +53,7 @@ import { insertToEditor } from "src/services/InsertText";
 import { GroupType } from "src/models/VTWorkspace";
 import { moveTabToEnd, moveTabToNewGroup } from "src/services/MoveTab";
 import { GroupNameModal } from "src/views/GroupNameModal";
+import { IconSelectionModal } from "src/views/IconSelectionModal";
 import { PREDEFINED_COLORS } from "src/constants/Predefined";
 
 interface TabProps {
@@ -106,6 +107,9 @@ export const Tab = (props: TabProps) => {
 	/* Store states (managed by zustand, shared by components) */
 	const customColor = tabCacheStore(
 		(state) => state.tabMetadata.get(leaf.id)?.color
+	);
+	const customIcon = tabCacheStore(
+		(state) => state.tabMetadata.get(leaf.id)?.icon
 	);
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 	const hasAltKeyPressed = useViewState((state) => state.hasAltKeyPressed);
@@ -358,6 +362,8 @@ export const Tab = (props: TabProps) => {
 	/* Commands - Customization */
 	const setColor = (color: string) => saveTabMetadata(leaf.id, { color });
 	const resetColor = () => saveTabMetadata(leaf.id, { color: undefined });
+	const setIcon = (icon: string) => saveTabMetadata(leaf.id, { icon });
+	const resetIcon = () => saveTabMetadata(leaf.id, { icon: undefined });
 	const addColorOptionsToMenu = (menu: Menu) => {
 		menu.addItem((item) =>
 			item.setSection("color").setTitle("Default").onClick(resetColor)
@@ -480,6 +486,13 @@ export const Tab = (props: TabProps) => {
 			item.setSection("customization").setTitle("Change color");
 			const submenu = item.setSubmenu();
 			addColorOptionsToMenu(submenu);
+		});
+		menu.addItem((item) => {
+			item.setSection("customization")
+				.setTitle("Change icon")
+				.onClick(() => {
+					new IconSelectionModal(app, setIcon, resetIcon).open();
+				});
 		});
 		// Workspace control
 		menu.addSeparator();
@@ -845,7 +858,7 @@ export const Tab = (props: TabProps) => {
 				dataType={leaf.getViewState().type}
 				dataId={leaf.id}
 				webviewIcon={webviewIcon}
-				icon={shouldShowHandle ? "grip" : leaf.getIcon()}
+				icon={shouldShowHandle ? "grip" : customIcon ?? leaf.getIcon()}
 				isActive={leaf.tabHeaderEl?.classList.contains("is-active")}
 				selectedCount={
 					isSelected ? getSelectedTabs().length : undefined
