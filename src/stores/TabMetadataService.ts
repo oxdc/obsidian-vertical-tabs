@@ -119,7 +119,8 @@ class MetadataService {
 		id: Identifier,
 		data: PartialMetadata<T>
 	): Promise<T | undefined> {
-		const fullMetadata = { ...data, id } as T;
+		const existing = cache.get(id);
+		const fullMetadata = { ...existing, ...data, id } as T;
 		cache.set(id, fullMetadata);
 		try {
 			await type.put(fullMetadata, id);

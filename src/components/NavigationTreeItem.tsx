@@ -119,6 +119,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				data-type={props.dataType}
 				data-id={props.dataId}
 				data-selected-count={props.selectedCount}
+				data-color={props.color}
 				style={style}
 				ref={props.ref}
 			>
@@ -131,7 +132,6 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 					onAuxClick={props.onAuxClick}
 					onDoubleClick={props.onDoubleClick}
 					onContextMenu={props.onContextMenu}
-					data-color={props.color}
 				>
 					<div className="tree-item-icon" ref={iconEl}></div>
 					<div className="tree-item-inner">
@@ -169,6 +169,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				data-type={props.dataType}
 				data-id={props.dataId}
 				data-selected-count={props.selectedCount}
+				data-color={props.color}
 				style={style}
 				ref={props.ref}
 			>
@@ -180,7 +181,6 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 					onContextMenu={props.onContextMenu}
 					onMouseOver={props.onMouseOver}
 					data-index={props.index}
-					data-color={props.color}
 					ref={props.id ? setNodeRef : null}
 					{...attributes}
 					{...listeners}

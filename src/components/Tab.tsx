@@ -54,7 +54,7 @@ import { GroupType } from "src/models/VTWorkspace";
 import { moveTabToEnd, moveTabToNewGroup } from "src/services/MoveTab";
 import { GroupNameModal } from "src/views/GroupNameModal";
 import { IconSelectionModal } from "src/views/IconSelectionModal";
-import { PREDEFINED_COLORS } from "src/constants/Predefined";
+import { addColorOptionsToMenu } from "src/services/CustomizationMenu";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -364,19 +364,6 @@ export const Tab = (props: TabProps) => {
 	const resetColor = () => saveTabMetadata(leaf.id, { color: undefined });
 	const setIcon = (icon: string) => saveTabMetadata(leaf.id, { icon });
 	const resetIcon = () => saveTabMetadata(leaf.id, { icon: undefined });
-	const addColorOptionsToMenu = (menu: Menu) => {
-		menu.addItem((item) =>
-			item.setSection("color").setTitle("Default").onClick(resetColor)
-		);
-		for (const [name, color] of PREDEFINED_COLORS) {
-			menu.addItem((item) =>
-				item
-					.setSection("color")
-					.setTitle(name)
-					.onClick(() => setColor(color))
-			);
-		}
-	};
 
 	/* Menu */
 	const buildMenu = (includeGroupViewControls = true) => {
@@ -485,7 +472,7 @@ export const Tab = (props: TabProps) => {
 		menu.addItem((item) => {
 			item.setSection("customization").setTitle("Change color");
 			const submenu = item.setSubmenu();
-			addColorOptionsToMenu(submenu);
+			addColorOptionsToMenu(submenu, setColor, resetColor);
 		});
 		menu.addItem((item) => {
 			item.setSection("customization")

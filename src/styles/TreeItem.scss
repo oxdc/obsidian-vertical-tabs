@@ -1,24 +1,8 @@
 .obsidian-vertical-tabs-container .tree-item {
+	border: 1px solid transparent;
+
 	.tree-item-self {
 		align-items: stretch;
-		border: 1px solid transparent;
-
-		// prettier-ignore
-		&[data-color] {
-			border: color-mix(in hsl, var(--vt-custom-color) 95%, transparent) var(--border-width, 1px) solid;
-			background-color: color-mix(in hsl, var(--vt-custom-color) 5%, transparent);
-			--background-modifier-active-hover: color-mix(in hsl, var(--vt-custom-color) 10%, transparent);
-			color: color-mix(in hsl, var(--vt-custom-color) 95%, transparent);
-			--icon-color: color-mix(in hsl, var(--vt-custom-color) 95%, transparent);
-			svg { color: var(--icon-color) !important; }
-
-			&:hover {
-				background-color: color-mix(in hsl, var(--vt-custom-color) 15%, transparent);
-				color: color-mix(in hsl, var(--vt-custom-color) 100%, transparent);
-				--icon-color: color-mix(in hsl, var(--vt-custom-color) 100%, transparent);
-				svg { color: var(--icon-color) !important; }
-			}
-		}
 	}
 
 	.tree-item-inner {
