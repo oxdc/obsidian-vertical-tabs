@@ -45,6 +45,7 @@ interface NavigationTreeItemProps {
 	dataId?: string;
 	selectedCount?: number;
 	classNames?: Record<string, boolean>;
+	color?: string;
 }
 
 export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
@@ -106,6 +107,11 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 		}
 	}, [props.isCollapsed]);
 
+	const style = {
+		minHeight: props.isCollapsed ? 0 : height,
+		"--vt-custom-color": props.color,
+	} as React.CSSProperties;
+
 	if (Platform.isMobile) {
 		return (
 			<div
@@ -113,7 +119,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				data-type={props.dataType}
 				data-id={props.dataId}
 				data-selected-count={props.selectedCount}
-				style={{ minHeight: props.isCollapsed ? 0 : height }}
+				style={style}
 				ref={props.ref}
 			>
 				<div
@@ -125,6 +131,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 					onAuxClick={props.onAuxClick}
 					onDoubleClick={props.onDoubleClick}
 					onContextMenu={props.onContextMenu}
+					data-color={props.color}
 				>
 					<div className="tree-item-icon" ref={iconEl}></div>
 					<div className="tree-item-inner">
@@ -162,7 +169,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				data-type={props.dataType}
 				data-id={props.dataId}
 				data-selected-count={props.selectedCount}
-				style={{ minHeight: props.isCollapsed ? 0 : height }}
+				style={style}
 				ref={props.ref}
 			>
 				<div
@@ -173,6 +180,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 					onContextMenu={props.onContextMenu}
 					onMouseOver={props.onMouseOver}
 					data-index={props.index}
+					data-color={props.color}
 					ref={props.id ? setNodeRef : null}
 					{...attributes}
 					{...listeners}
