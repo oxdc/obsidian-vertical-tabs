@@ -1,6 +1,7 @@
 import {
 	App,
 	Menu,
+	MenuItem,
 	TFile,
 	TFolder,
 	WorkspaceLeaf,
@@ -16,7 +17,10 @@ import { useSettings } from "src/models/PluginContext";
 const MENU_SECTION = "folder-navigation";
 
 function checkIfMenuIsAlreadyAdded(menu: Menu) {
-	return menu.items.map((item) => item.section).includes(MENU_SECTION);
+	return menu.items
+		.filter((item) => item instanceof MenuItem)
+		.map((item) => item.section)
+		.includes(MENU_SECTION);
 }
 
 export function getFilesInFolder(folder: TFolder): TFile[] {

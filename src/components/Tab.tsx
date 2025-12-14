@@ -3,8 +3,15 @@ import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useRef, useState } from "react";
 import { usePlugin, useSettings } from "src/models/PluginContext";
-import { Menu, Platform, WorkspaceLeaf } from "obsidian";
-import { BrowserView } from "obsidian-typings";
+import {
+	Menu,
+	Platform,
+	WorkspaceLeaf,
+	TFile,
+	MenuItem,
+	ViewState,
+} from "obsidian";
+import { WebviewerView } from "obsidian-typings";
 import {
 	closeOthersInGroup,
 	closeTabsToBottomInGroup,
@@ -77,8 +84,7 @@ export const Tab = (props: TabProps) => {
 	const { leaf, index, isLast, isSingleGroup, viewType } = props;
 
 	/* Actions (for mutating the shared store) */
-	const { refresh, sort, saveTabMetadata } =
-		tabCacheStore.getActions();
+	const { refresh, sort, saveTabMetadata } = tabCacheStore.getActions();
 	const {
 		bindPinningEvent,
 		bindEphemeralToggleEvent,
@@ -264,7 +270,7 @@ export const Tab = (props: TabProps) => {
 		let index = 0;
 		for (const state of backHistory) {
 			const leaf = workspace.createLeafInParent(group, index);
-			leaf.setViewState(state.state);
+			leaf.setViewState(state.state as ViewState);
 			await loadDeferredLeaf(leaf);
 			leaf.setEphemeralState(state.eState);
 			index += 1;
@@ -272,7 +278,7 @@ export const Tab = (props: TabProps) => {
 		index += 1; // Skip the current tab
 		for (const state of forwardHistory) {
 			const leaf = workspace.createLeafInParent(group, index);
-			leaf.setViewState(state.state);
+			leaf.setViewState(state.state as ViewState);
 			await loadDeferredLeaf(leaf);
 			leaf.setEphemeralState(state.eState);
 			index += 1;
@@ -287,7 +293,7 @@ export const Tab = (props: TabProps) => {
 
 	/* Commands - Zoom */
 	const addZoomOptionsToMenu = (
-		target: WorkspaceLeaf | BrowserView,
+		target: WorkspaceLeaf | WebviewerView,
 		menu: Menu
 	) => {
 		const _ZoomIn =
@@ -308,8 +314,8 @@ export const Tab = (props: TabProps) => {
 	};
 
 	/* Commands - Webview */
-	const saveAsMarkdown = async (view: BrowserView) => {
-		const file = await view.saveAsMarkdown();
+	const saveAsMarkdown = async (view: WebviewerView) => {
+		const file = (await view.saveAsMarkdown()) as TFile;
 		if (file) workspace.getLeaf("tab").openFile(file);
 	};
 
@@ -321,7 +327,7 @@ export const Tab = (props: TabProps) => {
 
 	/* Commands - Move */
 	const addMoveOptionsToMenu = (menu: Menu) => {
-		const entries = tabCacheStore.getState().content.values();
+		const entries = Array.from(tabCacheStore.getState().content.values());
 		const groups = entries
 			.filter(
 				(entry) =>
@@ -671,7 +677,7 @@ export const Tab = (props: TabProps) => {
 					item.setSection("zoom").setTitle("Zoom");
 					const submenu = item.setSubmenu();
 					if (isWebViewer) {
-						const view = leaf.view as BrowserView;
+						const view = leaf.view as WebviewerView;
 						addZoomOptionsToMenu(view, submenu);
 					} else {
 						addZoomOptionsToMenu(leaf, submenu);
@@ -689,7 +695,7 @@ export const Tab = (props: TabProps) => {
 				item.setSection("more").setTitle("More options");
 				const submenu = item.setSubmenu();
 				if (isWebViewer) {
-					const webview = leaf.view as BrowserView;
+					const webview = leaf.view as WebviewerView;
 					submenu.addItem((item) => {
 						item.setSection("webview")
 							.setTitle("Toggle reader mode")
@@ -706,8 +712,9 @@ export const Tab = (props: TabProps) => {
 					const excludedSections = ["open", "find", "pane"];
 					submenu.items = submenu.items.filter(
 						(item) =>
-							item.section === undefined ||
-							!excludedSections.includes(item.section)
+							item instanceof MenuItem &&
+							(item.section === undefined ||
+								!excludedSections.includes(item.section))
 					);
 				}
 			});
@@ -735,6 +742,10 @@ export const Tab = (props: TabProps) => {
 			removeIcon(leaf.tabHeaderInnerIconEl, leaf.getIcon());
 		}
 	}, [customIcon]);
+	// Apply the title to the tab header inner title
+	useEffect(() => {
+		leaf.tabHeaderInnerTitleEl?.setText(displayTitle);
+	}, [displayTitle]);
 	// Bind and track the events that used for syncing with Obsidian,
 	// when the states are changed outside of the component.
 	useEffect(() => {
@@ -747,7 +758,7 @@ export const Tab = (props: TabProps) => {
 		if (!isWebViewer) setVolatileTitle(null);
 		// If it's a webview, we update the volatile title whenever the page title is changed
 		if (Platform.isDesktop && isWebViewer) {
-			const view = leaf.view as BrowserView;
+			const view = leaf.view as WebviewerView;
 			view.webview?.addEventListener(
 				"page-title-updated",
 				(data: { title: string }) => setVolatileTitle(data.title)

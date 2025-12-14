@@ -208,7 +208,7 @@ export async function createBookmarkForLeafHistory(
 	bookmark.title = `History: ${leafTitle}`;
 	const { backHistory, forwardHistory } = leaf.history;
 	backHistory.forEach((state) => {
-		const item = NewFileBookmarkForHistoryState(app, state);
+		const item = NewFileBookmarkForHistoryState(app, state as HistoryState);
 		if (item) bookmark.items.push(item);
 	});
 	const currentItem = NewBookmarkForView(
@@ -218,7 +218,7 @@ export async function createBookmarkForLeafHistory(
 	);
 	if (currentItem) bookmark.items.push(currentItem);
 	forwardHistory.forEach((state) => {
-		const item = NewFileBookmarkForHistoryState(app, state);
+		const item = NewFileBookmarkForHistoryState(app, state as HistoryState);
 		if (item) bookmark.items.push(item);
 	});
 	instance.addItem(bookmark);

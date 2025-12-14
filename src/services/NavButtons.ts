@@ -4,9 +4,11 @@ import {
 	ItemView,
 	Keymap,
 	Menu,
+	MenuItem,
 	UserEvent,
 	WorkspaceLeaf,
 } from "obsidian";
+import { WorkspaceLeafHistoryState } from "obsidian-typings";
 
 export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 	// Get the original navigation buttons and their parent DOM element
@@ -64,11 +66,12 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 
 		// With pressing the mod key, open in new leaf and update its history
 		const targetLeaf = app.workspace.getLeaf("tab");
-		const currentState = leaf.getHistoryState();
+		const currentState =
+			leaf.getHistoryState() as WorkspaceLeafHistoryState;
 
 		// Use provided history state or get the recent state
 		const historyState =
-			targetHistoryState ||
+			(targetHistoryState as WorkspaceLeafHistoryState | null) ||
 			(direction === "back"
 				? leaf.history.backHistory.last()
 				: leaf.history.forwardHistory.first());
@@ -139,7 +142,7 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 						await handleNavigation(
 							direction,
 							steps,
-							historyState,
+							historyState as HistoryState,
 							clickEvent
 						);
 					});
@@ -163,7 +166,10 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 				const targetNode = event.target as Node;
 				setTimeout(() => {
 					for (const menuItem of menu.items) {
-						if (menuItem.dom.contains(targetNode)) {
+						if (
+							menuItem instanceof MenuItem &&
+							menuItem.dom.contains(targetNode)
+						) {
 							menuItem.handleEvent?.(event);
 							return;
 						}

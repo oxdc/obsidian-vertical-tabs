@@ -1,4 +1,4 @@
-import { App, Menu, TFile } from "obsidian";
+import { App, Menu, MenuItem, TFile } from "obsidian";
 import { moveTabToEnd } from "./MoveTab";
 import { tabCacheStore } from "src/stores/TabCacheStore";
 import { GroupType } from "src/models/VTWorkspace";
@@ -8,7 +8,10 @@ import { getGroupTitle, setGroupTitle } from "./Customization";
 const MENU_SECTION = "file-navigation";
 
 function checkIfMenuIsAlreadyAdded(menu: Menu) {
-	return menu.items.map((item) => item.section).includes(MENU_SECTION);
+	return menu.items
+		.filter((item) => item instanceof MenuItem)
+		.map((item) => item.section)
+		.includes(MENU_SECTION);
 }
 
 export function addMenuItemsToFileContextMenu(
@@ -17,7 +20,7 @@ export function addMenuItemsToFileContextMenu(
 	file: TFile
 ) {
 	if (checkIfMenuIsAlreadyAdded(menu)) return;
-	const entries = tabCacheStore.getState().content.values();
+	const entries = Array.from(tabCacheStore.getState().content.values());
 	const groups = entries
 		.filter((entry) => entry.groupType === GroupType.RootSplit)
 		.map((entry) => entry.group)
