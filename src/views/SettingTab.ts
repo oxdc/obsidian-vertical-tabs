@@ -165,15 +165,25 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	private async displayUpdateIndicator(containerEl: HTMLElement) {
 		const entry = new Setting(containerEl).setName("Updates");
 		if (await this.plugin.isBetaVersion()) {
-			entry.descEl.innerHTML = `
-			  <span class="vt-beta-version-info">
-					You are running beta version ${this.plugin.manifest.version}.
-					Beta updates are managed by the
-					<a href="https://github.com/oxdc/obsidian-vertical-tabs-beta-helper" target="_blank">Beta Helper</a>
-					plugin. For more information, please refer to the
-					<a href="https://vertical-tabs-docs.oxdc.dev/Beta-Versions/beta-program" target="_blank">Beta Program documentation</a>.
-				</span>
-			`;
+			const betaVersionInfo = entry.descEl.createSpan({
+				cls: "vt-beta-version-info",
+			});
+			betaVersionInfo.appendText(
+				`You are running beta version ${this.plugin.manifest.version}. Beta updates are managed by the `
+			);
+			betaVersionInfo.createEl("a", {
+				text: "Beta Helper",
+				href: "https://github.com/oxdc/obsidian-vertical-tabs-beta-helper",
+				attr: { target: "_blank" },
+			});
+			betaVersionInfo.appendText(
+				` plugin. For more information, please refer to the `
+			);
+			betaVersionInfo.createEl("a", {
+				text: "Beta Program documentation",
+				href: "https://vertical-tabs-docs.oxdc.dev/Beta-Versions/beta-program",
+				attr: { target: "_blank" },
+			});
 			await this.displayBetaSecurityInfo(entry.descEl);
 		} else {
 			if (this.plugin.settings.enableUpdateCheck ?? true) {
@@ -214,25 +224,34 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			container.toggleClass("mod-warning", false);
 			container.toggleClass("mod-success", true);
 			setIcon(iconEl, "shield-check");
-			textEl.innerHTML = "Verified beta build";
-			detailEl.innerHTML = `
-				Learn more about 
-				<a href="https://vertical-tabs-docs.oxdc.dev/Beta-Versions/security" target="_blank">beta version security</a>.
-			`;
+			textEl.setText("Verified beta build");
+			detailEl.appendText(`Learn more about `);
+			detailEl.createEl("a", {
+				text: "beta version security",
+				href: "https://vertical-tabs-docs.oxdc.dev/Beta-Versions/security",
+				attr: { target: "_blank" },
+			});
 		} else {
 			container.toggleClass("mod-warning", true);
 			container.toggleClass("mod-success", false);
 			setIcon(iconEl, "siren");
-			textEl.innerHTML = "Security Warning:";
-			detailEl.innerHTML = `
-				The integrity of this beta version could not be verified.
-				The plugin files may have been modified or corrupted, which poses a potential security risk.
-				To resolve this issue, please reinstall the plugin using the
-				<a href="https://github.com/oxdc/obsidian-vertical-tabs-beta-helper" target="_blank">Beta Helper</a>
-				plugin or
-				<a href="https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose" target="_blank">report this issue</a>
-				to the developer.
-			`;
+			textEl.setText("Security Warning:");
+			detailEl.appendText(`
+				The integrity of this beta version could not be verified. The plugin files
+				may have been modified or corrupted, which poses a potential security risk.
+				To resolve this issue, please reinstall the plugin using the `);
+			detailEl.createEl("a", {
+				text: "Beta Helper",
+				href: "https://github.com/oxdc/obsidian-vertical-tabs-beta-helper",
+				attr: { target: "_blank" },
+			});
+			detailEl.appendText(` plugin or `);
+			detailEl.createEl("a", {
+				text: "report this issue",
+				href: "https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose",
+				attr: { target: "_blank" },
+			});
+			detailEl.appendText(` to the developer.`);
 		}
 	}
 
@@ -301,9 +320,11 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	}
 
 	private addReleaseNotesLink(entry: Setting, latestVersion: string) {
-		const releaseUrl = `https://github.com/oxdc/obsidian-vertical-tabs/releases/tag/${latestVersion}`;
-		const linkHtml = `<a href="${releaseUrl}" target="_blank" rel="noopener noreferrer">Release notes</a>`;
-		entry.descEl.createSpan().innerHTML = linkHtml;
+		entry.descEl.createSpan().createEl("a", {
+			text: "Release notes",
+			href: `https://github.com/oxdc/obsidian-vertical-tabs/releases/tag/${latestVersion}`,
+			attr: { target: "_blank", rel: "noopener noreferrer" },
+		});
 	}
 
 	private addPluginStoreButton(entry: Setting) {
@@ -928,26 +949,33 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 
 	private displayFeedbackContent(parentEl: HTMLElement) {
 		parentEl.createDiv({ cls: "title", text: "Enjoying Vertical Tabs?" });
-		parentEl.createDiv({ cls: "buttons" }).innerHTML = `
-			<a id="vt-support-btn-kofi" href="https://ko-fi.com/oxdcq" target="_blank">
-				<img
-					width="24"
-					border="0"
-					style="border: 0px; width: 24px; mix-blend-mode: multiply;"
-					src="https://storage.ko-fi.com/cdn/brandasset/v2/kofi_symbol.png"
-				/>
-				<span>Buy me a coffee</span>
-			</a>
-			<a id="vt-support-btn-github" href="https://github.com/oxdc/obsidian-vertical-tabs" target="_blank">
-				<img
-					width="24"
-					border="0"
-					style="border: 0px; width: 24px; mix-blend-mode: multiply;"
-					src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-				/>
-				<span>Star on GitHub</span>
-			</a>
-		`;
+		const buttons = parentEl.createDiv({ cls: "buttons" });
+		const kofiButton = buttons.createEl("a", {
+			href: "https://ko-fi.com/oxdcq",
+			attr: { id: "vt-support-btn-kofi", target: "_blank" },
+		});
+		kofiButton.createEl("img", {
+			attr: {
+				src: "https://storage.ko-fi.com/cdn/brandasset/v2/kofi_symbol.png",
+				width: "24",
+				border: "0",
+				style: "border: 0px; width: 24px; mix-blend-mode: multiply;",
+			},
+		});
+		kofiButton.createEl("span", { text: "Buy me a coffee" });
+		const githubButton = buttons.createEl("a", {
+			href: "https://github.com/oxdc/obsidian-vertical-tabs",
+			attr: { id: "vt-support-btn-github", target: "_blank" },
+		});
+		githubButton.createEl("img", {
+			attr: {
+				src: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+				width: "24",
+				border: "0",
+				style: "border: 0px; width: 24px; mix-blend-mode: multiply;",
+			},
+		});
+		githubButton.createEl("span", { text: "Star on GitHub" });
 	}
 
 	private displayBugReport(parentEl: HTMLElement) {
