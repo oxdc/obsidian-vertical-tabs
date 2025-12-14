@@ -74,6 +74,18 @@
 		--tab-outline-color: color-mix(in hsl, var(--vt-custom-color) 95%, transparent);
 	}
 
+	.workspace-tab-container {
+		background-color: color-mix(in hsl, var(--vt-custom-color) 10%, transparent) !important;
+	}
+
+	&.vt-mission-control-view .workspace-leaf {
+		border-color: color-mix(in hsl, var(--vt-custom-color) 95%, transparent) !important;
+
+		&.mod-active {
+			outline-color: color-mix(in hsl, var(--vt-custom-color) 95%, transparent) !important;
+		}
+	}
+
 	&.mod-top, &.mod-top-right-space, &.vt-mod-top-right-space, &.mod-top-left-space, &.vt-mod-top-left-space {
 		.sidebar-toggle-button {
 			background-color: transparent !important;
