@@ -61,15 +61,49 @@ export class IconSelectionModal extends Modal {
 		contentEl.empty();
 	}
 
+	private parseSearchTerms(query: string): string[] {
+		return query
+			.split(/\s+/)
+			.filter((term) => term.length > 0);
+	}
+
+	private calculateRelevanceScore(iconId: string, searchTerms: string[]): number {
+		let score = 0;
+		for (const term of searchTerms) {
+			if (iconId.startsWith(term)) {
+				score += 10; // Highest priority for prefix match
+			} else if (iconId.includes(term)) {
+				score += 5; // Medium priority for substring match
+			}
+		}
+		return score;
+	}
+
+	private filterAndSortIcons(): string[] {
+		if (!this.searchQuery) {
+			return this.iconIds;
+		}
+
+		const searchTerms = this.parseSearchTerms(this.searchQuery);
+		
+		const filteredIcons = this.iconIds.filter((id) => {
+			return searchTerms.some((term) => id.includes(term));
+		});
+
+		return filteredIcons.sort((a, b) => {
+			const scoreA = this.calculateRelevanceScore(a, searchTerms);
+			const scoreB = this.calculateRelevanceScore(b, searchTerms);
+			return scoreB - scoreA; // Higher score first
+		});
+	}
+
 	private renderIcons() {
 		const container = this.contentEl.querySelector(".vt-icons-container");
 		if (!container) return;
 
 		container.empty();
 
-		const filteredIcons = this.searchQuery
-			? this.iconIds.filter((id) => id.includes(this.searchQuery))
-			: this.iconIds;
+		const filteredIcons = this.filterAndSortIcons();
 
 		if (filteredIcons.length === 0) {
 			container.createDiv({
