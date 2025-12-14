@@ -31,3 +31,9 @@
 		color: var(--text-success);
 	}
 }
+
+.setting-item:has(.vt-navigation-description) {
+	border-top: none !important;
+	padding: 0 !important;
+	flex-direction: row !important;
+}
