@@ -1,5 +1,5 @@
 import { App, setIcon, SuggestModal, WorkspaceLeaf } from "obsidian";
-import { DeduplicatedTitle } from "../services/DeduplicateTitle";
+import { deduplicateTitle } from "../services/DeduplicateTitle";
 
 interface HistoryItem {
 	title: string;
@@ -25,7 +25,7 @@ export class HistoryBrowserModal extends SuggestModal<HistoryItem> {
 			this.items.push({ title: state.title, offset: index - length });
 		});
 		this.items.push({
-			title: DeduplicatedTitle(this.app, this.leaf),
+			title: deduplicateTitle(this.app, this.leaf),
 			offset: 0,
 		});
 		forwardHistory

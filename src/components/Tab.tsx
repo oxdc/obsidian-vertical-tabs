@@ -13,7 +13,7 @@ import {
 import { tabCacheStore } from "src/stores/TabCacheStore";
 import { useViewState, VIEW_CUE_PREV } from "src/models/ViewState";
 import { useTabSelection } from "src/stores/TabSelectionStore";
-import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
+import { deduplicateTitle } from "src/services/DeduplicateTitle";
 import {
 	createBookmarkForLeaf,
 	createBookmarkForLeafHistory,
@@ -130,7 +130,7 @@ export const Tab = (props: TabProps) => {
 	/* Derived states */
 	const isActiveTab = lastActiveLeaf?.id === leaf.id;
 	const viewCueIndex = mapViewCueIndex(index, isLast);
-	const deduplicatedTitle = DeduplicatedTitle(app, leaf);
+	const deduplicatedTitle = deduplicateTitle(app, leaf);
 	const displayTitle = customTitle || volatileTitle || deduplicatedTitle;
 	const title = isEditing ? ephemeralTitle : displayTitle;
 	const shouldShowHandle = isHovered && hasAltKeyPressed;
@@ -241,7 +241,7 @@ export const Tab = (props: TabProps) => {
 			});
 		});
 		submenu.addItem((item) => {
-			item.setTitle(DeduplicatedTitle(app, leaf)).setChecked(true);
+			item.setTitle(deduplicateTitle(app, leaf)).setChecked(true);
 		});
 		reversedForwardHistory.forEach((state, index) => {
 			submenu.addItem((item) => {
@@ -278,7 +278,7 @@ export const Tab = (props: TabProps) => {
 			index += 1;
 		}
 		// Set the group title
-		const historyTitle = DeduplicatedTitle(app, leaf);
+		const historyTitle = deduplicateTitle(app, leaf);
 		setGroupTitle(group.id, `History: ${historyTitle}`);
 		// Activate the new tab and lock the focus
 		workspace.setActiveLeaf(duplicatedLeaf, { focus: true });
