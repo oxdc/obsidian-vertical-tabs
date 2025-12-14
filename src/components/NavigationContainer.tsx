@@ -7,7 +7,6 @@ import {
 	useViewState,
 	ALT_KEY_EFFECT_DURATION,
 	VIEW_CUE_DELAY,
-	DEFAULT_GROUP_TITLE,
 } from "src/models/ViewState";
 import { debounce, ItemView, Platform, TFile, TFolder } from "obsidian";
 import { EVENTS } from "src/constants/Events";
@@ -43,6 +42,7 @@ import {
 	verifyBetaIntegrity,
 } from "src/services/Integrity";
 import { createBookmarkForGroup } from "src/models/VTBookmark";
+import { getGroupTitle } from "src/services/Customization";
 
 const TEN_MINUTES = 10 * 60 * 1000;
 
@@ -386,9 +386,7 @@ export const NavigationContainer = () => {
 				const group =
 					app.workspace.getActiveViewOfType(ItemView)?.leaf?.parent;
 				if (group) {
-					const title =
-						useViewState.getState().groupTitles.get(group.id) ||
-						DEFAULT_GROUP_TITLE;
+					const title = getGroupTitle(group.id);
 					await createBookmarkForGroup(app, group, title);
 				}
 			},
@@ -400,9 +398,7 @@ export const NavigationContainer = () => {
 				const group =
 					app.workspace.getActiveViewOfType(ItemView)?.leaf?.parent;
 				if (group) {
-					const title =
-						useViewState.getState().groupTitles.get(group.id) ||
-						DEFAULT_GROUP_TITLE;
+					const title = getGroupTitle(group.id);
 					await createBookmarkForGroup(app, group, title);
 					group.detach();
 				}

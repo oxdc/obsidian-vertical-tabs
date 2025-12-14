@@ -9,6 +9,21 @@
 			padding: 0;
 			width: 100%;
 		}
+
+		&.is-collapsed .tree-item-children {
+			display: none;
+		}
+
+		// default icon
+		.tree-item-icon svg.svg-icon.right-triangle {
+			width: 10px;
+			height: 10px;
+			stroke-width: 2px;
+			transition: transform 100ms ease-in-out;
+		}
+		&.is-collapsed .tree-item-icon svg.svg-icon.right-triangle {
+			transform: rotate(calc(var(--direction) * -1 * 90deg));
+		}
 	}
 
 	.is-hidden {

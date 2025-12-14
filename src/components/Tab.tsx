@@ -3,21 +3,24 @@ import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import { useEffect, useRef, useState } from "react";
 import { usePlugin, useSettings } from "src/models/PluginContext";
-import { Menu, Platform, WorkspaceLeaf } from "obsidian";
-import { BrowserView } from "obsidian-typings";
+import {
+	Menu,
+	Platform,
+	WorkspaceLeaf,
+	TFile,
+	MenuItem,
+	ViewState,
+} from "obsidian";
+import { WebviewerView } from "obsidian-typings";
 import {
 	closeOthersInGroup,
 	closeTabsToBottomInGroup,
 	closeTabsToTopInGroup,
 } from "src/services/CloseTabs";
 import { tabCacheStore } from "src/stores/TabCacheStore";
-import {
-	DEFAULT_GROUP_TITLE,
-	useViewState,
-	VIEW_CUE_PREV,
-} from "src/models/ViewState";
+import { useViewState, VIEW_CUE_PREV } from "src/models/ViewState";
 import { useTabSelection } from "src/stores/TabSelectionStore";
-import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
+import { deduplicateTitle } from "src/services/DeduplicateTitle";
 import {
 	createBookmarkForLeaf,
 	createBookmarkForLeafHistory,
@@ -53,6 +56,15 @@ import { insertToEditor } from "src/services/InsertText";
 import { GroupType } from "src/models/VTWorkspace";
 import { moveTabToEnd, moveTabToNewGroup } from "src/services/MoveTab";
 import { GroupNameModal } from "src/views/GroupNameModal";
+import { IconSelectionModal } from "src/views/IconSelectionModal";
+import {
+	addColorOptionsToMenu,
+	applyColor,
+	applyIcon,
+	removeColor,
+	removeIcon,
+} from "src/services/Customization";
+import { getGroupTitle, setGroupTitle } from "src/services/Customization";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -72,11 +84,10 @@ export const Tab = (props: TabProps) => {
 	const { leaf, index, isLast, isSingleGroup, viewType } = props;
 
 	/* Actions (for mutating the shared store) */
-	const { refresh, sort } = tabCacheStore.getActions();
+	const { refresh, sort, saveTabMetadata } = tabCacheStore.getActions();
 	const {
 		bindPinningEvent,
 		bindEphemeralToggleEvent,
-		setGroupTitle,
 		lockFocusOnLeaf,
 		toggleHiddenGroup,
 		hookLatestActiveTab,
@@ -100,9 +111,14 @@ export const Tab = (props: TabProps) => {
 	const [volatileTitle, setVolatileTitle] = useState<string | null>(null);
 	const [webviewIcon, setWebviewIcon] = useState<string | undefined>();
 	const [isHovered, setIsHovered] = useState(false);
+	const [isEditing, setIsEditing] = useState(false);
+	const [ephemeralTitle, setEphemeralTitle] = useState("");
 	const ref = useRef<HTMLDivElement>(null);
 
 	/* Store states (managed by zustand, shared by components) */
+	const customColor = tabCacheStore((s) => s.tabMetadata.get(leaf.id)?.color);
+	const customIcon = tabCacheStore((s) => s.tabMetadata.get(leaf.id)?.icon);
+	const customTitle = tabCacheStore((s) => s.tabMetadata.get(leaf.id)?.title);
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
 	const hasAltKeyPressed = useViewState((state) => state.hasAltKeyPressed);
 	const {
@@ -120,7 +136,9 @@ export const Tab = (props: TabProps) => {
 	/* Derived states */
 	const isActiveTab = lastActiveLeaf?.id === leaf.id;
 	const viewCueIndex = mapViewCueIndex(index, isLast);
-	const title = volatileTitle ?? DeduplicatedTitle(app, leaf);
+	const deduplicatedTitle = deduplicateTitle(app, leaf);
+	const displayTitle = customTitle || volatileTitle || deduplicatedTitle;
+	const title = isEditing ? ephemeralTitle : displayTitle;
 	const shouldShowHandle = isHovered && hasAltKeyPressed;
 
 	/* Commands */
@@ -229,7 +247,7 @@ export const Tab = (props: TabProps) => {
 			});
 		});
 		submenu.addItem((item) => {
-			item.setTitle(DeduplicatedTitle(app, leaf)).setChecked(true);
+			item.setTitle(deduplicateTitle(app, leaf)).setChecked(true);
 		});
 		reversedForwardHistory.forEach((state, index) => {
 			submenu.addItem((item) => {
@@ -252,7 +270,7 @@ export const Tab = (props: TabProps) => {
 		let index = 0;
 		for (const state of backHistory) {
 			const leaf = workspace.createLeafInParent(group, index);
-			leaf.setViewState(state.state);
+			leaf.setViewState(state.state as ViewState);
 			await loadDeferredLeaf(leaf);
 			leaf.setEphemeralState(state.eState);
 			index += 1;
@@ -260,14 +278,14 @@ export const Tab = (props: TabProps) => {
 		index += 1; // Skip the current tab
 		for (const state of forwardHistory) {
 			const leaf = workspace.createLeafInParent(group, index);
-			leaf.setViewState(state.state);
+			leaf.setViewState(state.state as ViewState);
 			await loadDeferredLeaf(leaf);
 			leaf.setEphemeralState(state.eState);
 			index += 1;
 		}
 		// Set the group title
-		const title = DeduplicatedTitle(app, leaf);
-		setGroupTitle(group.id, `History: ${title}`);
+		const historyTitle = deduplicateTitle(app, leaf);
+		setGroupTitle(group.id, `History: ${historyTitle}`);
 		// Activate the new tab and lock the focus
 		workspace.setActiveLeaf(duplicatedLeaf, { focus: true });
 		lockFocusOnLeaf(app, duplicatedLeaf);
@@ -275,7 +293,7 @@ export const Tab = (props: TabProps) => {
 
 	/* Commands - Zoom */
 	const addZoomOptionsToMenu = (
-		target: WorkspaceLeaf | BrowserView,
+		target: WorkspaceLeaf | WebviewerView,
 		menu: Menu
 	) => {
 		const _ZoomIn =
@@ -296,8 +314,8 @@ export const Tab = (props: TabProps) => {
 	};
 
 	/* Commands - Webview */
-	const saveAsMarkdown = async (view: BrowserView) => {
-		const file = await view.saveAsMarkdown();
+	const saveAsMarkdown = async (view: WebviewerView) => {
+		const file = (await view.saveAsMarkdown()) as TFile;
 		if (file) workspace.getLeaf("tab").openFile(file);
 	};
 
@@ -318,10 +336,9 @@ export const Tab = (props: TabProps) => {
 			)
 			.map((entry) => entry.group)
 			.filter((group) => group !== null);
-		const groupTitles = useViewState.getState().groupTitles;
 		groups.forEach((group) => {
 			menu.addItem((item) => {
-				const title = groupTitles.get(group.id) || DEFAULT_GROUP_TITLE;
+				const title = getGroupTitle(group.id);
 				item.setTitle(title).onClick(() =>
 					moveTabToEnd(app, leaf.id, group)
 				);
@@ -340,16 +357,49 @@ export const Tab = (props: TabProps) => {
 					if (!movedLeaf) return;
 					setTimeout(() => {
 						const group = movedLeaf.parent;
-						if (group) {
-							useViewState
-								.getState()
-								.setGroupTitle(group.id, groupName);
-						}
+						if (group) setGroupTitle(group.id, groupName);
 					});
 				}).open();
 			});
 		});
 	};
+
+	/* Commands - Title editing */
+	const startEditing = () => {
+		setEphemeralTitle(displayTitle);
+		setIsEditing(true);
+	};
+	const commitTitle = () => {
+		if (!isEditing) return;
+		const trimmedTitle = ephemeralTitle.trim();
+		const finalTitle = trimmedTitle || undefined;
+		saveTabMetadata(leaf.id, { title: finalTitle });
+		setIsEditing(false);
+	};
+	const cancelEditing = () => {
+		setIsEditing(false);
+		setEphemeralTitle(displayTitle);
+	};
+	const handleTitleEditToggle = () => {
+		if (isEditing) {
+			commitTitle();
+		} else {
+			startEditing();
+		}
+	};
+	const handleTitleInputKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key === "Enter") {
+			commitTitle();
+		} else if (e.key === "Escape") {
+			cancelEditing();
+		}
+	};
+
+	/* Commands - Customization */
+	const setColor = (color: string) => saveTabMetadata(leaf.id, { color });
+	const resetColor = () => saveTabMetadata(leaf.id, { color: undefined });
+	const setIcon = (icon: string) => saveTabMetadata(leaf.id, { icon });
+	const resetIcon = () => saveTabMetadata(leaf.id, { icon: undefined });
 
 	/* Menu */
 	const buildMenu = (includeGroupViewControls = true) => {
@@ -452,6 +502,25 @@ export const Tab = (props: TabProps) => {
 			item.setSection("pin")
 				.setTitle(isPinned ? "Unpin" : "Pin")
 				.onClick(togglePinned);
+		});
+		// Customization
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("customization")
+				.setTitle("Rename")
+				.onClick(handleTitleEditToggle);
+		});
+		menu.addItem((item) => {
+			item.setSection("customization").setTitle("Change color");
+			const submenu = item.setSubmenu();
+			addColorOptionsToMenu(submenu, setColor, resetColor);
+		});
+		menu.addItem((item) => {
+			item.setSection("customization")
+				.setTitle("Change icon")
+				.onClick(() => {
+					new IconSelectionModal(app, setIcon, resetIcon).open();
+				});
 		});
 		// Workspace control
 		menu.addSeparator();
@@ -608,7 +677,7 @@ export const Tab = (props: TabProps) => {
 					item.setSection("zoom").setTitle("Zoom");
 					const submenu = item.setSubmenu();
 					if (isWebViewer) {
-						const view = leaf.view as BrowserView;
+						const view = leaf.view as WebviewerView;
 						addZoomOptionsToMenu(view, submenu);
 					} else {
 						addZoomOptionsToMenu(leaf, submenu);
@@ -626,7 +695,7 @@ export const Tab = (props: TabProps) => {
 				item.setSection("more").setTitle("More options");
 				const submenu = item.setSubmenu();
 				if (isWebViewer) {
-					const webview = leaf.view as BrowserView;
+					const webview = leaf.view as WebviewerView;
 					submenu.addItem((item) => {
 						item.setSection("webview")
 							.setTitle("Toggle reader mode")
@@ -643,8 +712,9 @@ export const Tab = (props: TabProps) => {
 					const excludedSections = ["open", "find", "pane"];
 					submenu.items = submenu.items.filter(
 						(item) =>
-							item.section === undefined ||
-							!excludedSections.includes(item.section)
+							item instanceof MenuItem &&
+							(item.section === undefined ||
+								!excludedSections.includes(item.section))
 					);
 				}
 			});
@@ -654,6 +724,28 @@ export const Tab = (props: TabProps) => {
 	};
 
 	/* Effects */
+	// Apply the color to the tab header and container
+	useEffect(() => {
+		if (customColor) {
+			applyColor(leaf.tabHeaderEl, customColor);
+			applyColor(leaf.containerEl, customColor);
+		} else {
+			removeColor(leaf.tabHeaderEl);
+			removeColor(leaf.containerEl);
+		}
+	}, [customColor]);
+	// Apply the icon to the tab header inner icon
+	useEffect(() => {
+		if (customIcon) {
+			applyIcon(leaf.tabHeaderInnerIconEl, customIcon);
+		} else {
+			removeIcon(leaf.tabHeaderInnerIconEl, leaf.getIcon());
+		}
+	}, [customIcon]);
+	// Apply the title to the tab header inner title
+	useEffect(() => {
+		leaf.tabHeaderInnerTitleEl?.setText(displayTitle);
+	}, [displayTitle]);
 	// Bind and track the events that used for syncing with Obsidian,
 	// when the states are changed outside of the component.
 	useEffect(() => {
@@ -666,7 +758,7 @@ export const Tab = (props: TabProps) => {
 		if (!isWebViewer) setVolatileTitle(null);
 		// If it's a webview, we update the volatile title whenever the page title is changed
 		if (Platform.isDesktop && isWebViewer) {
-			const view = leaf.view as BrowserView;
+			const view = leaf.view as WebviewerView;
 			view.webview?.addEventListener(
 				"page-title-updated",
 				(data: { title: string }) => setVolatileTitle(data.title)
@@ -753,9 +845,21 @@ export const Tab = (props: TabProps) => {
 		volatileTitle,
 	});
 
+	const titleEditor = (
+		<input
+			autoFocus
+			value={ephemeralTitle}
+			onChange={(e) => setEphemeralTitle(e.target.value)}
+			onClick={(e) => e.stopPropagation()}
+			onKeyDown={handleTitleInputKeyDown}
+			onFocus={(e) => e.target.select()}
+			onBlur={commitTitle}
+		/>
+	);
+
 	const toolbar = (
 		<Fragment>
-			{isPinned && (
+			{!isEditing && isPinned && (
 				<IconButton
 					icon="pin"
 					action="unpin"
@@ -763,13 +867,21 @@ export const Tab = (props: TabProps) => {
 					onClick={unPin}
 				/>
 			)}
-			{!isPinned && (
+			{!isEditing && !isPinned && (
 				<IconButton
 					icon="x"
 					action="close"
 					tooltip="Close tab"
 					disabled={isPinned}
 					onClick={closeTab}
+				/>
+			)}
+			{!isEditing && (
+				<IconButton
+					icon="pencil"
+					action="edit"
+					tooltip="Rename"
+					onClick={handleTitleEditToggle}
 				/>
 			)}
 		</Fragment>
@@ -802,8 +914,9 @@ export const Tab = (props: TabProps) => {
 				ref={ref}
 				id={leaf.id}
 				index={hasAnySelectedTabs ? undefined : viewCueIndex}
-				title={title}
+				title={isEditing ? titleEditor : title}
 				isTab={true}
+				isRenaming={isEditing}
 				isEphemeralTab={isEphemeral && !isPinned}
 				isPinned={isPinned}
 				isHighlighted={isActiveTab}
@@ -817,11 +930,12 @@ export const Tab = (props: TabProps) => {
 				dataType={leaf.getViewState().type}
 				dataId={leaf.id}
 				webviewIcon={webviewIcon}
-				icon={shouldShowHandle ? "grip" : leaf.getIcon()}
+				icon={shouldShowHandle ? "grip" : customIcon ?? leaf.getIcon()}
 				isActive={leaf.tabHeaderEl?.classList.contains("is-active")}
 				selectedCount={
 					isSelected ? getSelectedTabs().length : undefined
 				}
+				color={customColor}
 				{...listeners}
 			/>
 			{shouldShowHandle && handles}

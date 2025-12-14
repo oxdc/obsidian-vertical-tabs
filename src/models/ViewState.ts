@@ -40,12 +40,6 @@ import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 import { getTabs } from "src/services/GetTabs";
 import { useSettings } from "./PluginContext";
 import { isHoverEditorEnabled } from "src/services/HoverEditorTabs";
-export const DEFAULT_GROUP_TITLE = "Grouped tabs";
-const factory = () => DEFAULT_GROUP_TITLE;
-
-export type GroupTitles = DefaultRecord<Identifier, string>;
-export const createNewGroupTitles = () =>
-	new DefaultRecord(factory) as GroupTitles;
 
 export type PinningEvents = DefaultRecord<Identifier, EventRef | null>;
 export type PinningEventCallback = (pinned: boolean) => void;
@@ -88,7 +82,6 @@ export const createNewViewCueFirstTabs = () =>
 export const ALT_KEY_EFFECT_DURATION = 2000;
 
 interface ViewState {
-	groupTitles: GroupTitles;
 	hiddenGroups: Array<Identifier>;
 	collapsedGroups: Array<Identifier>;
 	nonEphemeralTabs: Array<Identifier>;
@@ -106,7 +99,6 @@ interface ViewState {
 	viewCueNativeCallbacks: ViewCueNativeCallbackMap;
 	viewCueFirstTabs: ViewCueFirstTabs;
 	nativeDragTabs: NativeDragTabsInstance | null;
-	setGroupTitle: (id: Identifier, name: string) => void;
 	toggleCollapsedGroup: (id: Identifier, isCollapsed: boolean) => void;
 	toggleHiddenGroup: (id: Identifier, isHidden: boolean, app?: App) => void;
 	rememberNonephemeralTab: (app: App, id: Identifier) => void;
@@ -201,18 +193,6 @@ interface ViewState {
 	getMostRecentActivityTime: (group: WorkspaceParent) => number;
 }
 
-const saveViewState = (titles: GroupTitles) => {
-	const data = Array.from(titles.entries());
-	localStorage.setItem("view-state", JSON.stringify(data));
-};
-
-const loadViewState = (): GroupTitles | null => {
-	const data = localStorage.getItem("view-state");
-	if (!data) return null;
-	const entries = JSON.parse(data) as [Identifier, string][];
-	return new DefaultRecord(factory, entries);
-};
-
 const saveHiddenGroups = (hiddenGroups: Array<Identifier>) => {
 	localStorage.setItem("hidden-groups", JSON.stringify(hiddenGroups));
 };
@@ -293,7 +273,6 @@ const getCornerContainers = (tabContainers: Array<Element>) => {
 const callbackGuard = new Set<number>();
 
 export const useViewState = create<ViewState>()((set, get) => ({
-	groupTitles: loadViewState() ?? createNewGroupTitles(),
 	hiddenGroups: loadHiddenGroups(),
 	collapsedGroups: loadCollapsedGroups(),
 	nonEphemeralTabs: loadNonEphemeralTabs(),
@@ -318,12 +297,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	topRightContainer: null,
 	topRightMainContainer: null,
 	allTopContainers: [],
-	setGroupTitle: (id: Identifier, name: string) =>
-		set((state) => {
-			state.groupTitles.set(id, name);
-			saveViewState(state.groupTitles);
-			return state;
-		}),
 	toggleHiddenGroup: (id: Identifier, isHidden: boolean, app?: App) => {
 		if (isHidden) {
 			set((state) => ({ hiddenGroups: [...state.hiddenGroups, id] }));

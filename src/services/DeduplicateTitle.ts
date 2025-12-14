@@ -5,7 +5,7 @@ function hideExtension(file: string) {
 	return dot === -1 ? file : file.slice(0, dot);
 }
 
-export function DeduplicatedTitle(app: App, leaf: WorkspaceLeaf) {
+export function deduplicateTitle(app: App, leaf: WorkspaceLeaf) {
 	const workspace = app.workspace;
 	const viewState = leaf.getViewState();
 	const myDefaultTitle = leaf.getDisplayText();

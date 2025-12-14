@@ -37,6 +37,7 @@ import { normalizePath } from "obsidian";
 import { getOpenFileOfLeaf } from "./services/GetTabs";
 import { managedLeafStore } from "./stores/ManagedLeafStore";
 import { isHoverEditorEnabled } from "./services/HoverEditorTabs";
+import { applyTabTitle } from "./services/Customization";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -344,6 +345,13 @@ export default class ObsidianVerticalTabs extends Plugin {
 						} else {
 							return fallback(this, file, openState);
 						}
+					};
+				},
+				updateHeader(old) {
+					return function () {
+						const result = old.call(this);
+						applyTabTitle(this);
+						return result;
 					};
 				},
 			})

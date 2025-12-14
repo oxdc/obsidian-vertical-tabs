@@ -1,0 +1,72 @@
+.vt-icon-selection-modal {
+	.vt-icon-search-container {
+		margin-bottom: var(--size-4-4);
+
+		input {
+			width: 100%;
+		}
+	}
+
+	.vt-icons-container {
+		max-height: 60vh;
+		overflow-y: auto;
+		margin-bottom: var(--size-4-4);
+	}
+
+	.vt-icons-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+		gap: var(--size-4-2);
+	}
+
+	.vt-icon-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--size-4-1);
+		padding: var(--size-4-2);
+		border-radius: var(--radius-s);
+		cursor: pointer;
+		transition: background-color 0.2s;
+
+		&:hover {
+			background-color: var(--background-modifier-hover);
+		}
+
+		&:active {
+			background-color: var(--background-modifier-active-hover);
+		}
+	}
+
+	.vt-icon-item-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--icon-l);
+		height: var(--icon-l);
+
+		svg {
+			width: var(--icon-l);
+			height: var(--icon-l);
+		}
+	}
+
+	.vt-icon-item-label {
+		font-size: var(--font-ui-smaller);
+		text-align: center;
+		word-break: break-word;
+		color: var(--text-muted);
+		line-height: 1.2;
+	}
+
+	.vt-no-icons-message {
+		text-align: center;
+		padding: var(--size-4-8);
+		color: var(--text-muted);
+	}
+
+	.setting-item {
+		border: none !important;
+		padding-top: var(--size-4-3);
+	}
+}

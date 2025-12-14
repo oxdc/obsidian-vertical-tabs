@@ -7,7 +7,7 @@ import {
 	WorkspaceLeaf,
 	WorkspaceParent,
 } from "obsidian";
-import { QuickSwitcherItem } from "obsidian-typings";
+import { QuickSwitcherItem, WorkspaceLeafHistoryState } from "obsidian-typings";
 import { around } from "monkey-around";
 import {
 	getOpenFileOfLeaf,
@@ -139,7 +139,7 @@ export function mergeHistory(from: WorkspaceLeaf[], to: WorkspaceLeaf) {
 			leaf.getHistoryState(),
 			...leaf.history.forwardHistory.slice().reverse(),
 		];
-	}, []);
+	}, []) as WorkspaceLeafHistoryState[];
 	to.history.backHistory = [...mergedHistory, ...to.history.backHistory];
 }
 
