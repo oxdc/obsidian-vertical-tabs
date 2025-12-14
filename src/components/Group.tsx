@@ -26,7 +26,11 @@ import {
 } from "src/services/WikiLinks";
 import { insertToEditor } from "src/services/InsertText";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
-import { addColorOptionsToMenu } from "src/services/CustomizationMenu";
+import {
+	addColorOptionsToMenu,
+	applyColor,
+	removeColor,
+} from "src/services/Customization";
 import { IconSelectionModal } from "src/views/IconSelectionModal";
 
 interface GroupProps {
@@ -181,6 +185,14 @@ export const Group = (props: GroupProps) => {
 		group && saveGroupMetadata(group.id, { icon: undefined });
 
 	/* Effects */
+	// Apply the color to the group container
+	useEffect(() => {
+		if (customColor) {
+			applyColor(group?.containerEl, customColor);
+		} else {
+			removeColor(group?.containerEl);
+		}
+	}, [customColor]);
 	// Sync title from bookmark on mount and when group changes
 	useEffect(() => {
 		if (!group) return;

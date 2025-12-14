@@ -54,7 +54,13 @@ import { GroupType } from "src/models/VTWorkspace";
 import { moveTabToEnd, moveTabToNewGroup } from "src/services/MoveTab";
 import { GroupNameModal } from "src/views/GroupNameModal";
 import { IconSelectionModal } from "src/views/IconSelectionModal";
-import { addColorOptionsToMenu } from "src/services/CustomizationMenu";
+import {
+	addColorOptionsToMenu,
+	applyColor,
+	applyIcon,
+	removeColor,
+	removeIcon,
+} from "src/services/Customization";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -682,6 +688,24 @@ export const Tab = (props: TabProps) => {
 	};
 
 	/* Effects */
+	// Apply the color to the tab header and container
+	useEffect(() => {
+		if (customColor) {
+			applyColor(leaf.tabHeaderEl, customColor);
+			applyColor(leaf.containerEl, customColor);
+		} else {
+			removeColor(leaf.tabHeaderEl);
+			removeColor(leaf.containerEl);
+		}
+	}, [customColor]);
+	// Apply the icon to the tab header inner icon
+	useEffect(() => {
+		if (customIcon) {
+			applyIcon(leaf.tabHeaderInnerIconEl, customIcon);
+		} else {
+			removeIcon(leaf.tabHeaderInnerIconEl, leaf.getIcon());
+		}
+	}, [customIcon]);
 	// Bind and track the events that used for syncing with Obsidian,
 	// when the states are changed outside of the component.
 	useEffect(() => {

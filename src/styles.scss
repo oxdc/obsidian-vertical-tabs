@@ -31,6 +31,7 @@
 @use "styles/WorkspaceSplitOnPhone.scss";
 @use "styles/BetaVersion.scss";
 @use "styles/GroupNameModal.scss";
+@use "styles/Customization.scss";
 @use "styles/IconSelectionModal.scss";
 
 .vertical-tabs {
@@ -47,37 +48,13 @@
 	overflow-y: auto;
 }
 
-.obsidian-vertical-tabs-container .is-tab {
-	margin-left: 0.5em;
-}
-
 .obsidian-vertical-tabs-container > div {
 	width: 100%;
-}
-
-.obsidian-vertical-tabs-container
-	.tree-item.is-group.is-collapsed
-	.tree-item-children {
-	display: none;
-}
-
-.obsidian-vertical-tabs-container .tree-item-icon svg.svg-icon.right-triangle {
-	stroke-width: 2px;
-	width: 10px;
-	height: 10px;
-	transition: transform 100ms ease-in-out;
 }
 
 .obsidian-vertical-tabs-container .tree-item.is-tab .tree-item-icon svg {
 	width: var(--icon-xs);
 	height: var(--icon-xs);
-}
-
-.obsidian-vertical-tabs-container
-	.tree-item.is-group.is-collapsed
-	.tree-item-icon
-	svg {
-	transform: rotate(calc(var(--direction) * -1 * 90deg));
 }
 
 body.vt-hide-sidebars
