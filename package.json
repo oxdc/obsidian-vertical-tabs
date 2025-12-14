@@ -1,6 +1,6 @@
 {
 	"name": "vertical-tabs",
-	"version": "0.18.0-beta-20251214",
+	"version": "0.18.1-beta-20251214",
 	"description": "Offer an alternative view that displays open tabs vertically, allowing users to group and organize tabs for a better navigation experience.",
 	"main": "main.js",
 	"packageManager": "bun@1.2.21",
