@@ -1,4 +1,4 @@
-import { Menu, setIcon } from "obsidian";
+import { Menu, setIcon, WorkspaceLeaf } from "obsidian";
 import {
 	DEFAULT_GROUP_TITLE,
 	PREDEFINED_COLORS,
@@ -56,4 +56,9 @@ export const removeIcon = (
 	if (!element) return;
 	delete element.dataset.icon;
 	setIcon(element, defaultIcon ?? "");
+};
+
+export const applyTabTitle = (leaf: WorkspaceLeaf) => {
+	const title = tabCacheStore.getState().tabMetadata.get(leaf.id)?.title;
+	if (title) leaf.tabHeaderInnerTitleEl?.setText(title);
 };
