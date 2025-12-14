@@ -1,9 +1,9 @@
 import { App, Menu, TFile } from "obsidian";
-import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
 import { moveTabToEnd } from "./MoveTab";
 import { tabCacheStore } from "src/stores/TabCacheStore";
 import { GroupType } from "src/models/VTWorkspace";
 import { GroupNameModal } from "src/views/GroupNameModal";
+import { getGroupTitle, setGroupTitle } from "./Customization";
 
 const MENU_SECTION = "file-navigation";
 
@@ -22,13 +22,12 @@ export function addMenuItemsToFileContextMenu(
 		.filter((entry) => entry.groupType === GroupType.RootSplit)
 		.map((entry) => entry.group)
 		.filter((group) => group !== null);
-	const groupTitles = useViewState.getState().groupTitles;
 	menu.addItem((item) => {
 		item.setSection(MENU_SECTION).setTitle("Open file in tab group...");
 		const submenu = item.setSubmenu();
 		groups.forEach((group) => {
 			submenu.addItem((item) => {
-				const title = groupTitles.get(group.id) || DEFAULT_GROUP_TITLE;
+				const title = getGroupTitle(group.id);
 				item.setTitle(title).onClick(() => {
 					const leaf = app.workspace.getLeaf("split");
 					leaf.openFile(file);
@@ -50,11 +49,7 @@ export function addMenuItemsToFileContextMenu(
 					leaf.openFile(file);
 					setTimeout(() => {
 						const group = leaf.parent;
-						if (group) {
-							useViewState
-								.getState()
-								.setGroupTitle(group.id, groupName);
-						}
+						if (group) setGroupTitle(group.id, groupName);
 					});
 				}).open();
 			});

@@ -5,14 +5,14 @@ export interface TabMetadata {
 	id: Identifier;
 	color?: string;
 	icon?: string;
-	customTitle?: string;
+	title?: string;
 }
 
 export interface GroupMetadata {
 	id: Identifier;
 	color?: string;
 	icon?: string;
-	customTitle?: string;
+	title?: string;
 }
 
 export class MetadataDatabase extends Dexie {

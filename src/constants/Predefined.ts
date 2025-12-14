@@ -8,3 +8,5 @@ export const PREDEFINED_COLORS: Map<string, string> = new Map([
 	["Purple", "var(--color-purple)"],
 	["Pink", "var(--color-pink)"],
 ]);
+
+export const DEFAULT_GROUP_TITLE = "Grouped tabs";

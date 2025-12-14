@@ -1,5 +1,5 @@
 import { App, Modal, Setting, TextComponent } from "obsidian";
-import { DEFAULT_GROUP_TITLE } from "src/models/ViewState";
+import { DEFAULT_GROUP_TITLE } from "src/constants/Predefined";
 
 export class GroupNameModal extends Modal {
 	private groupName = "";

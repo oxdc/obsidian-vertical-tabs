@@ -1,5 +1,17 @@
 import { Menu, setIcon } from "obsidian";
-import { PREDEFINED_COLORS } from "src/constants/Predefined";
+import {
+	DEFAULT_GROUP_TITLE,
+	PREDEFINED_COLORS,
+} from "src/constants/Predefined";
+import { tabCacheStore } from "src/stores/TabCacheStore";
+import { Identifier } from "src/models/VTWorkspace";
+
+export const getGroupTitle = (groupId: Identifier) =>
+	tabCacheStore.getState().groupMetadata.get(groupId)?.title ??
+	DEFAULT_GROUP_TITLE;
+
+export const setGroupTitle = (groupId: Identifier, title: string) =>
+	tabCacheStore.getActions().saveGroupMetadata(groupId, { title });
 
 export const addColorOptionsToMenu = (
 	menu: Menu,
