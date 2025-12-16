@@ -21,7 +21,9 @@ export class IconSelectionModal extends Modal {
 		super(app);
 		this.onSubmit = onSubmit;
 		this.onReset = onReset;
-		this.iconIds = getIconIds().map((id) => id.replace("lucide-", ""));
+		this.iconIds = getIconIds()
+			.filter((id) => id.startsWith("lucide-"))
+			.map((id) => id.replace("lucide-", ""));
 	}
 
 	onOpen() {
@@ -62,12 +64,13 @@ export class IconSelectionModal extends Modal {
 	}
 
 	private parseSearchTerms(query: string): string[] {
-		return query
-			.split(/\s+/)
-			.filter((term) => term.length > 0);
+		return query.split(/\s+/).filter((term) => term.length > 0);
 	}
 
-	private calculateRelevanceScore(iconId: string, searchTerms: string[]): number {
+	private calculateRelevanceScore(
+		iconId: string,
+		searchTerms: string[]
+	): number {
 		let score = 0;
 		for (const term of searchTerms) {
 			if (iconId.startsWith(term)) {
@@ -85,7 +88,7 @@ export class IconSelectionModal extends Modal {
 		}
 
 		const searchTerms = this.parseSearchTerms(this.searchQuery);
-		
+
 		const filteredIcons = this.iconIds.filter((id) => {
 			return searchTerms.some((term) => id.includes(term));
 		});
