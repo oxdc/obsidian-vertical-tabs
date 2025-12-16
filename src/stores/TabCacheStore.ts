@@ -1,7 +1,7 @@
 import { App, WorkspaceLeaf, WorkspaceParent } from "obsidian";
 import { DefaultRecord } from "src/utils/DefaultRecord";
 import { getTabs } from "src/services/GetTabs";
-import { SortStrategy, sortTabs } from "src/services/SortTabs";
+import { SortStrategy, sortTabs, sortStrategies } from "src/services/SortTabs";
 import { GroupType, Identifier } from "../models/VTWorkspace";
 import { useStoreWithActions } from "../models/StoreWithActions";
 import { metadataService as ms } from "./TabMetadataService";
@@ -39,6 +39,7 @@ interface TabCacheState {
 	sortStrategy: SortStrategy | null;
 	tabMetadata: Map<Identifier, TabMetadata>;
 	groupMetadata: Map<Identifier, GroupMetadata>;
+	app: App | null;
 }
 
 interface TabCacheActions {
@@ -62,6 +63,37 @@ type TabCacheStore = TabCacheState & {
 	actions: TabCacheActions;
 };
 
+const SORT_STRATEGY_KEY = "vertical-tabs:sort-strategy";
+const GROUP_ORDER_KEY = "vertical-tabs:group-order";
+
+const saveSortStrategy = (app: App, strategy: SortStrategy | null) => {
+	const name =
+		Object.keys(sortStrategies).find(
+			(key) => sortStrategies[key] === strategy
+		) ?? "none";
+	app.saveLocalStorage(SORT_STRATEGY_KEY, name);
+};
+
+const loadSortStrategy = (app: App): SortStrategy | null => {
+	const stored = app.loadLocalStorage(SORT_STRATEGY_KEY);
+	const name = (typeof stored === "string" ? stored : null) ?? "none";
+	return (name in sortStrategies ? sortStrategies[name] : null) ?? null;
+};
+
+const saveGroupOrder = (app: App, groupIDs: Identifier[]) => {
+	app.saveLocalStorage(GROUP_ORDER_KEY, JSON.stringify(groupIDs));
+};
+
+const loadGroupOrder = (app: App): Identifier[] => {
+	const stored = app.loadLocalStorage(GROUP_ORDER_KEY);
+	if (typeof stored !== "string") return [];
+	try {
+		return JSON.parse(stored);
+	} catch {
+		return [];
+	}
+};
+
 export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 	content: createNewTabCache(),
 	groupIDs: [],
@@ -70,6 +102,7 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 	sortStrategy: null,
 	tabMetadata: new Map(),
 	groupMetadata: new Map(),
+	app: null,
 	actions: {
 		refresh: (app) => {
 			set((state) => {
@@ -90,7 +123,20 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 				const newGroupIDs = Array.from(content.keys()).filter(
 					(id) => !existingGroupIDs.includes(id)
 				);
-				const sortedGroupIDs = [...existingGroupIDs, ...newGroupIDs];
+				const unsortedGroupIDs = [...existingGroupIDs, ...newGroupIDs];
+				const loadedGroupIDs = loadGroupOrder(app);
+				const sortedGroupIDs = ([] as Identifier[])
+					.concat(loadedGroupIDs)
+					.filter((id) => unsortedGroupIDs.includes(id))
+					.concat(
+						unsortedGroupIDs.filter(
+							(id) => !loadedGroupIDs.includes(id)
+						)
+					);
+				saveGroupOrder(app, sortedGroupIDs);
+
+				const sortStrategy =
+					state.sortStrategy ?? loadSortStrategy(app);
 
 				return {
 					...state,
@@ -98,28 +144,38 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 					leafIDs,
 					leafToGroupMap,
 					groupIDs: sortedGroupIDs,
+					sortStrategy,
+					app,
 				};
 			});
 			get().actions.loadAllVisibleMetadata();
 		},
 		swapGroup: (source, target) => {
-			const { groupIDs } = get();
+			const { groupIDs, app } = get();
+			if (!app) return;
 			const sourceIndex = groupIDs.indexOf(source);
 			const targetIndex = groupIDs.indexOf(target);
 			const newGroupIDs = [...groupIDs];
 			newGroupIDs[sourceIndex] = target;
 			newGroupIDs[targetIndex] = source;
 			set({ groupIDs: newGroupIDs });
+			saveGroupOrder(app, newGroupIDs);
 		},
 		moveGroupToEnd: (id) => {
-			const { groupIDs } = get();
+			const { groupIDs, app } = get();
+			if (!app) return;
 			const newGroupIDs = [...groupIDs];
 			const index = newGroupIDs.indexOf(id);
 			newGroupIDs.splice(index, 1);
 			newGroupIDs.push(id);
 			set({ groupIDs: newGroupIDs });
+			saveGroupOrder(app, newGroupIDs);
 		},
 		setSortStrategy: (strategy) => {
+			const { app } = get();
+			if (app) {
+				saveSortStrategy(app, strategy);
+			}
 			set({ sortStrategy: strategy });
 			get().actions.sort();
 		},
