@@ -38,6 +38,7 @@ import { getOpenFileOfLeaf } from "./services/GetTabs";
 import { managedLeafStore } from "./stores/ManagedLeafStore";
 import { isHoverEditorEnabled } from "./services/HoverEditorTabs";
 import { applyTabTitle } from "./services/Customization";
+import { localStorageService } from "./stores/LocalStorageService";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -47,6 +48,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
 		await this.loadSettings();
 		await this.setupPersistenceManager();
+		await this.setupLocalStorageService();
 		const disableOnThisDevice =
 			this.persistenceManager.device.get<boolean>(DISABLE_KEY) ?? false;
 		if (disableOnThisDevice) {
@@ -82,6 +84,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 			this.manifest
 		);
 		migrateAllData(this);
+	}
+
+	async setupLocalStorageService() {
+		localStorageService.init(this.app);
 	}
 
 	async registerEventsAndViews() {
