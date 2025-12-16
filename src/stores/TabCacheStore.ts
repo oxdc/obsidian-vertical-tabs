@@ -1,7 +1,12 @@
 import { App, WorkspaceLeaf, WorkspaceParent } from "obsidian";
 import { DefaultRecord } from "src/utils/DefaultRecord";
 import { getTabs } from "src/services/GetTabs";
-import { SortStrategy, sortTabs, sortStrategies } from "src/services/SortTabs";
+import {
+	SortStrategy,
+	sortTabs,
+	serializeSortStrategy,
+	deserializeSortStrategy,
+} from "src/services/SortTabs";
 import { GroupType, Identifier } from "../models/VTWorkspace";
 import { useStoreWithActions } from "../models/StoreWithActions";
 import { metadataService as ms } from "./TabMetadataService";
@@ -63,35 +68,27 @@ type TabCacheStore = TabCacheState & {
 	actions: TabCacheActions;
 };
 
-const SORT_STRATEGY_KEY = "vertical-tabs:sort-strategy";
-const GROUP_ORDER_KEY = "vertical-tabs:group-order";
+// prettier-ignore
+class Helper {
+	private static readonly SORT_STRATEGY_KEY = "vertical-tabs:sort-strategy";
+	private static readonly GROUP_ORDER_KEY = "vertical-tabs:group-order";
 
-const saveSortStrategy = (strategy: SortStrategy | null) => {
-	const name =
-		Object.keys(sortStrategies).find(
-			(key) => sortStrategies[key] === strategy
-		) ?? "none";
-	localStorageService.save(SORT_STRATEGY_KEY, name);
-};
-
-const loadSortStrategy = (): SortStrategy | null => {
-	const name = localStorageService.load(SORT_STRATEGY_KEY) ?? "none";
-	return (name in sortStrategies ? sortStrategies[name] : null) ?? null;
-};
-
-const saveGroupOrder = (groupIDs: Identifier[]) => {
-	localStorageService.save(GROUP_ORDER_KEY, JSON.stringify(groupIDs));
-};
-
-const loadGroupOrder = (): Identifier[] => {
-	const order = localStorageService.load(GROUP_ORDER_KEY);
-	if (!order) return [];
-	try {
-		return JSON.parse(order);
-	} catch {
-		return [];
+	static saveSortStrategy(strategy: SortStrategy | null) {
+		localStorageService.save(this.SORT_STRATEGY_KEY, strategy, serializeSortStrategy);
 	}
-};
+
+	static loadSortStrategy(): SortStrategy | null {
+		return localStorageService.load<SortStrategy>(this.SORT_STRATEGY_KEY, deserializeSortStrategy);
+	}
+
+	static saveGroupOrder(groupIDs: Identifier[]) {
+	localStorageService.save(this.GROUP_ORDER_KEY, groupIDs);
+	}
+
+	static loadGroupOrder(): Identifier[] {
+		return localStorageService.load<Identifier[]>(this.GROUP_ORDER_KEY) ?? [];
+	}
+}
 
 export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 	content: createNewTabCache(),
@@ -122,7 +119,7 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 					(id) => !existingGroupIDs.includes(id)
 				);
 				const unsortedGroupIDs = [...existingGroupIDs, ...newGroupIDs];
-				const loadedGroupIDs = loadGroupOrder();
+				const loadedGroupIDs = Helper.loadGroupOrder();
 				const sortedGroupIDs = ([] as Identifier[])
 					.concat(loadedGroupIDs)
 					.filter((id) => unsortedGroupIDs.includes(id))
@@ -131,9 +128,10 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 							(id) => !loadedGroupIDs.includes(id)
 						)
 					);
-				saveGroupOrder(sortedGroupIDs);
+				Helper.saveGroupOrder(sortedGroupIDs);
 
-				const sortStrategy = state.sortStrategy ?? loadSortStrategy();
+				const sortStrategy =
+					state.sortStrategy ?? Helper.loadSortStrategy();
 
 				return {
 					...state,
@@ -154,7 +152,7 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 			newGroupIDs[sourceIndex] = target;
 			newGroupIDs[targetIndex] = source;
 			set({ groupIDs: newGroupIDs });
-			saveGroupOrder(newGroupIDs);
+			Helper.saveGroupOrder(newGroupIDs);
 		},
 		moveGroupToEnd: (id) => {
 			const { groupIDs } = get();
@@ -163,10 +161,10 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 			newGroupIDs.splice(index, 1);
 			newGroupIDs.push(id);
 			set({ groupIDs: newGroupIDs });
-			saveGroupOrder(newGroupIDs);
+			Helper.saveGroupOrder(newGroupIDs);
 		},
 		setSortStrategy: (strategy) => {
-			saveSortStrategy(strategy);
+			Helper.saveSortStrategy(strategy);
 			set({ sortStrategy: strategy });
 			get().actions.sort();
 		},

@@ -1,5 +1,9 @@
 import { FileView, WorkspaceLeaf, WorkspaceParent } from "obsidian";
-import { GroupViewType, identifyGroupViewType, syncUIForGroupView } from "src/models/VTGroupView";
+import {
+	GroupViewType,
+	identifyGroupViewType,
+	syncUIForGroupView,
+} from "src/models/VTGroupView";
 
 export type TabCompareFn = (a: WorkspaceLeaf, b: WorkspaceLeaf) => number;
 
@@ -52,3 +56,16 @@ export const sortStrategies: Record<string, SortStrategy> = {
 	oldestOnTop: { compareFn: byFileCreationTime, reverse: false },
 	oldestOnBottom: { compareFn: byFileCreationTime, reverse: true },
 };
+
+export function serializeSortStrategy(strategy: SortStrategy): string {
+	for (const [key, value] of Object.entries(sortStrategies)) {
+		if (value === strategy) return key;
+	}
+	return "none";
+}
+
+export function deserializeSortStrategy(name: string): SortStrategy | null {
+	return name in sortStrategies
+		? sortStrategies[name as keyof typeof sortStrategies]
+		: null;
+}
