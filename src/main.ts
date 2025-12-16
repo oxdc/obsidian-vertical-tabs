@@ -20,17 +20,14 @@ import { around } from "monkey-around";
 import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
 import { useViewState } from "./models/ViewState";
 import { ObsidianVerticalTabsSettingTab } from "./views/SettingTab";
-import { useSettings } from "./models/PluginContext";
+import { loadDisableOnThisDevice, useSettings } from "./models/PluginContext";
 import { nanoid } from "nanoid";
 import { patchQuickSwitcher } from "./services/EphemeralTabs";
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
 import { SAFE_DETACH_TIMEOUT, safeDetach } from "./services/CloseTabs";
 import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
-import { PersistenceManager } from "./models/PersistenceManager";
-import { migrateAllData } from "./history/Migration";
 import { VERTICAL_TABS_ICON } from "./icon";
-import { DISABLE_KEY } from "./models/PluginContext";
 import { scrollToActiveTab } from "./services/ScrollableTabs";
 import { updateOrientationLabel } from "./services/Orientation";
 import { normalizePath } from "obsidian";
@@ -42,15 +39,12 @@ import { localStorageService } from "./stores/LocalStorageService";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
-	persistenceManager: PersistenceManager;
 
 	async onload() {
 		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
 		await this.loadSettings();
-		await this.setupPersistenceManager();
 		await this.setupLocalStorageService();
-		const disableOnThisDevice =
-			this.persistenceManager.device.get<boolean>(DISABLE_KEY) ?? false;
+		const disableOnThisDevice = loadDisableOnThisDevice();
 		if (disableOnThisDevice) {
 			useSettings.getState().loadSettings(this);
 			this.addSettingTab(
@@ -72,18 +66,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 				useViewState.getState().refreshToggleButtons(this.app);
 			}, REFRESH_TIMEOUT_LONG);
 		});
-	}
-
-	async setupPersistenceManager() {
-		this.persistenceManager = new PersistenceManager(
-			this.app,
-			// The following assertion is safe because we check for
-			// `installationID` in `loadSettings`
-			// eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
-			this.settings.installationID!,
-			this.manifest
-		);
-		migrateAllData(this);
 	}
 
 	async setupLocalStorageService() {

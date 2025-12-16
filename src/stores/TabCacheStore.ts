@@ -11,6 +11,7 @@ import { GroupType, Identifier } from "../models/VTWorkspace";
 import { useStoreWithActions } from "../models/StoreWithActions";
 import { metadataService as ms } from "./TabMetadataService";
 import { localStorageService } from "./LocalStorageService";
+import { STORAGE_KEYS } from "src/constants/StorageKeys";
 import {
 	TabMetadata,
 	GroupMetadata,
@@ -69,26 +70,24 @@ type TabCacheStore = TabCacheState & {
 };
 
 // prettier-ignore
-class Helper {
-	private static readonly SORT_STRATEGY_KEY = "vertical-tabs:sort-strategy";
-	private static readonly GROUP_ORDER_KEY = "vertical-tabs:group-order";
-
-	static saveSortStrategy(strategy: SortStrategy | null) {
-		localStorageService.save(this.SORT_STRATEGY_KEY, strategy, serializeSortStrategy);
-	}
-
-	static loadSortStrategy(): SortStrategy | null {
-		return localStorageService.load<SortStrategy>(this.SORT_STRATEGY_KEY, deserializeSortStrategy);
-	}
-
-	static saveGroupOrder(groupIDs: Identifier[]) {
-	localStorageService.save(this.GROUP_ORDER_KEY, groupIDs);
-	}
-
-	static loadGroupOrder(): Identifier[] {
-		return localStorageService.load<Identifier[]>(this.GROUP_ORDER_KEY) ?? [];
-	}
+const saveSortStrategy = (strategy: SortStrategy | null) => {
+	localStorageService.save(STORAGE_KEYS.SORT_STRATEGY, strategy, serializeSortStrategy);
 }
+
+// prettier-ignore
+const loadSortStrategy = (): SortStrategy | null => {
+	return localStorageService.load<SortStrategy>(STORAGE_KEYS.SORT_STRATEGY, deserializeSortStrategy);
+}
+
+// prettier-ignore
+const saveGroupOrder = (groupIDs: Identifier[]) => {
+		localStorageService.save(STORAGE_KEYS.GROUP_ORDER, groupIDs);
+};
+
+// prettier-ignore
+const loadGroupOrder = (): Identifier[] => {
+	return localStorageService.load<Identifier[]>(STORAGE_KEYS.GROUP_ORDER) ?? [];
+};
 
 export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 	content: createNewTabCache(),
@@ -119,7 +118,7 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 					(id) => !existingGroupIDs.includes(id)
 				);
 				const unsortedGroupIDs = [...existingGroupIDs, ...newGroupIDs];
-				const loadedGroupIDs = Helper.loadGroupOrder();
+				const loadedGroupIDs = loadGroupOrder();
 				const sortedGroupIDs = ([] as Identifier[])
 					.concat(loadedGroupIDs)
 					.filter((id) => unsortedGroupIDs.includes(id))
@@ -128,10 +127,10 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 							(id) => !loadedGroupIDs.includes(id)
 						)
 					);
-				Helper.saveGroupOrder(sortedGroupIDs);
+				saveGroupOrder(sortedGroupIDs);
 
 				const sortStrategy =
-					state.sortStrategy ?? Helper.loadSortStrategy();
+					state.sortStrategy ?? loadSortStrategy();
 
 				return {
 					...state,
@@ -152,7 +151,7 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 			newGroupIDs[sourceIndex] = target;
 			newGroupIDs[targetIndex] = source;
 			set({ groupIDs: newGroupIDs });
-			Helper.saveGroupOrder(newGroupIDs);
+			saveGroupOrder(newGroupIDs);
 		},
 		moveGroupToEnd: (id) => {
 			const { groupIDs } = get();
@@ -161,10 +160,10 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 			newGroupIDs.splice(index, 1);
 			newGroupIDs.push(id);
 			set({ groupIDs: newGroupIDs });
-			Helper.saveGroupOrder(newGroupIDs);
+			saveGroupOrder(newGroupIDs);
 		},
 		setSortStrategy: (strategy) => {
-			Helper.saveSortStrategy(strategy);
+			saveSortStrategy(strategy);
 			set({ sortStrategy: strategy });
 			get().actions.sort();
 		},

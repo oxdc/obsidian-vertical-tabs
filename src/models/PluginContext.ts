@@ -26,11 +26,29 @@ import {
 	setMissionControlViewZoomFactor,
 } from "./VTGroupView";
 import { EVENTS } from "src/constants/Events";
-import { PersistenceManager } from "./PersistenceManager";
-import { setShowActiveTabs, getShowActiveTabs } from "src/history/Migration";
+import { localStorageService } from "src/stores/LocalStorageService";
+import { STORAGE_KEYS } from "src/constants/StorageKeys";
 import { setScrollableTabsMinWidth } from "src/services/ScrollableTabs";
 
-export const DISABLE_KEY = "disable-on-this-device";
+// prettier-ignore
+const saveShowActiveTabs = (showActiveTabs: boolean) => {
+	localStorageService.save(STORAGE_KEYS.SHOW_ACTIVE_TABS, showActiveTabs);
+};
+
+// prettier-ignore
+const loadShowActiveTabs = (): boolean => {
+	return localStorageService.load<boolean>(STORAGE_KEYS.SHOW_ACTIVE_TABS) ?? false;
+};
+
+// prettier-ignore
+export const saveDisableOnThisDevice = (disableOnThisDevice: boolean) => {
+	localStorageService.save(STORAGE_KEYS.DISABLE_ON_THIS_DEVICE, disableOnThisDevice);
+};
+
+// prettier-ignore
+export const loadDisableOnThisDevice = (): boolean => {
+	return localStorageService.load<boolean>(STORAGE_KEYS.DISABLE_ON_THIS_DEVICE) ?? false;
+};
 
 export type SettingsContext = [Settings, (mutator: SettingsMutator) => void];
 
@@ -45,11 +63,6 @@ export const usePlugin = (): ObsidianVerticalTabs => {
 export const useApp = (): App => {
 	const plugin = usePlugin();
 	return plugin.app;
-};
-
-export const usePersistenceManager = (): PersistenceManager => {
-	const plugin = usePlugin();
-	return plugin.persistenceManager;
 };
 
 export type GroupViewOptions = {
@@ -121,10 +134,10 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 		toggleZenMode() {
 			const { zenMode, showActiveTabs, showActiveTabsInZenMode } = get();
 			if (zenMode) {
-				const showActiveTabs = getShowActiveTabs();
+				const showActiveTabs = loadShowActiveTabs();
 				get().setSettings({ zenMode: false, showActiveTabs });
 			} else {
-				setShowActiveTabs(showActiveTabs);
+				saveShowActiveTabs(showActiveTabs);
 				if (showActiveTabsInZenMode) {
 					get().setSettings({ zenMode: true, showActiveTabs: true });
 				} else {
@@ -169,7 +182,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			const { backgroundMode, showActiveTabs } = get();
 			if (enable === backgroundMode) return;
 			const toEnable = enable ?? !backgroundMode;
-			setShowActiveTabs(showActiveTabs);
+			saveShowActiveTabs(showActiveTabs);
 			if (toEnable) {
 				get().setSettings({
 					backgroundMode: true,
@@ -178,7 +191,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				});
 				moveSelfToNewGroupAndHide(app);
 			} else {
-				const showActiveTabs = getShowActiveTabs();
+				const showActiveTabs = loadShowActiveTabs();
 				get().setSettings({ backgroundMode: false, showActiveTabs });
 				if (selfIsNotInTheSidebar(app)) {
 					moveSelfToDefaultLocation(app);
@@ -212,20 +225,12 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			}
 		},
 		loadDeviceSpecificSettings() {
-			const { plugin } = get();
-			if (!plugin) return;
-			const disableOnThisDevice =
-				plugin.persistenceManager.device.get<boolean>(DISABLE_KEY) ??
-				false;
+			const disableOnThisDevice = loadDisableOnThisDevice();
 			set({ disableOnThisDevice });
 		},
 		saveDeviceSpecificSettings() {
-			const { plugin, disableOnThisDevice } = get();
-			if (!plugin) return;
-			plugin.persistenceManager.device.set(
-				DISABLE_KEY,
-				disableOnThisDevice
-			);
+			const { disableOnThisDevice } = get();
+			saveDisableOnThisDevice(disableOnThisDevice);
 		},
 		toggleDisableOnThisDevice(enable?: boolean) {
 			const { disableOnThisDevice } = get();

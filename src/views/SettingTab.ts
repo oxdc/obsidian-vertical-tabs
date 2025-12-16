@@ -9,7 +9,7 @@ import {
 	SettingGroup,
 } from "obsidian";
 import ObsidianVerticalTabs from "../main";
-import { DISABLE_KEY, useSettings } from "../models/PluginContext";
+import { loadDisableOnThisDevice, useSettings } from "../models/PluginContext";
 import { EVENTS } from "../constants/Events";
 import {
 	TabNavigationPresets,
@@ -82,8 +82,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		const store = this.plugin.persistenceManager.device;
-		const disableOnThisDevice = store.get<boolean>(DISABLE_KEY) ?? false;
+		const disableOnThisDevice = loadDisableOnThisDevice();
 
 		this.displayUpdateIndicator(containerEl);
 
@@ -891,7 +890,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		this.displayOptionsForMissionControlView(group);
 	}
 
-	private displayOptionsForContinuousView(parentEl: HTMLElement | SettingGroup) {
+	private displayOptionsForContinuousView(
+		parentEl: HTMLElement | SettingGroup
+	) {
 		this.createToggle(parentEl, {
 			name: "Show metadata in continuous view",
 			value: this.plugin.settings.continuousViewShowMetadata,
@@ -927,7 +928,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		});
 	}
 
-	private displayOptionsForMissionControlView(parentEl: HTMLElement | SettingGroup) {
+	private displayOptionsForMissionControlView(
+		parentEl: HTMLElement | SettingGroup
+	) {
 		this.createSlider(parentEl, {
 			name: "Zoom factor in mission control view",
 			desc: "Adjust the page size in mission control view.",
@@ -958,14 +961,13 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	private displayMiscellaneousSection(parentEl: HTMLElement) {
 		const group = this.createSettingGroup(parentEl, "Miscellaneous");
 
-		const store = this.plugin.persistenceManager.device;
-		const disableOnThisDevice = store.get<boolean>(DISABLE_KEY);
+		const disableOnThisDevice = loadDisableOnThisDevice();
 		this.createToggle(group, {
 			name: "Disable on this device",
 			desc: `Disable Vertical Tabs on this device only.
 						 The plugin will remain enabled on other devices.
 						 This setting is stored locally and will not sync across devices.`,
-			value: disableOnThisDevice ?? false,
+			value: disableOnThisDevice,
 			onChange: (value) => this.toggleDisableOnThisDevice(value),
 		});
 
@@ -980,7 +982,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		this.displayUpdateCheckToggle(group);
 	}
 
-	private async displayUpdateCheckToggle(parentEl: HTMLElement | SettingGroup) {
+	private async displayUpdateCheckToggle(
+		parentEl: HTMLElement | SettingGroup
+	) {
 		const toggle = this.createToggle(parentEl, {
 			name: "Check for updates",
 			desc: "Automatically check for updates when opening the settings tab.",
