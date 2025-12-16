@@ -13,4 +13,9 @@
 		color: var(--text-warning);
 		font-weight: bold;
 	}
+
+	&.new-design {
+		padding: 0 var(--size-4-4);
+		margin: var(--size-4-6) 0;
+	}
 }

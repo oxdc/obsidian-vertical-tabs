@@ -416,6 +416,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		const buttonText = buttonTextMatch ? buttonTextMatch[1] : "";
 		const [prefix, suffix] = template.split(/\{[^}]+\}/);
 		const warning = containerEl.createDiv({ cls: "vt-warning-banner" });
+		if (requireApiVersion("1.11.0")) warning.addClass("new-design");
 		warning.appendText(`* Warning: ${prefix}`);
 		const linkButton = warning.createEl("a", { text: buttonText });
 		warning.appendText(suffix);
