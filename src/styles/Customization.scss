@@ -69,13 +69,15 @@
 
 // prettier-ignore
 .mod-root .workspace-tabs[data-color] {
+	background-color: color-mix(in hsl, var(--vt-custom-color) 10%, transparent) !important;
+
 	.workspace-tab-header-container {
-		background-color: color-mix(in hsl, var(--vt-custom-color) 10%, transparent) !important;
+		background-color: transparent !important;
 		--tab-outline-color: color-mix(in hsl, var(--vt-custom-color) 95%, transparent);
 	}
 
 	.workspace-tab-container {
-		background-color: color-mix(in hsl, var(--vt-custom-color) 10%, transparent) !important;
+		background-color: transparent !important;
 	}
 
 	&.vt-mission-control-view .workspace-leaf {

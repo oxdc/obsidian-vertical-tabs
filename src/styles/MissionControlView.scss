@@ -27,7 +27,11 @@ body {
 		min-width: var(--vt-mission-control-view-leaf-width);
 		max-width: 100% !important;
 		zoom: var(--vt-mission-control-view-leaf-zoom-factor);
-		border: 1px solid var(--background-modifier-border);
+		border: solid var(--background-modifier-border);
+		border-width: calc(
+			var(--border-width) /
+				var(--vt-mission-control-view-leaf-zoom-factor)
+		);
 		border-radius: var(--radius-xl);
 		box-shadow: var(--shadow-s);
 
