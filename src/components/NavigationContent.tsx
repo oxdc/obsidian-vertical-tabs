@@ -34,7 +34,7 @@ import { useTabSelection } from "src/stores/TabSelectionStore";
 
 export const NavigationContent = () => {
 	const { groupIDs, content } = tabCacheStore.getState();
-	const { swapGroup, moveGroupToEnd } = tabCacheStore.getActions();
+	const { moveGroupBefore, moveGroupToEnd } = tabCacheStore.getActions();
 	const { getSelectedTabs, isTabSelected, clearTabSelection } =
 		useTabSelection();
 	const app = useApp();
@@ -124,12 +124,12 @@ export const NavigationContent = () => {
 			if (isOverTab) {
 				const leaf = app.workspace.getLeafById(overID);
 				if (!leaf) return;
-				swapGroup(activeID, leaf.parent.id);
+				moveGroupBefore(activeID, leaf.parent.id);
 			} else {
 				if (overID === "slot-new") {
 					moveGroupToEnd(activeID);
 				} else {
-					swapGroup(activeID, overID);
+					moveGroupBefore(activeID, overID);
 				}
 			}
 		}

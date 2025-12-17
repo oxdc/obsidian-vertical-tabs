@@ -50,7 +50,7 @@ interface TabCacheState {
 
 interface TabCacheActions {
 	refresh: (app: App) => void;
-	swapGroup: (source: Identifier, target: Identifier) => void;
+	moveGroupBefore: (source: Identifier, target: Identifier) => void;
 	moveGroupToEnd: (id: Identifier) => void;
 	setSortStrategy: (strategy: SortStrategy | null) => void;
 	sort: () => void;
@@ -129,8 +129,7 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 					);
 				saveGroupOrder(sortedGroupIDs);
 
-				const sortStrategy =
-					state.sortStrategy ?? loadSortStrategy();
+				const sortStrategy = state.sortStrategy ?? loadSortStrategy();
 
 				return {
 					...state,
@@ -143,13 +142,16 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 			});
 			get().actions.loadAllVisibleMetadata();
 		},
-		swapGroup: (source, target) => {
+		moveGroupBefore: (source, target) => {
+			if (source === target) return;
 			const { groupIDs } = get();
 			const sourceIndex = groupIDs.indexOf(source);
 			const targetIndex = groupIDs.indexOf(target);
-			const newGroupIDs = [...groupIDs];
-			newGroupIDs[sourceIndex] = target;
-			newGroupIDs[targetIndex] = source;
+			if (sourceIndex === -1 || targetIndex === -1) return;
+			const newGroupIDs = groupIDs.filter((id) => id !== source);
+			const insertIndex = newGroupIDs.indexOf(target);
+			if (insertIndex === -1) return;
+			newGroupIDs.splice(insertIndex, 0, source);
 			set({ groupIDs: newGroupIDs });
 			saveGroupOrder(newGroupIDs);
 		},
