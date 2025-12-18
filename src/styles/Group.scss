@@ -24,9 +24,13 @@
 		&.is-collapsed .tree-item-icon svg.svg-icon.right-triangle {
 			transform: rotate(calc(var(--direction) * -1 * 90deg));
 		}
-	}
 
-	.is-hidden {
-		opacity: 0.5;
+		&.is-being-dragged > .tree-item-self {
+			margin-bottom: 0;
+		}
+
+		&.is-hidden {
+			opacity: 0.5;
+		}
 	}
 }

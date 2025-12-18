@@ -19,4 +19,10 @@
 			padding: var(--size-2-1);
 		}
 	}
+
+	&.is-being-dragged {
+		.tree-item-flair-outer {
+			visibility: hidden;
+		}
+	}
 }

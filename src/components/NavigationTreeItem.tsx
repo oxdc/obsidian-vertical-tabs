@@ -108,7 +108,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 	}, [props.isCollapsed]);
 
 	const style = {
-		minHeight: props.isCollapsed ? 0 : height,
+		minHeight: props.isCollapsed || isDragging ? 0 : height,
 		"--vt-custom-color": props.color,
 	} as React.CSSProperties;
 
