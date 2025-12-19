@@ -42,7 +42,6 @@ interface TabCacheState {
 	content: TabCache;
 	groupIDs: Identifier[];
 	leafIDs: Identifier[];
-	leafToGroupMap: Map<Identifier, Identifier>;
 	sortStrategy: SortStrategy | null;
 	tabMetadata: Map<Identifier, TabMetadata>;
 	groupMetadata: Map<Identifier, GroupMetadata>;
@@ -93,7 +92,6 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 	content: createNewTabCache(),
 	groupIDs: [],
 	leafIDs: [],
-	leafToGroupMap: new Map(),
 	sortStrategy: null,
 	tabMetadata: new Map(),
 	groupMetadata: new Map(),
@@ -102,15 +100,11 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 			set((state) => {
 				const content = getTabs(app);
 				const leafIDs: Identifier[] = [];
-				const leafToGroupMap = new Map<Identifier, Identifier>();
-
-				for (const [groupID, entry] of content.entries()) {
+				for (const entry of content.values()) {
 					for (const leafID of entry.leafIDs) {
 						leafIDs.push(leafID);
-						leafToGroupMap.set(leafID, groupID);
 					}
 				}
-
 				const existingGroupIDs = state.groupIDs.filter((id) =>
 					content.has(id)
 				);
@@ -128,14 +122,11 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 						)
 					);
 				saveGroupOrder(sortedGroupIDs);
-
 				const sortStrategy = state.sortStrategy ?? loadSortStrategy();
-
 				return {
 					...state,
 					content,
 					leafIDs,
-					leafToGroupMap,
 					groupIDs: sortedGroupIDs,
 					sortStrategy,
 				};
