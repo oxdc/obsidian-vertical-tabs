@@ -5,6 +5,7 @@ import {
 	OpenViewState,
 	Platform,
 	Plugin,
+	PluginManifest,
 	TFile,
 	View,
 	Workspace,
@@ -38,6 +39,7 @@ import { localStorageService } from "./stores/LocalStorageService";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
+	cached_manifest?: PluginManifest;
 
 	async onload() {
 		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
@@ -400,9 +402,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 		const app = this.app;
 		const root = app.plugins.getPluginFolder();
 		const id = this.manifest.id;
-		const path = normalizePath(`${root}/${id}/manifest.json`);
+		const dir = normalizePath(`${root}/${id}`);
+		const path = normalizePath(`${dir}/manifest.json`);
 		const manifest = JSON.parse(await app.vault.adapter.read(path));
-		this.manifest = manifest;
+		this.cached_manifest = manifest;
 		return manifest;
 	}
 

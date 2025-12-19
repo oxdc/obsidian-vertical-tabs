@@ -212,12 +212,15 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	private async displayUpdateIndicator(containerEl: HTMLElement) {
 		const group = this.createSettingGroup(containerEl);
 		const entry = this.createSetting(group, (s) => s.setName("Updates"));
+		const currentVersion =
+			this.plugin.cached_manifest?.version ??
+			this.plugin.manifest.version;
 		if (await this.plugin.isBetaVersion()) {
 			const betaVersionInfo = entry.descEl.createSpan({
 				cls: "vt-beta-version-info",
 			});
 			betaVersionInfo.appendText(
-				`You are running beta version ${this.plugin.manifest.version}. Beta updates are managed by the `
+				`You are running beta version ${currentVersion}. Beta updates are managed by the `
 			);
 			betaVersionInfo.createEl("a", {
 				text: "Beta Helper",
@@ -240,7 +243,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				this.checkForUpdates(entry, indicator);
 			} else {
 				entry.setDesc(
-					`Update checking is disabled. Current version: ${this.plugin.manifest.version}`
+					`Update checking is disabled. Current version: ${currentVersion}`
 				);
 			}
 		}
@@ -1228,7 +1231,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 
 	private async copyPluginSettingsToClipboard() {
 		const settings = { ...this.plugin.settings };
-		const version = this.plugin.manifest.version;
+		const version =
+			this.plugin.cached_manifest?.version ??
+			this.plugin.manifest.version;
 		const pluginInfo = { version, settings };
 		const json = JSON.stringify(pluginInfo, null, 2);
 		const markdown = "```json\n" + json + "\n```";

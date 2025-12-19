@@ -17,8 +17,8 @@ async function checkPreconditions(
 	plugin: ObsidianVerticalTabs
 ): Promise<boolean> {
 	if (!(await plugin.isBetaVersion())) return false;
-	const manifest = plugin.manifest;
-	if (!manifest.timestamp || !manifest.files) return false;
+	const manifest = plugin.cached_manifest;
+	if (!manifest || !manifest.timestamp || !manifest.files) return false;
 	return true;
 }
 
@@ -29,8 +29,8 @@ function getPluginPath(plugin: ObsidianVerticalTabs): string {
 }
 
 async function checkFileHashes(plugin: ObsidianVerticalTabs): Promise<boolean> {
-	const manifest = plugin.manifest;
-	if (!manifest.files) return false;
+	const manifest = plugin.cached_manifest;
+	if (!manifest || !manifest.files) return false;
 	const pluginPath = getPluginPath(plugin);
 	for (const [filename, expectedHash] of Object.entries(manifest.files)) {
 		if (!expectedHash.startsWith("sha256:")) return false;

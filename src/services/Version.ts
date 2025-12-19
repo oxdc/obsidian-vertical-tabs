@@ -24,7 +24,8 @@ export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 	currentVersion: string;
 	latestVersion: string | null;
 }> {
-	const currentVersion = plugin.manifest.version;
+	const currentVersion =
+		plugin.cached_manifest?.version ?? plugin.manifest.version;
 
 	// Respect user's preference to disable update checks
 	if (!(plugin.settings.enableUpdateCheck ?? true)) {
