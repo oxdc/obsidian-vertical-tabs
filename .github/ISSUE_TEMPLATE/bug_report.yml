@@ -81,8 +81,6 @@ body:
       1. Open Obsidian settings, then scroll to the section named "Community plugins", find and open the tab called "Vertical Tabs".
       2. Scroll to the bottom and click "Copy plugin settings".
       3. Paste the copied text here.
-
-      **Note:** Your installation ID will be automatically redacted for privacy. The installation ID is generated and stored locally, and will never be transferred over the internet or shared with anyone. It is only used by Vertical Tabs to identify and manage tab session data across your devices in upcoming features.
     placeholder: Paste the plugin settings here...
   validations:
     required: true

@@ -1228,7 +1228,6 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 
 	private async copyPluginSettingsToClipboard() {
 		const settings = { ...this.plugin.settings };
-		settings.installationID = "[Redacted]";
 		const version = this.plugin.manifest.version;
 		const pluginInfo = { version, settings };
 		const json = JSON.stringify(pluginInfo, null, 2);

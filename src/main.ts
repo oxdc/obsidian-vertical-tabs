@@ -21,7 +21,6 @@ import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
 import { useViewState } from "./models/ViewState";
 import { ObsidianVerticalTabsSettingTab } from "./views/SettingTab";
 import { loadDisableOnThisDevice, useSettings } from "./models/PluginContext";
-import { nanoid } from "nanoid";
 import { patchQuickSwitcher } from "./services/EphemeralTabs";
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
@@ -142,9 +141,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 			DEFAULT_SETTINGS,
 			await this.loadData()
 		);
-		if (!this.settings.installationID) {
-			this.settings.installationID = nanoid();
-		}
 	}
 
 	async saveSettings() {

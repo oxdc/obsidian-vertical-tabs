@@ -38,7 +38,6 @@
 		"@dnd-kit/utilities": "^3.2.2",
 		"dexie": "^4.2.1",
 		"monkey-around": "^3.0.0",
-		"nanoid": "^5.0.9",
 		"react": "^19.2.1",
 		"react-dom": "^19.2.1",
 		"semver": "^7.7.2",
