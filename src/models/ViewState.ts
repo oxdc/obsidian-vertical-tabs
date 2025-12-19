@@ -956,16 +956,16 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			return;
 		}
 		const { hiddenGroups } = get();
-		const tabCache = getTabs(app);
+		const { groups, groupIDs } = getTabs(app);
 		const visibleRootGroups: Array<{
 			id: Identifier;
 			lastActivity: number;
 			tabCacheIndex: number;
 		}> = [];
-		const groupIDs = Array.from(tabCache.keys());
 		for (let index = 0; index < groupIDs.length; index++) {
 			const groupID = groupIDs[index];
-			const entry = tabCache.get(groupID);
+			const entry = groups.get(groupID);
+			if (!entry) continue;
 			if (entry.groupType !== GroupType.RootSplit) continue;
 			if (hiddenGroups.includes(groupID)) continue;
 			if (!entry.group) continue;

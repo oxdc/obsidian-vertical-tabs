@@ -6,46 +6,52 @@ import {
 	WorkspaceParent,
 	WorkspaceSplit,
 } from "obsidian";
-import { createNewTabCache, TabCache } from "src/stores/TabCacheStore";
-import { GroupType } from "src/models/VTWorkspace";
+import { TabCacheData } from "src/stores/TabCacheStore";
+import { GroupType, Identifier } from "src/models/VTWorkspace";
 import { managedLeafStore } from "src/stores/ManagedLeafStore";
-function record(
-	app: App,
-	nameOrID: string,
-	type: GroupType,
-	leaf: WorkspaceLeaf,
-	content: TabCache
-) {
+
+type RecordData = TabCacheData & {
+	groupIDs: Identifier[];
+	leafIDs: Identifier[];
+};
+
+// prettier-ignore
+function record(app: App, groupID: string, groupType: GroupType, leaf: WorkspaceLeaf, data: TabCacheData) {
 	const { isManagedLeaf } = managedLeafStore.getActions();
 	if (isManagedLeaf(app, leaf)) return;
-	content.get(nameOrID).groupType = type;
-	content.get(nameOrID).group = leaf.parent as WorkspaceParent;
-	content.get(nameOrID).leaves.push(leaf);
-	content.get(nameOrID).leafIDs.push(leaf.id);
+	if (!data.groups.has(groupID)) {
+		const group = leaf.parent as WorkspaceParent;
+		data.groups.set(groupID, { group, groupType, leafIDs: [] });
+	}
+	data.groups.get(groupID)?.leafIDs.push(leaf.id);
+	data.leaves.set(leaf.id, { leaf, groupID });
 	// If guessedCreationTime is not set, we assume the leaf was created now
 	if (!leaf.guessedCreationTime) {
 		leaf.guessedCreationTime = Date.now();
 	}
 }
 
-export function getTabs(app: App): TabCache {
-	const content = createNewTabCache();
+// prettier-ignore
+export function getTabs(app: App): RecordData {
+	const data: TabCacheData = { groups: new Map(), leaves: new Map() };
 	const workspace = app.workspace;
 	const { leftSplit, rightSplit, rootSplit, floatingSplit } = workspace;
 	managedLeafStore.getActions().refresh(app);
 	workspace.iterateLeaves(leftSplit as WorkspaceSplit, (leaf) =>
-		record(app, "left-sidebar", GroupType.LeftSidebar, leaf, content)
+		record(app, "left-sidebar", GroupType.LeftSidebar, leaf, data)
 	);
 	workspace.iterateLeaves(rightSplit as WorkspaceSplit, (leaf) =>
-		record(app, "right-sidebar", GroupType.RightSidebar, leaf, content)
+		record(app, "right-sidebar", GroupType.RightSidebar, leaf, data)
 	);
 	workspace.iterateLeaves(rootSplit, (leaf) =>
-		record(app, leaf.parent.id, GroupType.RootSplit, leaf, content)
+		record(app, leaf.parent.id, GroupType.RootSplit, leaf, data)
 	);
 	workspace.iterateLeaves(floatingSplit, (leaf) =>
-		record(app, leaf.parent.id, GroupType.RootSplit, leaf, content)
+		record(app, leaf.parent.id, GroupType.RootSplit, leaf, data)
 	);
-	return content;
+	const groupIDs = Array.from(data.groups.keys());
+	const leafIDs = Array.from(data.leaves.keys());
+	return { ...data, groupIDs, leafIDs };
 }
 
 export function iterateRootOrFloatingLeaves(

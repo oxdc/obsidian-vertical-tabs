@@ -17,7 +17,7 @@ import {
 	closeTabsToBottomInGroup,
 	closeTabsToTopInGroup,
 } from "src/services/CloseTabs";
-import { tabCacheStore } from "src/stores/TabCacheStore";
+import { GroupCacheEntry, tabCacheStore } from "src/stores/TabCacheStore";
 import { useViewState, VIEW_CUE_PREV } from "src/models/ViewState";
 import { useTabSelection } from "src/stores/TabSelectionStore";
 import { deduplicateTitle } from "src/services/DeduplicateTitle";
@@ -327,13 +327,11 @@ export const Tab = (props: TabProps) => {
 
 	/* Commands - Move */
 	const addMoveOptionsToMenu = (menu: Menu) => {
-		const entries = Array.from(tabCacheStore.getState().content.values());
-		const groups = entries
-			.filter(
-				(entry) =>
-					entry.groupType === GroupType.RootSplit &&
-					entry.group !== leaf.parent
-			)
+		const isOtherRootGroup = (entry: GroupCacheEntry) =>
+			entry.groupType === GroupType.RootSplit &&
+			entry.group !== leaf.parent;
+		const groups = Array.from(tabCacheStore.getState().groups.values())
+			.filter(isOtherRootGroup)
 			.map((entry) => entry.group)
 			.filter((group) => group !== null);
 		groups.forEach((group) => {
