@@ -139,9 +139,9 @@ export class EventBindingService {
 	 * @returns True if binding was successful, false if prevented by scope check
 	 * @throws Error if binder is not registered or target cannot be retrieved
 	 */
-	bind<TCallback extends (...args: any[]) => void>(
+	bind<TCallback extends (...args: unknown[]) => void>(
 		binderName: string,
-		target: any,
+		target: unknown,
 		callback: TCallback,
 		options: BindOptions = {}
 	): boolean {
