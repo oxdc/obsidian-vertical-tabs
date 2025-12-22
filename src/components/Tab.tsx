@@ -65,6 +65,7 @@ import {
 	removeIcon,
 } from "src/services/Customization";
 import { getGroupTitle, setGroupTitle } from "src/services/Customization";
+import { eventBindingService } from "src/stores/EventBindingService";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -86,7 +87,6 @@ export const Tab = (props: TabProps) => {
 	/* Actions (for mutating the shared store) */
 	const { refresh, sort, saveTabMetadata } = tabCacheStore.getActions();
 	const {
-		bindPinningEvent,
 		bindEphemeralToggleEvent,
 		lockFocusOnLeaf,
 		toggleHiddenGroup,
@@ -747,7 +747,10 @@ export const Tab = (props: TabProps) => {
 	// Bind and track the events that used for syncing with Obsidian,
 	// when the states are changed outside of the component.
 	useEffect(() => {
-		bindPinningEvent(leaf, setPinnedStates);
+		eventBindingService.bind("tab-pinning", leaf, setPinnedStates, {
+			scope: "tab-component",
+			once: true,
+		});
 		bindEphemeralToggleEvent(app, leaf, setIsEphemeral);
 	}, [leaf.id]);
 	// volatileTitle is used for syncing with the webview title.

@@ -29,7 +29,6 @@ import {
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
 import { SAFE_DETACH_TIMEOUT, safeDetach } from "./services/CloseTabs";
-import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 import { VERTICAL_TABS_ICON } from "./icon";
 import { normalizePath } from "obsidian";
 import { getOpenFileOfLeaf } from "./services/GetTabs";
@@ -41,6 +40,7 @@ import { registerCommands } from "./commands";
 import { registerEvents } from "./events";
 import { moveSelfToNewGroupAndHide } from "src/services/MoveTab";
 import { autoRefresh } from "src/services/Refresh";
+import { eventBindingService } from "./stores/EventBindingService";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -72,15 +72,16 @@ export default class ObsidianVerticalTabs extends Plugin {
 		await this.patchViews();
 		this.addSettingTab(new ObsidianVerticalTabsSettingTab(this.app, this));
 		await this.initialize();
-		this.app.workspace.onLayoutReady(() => {
-			this.openVerticalTabs();
-			if (Platform.isMobile && !Platform.isTablet) {
-				setTimeout(() => this.app.workspace.leftSplit.collapse());
-			}
-			setTimeout(() => {
-				useViewState.getState().refreshToggleButtons(this.app);
-			}, REFRESH_TIMEOUT_LONG);
-		});
+
+		// this.app.workspace.onLayoutReady(() => {
+		// 	this.openVerticalTabs();
+		// 	if (Platform.isMobile && !Platform.isTablet) {
+		// 		setTimeout(() => this.app.workspace.leftSplit.collapse());
+		// 	}
+		// 	setTimeout(() => {
+		// 		useViewState.getState().refreshToggleButtons(this.app);
+		// 	}, REFRESH_TIMEOUT_LONG);
+		// });
 	}
 
 	async initialize() {
@@ -112,6 +113,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		if (this.settings.enhancedKeyboardTabSwitch) {
 			useViewState.getState().resetViewCueCallback(this.app);
 		}
+		eventBindingService.unbindAll();
 	}
 
 	async loadSettings() {

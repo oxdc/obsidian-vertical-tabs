@@ -41,11 +41,6 @@ import { getTabs } from "src/services/GetTabs";
 import { useSettings } from "./PluginContext";
 import { isHoverEditorEnabled } from "src/services/HoverEditorTabs";
 
-export type PinningEvents = DefaultRecord<Identifier, EventRef | null>;
-export type PinningEventCallback = (pinned: boolean) => void;
-export const createNewPinningEvents = () =>
-	new DefaultRecord(() => null) as PinningEvents;
-
 export type EphermalToggleEvents = DefaultRecord<Identifier, EventRef | null>;
 export type EphermalToggleEventCallback = (isEphemeral: boolean) => void;
 export const createNewEphermalToggleEvents = () =>
@@ -88,7 +83,6 @@ interface ViewState {
 	groupUnhideTimes: GroupUnhideTimes;
 	latestActiveLeaf: WorkspaceLeaf | null;
 	latestActiveTab: HTMLElement | null;
-	pinningEvents: PinningEvents;
 	ephermalToggleEvents: EphermalToggleEvents;
 	groupViewToggleEvents: GroupViewToggleEvents;
 	globalCollapseState: boolean;
@@ -124,11 +118,6 @@ interface ViewState {
 	insertCloneButtons: () => void;
 	updatePositionLabels: () => void;
 	refreshToggleButtons: (app: App) => void;
-	bindPinningEvent: (
-		leaf: WorkspaceLeaf,
-		callback: PinningEventCallback
-	) => void;
-	unbindPinningEvent: (leaf: WorkspaceLeaf) => void;
 	bindEphemeralToggleEvent: (
 		app: App,
 		leaf: WorkspaceLeaf,
@@ -279,7 +268,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	groupUnhideTimes: loadGroupUnhideTimes(),
 	latestActiveLeaf: null,
 	latestActiveTab: null,
-	pinningEvents: createNewPinningEvents(),
 	ephermalToggleEvents: createNewEphermalToggleEvents(),
 	groupViewToggleEvents: createNewGroupViewToggleEvents(),
 	globalCollapseState: false,
@@ -552,23 +540,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		if (!leftButtonClone || !rightButtonClone)
 			get().cloneToggleButtons(app);
 		get().insertCloneButtons();
-	},
-	bindPinningEvent(leaf: WorkspaceLeaf, callback: (pinned: boolean) => void) {
-		const { pinningEvents } = get();
-		const event = pinningEvents.get(leaf.id);
-		if (event) return;
-		const newEvent = leaf.on("pinned-change", callback);
-		pinningEvents.set(leaf.id, newEvent);
-		set({ pinningEvents });
-	},
-	unbindPinningEvent(leaf: WorkspaceLeaf) {
-		const { pinningEvents } = get();
-		const event = pinningEvents.get(leaf.id);
-		if (event) {
-			leaf.offref(event);
-			pinningEvents.set(leaf.id, null);
-			set({ pinningEvents });
-		}
 	},
 	bindEphemeralToggleEvent(
 		app: App,
