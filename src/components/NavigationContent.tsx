@@ -33,7 +33,9 @@ import { TabSlot } from "./TabSlot";
 import { useTabSelection } from "src/stores/TabSelectionStore";
 
 export const NavigationContent = () => {
-	const { groupIDs, groups, leaves } = tabCacheStore.getState();
+	const groupIDs = tabCacheStore((state) => state.groupIDs);
+	const groups = tabCacheStore((state) => state.groups);
+	const leaves = tabCacheStore((state) => state.leaves);
 	const { moveGroupBefore, moveGroupToEnd } = tabCacheStore.getActions();
 	const { getSelectedTabs, isTabSelected, clearTabSelection } =
 		useTabSelection();

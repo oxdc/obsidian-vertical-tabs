@@ -97,30 +97,24 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 		refresh: (app) => {
 			set((state) => {
 				const { groups, leaves, leafIDs } = getTabs(app);
-				const existingGroupIDs = state.groupIDs.filter((id) =>
-					groups.has(id)
+				const existing = state.groupIDs.filter((id) => groups.has(id));
+				const new_ = Array.from(groups.keys()).filter(
+					(id) => !existing.includes(id)
 				);
-				const newGroupIDs = Array.from(groups.keys()).filter(
-					(id) => !existingGroupIDs.includes(id)
-				);
-				const mergedGroupIDs = [...existingGroupIDs, ...newGroupIDs];
-				const loadedGroupIDs = loadGroupOrder();
-				const sortedGroupIDs = ([] as Identifier[])
-					.concat(loadedGroupIDs)
-					.filter((id) => mergedGroupIDs.includes(id))
-					.concat(
-						mergedGroupIDs.filter(
-							(id) => !loadedGroupIDs.includes(id)
-						)
-					);
-				saveGroupOrder(sortedGroupIDs);
+				const merged = [...existing, ...new_];
+				const saved = loadGroupOrder();
+				const sorted = ([] as Identifier[])
+					.concat(saved)
+					.filter((id) => merged.includes(id))
+					.concat(merged.filter((id) => !saved.includes(id)));
+				saveGroupOrder(sorted);
 				const sortStrategy = state.sortStrategy ?? loadSortStrategy();
 				return {
 					...state,
 					groups,
 					leaves,
 					leafIDs,
-					groupIDs: sortedGroupIDs,
+					groupIDs: sorted,
 					sortStrategy,
 				};
 			});
@@ -154,31 +148,20 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 			get().actions.sort();
 		},
 		sort: () => {
-			const { groups, leaves, sortStrategy } = get();
+			const { groups, sortStrategy } = get();
 			if (!sortStrategy) return;
-			const newLeaves = new Map<Identifier, LeafCacheEntry>();
-			for (const [groupID, groupEntry] of groups.entries()) {
-				if (
-					groupEntry.groupType === GroupType.RootSplit &&
-					groupEntry.group
-				) {
-					const sortedLeaves = sortTabs(
-						groupEntry.group,
-						sortStrategy
-					);
-					for (const leaf of sortedLeaves) {
-						newLeaves.set(leaf.id, { leaf, groupID });
-					}
+			const newGroups = new Map<Identifier, GroupCacheEntry>();
+			for (const [id, entry] of groups.entries()) {
+				if (entry.groupType === GroupType.RootSplit && entry.group) {
+					const sortedLeaves = sortTabs(entry.group, sortStrategy);
+					const sortedLeafIDs = sortedLeaves.map((leaf) => leaf.id);
+					const newEntry = { ...entry, leafIDs: sortedLeafIDs };
+					newGroups.set(id, newEntry);
 				} else {
-					// Copy non-RootSplit leaves as-is
-					for (const [leafID, leafEntry] of leaves.entries()) {
-						if (leafEntry.groupID === groupID) {
-							newLeaves.set(leafID, leafEntry);
-						}
-					}
+					newGroups.set(id, entry);
 				}
 			}
-			set({ leaves: newLeaves });
+			set({ groups: newGroups });
 		},
 		hasOnlyOneGroup: () => {
 			const { groupIDs } = get();
