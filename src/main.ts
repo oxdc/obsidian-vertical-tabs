@@ -36,6 +36,7 @@ import { managedLeafStore } from "./stores/ManagedLeafStore";
 import { isHoverEditorEnabled } from "./services/HoverEditorTabs";
 import { applyTabTitle } from "./services/Customization";
 import { localStorageService } from "./stores/LocalStorageService";
+import { registerCommands } from "./commands";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -54,7 +55,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 			return;
 		}
 		await this.registerEventsAndViews();
-		await this.setupCommands();
+		registerCommands(this);
 		await this.updateViewStates();
 		await this.patchViews();
 		this.addSettingTab(new ObsidianVerticalTabsSettingTab(this.app, this));
@@ -106,17 +107,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 			updateOrientationLabel();
 			this.registerDomEvent(window, "resize", updateOrientationLabel);
 		}
-	}
-
-	async setupCommands() {
-		this.addCommand({
-			id: "open-vertical-tabs",
-			name: "Open vertical tabs",
-			callback: () => {
-				this.openVerticalTabs();
-				useSettings.getState().toggleBackgroundMode(this.app, false);
-			},
-		});
 	}
 
 	async openVerticalTabs() {

@@ -8,7 +8,7 @@ import {
 	ALT_KEY_EFFECT_DURATION,
 	VIEW_CUE_DELAY,
 } from "src/models/ViewState";
-import { debounce, ItemView, Platform, TFile, TFolder } from "obsidian";
+import { debounce, Platform, TFile, TFolder } from "obsidian";
 import { EVENTS } from "src/constants/Events";
 import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 import {
@@ -17,7 +17,6 @@ import {
 	moveSelfToNewGroupAndHide,
 	selfIsNotInTheSidebar,
 } from "src/services/MoveTab";
-import { resetZoom, zoomIn, zoomOut } from "src/services/TabZoom";
 import { isSelfVisible } from "src/services/Visibility";
 import {
 	autoCloseOldEphemeralTabs,
@@ -25,24 +24,19 @@ import {
 	installTabHeaderHandlers,
 	makeDblclickedFileNonEphemeral,
 	makeLeafEphemeralOnEditorChange,
-	makeLeafNonEphemeral,
 	makeTabNonEphemeralAutomatically,
 	uninstallTabHeaderHandlers,
 } from "src/services/EphemeralTabs";
 import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
-import { iterateRootOrFloatingLeaves } from "src/services/GetTabs";
 import { SwipeDirection, useTouchSensor } from "src/services/TouchSeneor";
 import { getDrawer } from "src/services/MobileDrawer";
 import { addMenuItemsToFolderContextMenu } from "src/services/OpenFolder";
-import { GroupViewType } from "src/models/VTGroupView";
 import { NativeDragTabs } from "src/services/NativeDragTabs";
 import { addMenuItemsToFileContextMenu } from "src/services/OpenFile";
 import {
 	shouldDisplayBetaSecurityInfo,
 	verifyBetaIntegrity,
 } from "src/services/Integrity";
-import { createBookmarkForGroup } from "src/models/VTBookmark";
-import { getGroupTitle } from "src/services/Customization";
 
 const TEN_MINUTES = 10 * 60 * 1000;
 
@@ -54,7 +48,6 @@ export const NavigationContainer = () => {
 	const {
 		setLatestActiveLeaf,
 		refreshToggleButtons,
-		lockFocus,
 		forgetNonephemeralTabs,
 		uncollapseActiveGroup,
 		setCtrlKeyState,
@@ -65,10 +58,9 @@ export const NavigationContainer = () => {
 		resetViewCueCallback,
 		scorllToViewCueFirstTab,
 		setIsEditingTabs,
-		setGroupViewTypeForCurrentGroup,
 		exitMissionControlForCurrentGroup,
 	} = useViewState();
-	const { loadSettings, toggleZenMode, updateEphemeralTabs } = useSettings();
+	const { loadSettings, updateEphemeralTabs } = useSettings();
 
 	// Drag detection state using refs to persist across re-renders
 	const dragInProgress = useRef(false);
@@ -298,112 +290,6 @@ export const NavigationContainer = () => {
 		plugin.registerDomEvent(window, "dragstart", handleDragStart);
 		plugin.registerDomEvent(window, "dragend", handleDragEnd);
 		plugin.registerDomEvent(window, "drop", handleDrop);
-		plugin.addCommand({
-			id: "toggle-zen-mode",
-			name: "Toggle zen mode",
-			callback: () => {
-				toggleZenMode();
-				lockFocus(plugin);
-				workspace.trigger(EVENTS.UPDATE_TOGGLE);
-			},
-		});
-		plugin.addCommand({
-			id: "zoom-in-current-tab",
-			name: "Zoom in current tab",
-			callback: () => {
-				const view = workspace.getActiveViewOfType(ItemView);
-				if (view) zoomIn(view);
-			},
-		});
-		plugin.addCommand({
-			id: "zoom-out-current-tab",
-			name: "Zoom out current tab",
-			callback: () => {
-				const view = workspace.getActiveViewOfType(ItemView);
-				if (view) zoomOut(view);
-			},
-		});
-		plugin.addCommand({
-			id: "zoom-reset-current-tab",
-			name: "Reset zoom in current tab",
-			callback: () => {
-				const view = workspace.getActiveViewOfType(ItemView);
-				if (view) resetZoom(view);
-			},
-		});
-		plugin.addCommand({
-			id: "set-all-tabs-nonephemeral",
-			name: "Set all tabs non-ephemeral",
-			callback: () => {
-				if (!useSettings.getState().ephemeralTabs) return;
-				iterateRootOrFloatingLeaves(app, (leaf) =>
-					makeLeafNonEphemeral(leaf)
-				);
-			},
-		});
-		plugin.addCommand({
-			id: "deduplicate-existing-tabs",
-			name: "Deduplicate all existing tabs",
-			callback: () => {
-				deduplicateExistingTabs(app, true);
-				uncollapseActiveGroup(app);
-			},
-		});
-		plugin.addCommand({
-			id: "set-current-group-default-view",
-			name: "Set current group as default view",
-			callback: () => {
-				setGroupViewTypeForCurrentGroup(GroupViewType.Default);
-			},
-		});
-		plugin.addCommand({
-			id: "set-current-group-continuous-view",
-			name: "Set current group as continuous view",
-			callback: () => {
-				setGroupViewTypeForCurrentGroup(GroupViewType.ContinuousView);
-			},
-		});
-		plugin.addCommand({
-			id: "set-current-group-column-view",
-			name: "Set current group as column view",
-			callback: () => {
-				setGroupViewTypeForCurrentGroup(GroupViewType.ColumnView);
-			},
-		});
-		plugin.addCommand({
-			id: "set-current-group-mission-control-view",
-			name: "Set current group as mission control view",
-			callback: () => {
-				setGroupViewTypeForCurrentGroup(
-					GroupViewType.MissionControlView
-				);
-			},
-		});
-		plugin.addCommand({
-			id: "bookmark-current-group",
-			name: "Bookmark current group",
-			callback: async () => {
-				const group =
-					app.workspace.getActiveViewOfType(ItemView)?.leaf?.parent;
-				if (group) {
-					const title = getGroupTitle(group.id);
-					await createBookmarkForGroup(app, group, title);
-				}
-			},
-		});
-		plugin.addCommand({
-			id: "bookmark-and-close-current-group",
-			name: "Bookmark and close current group",
-			callback: async () => {
-				const group =
-					app.workspace.getActiveViewOfType(ItemView)?.leaf?.parent;
-				if (group) {
-					const title = getGroupTitle(group.id);
-					await createBookmarkForGroup(app, group, title);
-					group.detach();
-				}
-			},
-		});
 		plugin.registerHoverLinkSource("vertical-tabs", {
 			defaultMod: true,
 			display: "Vertical Tabs",
