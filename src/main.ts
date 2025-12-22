@@ -22,20 +22,25 @@ import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
 import { useViewState } from "./models/ViewState";
 import { ObsidianVerticalTabsSettingTab } from "./views/SettingTab";
 import { loadDisableOnThisDevice, useSettings } from "./models/PluginContext";
-import { patchQuickSwitcher } from "./services/EphemeralTabs";
+import {
+	patchQuickSwitcher,
+	initEphemeralTabs,
+} from "./services/EphemeralTabs";
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
 import { SAFE_DETACH_TIMEOUT, safeDetach } from "./services/CloseTabs";
 import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 import { VERTICAL_TABS_ICON } from "./icon";
-import { scrollToActiveTab } from "./services/ScrollableTabs";
-import { updateOrientationLabel } from "./services/Orientation";
 import { normalizePath } from "obsidian";
 import { getOpenFileOfLeaf } from "./services/GetTabs";
 import { managedLeafStore } from "./stores/ManagedLeafStore";
 import { isHoverEditorEnabled } from "./services/HoverEditorTabs";
 import { applyTabTitle } from "./services/Customization";
 import { localStorageService } from "./stores/LocalStorageService";
+import { registerCommands } from "./commands";
+import { registerEvents } from "./events";
+import { moveSelfToNewGroupAndHide } from "src/services/MoveTab";
+import { autoRefresh } from "src/services/Refresh";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -53,11 +58,20 @@ export default class ObsidianVerticalTabs extends Plugin {
 			);
 			return;
 		}
-		await this.registerEventsAndViews();
-		await this.setupCommands();
+		this.registerView(
+			VERTICAL_TABS_VIEW,
+			(leaf) => new VerticalTabsView(leaf, this)
+		);
+		this.registerHoverLinkSource("vertical-tabs", {
+			defaultMod: true,
+			display: "Vertical Tabs",
+		});
+		registerEvents(this);
+		registerCommands(this);
 		await this.updateViewStates();
 		await this.patchViews();
 		this.addSettingTab(new ObsidianVerticalTabsSettingTab(this.app, this));
+		await this.initialize();
 		this.app.workspace.onLayoutReady(() => {
 			this.openVerticalTabs();
 			if (Platform.isMobile && !Platform.isTablet) {
@@ -69,54 +83,17 @@ export default class ObsidianVerticalTabs extends Plugin {
 		});
 	}
 
+	async initialize() {
+		const { modifyViewCueCallback } = useViewState.getState();
+		const settings = await useSettings.getState().loadSettings(this);
+		if (settings.ephemeralTabs) initEphemeralTabs(this.app);
+		if (settings.enhancedKeyboardTabSwitch) modifyViewCueCallback(this.app);
+		if (settings.backgroundMode) moveSelfToNewGroupAndHide(this.app);
+		autoRefresh(this);
+	}
+
 	async setupLocalStorageService() {
 		localStorageService.init(this.app);
-	}
-
-	async registerEventsAndViews() {
-		this.registerView(
-			VERTICAL_TABS_VIEW,
-			(leaf) => new VerticalTabsView(leaf, this)
-		);
-		this.registerEvents();
-	}
-
-	registerEvents() {
-		this.registerScrollableTabsEvents();
-		this.registerOrientationEvents();
-	}
-
-	registerScrollableTabsEvents() {
-		this.registerEvent(
-			this.app.workspace.on("active-leaf-change", (leaf) => {
-				scrollToActiveTab(leaf);
-			})
-		);
-		this.registerEvent(
-			this.app.workspace.on("editor-change", (_, info) => {
-				if (info instanceof MarkdownView) {
-					scrollToActiveTab(info.leaf);
-				}
-			})
-		);
-	}
-
-	registerOrientationEvents() {
-		if (Platform.isPhone) {
-			updateOrientationLabel();
-			this.registerDomEvent(window, "resize", updateOrientationLabel);
-		}
-	}
-
-	async setupCommands() {
-		this.addCommand({
-			id: "open-vertical-tabs",
-			name: "Open vertical tabs",
-			callback: () => {
-				this.openVerticalTabs();
-				useSettings.getState().toggleBackgroundMode(this.app, false);
-			},
-		});
 	}
 
 	async openVerticalTabs() {
