@@ -87,12 +87,12 @@ export const Tab = (props: TabProps) => {
 	/* Actions (for mutating the shared store) */
 	const { refresh, sort, saveTabMetadata } = tabCacheStore.getActions();
 	const {
-		bindEphemeralToggleEvent,
 		lockFocusOnLeaf,
 		toggleHiddenGroup,
 		hookLatestActiveTab,
 		mapViewCueIndex,
 		registerViewCueTab,
+		rememberNonephemeralTab,
 	} = useViewState();
 
 	/* Relevant settings */
@@ -211,6 +211,11 @@ export const Tab = (props: TabProps) => {
 		if (viewType === GroupViewType.MissionControlView) {
 			setGroupViewType(leaf.parent, GroupViewType.Default);
 		}
+	};
+	// Update and remember the ephemeral state
+	const setEphemeralState = (isEphemeral: boolean) => {
+		if (!isEphemeral) rememberNonephemeralTab(app, leaf.id);
+		setIsEphemeral(isEphemeral);
 	};
 
 	/* Commands - Pinning */
@@ -751,7 +756,10 @@ export const Tab = (props: TabProps) => {
 			scope: "tab-component",
 			once: true,
 		});
-		bindEphemeralToggleEvent(app, leaf, setIsEphemeral);
+		eventBindingService.bind("ephemeral-toggle", leaf, setEphemeralState, {
+			scope: "tab-component",
+			once: true,
+		});
 	}, [leaf.id]);
 	// volatileTitle is used for syncing with the webview title.
 	useEffect(() => {

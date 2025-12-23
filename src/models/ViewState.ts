@@ -41,11 +41,6 @@ import { getTabs } from "src/services/GetTabs";
 import { useSettings } from "./PluginContext";
 import { isHoverEditorEnabled } from "src/services/HoverEditorTabs";
 
-export type EphermalToggleEvents = DefaultRecord<Identifier, EventRef | null>;
-export type EphermalToggleEventCallback = (isEphemeral: boolean) => void;
-export const createNewEphermalToggleEvents = () =>
-	new DefaultRecord(() => null) as EphermalToggleEvents;
-
 export type GroupViewToggleEvents = DefaultRecord<Identifier, EventRef | null>;
 export type GroupViewToggleEventCallback = (viewType: GroupViewType) => void;
 export const createNewGroupViewToggleEvents = () =>
@@ -83,7 +78,6 @@ interface ViewState {
 	groupUnhideTimes: GroupUnhideTimes;
 	latestActiveLeaf: WorkspaceLeaf | null;
 	latestActiveTab: HTMLElement | null;
-	ephermalToggleEvents: EphermalToggleEvents;
 	groupViewToggleEvents: GroupViewToggleEvents;
 	globalCollapseState: boolean;
 	isEditingTabs: boolean;
@@ -118,12 +112,6 @@ interface ViewState {
 	insertCloneButtons: () => void;
 	updatePositionLabels: () => void;
 	refreshToggleButtons: (app: App) => void;
-	bindEphemeralToggleEvent: (
-		app: App,
-		leaf: WorkspaceLeaf,
-		callback: EphermalToggleEventCallback
-	) => void;
-	unbindEphemeralToggleEvent: (leaf: WorkspaceLeaf) => void;
 	bindGroupViewToggleEvent: (
 		group: WorkspaceParent | null,
 		callback: GroupViewToggleEventCallback
@@ -268,7 +256,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	groupUnhideTimes: loadGroupUnhideTimes(),
 	latestActiveLeaf: null,
 	latestActiveTab: null,
-	ephermalToggleEvents: createNewEphermalToggleEvents(),
 	groupViewToggleEvents: createNewGroupViewToggleEvents(),
 	globalCollapseState: false,
 	isEditingTabs: false,
@@ -540,30 +527,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		if (!leftButtonClone || !rightButtonClone)
 			get().cloneToggleButtons(app);
 		get().insertCloneButtons();
-	},
-	bindEphemeralToggleEvent(
-		app: App,
-		leaf: WorkspaceLeaf,
-		callback: EphermalToggleEventCallback
-	) {
-		const { ephermalToggleEvents } = get();
-		const event = ephermalToggleEvents.get(leaf.id);
-		if (event) return;
-		const newEvent = leaf.on(EVENTS.EPHEMERAL_TOGGLE, (isEphemeral) => {
-			if (!isEphemeral) get().rememberNonephemeralTab(app, leaf.id);
-			callback(isEphemeral);
-		});
-		ephermalToggleEvents.set(leaf.id, newEvent);
-		set({ ephermalToggleEvents });
-	},
-	unbindEphemeralToggleEvent(leaf: WorkspaceLeaf) {
-		const { ephermalToggleEvents } = get();
-		const event = ephermalToggleEvents.get(leaf.id);
-		if (event) {
-			leaf.offref(event);
-			ephermalToggleEvents.set(leaf.id, null);
-			set({ ephermalToggleEvents });
-		}
 	},
 	bindGroupViewToggleEvent(group, callback) {
 		if (!group) return;

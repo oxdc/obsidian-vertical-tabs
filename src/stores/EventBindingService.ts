@@ -1,4 +1,5 @@
 import { EventRef, WorkspaceLeaf } from "obsidian";
+import { EVENTS } from "src/constants/Events";
 import { Identifier } from "src/models/VTWorkspace";
 
 /**
@@ -376,5 +377,11 @@ export const eventBindingService = new EventBindingService();
 eventBindingService.registerBinder({
 	name: "tab-pinning",
 	eventName: "pinned-change",
+	getTarget: (leaf: WorkspaceLeaf) => leaf,
+});
+
+eventBindingService.registerBinder({
+	name: "ephemeral-toggle",
+	eventName: EVENTS.EPHEMERAL_TOGGLE,
 	getTarget: (leaf: WorkspaceLeaf) => leaf,
 });
