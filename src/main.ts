@@ -16,7 +16,11 @@ import {
 	VerticalTabsView,
 	VERTICAL_TABS_VIEW,
 } from "src/views/VerticalTabsView";
-import { DEFAULT_SETTINGS, Settings } from "./models/PluginSettings";
+import {
+	DEFAULT_SETTINGS,
+	Settings,
+	validateAndNormalizeSettings,
+} from "./models/PluginSettings";
 import { around } from "monkey-around";
 import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
 import { useViewState } from "./models/ViewState";
@@ -117,11 +121,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			await this.loadData()
-		);
+		this.settings = validateAndNormalizeSettings(await this.loadData());
 	}
 
 	async saveSettings() {
