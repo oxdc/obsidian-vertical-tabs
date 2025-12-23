@@ -7,6 +7,12 @@ import {
 	moveSelfToDefaultLocation,
 	selfIsNotInTheSidebar,
 } from "src/services/MoveTab";
+import { byPinned } from "./SortTabs";
+import { eventBindingService } from "src/stores/EventBindingService";
+
+const sortIfPinned = (sort: () => void) => {
+	if (tabCacheStore.getState().sortStrategy?.compareFn === byPinned) sort();
+};
 
 export function autoRefresh(plugin: ObsidianVerticalTabs) {
 	const app = plugin.app;
@@ -25,5 +31,14 @@ export function autoRefresh(plugin: ObsidianVerticalTabs) {
 		updateEphemeralTabs(app);
 		refresh(app);
 		sort();
+
+		tabCacheStore.getState().leaves.forEach((entry) => {
+			eventBindingService.bind(
+				"tab-pinning",
+				entry.leaf,
+				() => sortIfPinned(sort),
+				{ scope: "refresh", once: true }
+			);
+		});
 	});
 }

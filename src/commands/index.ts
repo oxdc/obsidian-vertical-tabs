@@ -5,14 +5,16 @@ import { registerTabZoomCommands } from "./TabZoom";
 import { registerGroupViewCommands } from "./GroupView";
 import { registerBookmarkCommands } from "./Bookmark";
 import { registerTabNavigationCommands } from "./TabNavigation";
+import { registerTabSortingCommands } from "./TabSorting";
 
 export function registerCommands(plugin: ObsidianVerticalTabs) {
 	return [
-		registerOpenVerticalTabsCommand(plugin),
-		registerZenModeCommands(plugin),
-		registerTabZoomCommands(plugin),
-		registerGroupViewCommands(plugin),
-		registerBookmarkCommands(plugin),
-		registerTabNavigationCommands(plugin),
+		...registerOpenVerticalTabsCommand(plugin),
+		...registerZenModeCommands(plugin),
+		...registerTabZoomCommands(plugin),
+		...registerGroupViewCommands(plugin),
+		...registerBookmarkCommands(plugin),
+		...registerTabNavigationCommands(plugin),
+		...registerTabSortingCommands(plugin),
 	];
 }
