@@ -3,7 +3,6 @@ import { DefaultRecord } from "src/utils/DefaultRecord";
 import {
 	App,
 	debounce,
-	EventRef,
 	Platform,
 	View,
 	Workspace,
@@ -41,11 +40,6 @@ import { getTabs } from "src/services/GetTabs";
 import { useSettings } from "./PluginContext";
 import { isHoverEditorEnabled } from "src/services/HoverEditorTabs";
 
-export type GroupViewToggleEvents = DefaultRecord<Identifier, EventRef | null>;
-export type GroupViewToggleEventCallback = (viewType: GroupViewType) => void;
-export const createNewGroupViewToggleEvents = () =>
-	new DefaultRecord(() => null) as GroupViewToggleEvents;
-
 export type GroupUnhideTimes = DefaultRecord<Identifier, number>;
 export const createNewGroupUnhideTimes = () =>
 	new DefaultRecord(() => 0) as GroupUnhideTimes;
@@ -78,7 +72,6 @@ interface ViewState {
 	groupUnhideTimes: GroupUnhideTimes;
 	latestActiveLeaf: WorkspaceLeaf | null;
 	latestActiveTab: HTMLElement | null;
-	groupViewToggleEvents: GroupViewToggleEvents;
 	globalCollapseState: boolean;
 	isEditingTabs: boolean;
 	hasCtrlKeyPressed: boolean;
@@ -112,11 +105,6 @@ interface ViewState {
 	insertCloneButtons: () => void;
 	updatePositionLabels: () => void;
 	refreshToggleButtons: (app: App) => void;
-	bindGroupViewToggleEvent: (
-		group: WorkspaceParent | null,
-		callback: GroupViewToggleEventCallback
-	) => void;
-	unbindGroupViewToggleEvent: (group: WorkspaceParent | null) => void;
 	setAllCollapsed: () => void;
 	setAllExpanded: () => void;
 	uncollapseActiveGroup: (app: App) => void;
@@ -256,7 +244,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	groupUnhideTimes: loadGroupUnhideTimes(),
 	latestActiveLeaf: null,
 	latestActiveTab: null,
-	groupViewToggleEvents: createNewGroupViewToggleEvents(),
 	globalCollapseState: false,
 	isEditingTabs: false,
 	hasCtrlKeyPressed: false,
@@ -527,28 +514,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		if (!leftButtonClone || !rightButtonClone)
 			get().cloneToggleButtons(app);
 		get().insertCloneButtons();
-	},
-	bindGroupViewToggleEvent(group, callback) {
-		if (!group) return;
-		const { groupViewToggleEvents } = get();
-		const event = groupViewToggleEvents.get(group.id);
-		if (event) return;
-		const newEvent = group.on(
-			EVENTS.GROUP_VIEW_CHANGE,
-			(viewType: GroupViewType) => callback(viewType)
-		);
-		groupViewToggleEvents.set(group.id, newEvent);
-		set({ groupViewToggleEvents });
-	},
-	unbindGroupViewToggleEvent(group) {
-		if (!group) return;
-		const { groupViewToggleEvents } = get();
-		const event = groupViewToggleEvents.get(group.id);
-		if (event) {
-			group.offref(event);
-			groupViewToggleEvents.set(group.id, null);
-			set({ groupViewToggleEvents });
-		}
 	},
 	setAllCollapsed() {
 		const ids = tabCacheStore.getState().groupIDs;

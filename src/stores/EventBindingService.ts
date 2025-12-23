@@ -1,4 +1,4 @@
-import { EventRef, WorkspaceLeaf } from "obsidian";
+import { EventRef, WorkspaceLeaf, WorkspaceParent } from "obsidian";
 import { EVENTS } from "src/constants/Events";
 import { Identifier } from "src/models/VTWorkspace";
 
@@ -384,4 +384,10 @@ eventBindingService.registerBinder({
 	name: "ephemeral-toggle",
 	eventName: EVENTS.EPHEMERAL_TOGGLE,
 	getTarget: (leaf: WorkspaceLeaf) => leaf,
+});
+
+eventBindingService.registerBinder({
+	name: "group-view-toggle",
+	eventName: EVENTS.GROUP_VIEW_CHANGE,
+	getTarget: (group: WorkspaceParent | null) => group,
 });
