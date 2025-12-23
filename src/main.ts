@@ -45,6 +45,7 @@ import { registerEvents } from "./events";
 import { moveSelfToNewGroupAndHide } from "src/services/MoveTab";
 import { autoRefresh } from "src/services/Refresh";
 import { eventBindingService } from "./stores/EventBindingService";
+import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -76,16 +77,12 @@ export default class ObsidianVerticalTabs extends Plugin {
 		await this.patchViews();
 		this.addSettingTab(new ObsidianVerticalTabsSettingTab(this.app, this));
 		await this.initialize();
-
-		// this.app.workspace.onLayoutReady(() => {
-		// 	this.openVerticalTabs();
-		// 	if (Platform.isMobile && !Platform.isTablet) {
-		// 		setTimeout(() => this.app.workspace.leftSplit.collapse());
-		// 	}
-		// 	setTimeout(() => {
-		// 		useViewState.getState().refreshToggleButtons(this.app);
-		// 	}, REFRESH_TIMEOUT_LONG);
-		// });
+		this.app.workspace.onLayoutReady(() => {
+			this.openVerticalTabs();
+			setTimeout(() => {
+				useViewState.getState().refreshToggleButtons(this.app);
+			}, REFRESH_TIMEOUT_LONG);
+		});
 	}
 
 	async initialize() {
@@ -106,8 +103,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 			const leaf: WorkspaceLeaf =
 				this.app.workspace.getLeavesOfType(VERTICAL_TABS_VIEW)[0] ??
 				this.app.workspace.getLeftLeaf(false);
-			leaf.setViewState({ type: VERTICAL_TABS_VIEW, active: true });
-			this.app.workspace.revealLeaf(leaf);
+			leaf.setViewState({ type: VERTICAL_TABS_VIEW, active: false });
 		} catch {
 			// do nothing
 		}
