@@ -47,10 +47,12 @@ import { moveSelfToNewGroupAndHide } from "src/services/MoveTab";
 import { autoRefresh } from "src/services/Refresh";
 import { eventBindingService } from "./stores/EventBindingService";
 import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
+import { DragDetectionService } from "./services/DragDetection";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
 	cached_manifest?: PluginManifest;
+	dragDetectionService: DragDetectionService | null = null;
 
 	async onload() {
 		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
@@ -92,6 +94,8 @@ export default class ObsidianVerticalTabs extends Plugin {
 		if (settings.ephemeralTabs) initEphemeralTabs(this.app);
 		if (settings.enhancedKeyboardTabSwitch) modifyViewCueCallback(this.app);
 		if (settings.backgroundMode) moveSelfToNewGroupAndHide(this.app);
+		this.dragDetectionService = new DragDetectionService(this.app, this);
+		this.dragDetectionService.initialize();
 		autoRefresh(this);
 	}
 
@@ -114,6 +118,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 	onunload() {
 		if (this.settings.enhancedKeyboardTabSwitch) {
 			useViewState.getState().resetViewCueCallback(this.app);
+		}
+		if (this.dragDetectionService) {
+			this.dragDetectionService.cleanup();
+			this.dragDetectionService = null;
 		}
 		eventBindingService.unbindAll();
 	}
