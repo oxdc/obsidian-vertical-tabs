@@ -11,6 +11,7 @@ import {
 	Workspace,
 	WorkspaceLeaf,
 	addIcon,
+	requireApiVersion,
 } from "obsidian";
 import {
 	VerticalTabsView,
@@ -104,6 +105,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 				this.app.workspace.getLeavesOfType(VERTICAL_TABS_VIEW)[0] ??
 				this.app.workspace.getLeftLeaf(false);
 			leaf.setViewState({ type: VERTICAL_TABS_VIEW, active: false });
+			if (requireApiVersion("1.7.2")) await leaf.loadIfDeferred();
 		} catch {
 			// do nothing
 		}
