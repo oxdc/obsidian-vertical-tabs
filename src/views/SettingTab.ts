@@ -99,11 +99,18 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			this.displayPluginDisabledWarningBanner(containerEl);
 		}
 
-		if (!disableOnThisDevice && !this.plugin.settings.backgroundMode) {
-			this.displayBasicSettingsSection(containerEl);
+		if (!disableOnThisDevice) {
+			if (!this.plugin.settings.backgroundMode) {
+				this.displayBasicSettingsSection(containerEl);
+			}
+
 			this.displayHorizontalTabControlSection(containerEl);
 			this.displayNavigationStrategySection(containerEl);
-			this.displayLinkedFolderSection(containerEl);
+
+			if (!this.plugin.settings.backgroundMode) {
+				this.displayLinkedFolderSection(containerEl);
+			}
+
 			this.displayGroupViewSection(containerEl);
 		}
 
@@ -544,8 +551,11 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			"Horizontal tab control"
 		);
 
-		this.displayHorizontalTabsOptions(group);
-		this.displayEnhancedKeyboardTabSwitchToggle(group);
+		if (!this.plugin.settings.backgroundMode) {
+			this.displayHorizontalTabsOptions(group);
+			this.displayEnhancedKeyboardTabSwitchToggle(group);
+		}
+
 		this.displayTabSortingOptions(group);
 
 		if (!this.plugin.settings.showActiveTabs) {
