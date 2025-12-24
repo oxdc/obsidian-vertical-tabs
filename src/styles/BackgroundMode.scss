@@ -15,4 +15,11 @@ body.vt-background-mode {
 			display: flex !important;
 		}
 	}
+
+	.workspace-tabs:has(
+			.workspace-tab-container
+				.workspace-leaf.obsidian-vertical-tabs-tab-content:only-child
+		) {
+		display: none;
+	}
 }
