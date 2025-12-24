@@ -1,19 +1,20 @@
-import { App, Plugin } from "obsidian";
+import { App } from "obsidian";
 import { NativeDragTabs } from "./NativeDragTabs";
 import { useViewState } from "src/models/ViewState";
 import { autoRefresh } from "./Refresh";
 import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 import { ALT_KEY_EFFECT_DURATION } from "src/models/ViewState";
+import ObsidianVerticalTabs from "src/main";
 
 export class DragDetectionService {
 	private app: App;
-	private plugin: Plugin;
+	private plugin: ObsidianVerticalTabs;
 	private nativeDragTabs: NativeDragTabs | null = null;
 	private dragInProgress = false;
 	private draggedLeaf: Element | null = null;
 	private altKeyTimeoutRef: NodeJS.Timeout | null = null;
 
-	constructor(app: App, plugin: Plugin) {
+	constructor(app: App, plugin: ObsidianVerticalTabs) {
 		this.app = app;
 		this.plugin = plugin;
 	}
@@ -47,7 +48,7 @@ export class DragDetectionService {
 	};
 
 	private handleDrop = () => {
-		setTimeout(autoRefresh, REFRESH_TIMEOUT_LONG);
+		setTimeout(() => autoRefresh(this.plugin), REFRESH_TIMEOUT_LONG);
 	};
 
 	private handleKeyDown = (event: KeyboardEvent) => {
