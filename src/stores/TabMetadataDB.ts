@@ -1,4 +1,4 @@
-import Dexie, { Table } from "dexie";
+import { Database, Table } from "src/stores/IndexedDBWrapper";
 import { Identifier } from "src/models/VTWorkspace";
 
 export interface TabMetadata {
@@ -15,20 +15,16 @@ export interface GroupMetadata {
 	title?: string;
 }
 
-export class MetadataDatabase extends Dexie {
-	tabMetadata!: Table<TabMetadata, Identifier>;
-	groupMetadata!: Table<GroupMetadata, Identifier>;
+const dbInstance = new Database("VerticalTabsMetadata");
+dbInstance.version(1).stores({
+	tabMetadata: "id",
+	groupMetadata: "id",
+});
 
-	constructor() {
-		super("VerticalTabsMetadata");
-		this.version(1).stores({
-			tabMetadata: "id",
-			groupMetadata: "id",
-		});
-	}
-}
-
-export const db = new MetadataDatabase();
+export const db = dbInstance as Database & {
+	tabMetadata: Table<TabMetadata>;
+	groupMetadata: Table<GroupMetadata>;
+};
 
 export type Metadata = TabMetadata | GroupMetadata;
 export type PartialMetadata<T extends Metadata> = Partial<Omit<T, "id">>;

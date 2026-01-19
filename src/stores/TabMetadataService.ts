@@ -1,18 +1,19 @@
+import { Identifier } from "src/models/VTWorkspace";
+import { Table } from "src/stores/IndexedDBWrapper";
+
 import {
 	db,
-	TabMetadata,
 	GroupMetadata,
+	GroupMetadataMap,
+	GroupResult,
+	GroupUpdates,
 	Metadata,
 	PartialMetadata,
-	TabUpdates,
-	GroupUpdates,
+	TabMetadata,
 	TabMetadataMap,
-	GroupMetadataMap,
 	TabResult,
-	GroupResult,
+	TabUpdates,
 } from "./TabMetadataDB";
-import { Table } from "dexie";
-import { Identifier } from "src/models/VTWorkspace";
 
 const LRU_CACHE_SIZE = 100;
 
@@ -102,7 +103,7 @@ class MetadataService {
 		}
 		if (toFetch.length === 0) return result;
 		try {
-			const fetched = await type.where("id").anyOf(toFetch).toArray();
+			const fetched = await type.where("id").anyOf(toFetch);
 			for (const metadata of fetched) {
 				result.set(metadata.id, metadata);
 				cache.set(metadata.id, metadata);
@@ -123,7 +124,7 @@ class MetadataService {
 		const fullMetadata = { ...existing, ...data, id } as T;
 		cache.set(id, fullMetadata);
 		try {
-			await type.put(fullMetadata, id);
+			await type.put(fullMetadata);
 			return fullMetadata;
 		} catch (error) {
 			this.handleError("write", error);
