@@ -205,6 +205,24 @@ export const Group = (props: GroupProps) => {
 	useEffect(() => {
 		if (!isSidebar) addMissionControlToggle(group);
 	}, [group, isSidebar]);
+	// Double click on resize handle to distribute the siblings' dimensions equally
+	useEffect(() => {
+		if (!group) return;
+		const handleDblClick = () => {
+			const children = group.parent?.children;
+			if (!children) return;
+			const numOfChildren = children.length;
+			const dimension = 100 / numOfChildren;
+			children.forEach((child) => child.setDimension(dimension));
+		};
+		group.resizeHandleEl.addEventListener("dblclick", handleDblClick);
+		return () => {
+			group.resizeHandleEl.removeEventListener(
+				"dblclick",
+				handleDblClick
+			);
+		};
+	}, [group]);
 
 	/* Menu */
 	const menu = new Menu();
