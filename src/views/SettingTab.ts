@@ -871,6 +871,16 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	}
 
 	private displayOptionsForMissionControlView(parentEl: HTMLElement | SettingGroup) {
+		this.createToggle(parentEl, {
+			name: "Show mission control toggle button",
+			desc: "Show a button in the tab bar to activate the mission control view.",
+			value: this.plugin.settings.showMissionControlToggle,
+			onChange: (value) =>
+				useSettings.getState().setSettings({
+					showMissionControlToggle: value,
+				}),
+		});
+
 		this.createSlider(parentEl, {
 			name: "Zoom factor in mission control view",
 			desc: "Adjust the page size in mission control view.",

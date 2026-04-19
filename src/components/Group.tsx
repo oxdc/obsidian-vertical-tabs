@@ -19,7 +19,7 @@ import {
 	identifyGroupViewType,
 	setGroupViewType,
 } from "src/models/VTGroupView";
-import { addMissionControlToggle } from "src/services/MissionControlToggle";
+import { addMissionControlToggle, removeMissionControlToggle } from "src/services/MissionControlToggle";
 import {
 	getEmbedLinkFromLeaf,
 	getWikiLinkFromLeaf,
@@ -61,6 +61,7 @@ export const Group = (props: GroupProps) => {
 
 	/* Relevant settings */
 	const hideSidebars = useSettings((state) => state.hideSidebars);
+	const showMissionControlToggle = useSettings((state) => state.showMissionControlToggle);
 
 	/* Store states (managed by zustand, shared by components) */
 	const groupTitles = useViewState((state) => state.groupTitles);
@@ -203,8 +204,12 @@ export const Group = (props: GroupProps) => {
 	}, [group]);
 	// Add mission control toggle button to group tab header
 	useEffect(() => {
-		if (!isSidebar) addMissionControlToggle(group);
-	}, [group, isSidebar]);
+		if (!isSidebar && showMissionControlToggle) {
+			addMissionControlToggle(group);
+		} else {
+			removeMissionControlToggle(group);
+		}
+	}, [group, isSidebar, showMissionControlToggle]);
 	// Double click on resize handle to distribute the siblings' dimensions equally
 	useEffect(() => {
 		if (!group) return;

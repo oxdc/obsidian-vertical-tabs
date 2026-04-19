@@ -37,3 +37,11 @@ export function addMissionControlToggle(group: WorkspaceParent | null) {
 		}
 	});
 }
+
+export function removeMissionControlToggle(group: WorkspaceParent | null) {
+	if (!group) return;
+	const existingToggleBtn = group.tabHeaderContainerEl.querySelector(
+		".vt-mission-control-toggle-button"
+	);
+	existingToggleBtn?.remove();
+}
