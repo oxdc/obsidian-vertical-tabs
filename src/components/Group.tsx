@@ -424,7 +424,7 @@ export const Group = (props: GroupProps) => {
 			isSingleGroup={isSingleGroupInView}
 			isActiveGroup={isActiveGroup}
 			classNames={{
-				"is-hidden": isHidden,
+				"is-hidden-group": isHidden,
 				"is-active-group": isActiveGroup,
 			}}
 		>
