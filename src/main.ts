@@ -3,6 +3,7 @@ import {
 	ItemView,
 	MarkdownView,
 	OpenViewState,
+	PaneType,
 	Platform,
 	Plugin,
 	View,
@@ -276,6 +277,20 @@ export default class ObsidianVerticalTabs extends Plugin {
 		);
 
 		around(Workspace.prototype, {
+			getLeaf(old) {
+				return function (newLeaf?: PaneType | boolean) {
+					if (!useSettings.getState().alwaysOpenInNewTab) {
+						return old.call(this, newLeaf);
+					}
+					if (newLeaf === false) {
+						return (
+							useViewState.getState().latestActiveLeaf ??
+							old.call(this, false)
+						);
+					}
+					return old.call(this, newLeaf);
+				};
+			},
 			openLinkText(old) {
 				return async function (
 					linkText: string,
