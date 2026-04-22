@@ -62,6 +62,7 @@ export const Group = (props: GroupProps) => {
 	/* Relevant settings */
 	const hideSidebars = useSettings((state) => state.hideSidebars);
 	const showMissionControlToggle = useSettings((state) => state.showMissionControlToggle);
+	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
 
 	/* Store states (managed by zustand, shared by components) */
 	const groupTitles = useViewState((state) => state.groupTitles);
@@ -385,7 +386,7 @@ export const Group = (props: GroupProps) => {
 
 	const toolbar = (
 		<Fragment>
-			{!isSidebar && !isEditing && group && (
+			{!isSidebar && !isEditing && group && !alwaysOpenInNewTab && (
 				<IconButton
 					icon="plus"
 					action="new-tab"

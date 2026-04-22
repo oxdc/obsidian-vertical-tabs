@@ -17,8 +17,11 @@ export const TabSlot = ({ group, groupID }: TabSlotProps) => {
 		(state) => state.showNewTabButtonAtBottom
 	);
 	const { hasOnlyOneGroup } = tabCacheStore.getActions();
+	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
 	const asNewTabButton =
-		(showNewTabButtonAtBottom || hasOnlyOneGroup()) && !!group;
+		(showNewTabButtonAtBottom || hasOnlyOneGroup()) &&
+		!!group &&
+		!alwaysOpenInNewTab;
 
 	const onClick = () => {
 		if (asNewTabButton) {

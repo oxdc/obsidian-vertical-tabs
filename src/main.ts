@@ -181,6 +181,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 			"vt-mission-control-view-disable-pointer",
 			this.settings.disablePointerInMissionControlView
 		);
+		this.toggle("vt-prefer-new-tab", this.settings.alwaysOpenInNewTab);
 	}
 
 	async patchViews() {

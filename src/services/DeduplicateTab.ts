@@ -13,6 +13,7 @@ import { DefaultRecord } from "src/utils/DefaultRecord";
 import { moveTab, reapplyEphemeralState } from "./MoveTab";
 import { safeDetach } from "./CloseTabs";
 import { linkTasksStore } from "src/stores/LinkTaskStore";
+import { tabCacheStore } from "src/stores/TabCacheStore";
 
 const INCLUDE_LIST = new Set(["markdown", "canvas", "image", "video", "pdf", "bases"]);
 
@@ -174,4 +175,17 @@ export function deduplicateExistingTabs(
 			app.workspace.setActiveLeaf(activeLeaf, { focus: false });
 		}
 	}
+}
+
+export function removeNewTabs() {
+	if (!useSettings.getState().alwaysOpenInNewTab) return;
+	tabCacheStore.getState().content.forEach((entry) => {
+		if (entry.group && entry.group.children.length > 1) {
+			entry.group.children.forEach((child) => {
+				if (child.view.getViewType() === "empty") {
+					child.detach();
+				}
+			});
+		}
+	});
 }

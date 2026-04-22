@@ -30,7 +30,7 @@ import {
 	makeTabNonEphemeralAutomatically,
 	uninstallTabHeaderHandlers,
 } from "src/services/EphemeralTabs";
-import { deduplicateExistingTabs } from "src/services/DeduplicateTab";
+import { deduplicateExistingTabs, removeNewTabs } from "src/services/DeduplicateTab";
 import { iterateRootOrFloatingLeaves } from "src/services/GetTabs";
 import { SwipeDirection, useTouchSensor } from "src/services/TouchSeneor";
 import { getDrawer } from "src/services/MobileDrawer";
@@ -118,6 +118,7 @@ export const NavigationContainer = () => {
 			updateEphemeralTabs(app);
 			if (isSelfVisible(app) || Platform.isMobile) {
 				refresh(app);
+				removeNewTabs();
 				sort();
 			}
 		});

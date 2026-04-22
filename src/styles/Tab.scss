@@ -52,4 +52,10 @@ body {
 			}
 		}
 	}
+
+	&.vt-prefer-new-tab {
+		.workspace-tab-header-new-tab {
+			display: none !important;
+		}
+	}
 }
