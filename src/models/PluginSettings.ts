@@ -1,4 +1,5 @@
 import { TabNavigationStrategy } from "./TabNavigation";
+import { NewTabButtonPlacement } from "./NewTab";
 
 interface ObsidianVerticalTabsSettings {
 	installationID?: string;
@@ -37,7 +38,7 @@ interface ObsidianVerticalTabsSettings {
 	autoHideHorizontalTabs: boolean;
 	disableOnThisDevice: boolean;
 	enableUpdateCheck: boolean;
-	showNewTabButtonAtBottom: boolean;
+	newTabButtonPlacement: NewTabButtonPlacement;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -76,7 +77,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	autoHideHorizontalTabs: false,
 	disableOnThisDevice: false,
 	enableUpdateCheck: true,
-	showNewTabButtonAtBottom: false,
+	newTabButtonPlacement: NewTabButtonPlacement.GroupToolbar,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;

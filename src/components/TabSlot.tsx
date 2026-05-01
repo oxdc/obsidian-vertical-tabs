@@ -4,6 +4,7 @@ import { useApp, useSettings } from "src/models/PluginContext";
 import { moveTabToEnd } from "src/services/MoveTab";
 import { WorkspaceParent } from "obsidian";
 import { tabCacheStore } from "src/stores/TabCacheStore";
+import { NewTabButtonPlacement } from "src/models/NewTab";
 
 interface TabSlotProps {
 	group: WorkspaceParent | null;
@@ -13,13 +14,16 @@ interface TabSlotProps {
 export const TabSlot = ({ group, groupID }: TabSlotProps) => {
 	const app = useApp();
 	const workspace = app.workspace;
-	const showNewTabButtonAtBottom = useSettings(
-		(state) => state.showNewTabButtonAtBottom
+	const newTabButtonPlacement = useSettings(
+		(state) => state.newTabButtonPlacement
 	);
 	const { hasOnlyOneGroup } = tabCacheStore.getActions();
 	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
+	const shouldShowNewTabButton =
+		newTabButtonPlacement === NewTabButtonPlacement.TabSlot ||
+		newTabButtonPlacement === NewTabButtonPlacement.Both;
 	const asNewTabButton =
-		(showNewTabButtonAtBottom || hasOnlyOneGroup()) &&
+		(shouldShowNewTabButton || hasOnlyOneGroup()) &&
 		!!group &&
 		!alwaysOpenInNewTab;
 

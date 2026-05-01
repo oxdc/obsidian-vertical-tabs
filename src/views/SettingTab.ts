@@ -10,6 +10,10 @@ import {
 } from "obsidian";
 import ObsidianVerticalTabs from "../main";
 import { DISABLE_KEY, useSettings } from "../models/PluginContext";
+import {
+	NewTabButtonPlacement,
+	NewTabButtonPlacementOptions,
+} from "../models/NewTab";
 import { EVENTS } from "../constants/Events";
 import {
 	TabNavigationPresets,
@@ -415,14 +419,15 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			},
 		});
 
-		this.createToggle(containerEl, {
-			name: "Show new tab button at bottom",
-			desc: "Show the new tab button at the end of each tab group.",
-			value: this.plugin.settings.showNewTabButtonAtBottom,
+		this.createDropdown(containerEl, {
+			name: "New tab button placement",
+			desc: "Choose where to show the new tab button.",
+			options: NewTabButtonPlacementOptions,
+			value: this.plugin.settings.newTabButtonPlacement,
 			onChange: (value) => {
-				useSettings
-					.getState()
-					.setSettings({ showNewTabButtonAtBottom: value });
+				useSettings.getState().setSettings({
+					newTabButtonPlacement: value as NewTabButtonPlacement,
+				});
 			},
 		});
 

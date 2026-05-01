@@ -20,6 +20,7 @@ import {
 	setGroupViewType,
 } from "src/models/VTGroupView";
 import { addMissionControlToggle, removeMissionControlToggle } from "src/services/MissionControlToggle";
+import { NewTabButtonPlacement } from "src/models/NewTab";
 import {
 	getEmbedLinkFromLeaf,
 	getWikiLinkFromLeaf,
@@ -63,6 +64,7 @@ export const Group = (props: GroupProps) => {
 	const hideSidebars = useSettings((state) => state.hideSidebars);
 	const showMissionControlToggle = useSettings((state) => state.showMissionControlToggle);
 	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
+	const newTabButtonPlacement = useSettings((state) => state.newTabButtonPlacement);
 
 	/* Store states (managed by zustand, shared by components) */
 	const groupTitles = useViewState((state) => state.groupTitles);
@@ -95,6 +97,9 @@ export const Group = (props: GroupProps) => {
 		isSidebar || !group
 			? titleMap[type]
 			: groupTitles.get(group.id) || DEFAULT_GROUP_TITLE;
+	const shouldShowNewTabButton =
+		newTabButtonPlacement === NewTabButtonPlacement.GroupToolbar ||
+		newTabButtonPlacement === NewTabButtonPlacement.Both;
 
 	/* Commands */
 	/* Commands - Group control */
@@ -386,14 +391,18 @@ export const Group = (props: GroupProps) => {
 
 	const toolbar = (
 		<Fragment>
-			{!isSidebar && !isEditing && group && !alwaysOpenInNewTab && (
-				<IconButton
-					icon="plus"
-					action="new-tab"
-					tooltip="New tab"
-					onClick={createLeafNewTabAndOpen}
-				/>
-			)}
+			{!isSidebar &&
+				!isEditing &&
+				group &&
+				!alwaysOpenInNewTab &&
+				shouldShowNewTabButton && (
+					<IconButton
+						icon="plus"
+						action="new-tab"
+						tooltip="New tab"
+						onClick={createLeafNewTabAndOpen}
+					/>
+				)}
 			{!isSidebar && !isEditing && (
 				<IconButton
 					icon="pencil"
