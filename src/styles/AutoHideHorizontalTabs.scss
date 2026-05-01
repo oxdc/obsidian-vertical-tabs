@@ -1,6 +1,12 @@
-// Hide horizontal tabs in the root split when left sidebar is open (#176)
+// Hide horizontal tabs in the root split when left sidebar is open and
+// the vertical tabs pane is the active sidebar tab (#176, #206)
 body.vt-auto-hide-horizontal-tabs {
-	.mod-sidedock.mod-left-split:not(.is-sidedock-collapsed)
+	.mod-sidedock.mod-left-split:not(.is-sidedock-collapsed):has(
+			> .workspace-tabs
+				> .workspace-tab-header-container
+				> .workspace-tab-header-container-inner
+				> .workspace-tab-header.is-active.obsidian-vertical-tabs-tab-header
+		)
 		~ .workspace-split.mod-root {
 		.workspace-tabs > .workspace-tab-header-container {
 			display: none;

@@ -511,7 +511,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 
 		this.createToggle(containerEl, {
 			name: "Auto hide horizontal tabs",
-			desc: "Automatically hide horizontal tabs when the left sidebar is open.",
+			desc: "Automatically hide horizontal tabs when the vertical tabs pane is visible and active in the sidebar.",
 			value: this.plugin.settings.autoHideHorizontalTabs,
 			onChange: (value) => {
 				useSettings.getState().setSettings({
