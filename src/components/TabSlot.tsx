@@ -25,7 +25,8 @@ export const TabSlot = ({ group, groupID }: TabSlotProps) => {
 	const asNewTabButton =
 		(shouldShowNewTabButton || hasOnlyOneGroup()) &&
 		!!group &&
-		!alwaysOpenInNewTab;
+		!alwaysOpenInNewTab &&
+		newTabButtonPlacement !== NewTabButtonPlacement.None;
 
 	const onClick = () => {
 		if (asNewTabButton) {
