@@ -1,3 +1,24 @@
+# Vertical Tabs v0.16.7
+
+## 🎉 What's New:
+
+- Double-click the resize handle to evenly distribute sibling groups' dimensions (#204).
+- Added a setting to control where new tab buttons appear (#200).
+- Added an option to disable the Mission Control toggle button.
+
+## ✅ Improvements:
+
+- Automatically eliminate redundant "New Tab" placeholders when "Always open in new tab" is enabled.
+- Resolved incompatibility issues with Full Calendar Remastered.
+- Auto-hide horizontal tabs: Horizontal tabs are now hidden only when Vertical Tabs is active and visible (#206).
+- Updated dependencies to the latest versions.
+
+## 🐛 Bug Fixes:
+
+- Fixed CSS selector issues affecting the display of hidden groups.
+- Improved workspace leaf handling to respect the "Always open in new tab" setting.
+
+---
 # Vertical Tabs v0.16.6
 
 ## 🎉 What's New:
