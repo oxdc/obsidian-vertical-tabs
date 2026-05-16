@@ -2,6 +2,8 @@ name: Build & Release
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 on:
   push:
@@ -24,6 +26,11 @@ jobs:
         run: |
           npm install
           npm run build
+
+      - name: Generate artifact attestations
+        uses: actions/attest@v4
+        with:
+          subject-path: './dist/*'
 
       - name: Create release
         env:
