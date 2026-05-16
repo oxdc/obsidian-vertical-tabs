@@ -1,3 +1,20 @@
+# Vertical Tabs v0.16.9
+
+## ✅ Improvements:
+
+- Updated dependencies to their latest versions.
+- Removed debugging tools from the settings tab to comply with Obsidian's new policy.
+
+---
+
+# Vertical Tabs v0.16.8
+
+## 🐛 Bug Fixes:
+
+- Reverted the changes that broke the "Always open in a new tab" setting (#213).
+
+---
+
 # Vertical Tabs v0.16.7
 
 ## 🎉 What's New:
@@ -19,6 +36,7 @@
 - Improved workspace leaf handling to respect the "Always open in new tab" setting.
 
 ---
+
 # Vertical Tabs v0.16.6
 
 ## 🎉 What's New:
@@ -41,6 +59,7 @@
 - Fixed installation ID redaction.
 
 ---
+
 # Vertical Tabs v0.16.5
 
 ## 🎉 What's New:
