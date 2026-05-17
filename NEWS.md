@@ -1,3 +1,11 @@
+# Vertical Tabs v0.16.10
+
+## 🐛 Bug Fixes:
+
+- Fixed an issue where Vertical Tabs would fail to load on mobile devices (#214).
+
+---
+
 # Vertical Tabs v0.16.9
 
 ## ✅ Improvements:
