@@ -9,7 +9,7 @@ import { ViewCueIndex } from "src/models/ViewState";
 interface NavigationTreeItemProps {
 	id: Identifier | null;
 	index?: ViewCueIndex;
-	ref?: React.RefObject<HTMLDivElement | null>;
+	ref?: React.RefObject<HTMLDivElement>;
 	title: string | React.ReactNode;
 	icon: string;
 	webviewIcon?: string;
