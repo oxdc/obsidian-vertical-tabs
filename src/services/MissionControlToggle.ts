@@ -6,7 +6,7 @@ import {
 } from "src/models/VTGroupView";
 
 export function addMissionControlToggle(group: WorkspaceParent | null) {
-	if (!group) return;
+	if (!group || !group.tabHeaderContainerEl) return;
 
 	const spacer = group.tabHeaderContainerEl.querySelector(
 		".workspace-tab-header-spacer"
@@ -39,7 +39,7 @@ export function addMissionControlToggle(group: WorkspaceParent | null) {
 }
 
 export function removeMissionControlToggle(group: WorkspaceParent | null) {
-	if (!group) return;
+	if (!group || !group.tabHeaderContainerEl) return;
 	const existingToggleBtn = group.tabHeaderContainerEl.querySelector(
 		".vt-mission-control-toggle-button"
 	);

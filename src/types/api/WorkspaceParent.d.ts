@@ -13,7 +13,7 @@ declare module "obsidian" {
 		isStacked: boolean;
 		setStacked(stacked: boolean): void;
 		detach(): void;
-		tabHeaderContainerEl: HTMLElement;
+		tabHeaderContainerEl?: HTMLElement;
 		isLinkedGroup?: boolean;
 	}
 }
