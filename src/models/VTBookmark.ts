@@ -13,6 +13,7 @@ import {
 	HistoryState,
 	MarkdownViewState,
 	ViewState,
+	Notice,
 } from "obsidian";
 import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
 import { loadDeferredLeaf } from "src/services/LoadDeferredLeaf";
@@ -180,6 +181,7 @@ export async function createBookmarkForGroup(
 		if (item) bookmark.items.push(item);
 	}
 	instance.addItem(bookmark);
+	new Notice(`Created bookmark ${title}`);
 	forceSaveBookmarks(app);
 }
 
@@ -193,6 +195,7 @@ export async function createBookmarkForLeaf(
 	await loadDeferredLeaf(leaf);
 	const item = NewBookmarkForView(app, leaf.view, title);
 	if (item) instance.addItem(item);
+	new Notice(`Created bookmark ${title}`);
 	forceSaveBookmarks(app);
 }
 
@@ -205,7 +208,8 @@ export async function createBookmarkForLeafHistory(
 	await loadDeferredLeaf(leaf);
 	const bookmark = NewBookmarkGroupItem();
 	const leafTitle = DeduplicatedTitle(app, leaf);
-	bookmark.title = `History: ${leafTitle}`;
+	const title = `History: ${leafTitle}`;
+	bookmark.title = title;
 	const { backHistory, forwardHistory } = leaf.history;
 	backHistory.forEach((state) => {
 		const item = NewFileBookmarkForHistoryState(app, state);
@@ -222,6 +226,7 @@ export async function createBookmarkForLeafHistory(
 		if (item) bookmark.items.push(item);
 	});
 	instance.addItem(bookmark);
+	new Notice(`Created bookmark ${title}`);
 	forceSaveBookmarks(app);
 }
 
