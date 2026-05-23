@@ -117,12 +117,14 @@ export const Tab = (props: TabProps) => {
 		if (Platform.isMobile && isEditingTabs) return;
 		// Signal the changes to Obsidian
 		const focus = viewType !== GroupViewType.MissionControlView;
+		leaf.parent.selectTabIndex(index);
 		workspace.setActiveLeaf(leaf, { focus });
 		// Automatically unhide the group containing the tab
 		toggleHiddenGroup(leaf.parent.id, false);
 		// Lock the focus for Zen mode
 		lockFocusOnLeaf(app, leaf);
 		// Center the tab in the mission control view
+		if (leaf.parent.isStacked) return; // Obsidian will handle the scrolling for stacked tabs
 		const positioning =
 			viewType === GroupViewType.MissionControlView ? "center" : "start";
 		leaf.containerEl?.scrollIntoView({

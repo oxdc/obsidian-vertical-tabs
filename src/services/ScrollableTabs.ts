@@ -13,6 +13,7 @@ export const setScrollableTabsMinWidth = debounce((value: number) => {
 }, REFRESH_TIMEOUT_LONG);
 
 export const scrollToActiveTab = (leaf: WorkspaceLeaf | null) => {
+	if (leaf?.parent.isStacked) return;
 	if (!leaf || !useSettings.getState().scrollableTabs) return;
 	setTimeout(
 		() =>

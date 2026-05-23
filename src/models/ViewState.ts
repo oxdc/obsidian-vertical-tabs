@@ -433,11 +433,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		const parent = leaf.parent;
 		// Focus on the parent group with CSS class
 		parent.containerEl.toggleClass("vt-mod-active", true);
-		// Force maximize the active leaf in stacked mode
-		if (parent.isStacked) {
-			parent.setStacked(false);
-			parent.setStacked(true);
-		}
 	},
 	resetFocusFlags() {
 		document.querySelectorAll(".vt-mod-active").forEach((el) => {
