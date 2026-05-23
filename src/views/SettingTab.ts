@@ -839,7 +839,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		this.displayOptionsForMissionControlView(group);
 	}
 
-	private displayOptionsForContinuousView(parentEl: HTMLElement | SettingGroup) {
+	private displayOptionsForContinuousView(
+		parentEl: HTMLElement | SettingGroup
+	) {
 		this.createToggle(parentEl, {
 			name: "Show metadata in continuous view",
 			value: this.plugin.settings.continuousViewShowMetadata,
@@ -875,7 +877,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		});
 	}
 
-	private displayOptionsForMissionControlView(parentEl: HTMLElement | SettingGroup) {
+	private displayOptionsForMissionControlView(
+		parentEl: HTMLElement | SettingGroup
+	) {
 		this.createToggle(parentEl, {
 			name: "Show mission control toggle button",
 			desc: "Show a button in the tab bar to activate the mission control view.",
@@ -974,6 +978,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		const containerEl = parentEl.createDiv({ cls: "vt-support" });
 		this.displayFeedbackContent(containerEl);
 		this.displayBugReport(containerEl);
+		this.displayDebugTools(containerEl);
 	}
 
 	private displayFeedbackContent(parentEl: HTMLElement) {
@@ -1026,5 +1031,159 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			},
 		});
 		containerEl.appendText(".");
+	}
+
+	// Debugging Tools
+
+	private displayDebugTools(parentEl: HTMLElement) {
+		const containerEl = parentEl.createDiv({
+			cls: "debugging-helper",
+		});
+
+		this.createDebugButton(
+			containerEl,
+			{ icon: "copy", text: "Copy plugin settings" },
+			() => this.copyPluginSettingsToClipboard()
+		);
+
+		this.createDebugButton(
+			containerEl,
+			{ icon: "bug", text: "Show debug info" },
+			() => this.app.commands.executeCommandById("app:show-debug-info")
+		);
+
+		if (Platform.isDesktopApp) {
+			this.createDebugButton(
+				containerEl,
+				{ icon: "square-terminal", text: "Open dev console" },
+				() => this.openDevConsole()
+			);
+
+			this.createDebugButton(
+				containerEl,
+				{ icon: "flask-conical", text: "Open sandbox vault" },
+				() =>
+					this.app.commands.executeCommandById(
+						"app:open-sandbox-vault"
+					)
+			);
+		}
+
+		this.createConfirmationButton(
+			containerEl,
+			{
+				icon: "app-window-mac",
+				text: "Reload Obsidian without saving",
+				destructive: true,
+				countdownSeconds: 5,
+			},
+			() => this.app.commands.executeCommandById("app:reload")
+		);
+	}
+
+	private createDebugButton(
+		parentEl: HTMLElement,
+		props: { icon: string; text: string },
+		onClick?: () => void
+	) {
+		const buttonEl = parentEl.createEl("button");
+		const iconEl = buttonEl.createEl("span");
+		const textEl = buttonEl.createEl("span");
+		setIcon(iconEl, props.icon);
+		textEl.setText(props.text);
+		if (onClick) buttonEl.onclick = onClick;
+		return { buttonEl, iconEl, textEl };
+	}
+
+	private createConfirmationButton(
+		parentEl: HTMLElement,
+		props: {
+			icon: string;
+			text: string;
+			destructive?: boolean;
+			countdownSeconds?: number;
+			delaySeconds?: number;
+			confirmationTextFormat?: (countdown: number) => string;
+		},
+		onClick: () => void
+	) {
+		let clickedOnce = false;
+		let firstClickTime = 0;
+		let countdownInterval: NodeJS.Timeout;
+		const countdownSeconds = props.countdownSeconds ?? 5;
+		const delaySeconds = props.delaySeconds ?? 1;
+
+		const confirmationTextFormat = (countdown: number) => {
+			return props.confirmationTextFormat
+				? props.confirmationTextFormat(countdown)
+				: `Click again to confirm (in ${countdown}s)`;
+		};
+
+		const updateButtonText = (text: string, icon = "timer") => {
+			setIcon(iconEl, icon);
+			textEl.setText(text);
+		};
+
+		const button = this.createDebugButton(parentEl, props);
+		const { buttonEl, iconEl, textEl } = button;
+		if (props.destructive) buttonEl.classList.add("mod-destructive");
+
+		buttonEl.onclick = () => {
+			const currentTime = Date.now();
+			if (!clickedOnce) {
+				// First click
+				clickedOnce = true;
+				firstClickTime = currentTime;
+				let countdown = countdownSeconds;
+				updateButtonText(confirmationTextFormat(countdown));
+				// Countdown timer that updates every second
+				countdownInterval = setInterval(() => {
+					countdown--;
+					if (countdown > 0) {
+						updateButtonText(confirmationTextFormat(countdown));
+					} else {
+						// Reset when countdown reaches 0
+						clearInterval(countdownInterval);
+						clickedOnce = false;
+						firstClickTime = 0;
+						updateButtonText(props.text, props.icon);
+					}
+				}, 1000);
+			} else {
+				// Second click - check if at least 1 second has passed
+				const timeSinceFirstClick = currentTime - firstClickTime;
+				if (timeSinceFirstClick >= delaySeconds * 1000) {
+					// Execute the command only if at least 1 second has passed
+					clearInterval(countdownInterval);
+					onClick();
+				}
+				// If less than 1 second has passed, ignore the click
+			}
+		};
+
+		return { buttonEl, iconEl, textEl };
+	}
+
+	private async copyPluginSettingsToClipboard() {
+		const settings = { ...this.plugin.settings };
+		settings.installationID = "[Redacted]";
+		const version = this.plugin.manifest.version;
+		const pluginInfo = { version, settings };
+		const json = JSON.stringify(pluginInfo, null, 2);
+		const markdown = "```json\n" + json + "\n```";
+		await navigator.clipboard.writeText(markdown);
+		new Notice("Plugin settings copied to clipboard");
+	}
+
+	private openDevConsole() {
+		try {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			(window as any)
+				.require("electron")
+				.remote.getCurrentWebContents()
+				.openDevTools();
+		} catch (error) {
+			console.error(error);
+		}
 	}
 }
