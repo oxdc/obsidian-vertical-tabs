@@ -1,9 +1,19 @@
 import { createStoreWithActions } from "../models/StoreWithActions";
+import { TFile, OpenViewState } from "obsidian";
 
-export type LinkTask = {
+export type OpenFileTask = {
+	type: "openFile";
+	file: TFile;
+	openState?: OpenViewState;
+};
+
+export type OpenLinkTextTask = {
+	type: "openLinkText";
 	name: string;
 	subpath: string;
 };
+
+export type LinkTask = OpenFileTask | OpenLinkTextTask;
 
 type LinkTaskRecord = Map<string, LinkTask>;
 
@@ -12,9 +22,10 @@ type LinkTaskState = {
 };
 
 type LinkTaskActions = {
-	addTask: (path: string, subpath: string) => void;
-	removeTask: (path: string) => void;
-	getTask: (path: string) => LinkTask | null;
+	addOpenFileTask: (file: TFile, openState?: OpenViewState) => void;
+	addOpenLinkTextTask: (name: string, subpath: string) => void;
+	removeTask: (key: string) => void;
+	getTask: (key: string) => LinkTask | null;
 };
 
 type LinkTaskStore = LinkTaskState & {
@@ -25,24 +36,29 @@ export const linkTasksStore = createStoreWithActions<LinkTaskStore>(
 	(set, get) => ({
 		tasks: new Map(),
 		actions: {
-			addTask(name: string, subpath: string) {
-				if (!name || !subpath) return;
+			addOpenFileTask(file: TFile, openState?: OpenViewState) {
+				if (!file) return;
 				const { tasks } = get();
-				tasks.set(name, { name, subpath });
+				const key = file.path;
+				tasks.set(key, { type: "openFile", file, openState });
 				set({ tasks });
 			},
-			removeTask(name: string) {
-				const { tasks, actions } = get();
-				const task = actions.getTask(name);
-				if (!task) return;
-				tasks.delete(task.name);
+			addOpenLinkTextTask(name: string, subpath: string) {
+				if (!name) return;
+				const { tasks } = get();
+				tasks.set(name, { type: "openLinkText", name, subpath });
 				set({ tasks });
 			},
-			getTask(name: string): LinkTask | null {
+			removeTask(key: string) {
+				const { tasks } = get();
+				tasks.delete(key);
+				set({ tasks });
+			},
+			getTask(key: string): LinkTask | null {
 				const { tasks } = get();
 				let task: LinkTask | null = null;
-				for (const [key, value] of tasks) {
-					if (name.endsWith(key) || key.endsWith(name)) {
+				for (const [taskKey, value] of tasks) {
+					if (key.endsWith(taskKey) || taskKey.endsWith(key)) {
 						task = value;
 						break;
 					}

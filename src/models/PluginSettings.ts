@@ -37,6 +37,7 @@ interface ObsidianVerticalTabsSettings {
 	scrollableTabsMinWidth: number;
 	autoHideHorizontalTabs: boolean;
 	disableOnThisDevice: boolean;
+	allowWorkspaceSplitOnPhone: boolean;
 	enableUpdateCheck: boolean;
 	newTabButtonPlacement: NewTabButtonPlacement;
 }
@@ -76,6 +77,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	scrollableTabsMinWidth: 100,
 	autoHideHorizontalTabs: false,
 	disableOnThisDevice: false,
+	allowWorkspaceSplitOnPhone: false,
 	enableUpdateCheck: true,
 	newTabButtonPlacement: NewTabButtonPlacement.GroupToolbar,
 };

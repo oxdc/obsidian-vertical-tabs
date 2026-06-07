@@ -1,7 +1,7 @@
 // Manual tab group hiding functionality
 // This only applies when zen mode is disabled - allows users to hide tab groups
 // by clicking the eye icon in the group header
-body:not(.vt-zen-mode) .workspace-split.mod-root {
+body:not(.vt-zen-mode):not(.is-phone) .workspace-split.mod-root {
 	.workspace-tabs.is-hidden {
 		// Hide tab groups that are manually marked as hidden
 		display: none;

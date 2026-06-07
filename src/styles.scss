@@ -27,7 +27,11 @@
 @use "styles/FramelessWindowTitle.scss";
 @use "styles/ScrollableTabs.scss";
 @use "styles/AutoHideHorizontalTabs.scss";
+@use "styles/NativeDragTabs.scss";
 @use "styles/SettingWarningBanner.scss";
+@use "styles/WorkspaceSplitOnPhone.scss";
+@use "styles/BetaVersion.scss";
+@use "styles/GroupNameModal.scss";
 
 .obsidian-vertical-tabs-container .is-tab {
 	margin-left: 0.5em;

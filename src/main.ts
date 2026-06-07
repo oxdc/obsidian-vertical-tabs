@@ -5,6 +5,7 @@ import {
 	OpenViewState,
 	Platform,
 	Plugin,
+	TFile,
 	View,
 	Workspace,
 	WorkspaceLeaf,
@@ -24,13 +25,18 @@ import { nanoid } from "nanoid";
 import { patchQuickSwitcher } from "./services/EphemeralTabs";
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
-import { SAFE_DETACH_TIMEOUT } from "./services/CloseTabs";
+import { SAFE_DETACH_TIMEOUT, safeDetach } from "./services/CloseTabs";
 import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 import { PersistenceManager } from "./models/PersistenceManager";
 import { migrateAllData } from "./history/Migration";
 import { VERTICAL_TABS_ICON } from "./icon";
 import { DISABLE_KEY } from "./models/PluginContext";
 import { scrollToActiveTab } from "./services/ScrollableTabs";
+import { updateOrientationLabel } from "./services/Orientation";
+import { getOpenFileOfLeaf } from "./services/GetTabs";
+import { managedLeafStore } from "./stores/ManagedLeafStore";
+import { isHoverEditorEnabled } from "./services/HoverEditorTabs";
+import { removeAllTabControlButtons } from "./services/TabControlButtons";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -95,6 +101,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 
 	registerEvents() {
 		this.registerScrollableTabsEvents();
+		this.registerOrientationEvents();
 	}
 
 	registerScrollableTabsEvents() {
@@ -110,6 +117,13 @@ export default class ObsidianVerticalTabs extends Plugin {
 				}
 			})
 		);
+	}
+
+	registerOrientationEvents() {
+		if (Platform.isPhone) {
+			updateOrientationLabel();
+			this.registerDomEvent(window, "resize", updateOrientationLabel);
+		}
 	}
 
 	async setupCommands() {
@@ -139,6 +153,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		if (this.settings.enhancedKeyboardTabSwitch) {
 			useViewState.getState().resetViewCueCallback(this.app);
 		}
+		removeAllTabControlButtons(this.app);
 	}
 
 	async loadSettings() {
@@ -182,6 +197,17 @@ export default class ObsidianVerticalTabs extends Plugin {
 			this.settings.disablePointerInMissionControlView
 		);
 		this.toggle("vt-prefer-new-tab", this.settings.alwaysOpenInNewTab);
+		this.toggle(
+			"vt-allow-workspace-split",
+			this.settings.allowWorkspaceSplitOnPhone
+		);
+
+		// Limit visible groups to 2 when allowWorkspaceSplitOnPhone is enabled on mobile
+		if (Platform.isMobile && this.settings.allowWorkspaceSplitOnPhone) {
+			setTimeout(() =>
+				useViewState.getState().limitVisibleGroupsOnPhone(this.app)
+			);
+		}
 	}
 
 	async patchViews() {
@@ -256,6 +282,46 @@ export default class ObsidianVerticalTabs extends Plugin {
 			}
 		};
 
+		const modifyOpenFile = (
+			target: WorkspaceLeaf,
+			file: TFile,
+			openState: OpenViewState,
+			fallback: (
+				target: WorkspaceLeaf,
+				file: TFile,
+				openState?: OpenViewState
+			) => void
+		) => {
+			const {
+				deduplicateTabs,
+				deduplicateSameGroupTabs,
+				deduplicateSidebarTabs,
+				deduplicatePopupTabs,
+			} = this.settings;
+			if (!deduplicateTabs) return fallback(target, file, openState);
+			let found = false;
+			const callback = (leaf: WorkspaceLeaf) => {
+				if (leaf.id === target.id || found) return;
+				// prettier-ignore
+				if (managedLeafStore.getState().actions.isManagedLeaf(this.app, leaf)) return;
+				// prettier-ignore
+				if (!deduplicateSidebarTabs && (leaf.getRoot() === this.app.workspace.leftSplit || leaf.getRoot() === this.app.workspace.rightSplit)) return;
+				// prettier-ignore
+				if (!deduplicatePopupTabs && leaf.getRoot() === this.app.workspace.floatingSplit) return;
+				// prettier-ignore
+				if (deduplicateSameGroupTabs && leaf.parent.id !== target.parent.id) return;
+				const leafFile = getOpenFileOfLeaf(this.app, leaf);
+				if (leafFile && leafFile.path === file.path) {
+					found = true;
+					fallback(leaf, file, openState);
+					this.app.workspace.setActiveLeaf(leaf, { focus: false });
+					safeDetach(target);
+				}
+			};
+			this.app.workspace.iterateAllLeaves(callback);
+			if (!found) return fallback(target, file, openState);
+		};
+
 		this.register(
 			around(WorkspaceLeaf.prototype, {
 				canNavigate(old) {
@@ -272,6 +338,24 @@ export default class ObsidianVerticalTabs extends Plugin {
 						old.call(this, parent);
 					};
 				},
+				openFile(old) {
+					return function (file: TFile, openState?: OpenViewState) {
+						const fallback = (
+							target: WorkspaceLeaf,
+							file: TFile,
+							openState?: OpenViewState
+						) => old.call(target, file, openState);
+						if (isHoverEditorEnabled(this.app)) {
+							if (!this.parent.parentSplit)
+								return fallback(this, file, openState);
+						}
+						if (openState) {
+							modifyOpenFile(this, file, openState, fallback);
+						} else {
+							return fallback(this, file, openState);
+						}
+					};
+				},
 			})
 		);
 
@@ -283,10 +367,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 					newLeaf?: boolean,
 					openViewState?: OpenViewState
 				) {
-					const { addTask } = linkTasksStore.getActions();
+					const { addOpenLinkTextTask } = linkTasksStore.getActions();
 					const { path, subpath } = parseLink(linkText);
 					const name = path ? `${path}.md` : sourcePath;
-					addTask(name, subpath);
+					addOpenLinkTextTask(name, subpath);
 					return old.call(
 						this,
 						linkText,

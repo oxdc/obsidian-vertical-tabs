@@ -9,7 +9,7 @@ import {
 	VIEW_CUE_DELAY,
 	DEFAULT_GROUP_TITLE,
 } from "src/models/ViewState";
-import { debounce, ItemView, Platform, TFolder } from "obsidian";
+import { debounce, ItemView, Platform, TFile, TFolder } from "obsidian";
 import { EVENTS } from "src/constants/Events";
 import { REFRESH_TIMEOUT, REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 import {
@@ -36,6 +36,8 @@ import { SwipeDirection, useTouchSensor } from "src/services/TouchSeneor";
 import { getDrawer } from "src/services/MobileDrawer";
 import { addMenuItemsToFolderContextMenu } from "src/services/OpenFolder";
 import { GroupViewType } from "src/models/VTGroupView";
+import { NativeDragTabs } from "src/services/NativeDragTabs";
+import { addMenuItemsToFileContextMenu } from "src/services/OpenFile";
 import { createBookmarkForGroup } from "src/models/VTBookmark";
 
 export const NavigationContainer = () => {
@@ -68,6 +70,9 @@ export const NavigationContainer = () => {
 
 	// Alt key timeout reference to allow cancellation
 	const altKeyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+	// Native drag and drop service instance
+	const nativeDragTabsRef = useRef<NativeDragTabs | null>(null);
 
 	// Helper function to detect if drag target is a tab
 	const isLeafDragTarget = (target: Element): boolean => {
@@ -143,9 +148,25 @@ export const NavigationContainer = () => {
 			if (settings.enhancedKeyboardTabSwitch) modifyViewCueCallback(app);
 			if (settings.backgroundMode) moveSelfToNewGroupAndHide(app);
 		});
+
+		// Initialize native drag and drop for tab rearrangement
+		nativeDragTabsRef.current = new NativeDragTabs(app);
+		useViewState.getState().setNativeDragTabs(nativeDragTabsRef.current);
+		nativeDragTabsRef.current.initialize();
+
 		autoRefresh();
 		plugin.registerEvent(workspace.on("layout-change", autoRefresh));
 		plugin.registerEvent(workspace.on("active-leaf-change", autoRefresh));
+		plugin.registerEvent(
+			workspace.on("layout-change", () => {
+				// Refresh native drag functionality when layout changes (new tabs added/removed)
+				if (nativeDragTabsRef.current) {
+					app.workspace.iterateAllLeaves((leaf) => {
+						nativeDragTabsRef.current?.refreshLeaf(leaf);
+					});
+				}
+			})
+		);
 		plugin.registerEvent(
 			workspace.on("active-leaf-change", autoUncollapseGroup)
 		);
@@ -194,6 +215,10 @@ export const NavigationContainer = () => {
 				if (fileOrFolder instanceof TFolder) {
 					const folder = fileOrFolder;
 					addMenuItemsToFolderContextMenu(app, menu, folder);
+				}
+				if (fileOrFolder instanceof TFile && Platform.isDesktop) {
+					const file = fileOrFolder;
+					addMenuItemsToFileContextMenu(app, menu, file);
 				}
 			})
 		);
@@ -383,10 +408,14 @@ export const NavigationContainer = () => {
 			display: "Vertical Tabs",
 		});
 
-		// Cleanup function to clear alt key timeout on unmount
+		// Cleanup function to clear alt key timeout and native drag service on unmount
 		return () => {
 			if (altKeyTimeoutRef.current) {
 				clearTimeout(altKeyTimeoutRef.current);
+			}
+			if (nativeDragTabsRef.current) {
+				nativeDragTabsRef.current.cleanup();
+				nativeDragTabsRef.current = null;
 			}
 		};
 	}, []);

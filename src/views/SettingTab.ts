@@ -1087,8 +1087,8 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		onClick?: () => void
 	) {
 		const buttonEl = parentEl.createEl("button");
-		const iconEl = buttonEl.createEl("span");
-		const textEl = buttonEl.createEl("span");
+		const iconEl = buttonEl.createSpan();
+		const textEl = buttonEl.createSpan();
 		setIcon(iconEl, props.icon);
 		textEl.setText(props.text);
 		if (onClick) buttonEl.onclick = onClick;
