@@ -3,32 +3,36 @@
 	"version": "0.17.4",
 	"description": "Offer an alternative view that displays open tabs vertically, allowing users to group and organize tabs for a better navigation experience.",
 	"main": "main.js",
-	"packageManager": "bun@1.2.21",
 	"scripts": {
 		"build:dev": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs dev && cp manifest.json dist/manifest.json",
 		"build:beta": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs beta && cp manifest.json dist/manifest.json",
 		"build:production": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && cp manifest.json dist/manifest.json",
 		"build": "npm run build:production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
-		"version:beta": "node version-beta-bump.mjs && git add manifest.json versions.json"
+		"version:beta": "node version-beta-bump.mjs && git add manifest.json versions.json",
+		"lint": "eslint ."
 	},
 	"keywords": [],
 	"author": "",
 	"license": "MIT",
 	"devDependencies": {
+		"@eslint/js": "^9.39.4",
 		"@types/node": "^16.11.6",
 		"@types/react": "18.3.28",
 		"@types/react-dom": "18.3.7",
 		"@types/semver": "^7.7.0",
-		"@typescript-eslint/eslint-plugin": "5.29.0",
-		"@typescript-eslint/parser": "5.29.0",
+		"globals": "^17.6.0",
 		"esbuild": "^0.25.0",
+		"eslint": "^9.39.4",
+		"eslint-plugin-obsidianmd": "^0.3.0",
 		"esbuild-sass-plugin": "^3.3.1",
+		"jiti": "^2.6.1",
 		"obsidian": "^1.11.0",
 		"obsidian-typings": "^2.35.0",
 		"terser": "^5.43.1",
 		"tslib": "2.4.0",
-		"typescript": "^5.6.0"
+		"typescript": "^5.6.0",
+		"typescript-eslint": "^8.59.1"
 	},
 	"dependencies": {
 		"@dnd-kit/core": "^6.1.0",
