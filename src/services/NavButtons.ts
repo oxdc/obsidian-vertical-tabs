@@ -35,8 +35,8 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 	leaf.view.forwardButtonEl = clonedForwardButton;
 
 	// Hide original buttons
-	backButtonEl.setCssProps({ display: "none" });
-	forwardButtonEl.setCssProps({ display: "none" });
+	backButtonEl.setCssStyles({ display: "none" });
+	forwardButtonEl.setCssStyles({ display: "none" });
 
 	// General navigation function for both button clicks and menu items
 	const handleNavigation = async (

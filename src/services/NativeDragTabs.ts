@@ -78,13 +78,13 @@ export class NativeDragTabs {
 		// Only enable drag and drop in Mission Control view
 		if (!this.isGridLayout(leaf.parent)) {
 			leaf.containerEl.draggable = false;
-			leaf.containerEl.setCssProps({ cursor: "" });
+			leaf.containerEl.setCssStyles({ cursor: "" });
 			this.removeLeafHandlers(leaf);
 			return;
 		}
 
 		leaf.containerEl.draggable = true;
-		leaf.containerEl.setCssProps({ cursor: "grab" });
+		leaf.containerEl.setCssStyles({ cursor: "grab" });
 
 		// Remove existing handlers to prevent duplicates
 		this.removeLeafHandlers(leaf);
@@ -153,7 +153,7 @@ export class NativeDragTabs {
 
 		// Add dragging class for visual feedback
 		leaf.containerEl.classList.add("vt-dragging");
-		leaf.containerEl.setCssProps({ cursor: "grabbing" });
+		leaf.containerEl.setCssStyles({ cursor: "grabbing" });
 
 		// Add class to parent container
 		if (leaf.parent.tabsContainerEl) {
@@ -444,7 +444,7 @@ export class NativeDragTabs {
 
 		// Create drop indicator if it doesn't exist
 		if (!this.dragState.dropIndicator) {
-			this.dragState.dropIndicator = document.createDiv();
+			this.dragState.dropIndicator = createDiv();
 			this.dragState.dropIndicator.classList.add("vt-drop-indicator");
 			this.dragState.dropIndicator.style.cssText = `
 				position: absolute;
@@ -460,11 +460,11 @@ export class NativeDragTabs {
 
 		// Update indicator color for cross-group drops
 		if (isCrossGroupDrop) {
-			this.dragState.dropIndicator.setCssProps({
+			this.dragState.dropIndicator.setCssStyles({
 				backgroundColor: "var(--interactive-success)",
 			});
 		} else {
-			this.dragState.dropIndicator.setCssProps({
+			this.dragState.dropIndicator.setCssStyles({
 				backgroundColor: "var(--interactive-accent)",
 			});
 		}
@@ -502,14 +502,14 @@ export class NativeDragTabs {
 			}
 
 			// Span the height of the leaf for better visibility
-			this.dragState.dropIndicator.setCssProps({
+			this.dragState.dropIndicator.setCssStyles({
 				top: `${rect.top - containerRect.top + containerScrollTop}px`,
 				width: "3px",
 				height: `${rect.height}px`,
 			});
 		} else {
 			// Drop at the end - position at right edge of container
-			this.dragState.dropIndicator.setCssProps({
+			this.dragState.dropIndicator.setCssStyles({
 				left: "calc(100% - 3px)",
 				top: "0",
 				width: "3px",
@@ -529,7 +529,7 @@ export class NativeDragTabs {
 				);
 			}
 			// Add to the current target container
-			parent.tabsContainerEl.setCssProps({ position: "relative" });
+			parent.tabsContainerEl.setCssStyles({ position: "relative" });
 			parent.tabsContainerEl.appendChild(this.dragState.dropIndicator);
 		}
 	}
@@ -555,7 +555,7 @@ export class NativeDragTabs {
 		// Remove visual feedback
 		if (this.dragState.draggedElement) {
 			this.dragState.draggedElement.classList.remove("vt-dragging");
-			this.dragState.draggedElement.setCssProps({ cursor: "grab" });
+			this.dragState.draggedElement.setCssStyles({ cursor: "grab" });
 		}
 
 		if (this.dragState.targetParent?.tabsContainerEl) {

@@ -930,7 +930,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 				// Disable dragging for leaves in this group
 				if (leaf.containerEl) {
 					leaf.containerEl.draggable = false;
-					leaf.containerEl.setCssProps({ cursor: "" });
+					leaf.containerEl.setCssStyles({ cursor: "" });
 				}
 			});
 		}

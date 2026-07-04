@@ -60,7 +60,7 @@ export class HistoryBrowserModal extends SuggestModal<HistoryItem> {
 			text: item.title,
 		});
 		if (item.offset === 0) {
-			titleEl.setCssProps({ fontWeight: "bold" });
+			titleEl.setCssStyles({ fontWeight: "bold" });
 			setIcon(iconEl, "check");
 		}
 	}
