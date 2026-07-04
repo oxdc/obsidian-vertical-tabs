@@ -7,9 +7,9 @@ export enum WindowFrameStyle {
 }
 
 export function getFrameStyle(): WindowFrameStyle {
-	if (document.body.classList.contains("is-hidden-frameless")) {
+	if (activeDocument.body.classList.contains("is-hidden-frameless")) {
 		return WindowFrameStyle.Hidden;
-	} else if (document.body.classList.contains("is-frameless")) {
+	} else if (activeDocument.body.classList.contains("is-frameless")) {
 		return WindowFrameStyle.Obsidian;
 	} else {
 		return WindowFrameStyle.Native;
@@ -17,7 +17,7 @@ export function getFrameStyle(): WindowFrameStyle {
 }
 
 export function isRibbonVisible(): boolean {
-	return document.body.classList.contains("show-ribbon");
+	return activeDocument.body.classList.contains("show-ribbon");
 }
 
 function isControlButtonContainerEmpty(container: Element | null): boolean {
@@ -29,14 +29,14 @@ function isControlButtonContainerEmpty(container: Element | null): boolean {
 }
 
 export function hasControlButtonsOnTheLeft(): boolean {
-	const leftContainer = document.querySelector(
+	const leftContainer = activeDocument.querySelector(
 		".titlebar .titlebar-button-container.mod-left"
 	);
 	return !isControlButtonContainerEmpty(leftContainer) || Platform.isMacOS;
 }
 
 export function hasControlButtonsOnTheRight(): boolean {
-	const rightContainer = document.querySelector(
+	const rightContainer = activeDocument.querySelector(
 		".titlebar .titlebar-button-container.mod-right"
 	);
 	return !isControlButtonContainerEmpty(rightContainer);

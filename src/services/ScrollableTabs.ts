@@ -6,7 +6,7 @@ import {
 import { useSettings } from "src/models/PluginContext";
 
 export const setScrollableTabsMinWidth = debounce((value: number) => {
-	document.body.style.setProperty(
+	activeDocument.body.style.setProperty(
 		"--vt-scrollable-tabs-min-width",
 		`${value}px`
 	);

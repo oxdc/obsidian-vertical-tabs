@@ -202,7 +202,7 @@ export const NavigationContent = () => {
 						))}
 						<GroupSlot />
 					</SortableContext>
-					{createPortal(<DragOverlay />, document.body)}
+					{createPortal(<DragOverlay />, activeDocument.body)}
 				</DndContext>
 			</div>
 		</div>

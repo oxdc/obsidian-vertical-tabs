@@ -269,7 +269,7 @@ export const NavigationContainer = () => {
 				window.setTimeout(() => {
 					if (useViewState.getState().hasCtrlKeyPressed) {
 						ref.current?.toggleClass("tab-index-view-cue", true);
-						document.body.toggleClass(
+						activeDocument.body.toggleClass(
 							"vt-tab-index-view-cue",
 							true
 						);
@@ -287,10 +287,10 @@ export const NavigationContainer = () => {
 			if (event.key === "Control" || event.key === "Meta") {
 				setCtrlKeyState(false);
 				ref.current?.toggleClass("tab-index-view-cue", false);
-				document.body.toggleClass("vt-tab-index-view-cue", false);
+				activeDocument.body.toggleClass("vt-tab-index-view-cue", false);
 			}
 		});
-		plugin.registerDomEvent(document, "dblclick", (event) => {
+		plugin.registerDomEvent(activeDocument, "dblclick", (event) => {
 			makeDblclickedFileNonEphemeral(app, event);
 		});
 		plugin.registerDomEvent(window, "dragstart", handleDragStart);

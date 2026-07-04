@@ -474,7 +474,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		parent.containerEl.toggleClass("vt-mod-active", true);
 	},
 	resetFocusFlags() {
-		document.querySelectorAll(".vt-mod-active").forEach((el) => {
+		activeDocument.querySelectorAll(".vt-mod-active").forEach((el) => {
 			el.classList.remove("vt-mod-active");
 		});
 	},
@@ -536,7 +536,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	},
 	updatePositionLabels: () => {
 		const tabContainers = Array.from(
-			document.querySelectorAll(".workspace-tabs")
+			activeDocument.querySelectorAll(".workspace-tabs")
 		);
 		tabContainers.forEach((tabContainer) => {
 			tabContainer.classList.remove(

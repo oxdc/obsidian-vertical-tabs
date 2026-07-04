@@ -43,8 +43,8 @@ export class NativeDragTabs {
 			this.handleDrop.bind(this) as EventListener
 		);
 
-		document.addEventListener("dragover", dragOverHandler);
-		document.addEventListener("drop", dropHandler);
+		activeDocument.addEventListener("dragover", dragOverHandler);
+		activeDocument.addEventListener("drop", dropHandler);
 	}
 
 	/**
@@ -53,7 +53,7 @@ export class NativeDragTabs {
 	public cleanup(): void {
 		// Remove global listeners
 		this.boundHandlers.forEach((handler, event) => {
-			document.removeEventListener(event, handler);
+			activeDocument.removeEventListener(event, handler);
 		});
 		this.boundHandlers.clear();
 
