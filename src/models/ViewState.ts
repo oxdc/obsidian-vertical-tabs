@@ -40,12 +40,12 @@ import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 import { getTabs } from "src/services/GetTabs";
 import { useSettings } from "./PluginContext";
 import { isHoverEditorEnabled } from "src/services/HoverEditorTabs";
+import { NativeDragTabs } from "src/services/NativeDragTabs";
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
 
 export type GroupTitles = DefaultRecord<Identifier, string>;
-export const createNewGroupTitles = () =>
-	new DefaultRecord(factory) as GroupTitles;
+export const createNewGroupTitles = () => new DefaultRecord(factory);
 
 export type PinningEvents = DefaultRecord<Identifier, EventRef | null>;
 export type PinningEventCallback = (pinned: boolean) => void;
@@ -63,14 +63,11 @@ export const createNewGroupViewToggleEvents = () =>
 	new DefaultRecord(() => null) as GroupViewToggleEvents;
 
 export type GroupUnhideTimes = DefaultRecord<Identifier, number>;
-export const createNewGroupUnhideTimes = () =>
-	new DefaultRecord(() => 0) as GroupUnhideTimes;
+export const createNewGroupUnhideTimes = () => new DefaultRecord(() => 0);
 
 export type LinkedGroups = DefaultRecord<Identifier, LinkedFolder | null>;
 export const createNewLinkedGroups = () =>
 	new DefaultRecord(() => null) as LinkedGroups;
-
-export type NativeDragTabsInstance = any; // Will be the NativeDragTabs class instance
 
 export type ViewCueIndex = number | string | undefined;
 export const MIN_INDEX_KEY = 1;
@@ -105,7 +102,7 @@ interface ViewState {
 	viewCueOffset: number;
 	viewCueNativeCallbacks: ViewCueNativeCallbackMap;
 	viewCueFirstTabs: ViewCueFirstTabs;
-	nativeDragTabs: NativeDragTabsInstance | null;
+	nativeDragTabs: NativeDragTabs | null;
 	setGroupTitle: (id: Identifier, name: string) => void;
 	toggleCollapsedGroup: (id: Identifier, isCollapsed: boolean) => void;
 	toggleHiddenGroup: (id: Identifier, isHidden: boolean, app?: App) => void;
@@ -167,11 +164,11 @@ interface ViewState {
 	increaseViewCueOffset: () => void;
 	decreaseViewCueOffset: () => void;
 	resetViewCueOffset: () => void;
-	mapViewCueIndex(realIndex?: number, isLast?: boolean): ViewCueIndex;
-	convertBackToRealIndex(
+	mapViewCueIndex: (realIndex?: number, isLast?: boolean) => ViewCueIndex;
+	convertBackToRealIndex: (
 		userIndex: number,
 		numOfLeaves: number
-	): number | null;
+	) => number | null;
 	revealTabOfUserIndex: (
 		app: App,
 		userIndex: number,
@@ -191,8 +188,8 @@ interface ViewState {
 	isLinkedGroup: (groupID: Identifier) => boolean;
 	setGroupViewTypeForCurrentGroup: (viewType: GroupViewType) => void;
 	exitMissionControlForCurrentGroup: () => void;
-	setNativeDragTabs: (instance: NativeDragTabsInstance) => void;
-	getNativeDragTabs: () => NativeDragTabsInstance | null;
+	setNativeDragTabs: (instance: NativeDragTabs) => void;
+	getNativeDragTabs: () => NativeDragTabs | null;
 	makeLeavesDraggableForGroup: (group: WorkspaceParent) => void;
 	makeAllMissionControlGroupsDraggable: () => void;
 	disableDraggingForGroup: (group: WorkspaceParent) => void;
@@ -219,7 +216,7 @@ const saveHiddenGroups = (hiddenGroups: Array<Identifier>) => {
 const loadHiddenGroups = (): Array<Identifier> => {
 	const data = localStorage.getItem("hidden-groups");
 	if (!data) return [];
-	return JSON.parse(data);
+	return JSON.parse(data) as Array<Identifier>;
 };
 
 const saveCollapsedGroups = (collapsedGroups: Array<Identifier>) => {
@@ -229,7 +226,7 @@ const saveCollapsedGroups = (collapsedGroups: Array<Identifier>) => {
 const loadCollapsedGroups = (): Array<Identifier> => {
 	const data = localStorage.getItem("collapsed-groups");
 	if (!data) return [];
-	return JSON.parse(data);
+	return JSON.parse(data) as Array<Identifier>;
 };
 
 const saveNonEphemeralTabs = (tabs: Array<Identifier>) => {
@@ -239,7 +236,7 @@ const saveNonEphemeralTabs = (tabs: Array<Identifier>) => {
 const loadNonEphemeralTabs = (): Array<Identifier> => {
 	const data = localStorage.getItem("nonephemeral-tabs");
 	if (!data) return [];
-	return JSON.parse(data);
+	return JSON.parse(data) as Array<Identifier>;
 };
 
 const clearNonEphemeralTabs = () => {
@@ -253,7 +250,7 @@ const saveGroupUnhideTimes = (times: GroupUnhideTimes) => {
 
 const loadGroupUnhideTimes = (): GroupUnhideTimes => {
 	const data = localStorage.getItem("group-unhide-times");
-	if (!data) return createNewGroupUnhideTimes();
+	if (!data) return createNewGroupUnhideTimes() as GroupUnhideTimes;
 	const entries = JSON.parse(data) as [Identifier, number][];
 	return new DefaultRecord(() => 0, entries);
 };
@@ -292,7 +289,7 @@ const getCornerContainers = (tabContainers: Array<Element>) => {
 const callbackGuard = new Set<number>();
 
 export const useViewState = create<ViewState>()((set, get) => ({
-	groupTitles: loadViewState() ?? createNewGroupTitles(),
+	groupTitles: loadViewState() ?? (createNewGroupTitles() as GroupTitles),
 	hiddenGroups: loadHiddenGroups(),
 	collapsedGroups: loadCollapsedGroups(),
 	nonEphemeralTabs: loadNonEphemeralTabs(),
@@ -339,7 +336,8 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			});
 			saveGroupUnhideTimes(get().groupUnhideTimes);
 			// When showing a group, enforce the 2-group limit on phone
-			if (app) setTimeout(() => get().limitVisibleGroupsOnPhone(app));
+			if (app)
+				window.setTimeout(() => get().limitVisibleGroupsOnPhone(app));
 		}
 		saveHiddenGroups(get().hiddenGroups);
 	},
@@ -731,6 +729,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		} else if (userIndex === MIN_INDEX_KEY - 1) {
 			return VIEW_CUE_PREV;
 		}
+		return undefined;
 	},
 	convertBackToRealIndex(
 		userIndex: number,
@@ -898,7 +897,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			setGroupViewType(group, GroupViewType.Default);
 		}
 	},
-	setNativeDragTabs(instance: NativeDragTabsInstance) {
+	setNativeDragTabs(instance: NativeDragTabs) {
 		set({ nativeDragTabs: instance });
 	},
 	getNativeDragTabs() {
@@ -915,7 +914,12 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		const { content } = tabCacheStore.getState();
 		for (const entry of content.values()) {
 			const group = entry.group;
-			if (!group?.containerEl?.classList.contains(GroupViewType.MissionControlView)) continue;
+			if (
+				!group?.containerEl?.classList.contains(
+					GroupViewType.MissionControlView
+				)
+			)
+				continue;
 			makeLeavesDraggableForGroup(group);
 		}
 	},
@@ -926,7 +930,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 				// Disable dragging for leaves in this group
 				if (leaf.containerEl) {
 					leaf.containerEl.draggable = false;
-					leaf.containerEl.style.cursor = "";
+					leaf.containerEl.setCssProps({ cursor: "" });
 				}
 			});
 		}
@@ -961,6 +965,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		const groupIDs = Array.from(tabCache.keys());
 		for (let index = 0; index < groupIDs.length; index++) {
 			const groupID = groupIDs[index];
+			if (!groupID) continue;
 			const entry = tabCache.get(groupID);
 			if (entry.groupType !== GroupType.RootSplit) continue;
 			if (hiddenGroups.includes(groupID)) continue;

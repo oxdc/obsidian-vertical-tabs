@@ -15,8 +15,8 @@ export function reapplyEphemeralState(
 	leaf: WorkspaceLeaf,
 	state: unknown = null
 ) {
-	setTimeout(() => {
-		const ephemeralState = state ?? leaf.getEphemeralState();
+	window.setTimeout(() => {
+		const ephemeralState: unknown = state ?? leaf.getEphemeralState();
 		leaf.setEphemeralState(ephemeralState);
 	}, REFRESH_TIMEOUT_LONG);
 }
@@ -128,8 +128,9 @@ export function selfIsClosed(app: App) {
 
 export function ensureSelfIsOpen(app: App) {
 	if (selfIsClosed(app)) {
-		const leaf = this.app.workspace.getLeftLeaf(false);
-		leaf.setViewState({ type: VERTICAL_TABS_VIEW, active: true });
+		const leaf: WorkspaceLeaf | null = app.workspace.getLeftLeaf(false);
+		if (leaf)
+			void leaf.setViewState({ type: VERTICAL_TABS_VIEW, active: true });
 	}
 }
 
@@ -146,6 +147,7 @@ export async function moveSelfToDefaultLocation(app: App) {
 	const leaves = workspace.getLeavesOfType(VERTICAL_TABS_VIEW);
 	if (leaves.length === 0) return;
 	const self = leaves[0];
+	if (!self) return;
 	const leftSidebar = workspace.leftSplit;
 	if (leftSidebar instanceof WorkspaceSidedock) {
 		const parent = leftSidebar.children[0] as unknown as WorkspaceParent;
@@ -211,7 +213,7 @@ export function moveMultipleTabs(
 	// Insert in forward order to maintain the original sequence
 	for (let i = 0; i < sortedSourceLeaves.length; i++) {
 		const leaf = sortedSourceLeaves[i];
-		targetParent.insertChild(insertIndex + i, leaf);
+		if (leaf) targetParent.insertChild(insertIndex + i, leaf);
 	}
 
 	// Select the first moved tab and recompute dimensions

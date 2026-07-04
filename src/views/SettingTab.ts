@@ -141,11 +141,11 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		props: ToggleProps
 	) {
 		const { name, desc, value, onChange } = props;
-		const toggleEl = this.createSetting(parentEl, (setting) =>
+		const toggleEl = this.createSetting(parentEl, (setting) => {
 			setting.setName(name).addToggle((toggle) => {
 				toggle.setValue(value).onChange(onChange);
-			})
-		);
+			});
+		});
 		if (desc) toggleEl.setDesc(desc);
 		return toggleEl;
 	}
@@ -186,7 +186,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		props: DropdownProps
 	) {
 		const { name, desc, options, value, onChange, onReset } = props;
-		const dropdownEl = this.createSetting(parentEl, (setting) =>
+		const dropdownEl = this.createSetting(parentEl, (setting) => {
 			setting
 				.setName(name)
 				.addDropdown((dropdown) =>
@@ -194,8 +194,8 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 						.addOptions(options)
 						.setValue(value)
 						.onChange(onChange)
-				)
-		);
+				);
+		});
 		if (desc) dropdownEl.setDesc(desc);
 		if (onReset) {
 			dropdownEl.addExtraButton((button) =>
@@ -212,7 +212,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 
 	private displayUpdateIndicator(containerEl: HTMLElement) {
 		const group = this.createSettingGroup(containerEl);
-		const entry = this.createSetting(group, (s) => s.setName("Updates"));
+		const entry = this.createSetting(group, (setting) => {
+			setting.setName("Updates");
+		});
 		if (this.isBetaVersion(this.plugin.manifest.version)) {
 			const betaVersionInfo = entry.descEl.createSpan({
 				cls: "vt-beta-version-info",
@@ -237,7 +239,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			if (this.plugin.settings.enableUpdateCheck ?? true) {
 				const indicator = entry.controlEl.createDiv();
 				this.showLoadingState(entry, indicator);
-				this.checkForUpdates(entry, indicator);
+				void this.checkForUpdates(entry, indicator);
 			} else {
 				entry.setDesc(
 					`Update checking is disabled. Current version: ${this.plugin.manifest.version}`
@@ -274,7 +276,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			} else {
 				this.showUpToDateState(entry, indicator, currentVersion);
 			}
-		} catch (error) {
+		} catch {
 			this.showErrorState(entry, indicator);
 		}
 	}
@@ -341,7 +343,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		this.createWarningBanner(containerEl, {
 			template: `Background mode is enabled. To see Vertical Tabs and access its core features,
 								 you must first {disable} it.`,
-			onClick: () => this.toggleBackgroundMode(false),
+			onClick: () => void this.toggleBackgroundMode(false),
 		});
 	}
 
@@ -349,7 +351,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		this.createWarningBanner(containerEl, {
 			template: `Vertical Tabs is disabled on this device. To access plugin features and settings,
 							   you must first {enable} it.`,
-			onClick: () => this.toggleDisableOnThisDevice(false),
+			onClick: () => void this.toggleDisableOnThisDevice(false),
 		});
 	}
 
@@ -365,7 +367,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		const warning = containerEl.createDiv({ cls: "vt-warning-banner" });
 		warning.appendText(`* Warning: ${prefix}`);
 		const linkButton = warning.createEl("a", { text: buttonText });
-		warning.appendText(suffix);
+		warning.appendText(suffix ?? "");
 		linkButton.onclick = () => {
 			onClick();
 			this.refresh();
@@ -598,7 +600,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		} else {
 			let descEl: HTMLElement = containerEl;
 			if (requireApiVersion("1.11.0")) {
-				const descriptionSetting = this.createSetting(group, (s) => s);
+				const descriptionSetting = this.createSetting(group);
 				descEl = descriptionSetting.settingEl;
 				descEl.empty();
 			}
@@ -928,7 +930,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 						 The plugin will remain enabled on other devices.
 						 This setting is stored locally and will not sync across devices.`,
 			value: disableOnThisDevice ?? false,
-			onChange: (value) => this.toggleDisableOnThisDevice(value),
+			onChange: (value) => void this.toggleDisableOnThisDevice(value),
 		});
 
 		this.createToggle(group, {
@@ -936,7 +938,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			desc: `Enable to keep features like tab navigation without showing vertical tabs.
 					   This will disable Zen Mode and reset your workspace to the default layout.`,
 			value: this.plugin.settings.backgroundMode,
-			onChange: (value) => this.toggleBackgroundMode(value),
+			onChange: (value) => void this.toggleBackgroundMode(value),
 		});
 
 		this.createToggle(group, {
@@ -996,7 +998,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				style: "border: 0px; width: 24px; mix-blend-mode: multiply;",
 			},
 		});
-		kofiButton.createEl("span", { text: "Buy me a coffee" });
+		kofiButton.createSpan({ text: "Buy me a coffee" });
 		const githubButton = buttons.createEl("a", {
 			href: "https://github.com/oxdc/obsidian-vertical-tabs",
 			attr: { id: "vt-support-btn-github", target: "_blank" },
@@ -1009,7 +1011,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				style: "border: 0px; width: 24px; mix-blend-mode: multiply;",
 			},
 		});
-		githubButton.createEl("span", { text: "Star on GitHub" });
+		githubButton.createSpan({ text: "Star on GitHub" });
 	}
 
 	private displayBugReport(parentEl: HTMLElement) {
@@ -1024,7 +1026,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		});
 		containerEl.appendText(" or ");
 		containerEl.createEl("a", {
-			text: "submit a report",
+			text: "Submit a report",
 			attr: {
 				href: "https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose",
 				target: "_blank",
@@ -1043,7 +1045,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		this.createDebugButton(
 			containerEl,
 			{ icon: "copy", text: "Copy plugin settings" },
-			() => this.copyPluginSettingsToClipboard()
+			() => void this.copyPluginSettingsToClipboard()
 		);
 
 		this.createDebugButton(
@@ -1109,7 +1111,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	) {
 		let clickedOnce = false;
 		let firstClickTime = 0;
-		let countdownInterval: NodeJS.Timeout;
+		let countdownInterval: number;
 		const countdownSeconds = props.countdownSeconds ?? 5;
 		const delaySeconds = props.delaySeconds ?? 1;
 
@@ -1137,13 +1139,13 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				let countdown = countdownSeconds;
 				updateButtonText(confirmationTextFormat(countdown));
 				// Countdown timer that updates every second
-				countdownInterval = setInterval(() => {
+				countdownInterval = window.setInterval(() => {
 					countdown--;
 					if (countdown > 0) {
 						updateButtonText(confirmationTextFormat(countdown));
 					} else {
 						// Reset when countdown reaches 0
-						clearInterval(countdownInterval);
+						window.clearInterval(countdownInterval);
 						clickedOnce = false;
 						firstClickTime = 0;
 						updateButtonText(props.text, props.icon);
@@ -1154,7 +1156,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				const timeSinceFirstClick = currentTime - firstClickTime;
 				if (timeSinceFirstClick >= delaySeconds * 1000) {
 					// Execute the command only if at least 1 second has passed
-					clearInterval(countdownInterval);
+					window.clearInterval(countdownInterval);
 					onClick();
 				}
 				// If less than 1 second has passed, ignore the click
@@ -1177,11 +1179,14 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 
 	private openDevConsole() {
 		try {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			(window as any)
-				.require("electron")
-				.remote.getCurrentWebContents()
-				.openDevTools();
+			const electronWindow = window as Window & {
+				require?(module: string): unknown;
+			};
+			if (!electronWindow.require) return;
+			const { remote } = electronWindow.require("electron") as {
+				remote: { getCurrentWebContents(): { openDevTools(): void } };
+			};
+			remote.getCurrentWebContents().openDevTools();
 		} catch (error) {
 			console.error(error);
 		}

@@ -36,11 +36,11 @@ export class NativeDragTabs {
 		// Set up global event listeners
 		const dragOverHandler = this.createBoundHandler(
 			"dragover",
-			this.handleDragOver.bind(this)
+			this.handleDragOver.bind(this) as EventListener
 		);
 		const dropHandler = this.createBoundHandler(
 			"drop",
-			this.handleDrop.bind(this)
+			this.handleDrop.bind(this) as EventListener
 		);
 
 		document.addEventListener("dragover", dragOverHandler);
@@ -78,13 +78,13 @@ export class NativeDragTabs {
 		// Only enable drag and drop in Mission Control view
 		if (!this.isGridLayout(leaf.parent)) {
 			leaf.containerEl.draggable = false;
-			leaf.containerEl.style.cursor = "";
+			leaf.containerEl.setCssProps({ cursor: "" });
 			this.removeLeafHandlers(leaf);
 			return;
 		}
 
 		leaf.containerEl.draggable = true;
-		leaf.containerEl.style.cursor = "grab";
+		leaf.containerEl.setCssProps({ cursor: "grab" });
 
 		// Remove existing handlers to prevent duplicates
 		this.removeLeafHandlers(leaf);
@@ -101,8 +101,8 @@ export class NativeDragTabs {
 				__dragHandlers?: Record<string, EventListener>;
 			}
 		).__dragHandlers = {
-			dragstart: dragStartHandler,
-			dragend: dragEndHandler,
+			dragstart: dragStartHandler as EventListener,
+			dragend: dragEndHandler as EventListener,
 		};
 	}
 
@@ -120,9 +120,12 @@ export class NativeDragTabs {
 		if (handlers) {
 			leaf.containerEl.removeEventListener(
 				"dragstart",
-				handlers.dragstart
+				handlers.dragstart as EventListener
 			);
-			leaf.containerEl.removeEventListener("dragend", handlers.dragend);
+			leaf.containerEl.removeEventListener(
+				"dragend",
+				handlers.dragend as EventListener
+			);
 			delete (
 				leaf.containerEl as HTMLElement & {
 					__dragHandlers?: Record<string, EventListener>;
@@ -150,7 +153,7 @@ export class NativeDragTabs {
 
 		// Add dragging class for visual feedback
 		leaf.containerEl.classList.add("vt-dragging");
-		leaf.containerEl.style.cursor = "grabbing";
+		leaf.containerEl.setCssProps({ cursor: "grabbing" });
 
 		// Add class to parent container
 		if (leaf.parent.tabsContainerEl) {
@@ -441,7 +444,7 @@ export class NativeDragTabs {
 
 		// Create drop indicator if it doesn't exist
 		if (!this.dragState.dropIndicator) {
-			this.dragState.dropIndicator = document.createElement("div");
+			this.dragState.dropIndicator = document.createDiv();
 			this.dragState.dropIndicator.classList.add("vt-drop-indicator");
 			this.dragState.dropIndicator.style.cssText = `
 				position: absolute;
@@ -457,11 +460,13 @@ export class NativeDragTabs {
 
 		// Update indicator color for cross-group drops
 		if (isCrossGroupDrop) {
-			this.dragState.dropIndicator.style.backgroundColor =
-				"var(--interactive-success)";
+			this.dragState.dropIndicator.setCssProps({
+				backgroundColor: "var(--interactive-success)",
+			});
 		} else {
-			this.dragState.dropIndicator.style.backgroundColor =
-				"var(--interactive-accent)";
+			this.dragState.dropIndicator.setCssProps({
+				backgroundColor: "var(--interactive-accent)",
+			});
 		}
 
 		if (closestLeaf && closestLeaf.containerEl && clientX !== undefined) {
@@ -497,17 +502,19 @@ export class NativeDragTabs {
 			}
 
 			// Span the height of the leaf for better visibility
-			this.dragState.dropIndicator.style.top = `${
-				rect.top - containerRect.top + containerScrollTop
-			}px`;
-			this.dragState.dropIndicator.style.width = "3px";
-			this.dragState.dropIndicator.style.height = `${rect.height}px`;
+			this.dragState.dropIndicator.setCssProps({
+				top: `${rect.top - containerRect.top + containerScrollTop}px`,
+				width: "3px",
+				height: `${rect.height}px`,
+			});
 		} else {
 			// Drop at the end - position at right edge of container
-			this.dragState.dropIndicator.style.left = "calc(100% - 3px)";
-			this.dragState.dropIndicator.style.top = "0";
-			this.dragState.dropIndicator.style.width = "3px";
-			this.dragState.dropIndicator.style.height = "100%";
+			this.dragState.dropIndicator.setCssProps({
+				left: "calc(100% - 3px)",
+				top: "0",
+				width: "3px",
+				height: "100%",
+			});
 		}
 
 		// Ensure the drop indicator is in the correct container
@@ -522,7 +529,7 @@ export class NativeDragTabs {
 				);
 			}
 			// Add to the current target container
-			parent.tabsContainerEl.style.position = "relative";
+			parent.tabsContainerEl.setCssProps({ position: "relative" });
 			parent.tabsContainerEl.appendChild(this.dragState.dropIndicator);
 		}
 	}
@@ -548,7 +555,7 @@ export class NativeDragTabs {
 		// Remove visual feedback
 		if (this.dragState.draggedElement) {
 			this.dragState.draggedElement.classList.remove("vt-dragging");
-			this.dragState.draggedElement.style.cursor = "grab";
+			this.dragState.draggedElement.setCssProps({ cursor: "grab" });
 		}
 
 		if (this.dragState.targetParent?.tabsContainerEl) {

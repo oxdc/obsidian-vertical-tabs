@@ -1,13 +1,7 @@
 import { App } from "obsidian";
 import { createContext, useContext } from "react";
 import ObsidianVerticalTabs from "src/main";
-import {
-	Settings,
-	SettingsMutatorFn,
-	SettingsMutator,
-	SettingsMutation,
-	DEFAULT_SETTINGS,
-} from "./PluginSettings";
+import { Settings, SettingsMutator, DEFAULT_SETTINGS } from "./PluginSettings";
 import { create } from "zustand";
 import { createSelectors } from "./Selectors";
 import {
@@ -87,7 +81,7 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 			set({ plugin });
 			await plugin.loadData();
 			const settings = plugin.settings;
-			plugin.saveSettings();
+			await plugin.saveSettings();
 			set(settings);
 			get().loadDeviceSpecificSettings();
 			setColumnViewMinWidth(settings.columnViewMinWidth);
@@ -104,18 +98,18 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 				case "object":
 					plugin.settings = {
 						...plugin.settings,
-						...(mutator as SettingsMutation),
+						...mutator,
 					};
 					break;
 				case "function":
 					plugin.settings = {
 						...plugin.settings,
-						...(mutator as SettingsMutatorFn)(plugin.settings),
+						...mutator(plugin.settings),
 					};
 					break;
 			}
-			plugin.saveSettings();
-			plugin.updateViewStates();
+			void plugin.saveSettings();
+			void plugin.updateViewStates();
 			set({ ...plugin.settings });
 		},
 		toggleZenMode() {
@@ -176,12 +170,12 @@ export const useSettingsBase = create<Settings & SettingsActions>(
 					showActiveTabs: false, // ensure access to all horizontal tabs
 					zenMode: false, // ensure access to all splits
 				});
-				moveSelfToNewGroupAndHide(app);
+				void moveSelfToNewGroupAndHide(app);
 			} else {
 				const showActiveTabs = getShowActiveTabs();
 				get().setSettings({ backgroundMode: false, showActiveTabs });
 				if (selfIsNotInTheSidebar(app)) {
-					moveSelfToDefaultLocation(app);
+					void moveSelfToDefaultLocation(app);
 				}
 			}
 		},

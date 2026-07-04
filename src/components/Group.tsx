@@ -1,5 +1,12 @@
 import { NavigationTreeItem } from "./NavigationTreeItem";
-import { Fragment, useEffect, useState } from "react";
+import {
+	Fragment,
+	KeyboardEvent,
+	MouseEvent,
+	ReactNode,
+	useEffect,
+	useState,
+} from "react";
 import { IconButton } from "./IconButton";
 import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
 import { useApp, useSettings } from "src/models/PluginContext";
@@ -19,7 +26,10 @@ import {
 	identifyGroupViewType,
 	setGroupViewType,
 } from "src/models/VTGroupView";
-import { addMissionControlToggle, removeMissionControlToggle } from "src/services/MissionControlToggle";
+import {
+	addMissionControlToggle,
+	removeMissionControlToggle,
+} from "src/services/MissionControlToggle";
 import { NewTabButtonPlacement } from "src/models/NewTab";
 import {
 	getEmbedLinkFromLeaf,
@@ -31,10 +41,7 @@ import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 interface GroupProps {
 	type: GroupType;
 	group: WorkspaceParent | null;
-	children?: (
-		isSingleGroup: boolean,
-		viewType: GroupViewType
-	) => React.ReactNode;
+	children?: (isSingleGroup: boolean, viewType: GroupViewType) => ReactNode;
 }
 
 const titleMap: Record<GroupType, string> = {
@@ -62,9 +69,13 @@ export const Group = (props: GroupProps) => {
 
 	/* Relevant settings */
 	const hideSidebars = useSettings((state) => state.hideSidebars);
-	const showMissionControlToggle = useSettings((state) => state.showMissionControlToggle);
+	const showMissionControlToggle = useSettings(
+		(state) => state.showMissionControlToggle
+	);
 	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
-	const newTabButtonPlacement = useSettings((state) => state.newTabButtonPlacement);
+	const newTabButtonPlacement = useSettings(
+		(state) => state.newTabButtonPlacement
+	);
 
 	/* Store states (managed by zustand, shared by components) */
 	const groupTitles = useViewState((state) => state.groupTitles);
@@ -142,7 +153,7 @@ export const Group = (props: GroupProps) => {
 			startEditing();
 		}
 	};
-	const handleTitleInputKeyDown = (e: React.KeyboardEvent) => {
+	const handleTitleInputKeyDown = (e: KeyboardEvent) => {
 		if (e.key === "Enter") {
 			commitTitle();
 		} else if (e.key === "Escape") {
@@ -150,7 +161,7 @@ export const Group = (props: GroupProps) => {
 		}
 	};
 	/* Commands - New tab */
-	const createLeafNewTabAndOpen = (e: React.MouseEvent) => {
+	const createLeafNewTabAndOpen = (e: MouseEvent) => {
 		e.stopPropagation();
 		if (!group) return;
 		const leaf = workspace.getLeaf("split");
@@ -164,10 +175,8 @@ export const Group = (props: GroupProps) => {
 		setLinkedFolder(null);
 		app.workspace.trigger(EVENTS.DEDUPLICATE_TABS);
 	};
-	const loadMore = async () => {
-		if (linkedFolder) {
-			await linkedFolder.openNextFiles(false);
-		}
+	const loadMore = () => {
+		if (linkedFolder) void linkedFolder.openNextFiles(false);
 	};
 
 	/* Effects */
@@ -181,8 +190,11 @@ export const Group = (props: GroupProps) => {
 				if (!isEditing) setEphemeralTitle(titleFromBookmark);
 			}
 		};
-		const task = setTimeout(syncTitleFromBookmark, REFRESH_TIMEOUT);
-		return () => clearTimeout(task);
+		const task = window.setTimeout(
+			() => void syncTitleFromBookmark(),
+			REFRESH_TIMEOUT
+		);
+		return () => window.clearTimeout(task);
 	});
 	// Manage the visibility of the group
 	useEffect(() => {
@@ -284,7 +296,7 @@ export const Group = (props: GroupProps) => {
 		item.setSection("control")
 			.setTitle("Bookmark all")
 			.onClick(() => {
-				if (group) createBookmarkForGroup(app, group, title);
+				if (group) void createBookmarkForGroup(app, group, title);
 			});
 	});
 	menu.addItem((item) => {
@@ -313,7 +325,7 @@ export const Group = (props: GroupProps) => {
 					getWikiLinkFromLeaf(app, child)
 				);
 				if (links.length > 0)
-					navigator.clipboard.writeText(links.join("\n"));
+					void navigator.clipboard.writeText(links.join("\n"));
 			});
 	});
 	menu.addItem((item) => {
@@ -325,7 +337,7 @@ export const Group = (props: GroupProps) => {
 					(child) => "- " + getWikiLinkFromLeaf(app, child)
 				);
 				if (links.length > 0)
-					navigator.clipboard.writeText(links.join("\n"));
+					void navigator.clipboard.writeText(links.join("\n"));
 			});
 	});
 	menu.addItem((item) => {
@@ -337,7 +349,7 @@ export const Group = (props: GroupProps) => {
 					getEmbedLinkFromLeaf(app, child)
 				);
 				if (links.length > 0)
-					navigator.clipboard.writeText(links.join("\n"));
+					void navigator.clipboard.writeText(links.join("\n"));
 			});
 	});
 	menu.addItem((item) => {

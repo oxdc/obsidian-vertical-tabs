@@ -82,18 +82,18 @@ export function deduplicateForTargets(
 		reapplyEphemeralState(leafToKeep, latestOldLeaf.getEphemeralState());
 	}
 	sortedLeaves.forEach((leaf) => safeDetach(leaf));
-	loadDeferredLeaf(leafToKeep);
+	void loadDeferredLeaf(leafToKeep);
 	// If there is a link task for the file, we jump to the subpath.
 	const { getTask, removeTask } = linkTasksStore.getActions();
 	const task = getTask(file.path);
 	if (task) {
 		if (task.type === "openLinkText") {
 			const { subpath } = task;
-			leafToKeep.openLinkText(subpath, file.path);
+			void leafToKeep.openLinkText(subpath, file.path);
 			removeTask(task.name);
 		} else if (task.type === "openFile") {
 			const { file, openState } = task;
-			leafToKeep.openFile(file, openState);
+			void leafToKeep.openFile(file, openState);
 			removeTask(file.path);
 		}
 	}

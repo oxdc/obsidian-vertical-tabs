@@ -1,3 +1,5 @@
+import { WorkspaceSplit } from "obsidian";
+
 export {};
 
 declare module "obsidian" {

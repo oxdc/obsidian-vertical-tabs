@@ -35,8 +35,8 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 	leaf.view.forwardButtonEl = clonedForwardButton;
 
 	// Hide original buttons
-	backButtonEl.style.display = "none";
-	forwardButtonEl.style.display = "none";
+	backButtonEl.setCssProps({ display: "none" });
+	forwardButtonEl.setCssProps({ display: "none" });
 
 	// General navigation function for both button clicks and menu items
 	const handleNavigation = async (
@@ -58,7 +58,7 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 
 		// Without pressing the mod key, navigate in current leaf
 		if (!isModEvent) {
-			await leaf.history.go(steps);
+			leaf.history.go(steps);
 			return;
 		}
 
@@ -75,7 +75,7 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 		if (!historyState) return;
 
 		// Set the target state
-		await targetLeaf.history.updateState(historyState);
+		targetLeaf.history.updateState(historyState);
 
 		// Update history arrays
 		const backHistoryItems = leaf.history.backHistory;
@@ -113,7 +113,7 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 		if (e instanceof MouseEvent && e.button === 2) return;
 
 		const steps = direction === "back" ? -1 : 1;
-		handleNavigation(direction, steps, null, e);
+		void handleNavigation(direction, steps, null, e);
 	};
 
 	// Create history dropdown functionality
@@ -161,7 +161,7 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 		if (isLongPress) {
 			menu.dom.addEventListener("mouseup", (event) => {
 				const targetNode = event.target as Node;
-				setTimeout(() => {
+				window.setTimeout(() => {
 					for (const menuItem of menu.items) {
 						if (menuItem.dom.contains(targetNode)) {
 							menuItem.handleEvent?.(event);

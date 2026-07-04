@@ -1,11 +1,4 @@
-import {
-	App,
-	FileView,
-	TFile,
-	WorkspaceLeaf,
-	WorkspaceParent,
-	WorkspaceSplit,
-} from "obsidian";
+import { App, FileView, TFile, WorkspaceLeaf, WorkspaceSplit } from "obsidian";
 import { createNewTabCache, TabCache } from "src/stores/TabCacheStore";
 import { GroupType } from "src/models/VTWorkspace";
 import { managedLeafStore } from "src/stores/ManagedLeafStore";
@@ -19,7 +12,7 @@ function record(
 	const { isManagedLeaf } = managedLeafStore.getActions();
 	if (isManagedLeaf(app, leaf)) return;
 	content.get(nameOrID).groupType = type;
-	content.get(nameOrID).group = leaf.parent as WorkspaceParent;
+	content.get(nameOrID).group = leaf.parent;
 	content.get(nameOrID).leaves.push(leaf);
 	content.get(nameOrID).leafIDs.push(leaf.id);
 	// If guessedCreationTime is not set, we assume the leaf was created now
@@ -29,7 +22,7 @@ function record(
 }
 
 export function getTabs(app: App): TabCache {
-	const content = createNewTabCache();
+	const content = createNewTabCache() as TabCache;
 	const workspace = app.workspace;
 	const { leftSplit, rightSplit, rootSplit, floatingSplit } = workspace;
 	managedLeafStore.getActions().refresh(app);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type TouchEvent as ReactTouchEvent, useState } from "react";
 
 export enum SwipeDirection {
 	Up = "up",
@@ -25,14 +25,16 @@ export const useTouchSensor = (options: TouchSensorOptions) => {
 	const [moved, setMoved] = useState(false);
 	const [direction, setDirection] = useState(SwipeDirection.None);
 
-	const onTouchStart = (event: React.TouchEvent) => {
+	const onTouchStart = (event: ReactTouchEvent) => {
+		if (!event.touches[0]) return;
 		setStartX(event.touches[0].clientX);
 		setStartY(event.touches[0].clientY);
 		setMoved(false);
 		setDirection(SwipeDirection.None);
 	};
 
-	const onTouchMove = (event: React.TouchEvent) => {
+	const onTouchMove = (event: ReactTouchEvent) => {
+		if (!event.touches[0]) return;
 		const dx = event.touches[0].clientX - startX;
 		const dy = event.touches[0].clientY - startY;
 		if (Math.sqrt(dx * dx + dy * dy) > minDistance) {
@@ -47,7 +49,7 @@ export const useTouchSensor = (options: TouchSensorOptions) => {
 		}
 	};
 
-	const onTouchEnd = (event: React.TouchEvent) => {
+	const onTouchEnd = (event: ReactTouchEvent) => {
 		callback(moved, direction, event.nativeEvent);
 	};
 

@@ -1,8 +1,7 @@
 export {};
 
 declare module "obsidian" {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	interface SuggestModal<T> {
+	interface SuggestModal {
 		chooser: {
 			setSelectedItem: (index: number, event?: KeyboardEvent) => void;
 		};

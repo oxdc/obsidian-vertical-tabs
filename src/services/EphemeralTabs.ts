@@ -1,7 +1,9 @@
 import {
 	App,
+	HistoryState,
 	MarkdownFileInfo,
 	MarkdownView,
+	SuggestModal,
 	TAbstractFile,
 	TFile,
 	WorkspaceLeaf,
@@ -132,7 +134,7 @@ export function initEphemeralTabs(app: App) {
 }
 
 export function mergeHistory(from: WorkspaceLeaf[], to: WorkspaceLeaf) {
-	const mergedHistory = from.reduce((acc, leaf) => {
+	const mergedHistory = from.reduce<HistoryState[]>((acc, leaf) => {
 		return [
 			...acc,
 			...leaf.history.backHistory,
@@ -216,7 +218,7 @@ export function makeQuickSwitcherFileNonEphemeral(
 	app: App,
 	item: QuickSwitcherItem
 ) {
-	setTimeout(() => {
+	window.setTimeout(() => {
 		if (item.type === "file" && item.file) {
 			makeTheLatestFileNonEphemeral(app, item.file);
 		}
@@ -235,6 +237,7 @@ export function patchQuickSwitcher(app: App) {
 	return around(quickSwitcher.QuickSwitcherModal.prototype, {
 		onChooseSuggestion(old) {
 			return function (
+				this: SuggestModal<QuickSwitcherItem>,
 				item: QuickSwitcherItem,
 				evt: MouseEvent | KeyboardEvent
 			) {

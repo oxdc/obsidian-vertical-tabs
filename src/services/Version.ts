@@ -62,7 +62,7 @@ export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 			url: "https://github.com/oxdc/obsidian-vertical-tabs/raw/refs/heads/master/manifest.json",
 			method: "GET",
 		});
-		const latestVersion = response.json.version;
+		const latestVersion = (response.json as { version: string }).version;
 
 		// Cache the result
 		try {

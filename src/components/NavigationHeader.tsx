@@ -52,7 +52,7 @@ export const NavigationHeader = (props: NavigationHeaderProps) => {
 
 	const revealActiveTab = () => {
 		uncollapseActiveGroup(app);
-		setTimeout(() => {
+		window.setTimeout(() => {
 			scorllToActiveTab();
 		}, REFRESH_TIMEOUT_LONG);
 	};

@@ -1,7 +1,13 @@
 import { NavigationTreeItem } from "./NavigationTreeItem";
 import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
-import { useEffect, useRef, useState } from "react";
+import {
+	DragEvent,
+	type MouseEvent as ReactMouseEvent,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { usePlugin, useSettings } from "src/models/PluginContext";
 import { Menu, Platform, WorkspaceLeaf } from "obsidian";
 import { BrowserView } from "obsidian-typings";
@@ -63,7 +69,7 @@ interface TabProps {
 	viewType?: GroupViewType;
 }
 
-type DivMouseEvent = React.MouseEvent<HTMLDivElement, MouseEvent>;
+type DivMouseEvent = ReactMouseEvent<HTMLDivElement>;
 
 export const Tab = (props: TabProps) => {
 	const plugin = usePlugin();
@@ -173,8 +179,8 @@ export const Tab = (props: TabProps) => {
 		if (event.button === 1) closeTab();
 	};
 	// Alt-click closes the tab, otherwise handle selection or open tab
-	const activeOrCloseTab = (event: DivMouseEvent) => {
-		if (event.altKey) {
+	const activeOrCloseTab = (event?: DivMouseEvent) => {
+		if (event?.altKey) {
 			closeTab();
 		} else {
 			const isMultiSelect = event?.ctrlKey || event?.metaKey;
@@ -245,7 +251,7 @@ export const Tab = (props: TabProps) => {
 		// Make a copy of the current tab in a new group
 		const duplicatedLeaf = await workspace.duplicateLeaf(leaf, "split");
 		// Force it to be loaded
-		loadDeferredLeaf(duplicatedLeaf);
+		await loadDeferredLeaf(duplicatedLeaf);
 		// Reset the new tab's history
 		duplicatedLeaf.history.backHistory = [];
 		duplicatedLeaf.history.forwardHistory = [];
@@ -255,7 +261,7 @@ export const Tab = (props: TabProps) => {
 		let index = 0;
 		for (const state of backHistory) {
 			const leaf = workspace.createLeafInParent(group, index);
-			leaf.setViewState(state.state);
+			await leaf.setViewState(state.state);
 			await loadDeferredLeaf(leaf);
 			leaf.setEphemeralState(state.eState);
 			index += 1;
@@ -263,7 +269,7 @@ export const Tab = (props: TabProps) => {
 		index += 1; // Skip the current tab
 		for (const state of forwardHistory) {
 			const leaf = workspace.createLeafInParent(group, index);
-			leaf.setViewState(state.state);
+			await leaf.setViewState(state.state);
 			await loadDeferredLeaf(leaf);
 			leaf.setEphemeralState(state.eState);
 			index += 1;
@@ -301,13 +307,13 @@ export const Tab = (props: TabProps) => {
 	/* Commands - Webview */
 	const saveAsMarkdown = async (view: BrowserView) => {
 		const file = await view.saveAsMarkdown();
-		if (file) workspace.getLeaf("tab").openFile(file);
+		if (file) await workspace.getLeaf("tab").openFile(file);
 	};
 
 	/* Commands - Drag */
-	const handleFreeDrag = (e: React.DragEvent<HTMLDivElement>) =>
+	const handleFreeDrag = (e: DragEvent<HTMLDivElement>) =>
 		onDragLeaf(app, e, leaf);
-	const handleFileDrag = (e: React.DragEvent<HTMLDivElement>) =>
+	const handleFileDrag = (e: DragEvent<HTMLDivElement>) =>
 		onDragFile(app, e, leaf);
 
 	/* Commands - Move */
@@ -338,16 +344,17 @@ export const Tab = (props: TabProps) => {
 		});
 		menu.addItem((item) => {
 			item.setTitle("New group with name...").onClick(() => {
-				new GroupNameModal(app, async (groupName) => {
-					const movedLeaf = await moveTabToNewGroup(app, leaf.id);
-					if (!movedLeaf) return;
-					setTimeout(() => {
-						const group = movedLeaf.parent;
-						if (group) {
-							useViewState
-								.getState()
-								.setGroupTitle(group.id, groupName);
-						}
+				new GroupNameModal(app, (groupName) => {
+					void moveTabToNewGroup(app, leaf.id).then((movedLeaf) => {
+						if (!movedLeaf) return;
+						window.setTimeout(() => {
+							const group = movedLeaf.parent;
+							if (group) {
+								useViewState
+									.getState()
+									.setGroupTitle(group.id, groupName);
+							}
+						});
 					});
 				}).open();
 			});
@@ -427,7 +434,7 @@ export const Tab = (props: TabProps) => {
 		});
 		menu.addItem((item) => {
 			item.setSection("close")
-				.setTitle("Close Others")
+				.setTitle("Close others")
 				.onClick(() => {
 					closeOthersInGroup(app, leaf);
 					makeLeafNonEphemeral(leaf);
@@ -461,30 +468,36 @@ export const Tab = (props: TabProps) => {
 		menu.addItem((item) => {
 			item.setSection("leaf")
 				.setTitle("Move to new window")
-				.onClick(() => {
-					workspace.duplicateLeaf(leaf, "window");
+				.onClick(async () => {
+					await workspace.duplicateLeaf(leaf, "window");
 					leaf.detach();
 				});
 		});
 		menu.addItem((item) => {
 			item.setSection("leaf")
 				.setTitle("Split right")
-				.onClick(() =>
-					workspace.duplicateLeaf(leaf, "split", "vertical")
+				.onClick(
+					() =>
+						void workspace.duplicateLeaf(leaf, "split", "vertical")
 				);
 		});
 		menu.addItem((item) => {
 			item.setSection("leaf")
 				.setTitle("Split down")
-				.onClick(() =>
-					workspace.duplicateLeaf(leaf, "split", "horizontal")
+				.onClick(
+					() =>
+						void workspace.duplicateLeaf(
+							leaf,
+							"split",
+							"horizontal"
+						)
 				);
 		});
 		menu.addItem((item) => {
 			item.setSection("leaf")
 				.setTitle("Open in new window")
 				.onClick(() => {
-					workspace.duplicateLeaf(leaf, "window");
+					void workspace.duplicateLeaf(leaf, "window");
 				});
 		});
 		if (Platform.isDesktop) {
@@ -504,7 +517,7 @@ export const Tab = (props: TabProps) => {
 				.setTitle("Copy as internal link")
 				.onClick(() => {
 					const link = getWikiLinkFromLeaf(app, leaf);
-					if (link) navigator.clipboard.writeText(link);
+					if (link) void navigator.clipboard.writeText(link);
 				});
 		});
 		menu.addItem((item) => {
@@ -512,7 +525,7 @@ export const Tab = (props: TabProps) => {
 				.setTitle("Copy as embed")
 				.onClick(() => {
 					const link = getEmbedLinkFromLeaf(app, leaf);
-					if (link) navigator.clipboard.writeText(link);
+					if (link) void navigator.clipboard.writeText(link);
 				});
 		});
 		menu.addItem((item) => {
@@ -584,7 +597,7 @@ export const Tab = (props: TabProps) => {
 					.onClick(() => {
 						leaf.history.backHistory = [];
 						leaf.history.forwardHistory = [];
-						setTimeout(() => refresh(app), REFRESH_TIMEOUT);
+						window.setTimeout(() => refresh(app), REFRESH_TIMEOUT);
 					});
 			});
 		}

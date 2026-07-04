@@ -67,7 +67,8 @@ export const useTabSelection = create<TabSelectionStore>()((set, get) => ({
 				const end = Math.max(fromIndex, toIndex);
 
 				for (let i = start; i <= end; i++) {
-					newSelectedTabs.add(allTabs[i]);
+					const tab = allTabs[i];
+					if (tab !== undefined) newSelectedTabs.add(tab);
 				}
 			}
 

@@ -22,7 +22,7 @@ export const createTabCacheEntry = (): TabCacheEntry => ({
 const factory = () => createTabCacheEntry();
 
 export type TabCache = DefaultRecord<Identifier, TabCacheEntry>;
-export const createNewTabCache = () => new DefaultRecord(factory) as TabCache;
+export const createNewTabCache = () => new DefaultRecord(factory);
 
 interface TabCacheState {
 	content: TabCache;
@@ -35,7 +35,7 @@ interface TabCacheActions {
 	refresh: (app: App) => void;
 	swapGroup: (source: Identifier, target: Identifier) => void;
 	moveGroupToEnd: (groupID: Identifier) => void;
-	setSortStrategy: (strategy: SortStrategy | null) => void;
+	setSortStrategy: (strategy: SortStrategy | null | undefined) => void;
 	sort: () => void;
 	hasOnlyOneGroup: () => boolean;
 }
@@ -44,7 +44,7 @@ type TabCacheStore = TabCacheState & {
 	actions: TabCacheActions;
 };
 
-const saveSortStrategy = (strategy: SortStrategy | null) => {
+const saveSortStrategy = (strategy: SortStrategy | null | undefined) => {
 	const name =
 		Object.keys(sortStrategies).find(
 			(key) => sortStrategies[key] === strategy
@@ -63,11 +63,11 @@ const saveGroupOrder = (groupIDs: Identifier[]) => {
 
 const loadGroupOrder = (): Identifier[] => {
 	const order = localStorage.getItem("temp-group-order");
-	return order ? JSON.parse(order) : [];
+	return order ? (JSON.parse(order) as Identifier[]) : [];
 };
 
 export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
-	content: createNewTabCache(),
+	content: createNewTabCache() as TabCache,
 	groupIDs: [],
 	leaveIDs: [],
 	sortStrategy: loadSortStrategy(),
@@ -136,14 +136,14 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 					const group =
 						entry.group ||
 						(entry.leaves.length > 0
-							? entry.leaves[0].parent
+							? entry.leaves[0]?.parent
 							: null);
 					if (group) {
 						newTabs.get(key).leaves = sortTabs(group, sortStrategy);
 					}
 				}
 			}
-			set({ content: newTabs });
+			set({ content: newTabs as TabCache });
 		},
 		hasOnlyOneGroup: () => {
 			const { groupIDs } = get();

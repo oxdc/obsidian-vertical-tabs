@@ -150,7 +150,7 @@ function NewFileBookmarkForHistoryState(
 	state: HistoryState
 ): BookmarkFileItem | null {
 	if (!isMarkdownViewState(state.state)) return null;
-	const viewState = state.state as MarkdownViewState;
+	const viewState = state.state;
 	const file = app.vault.getFileByPath(viewState.state.file);
 	if (!file) return null;
 	return NewBookmarkFileItem(file, state.state.title);
@@ -159,7 +159,7 @@ function NewFileBookmarkForHistoryState(
 function forceSaveBookmarks(app: App) {
 	const instance = getBookmarksPluginInstance(app);
 	if (!instance) return;
-	setTimeout(() => {
+	window.setTimeout(() => {
 		instance.saveData();
 	}, 1000);
 }
@@ -265,6 +265,7 @@ async function findNamesIteratively(
 			return title;
 		}
 	}
+	return undefined;
 }
 
 function getFilePathFromView(view: FileView): string | null {
@@ -284,18 +285,26 @@ async function checkContents(
 	}
 	for (const item of items) {
 		if (item.type === "file") {
-			const matchLeaf = group.children.find(async (child) => {
+			let matchLeaf = false;
+			for (const child of group.children) {
 				await loadDeferredLeaf(child);
 				const fileItem = item as BookmarkFileItem;
 				const viewPath = getFilePathFromView(child.view);
-				return isFileView(child.view) && viewPath === fileItem.path;
-			});
+				if (isFileView(child.view) && viewPath === fileItem.path) {
+					matchLeaf = true;
+					break;
+				}
+			}
 			if (!matchLeaf) return false;
 		} else if (item.type === "graph") {
-			const matchLeaf = group.children.find(async (child) => {
+			let matchLeaf = false;
+			for (const child of group.children) {
 				await loadDeferredLeaf(child);
-				return isGraphView(child.view);
-			});
+				if (isGraphView(child.view)) {
+					matchLeaf = true;
+					break;
+				}
+			}
 			if (!matchLeaf) return false;
 		} else {
 			return false;

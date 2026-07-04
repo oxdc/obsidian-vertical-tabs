@@ -9,6 +9,7 @@ import {
 	View,
 	Workspace,
 	WorkspaceLeaf,
+	WorkspaceParent,
 	addIcon,
 } from "obsidian";
 import {
@@ -37,10 +38,11 @@ import { getOpenFileOfLeaf } from "./services/GetTabs";
 import { managedLeafStore } from "./stores/ManagedLeafStore";
 import { isHoverEditorEnabled } from "./services/HoverEditorTabs";
 import { removeAllTabControlButtons } from "./services/TabControlButtons";
+import { ViewEphemeralState } from "obsidian-typings";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
-	persistenceManager: PersistenceManager;
+	persistenceManager!: PersistenceManager;
 
 	async onload() {
 		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
@@ -49,7 +51,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		const disableOnThisDevice =
 			this.persistenceManager.device.get<boolean>(DISABLE_KEY) ?? false;
 		if (disableOnThisDevice) {
-			useSettings.getState().loadSettings(this);
+			void useSettings.getState().loadSettings(this);
 			this.addSettingTab(
 				new ObsidianVerticalTabsSettingTab(this.app, this)
 			);
@@ -69,11 +71,13 @@ export default class ObsidianVerticalTabs extends Plugin {
 				isPhone ||
 				isUnknownMobile ||
 				(tabletOrDesktop && sidebarCollapse);
-			this.openVerticalTabs();
+			void this.openVerticalTabs();
 			if (shouldCollapse) {
-				setTimeout(() => this.app.workspace.leftSplit.collapse());
+				window.setTimeout(() =>
+					this.app.workspace.leftSplit.collapse()
+				);
 			}
-			setTimeout(() => {
+			window.setTimeout(() => {
 				useViewState.getState().refreshToggleButtons(this.app);
 			}, REFRESH_TIMEOUT_LONG);
 		});
@@ -82,10 +86,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 	async setupPersistenceManager() {
 		this.persistenceManager = new PersistenceManager(
 			this.app,
-			// The following assertion is safe because we check for
-			// `installationID` in `loadSettings`
-			// eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
-			this.settings.installationID!,
+			this.settings.installationID ?? "", // to be removed
 			this.manifest
 		);
 		migrateAllData(this);
@@ -128,10 +129,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 
 	async setupCommands() {
 		this.addCommand({
-			id: "open-vertical-tabs",
-			name: "Open vertical tabs",
+			id: "open",
+			name: "Open",
 			callback: () => {
-				this.openVerticalTabs();
+				void this.openVerticalTabs();
 				useSettings.getState().toggleBackgroundMode(this.app, false);
 			},
 		});
@@ -139,11 +140,12 @@ export default class ObsidianVerticalTabs extends Plugin {
 
 	async openVerticalTabs() {
 		try {
-			const leaf: WorkspaceLeaf =
+			const leaf: WorkspaceLeaf | null =
 				this.app.workspace.getLeavesOfType(VERTICAL_TABS_VIEW)[0] ??
 				this.app.workspace.getLeftLeaf(false);
-			leaf.setViewState({ type: VERTICAL_TABS_VIEW, active: true });
-			this.app.workspace.revealLeaf(leaf);
+			if (!leaf) return;
+			await leaf.setViewState({ type: VERTICAL_TABS_VIEW, active: true });
+			await this.app.workspace.revealLeaf(leaf);
 		} catch {
 			// do nothing
 		}
@@ -160,7 +162,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.settings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
-			await this.loadData()
+			(await this.loadData()) as Settings
 		);
 		if (!this.settings.installationID) {
 			this.settings.installationID = nanoid();
@@ -204,7 +206,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 
 		// Limit visible groups to 2 when allowWorkspaceSplitOnPhone is enabled on mobile
 		if (Platform.isMobile && this.settings.allowWorkspaceSplitOnPhone) {
-			setTimeout(() =>
+			window.setTimeout(() =>
 				useViewState.getState().limitVisibleGroupsOnPhone(this.app)
 			);
 		}
@@ -235,7 +237,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.register(
 			around(ItemView.prototype, {
 				setEphemeralState(old) {
-					return function (eState: object) {
+					return function (
+						this: ItemView & { zoom?: number },
+						eState: ViewEphemeralState
+					) {
 						const newState = { zoom: this.zoom ?? 1, ...eState };
 						old.call(this, newState);
 						this.zoom = newState.zoom;
@@ -243,7 +248,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 					};
 				},
 				getEphemeralState(old) {
-					return function () {
+					return function (this: ItemView & { zoom?: number }) {
 						const eState = old.call(this);
 						this.zoom = this.zoom ?? 1;
 						applyZoom(this, this.zoom);
@@ -251,7 +256,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 					};
 				},
 				onload(old) {
-					return function () {
+					return function (this: ItemView & { zoom?: number }) {
 						old.call(this);
 						applyZoom(this, this.zoom ?? 1);
 					};
@@ -282,7 +287,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 			}
 		};
 
-		const modifyOpenFile = (
+		const modifyOpenFile = async (
 			target: WorkspaceLeaf,
 			file: TFile,
 			openState: OpenViewState,
@@ -290,7 +295,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 				target: WorkspaceLeaf,
 				file: TFile,
 				openState?: OpenViewState
-			) => void
+			) => Promise<void>
 		) => {
 			const {
 				deduplicateTabs,
@@ -313,7 +318,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 				const leafFile = getOpenFileOfLeaf(this.app, leaf);
 				if (leafFile && leafFile.path === file.path) {
 					found = true;
-					fallback(leaf, file, openState);
+					void fallback(leaf, file, openState);
 					this.app.workspace.setActiveLeaf(leaf, { focus: false });
 					safeDetach(target);
 				}
@@ -325,12 +330,15 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.register(
 			around(WorkspaceLeaf.prototype, {
 				canNavigate(old) {
-					return function () {
+					return function (this: WorkspaceLeaf) {
 						return modifyCanNavigate(this, () => old.call(this));
 					};
 				},
 				setParent(old) {
-					return function (parent) {
+					return function (
+						this: WorkspaceLeaf,
+						parent: WorkspaceParent
+					) {
 						// If guessedCreationTime is not set, we assume the leaf was created now
 						if (!this.guessedCreationTime) {
 							this.guessedCreationTime = Date.now();
@@ -339,7 +347,11 @@ export default class ObsidianVerticalTabs extends Plugin {
 					};
 				},
 				openFile(old) {
-					return function (file: TFile, openState?: OpenViewState) {
+					return function (
+						this: WorkspaceLeaf,
+						file: TFile,
+						openState?: OpenViewState
+					) {
 						const fallback = (
 							target: WorkspaceLeaf,
 							file: TFile,
@@ -350,10 +362,16 @@ export default class ObsidianVerticalTabs extends Plugin {
 								return fallback(this, file, openState);
 						}
 						if (openState) {
-							modifyOpenFile(this, file, openState, fallback);
+							void modifyOpenFile(
+								this,
+								file,
+								openState,
+								fallback
+							);
 						} else {
 							return fallback(this, file, openState);
 						}
+						return fallback(this, file, openState);
 					};
 				},
 			})
@@ -362,6 +380,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		around(Workspace.prototype, {
 			openLinkText(old) {
 				return async function (
+					this: Workspace,
 					linkText: string,
 					sourcePath: string,
 					newLeaf?: boolean,
@@ -385,10 +404,10 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.register(
 			around(FileView.prototype, {
 				close(old) {
-					return async function () {
+					return async function (this: FileView) {
 						if (this.isDetachingFromVT) {
-							return await setTimeout(
-								() => old.call(this),
+							window.setTimeout(
+								() => void old.call(this),
 								SAFE_DETACH_TIMEOUT
 							);
 						} else {
@@ -402,9 +421,9 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.register(
 			around(MarkdownView.prototype, {
 				getSyncViewState(old) {
-					return function () {
+					return function (this: MarkdownView) {
 						const syncViewState = old.call(this);
-						delete syncViewState.eState.zoom;
+						delete (syncViewState.eState as { zoom?: number }).zoom;
 						return syncViewState;
 					};
 				},

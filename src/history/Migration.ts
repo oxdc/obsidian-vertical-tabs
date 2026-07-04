@@ -115,7 +115,7 @@ export function migrateTempGroupOrder(
 ): void {
 	const legacyValue = localStorage.getItem(OBSOLETE_TEMP_GROUP_ORDER_KEY);
 	if (legacyValue !== null) {
-		const value = JSON.parse(legacyValue);
+		const value = JSON.parse(legacyValue) as unknown;
 		persistenceManager.instance.set(TEMP_GROUP_ORDER_KEY, value);
 	}
 }
@@ -133,7 +133,7 @@ export function getTempGroupOrder(
 	// Fall back to legacy storage
 	const legacyValue = localStorage.getItem(OBSOLETE_TEMP_GROUP_ORDER_KEY);
 	if (legacyValue !== null) {
-		const value = JSON.parse(legacyValue);
+		const value = JSON.parse(legacyValue) as string[];
 		// Migrate to new storage
 		persistenceManager.instance.set(TEMP_GROUP_ORDER_KEY, value);
 		return value;
@@ -155,7 +155,7 @@ export function setTempGroupOrder(
 export function migrateViewState(persistenceManager: PersistenceManager): void {
 	const legacyValue = localStorage.getItem(OBSOLETE_VIEW_STATE_KEY);
 	if (legacyValue !== null) {
-		const value = JSON.parse(legacyValue);
+		const value = JSON.parse(legacyValue) as unknown;
 		persistenceManager.instance.set(VIEW_STATE_KEY, value);
 	}
 }
@@ -196,7 +196,7 @@ export function migrateHiddenGroups(
 ): void {
 	const legacyValue = localStorage.getItem(OBSOLETE_HIDDEN_GROUPS_KEY);
 	if (legacyValue !== null) {
-		const value = JSON.parse(legacyValue);
+		const value = JSON.parse(legacyValue) as unknown;
 		persistenceManager.instance.set(HIDDEN_GROUPS_KEY, value);
 	}
 }
@@ -237,7 +237,7 @@ export function migrateCollapsedGroups(
 ): void {
 	const legacyValue = localStorage.getItem(OBSOLETE_COLLAPSED_GROUPS_KEY);
 	if (legacyValue !== null) {
-		const value = JSON.parse(legacyValue);
+		const value = JSON.parse(legacyValue) as unknown;
 		persistenceManager.instance.set(COLLAPSED_GROUPS_KEY, value);
 	}
 }
@@ -278,7 +278,7 @@ export function migrateNonephemeralTabs(
 ): void {
 	const legacyValue = localStorage.getItem(OBSOLETE_NONEPHEMERAL_TABS_KEY);
 	if (legacyValue !== null) {
-		const value = JSON.parse(legacyValue);
+		const value = JSON.parse(legacyValue) as unknown;
 		persistenceManager.instance.set(NONEPHEMERAL_TABS_KEY, value);
 	}
 }

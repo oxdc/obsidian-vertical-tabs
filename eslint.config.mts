@@ -16,6 +16,7 @@ export default defineConfig(
 		"package.json",
 		"package-lock.json",
 		"tsconfig.json",
+		"references",
 	]),
 	{
 		languageOptions: {
@@ -31,5 +32,11 @@ export default defineConfig(
 			},
 		},
 	},
-	...obsidianmd.configs.recommended
+	...obsidianmd.configs.recommended,
+	{
+		rules: {
+			"obsidianmd/ui/sentence-case": "off",
+			"no-restricted-globals": "off",
+		},
+	}
 );

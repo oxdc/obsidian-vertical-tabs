@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { tabCacheStore } from "src/stores/TabCacheStore";
 import { Tab } from "./Tab";
 import { Group } from "./Group";
@@ -50,7 +49,7 @@ export const NavigationContent = () => {
 	const handleDragStart = (event: DragStartEvent) => {
 		setIsDragging(true);
 		const { active } = event;
-		const isActiveTab = (active.data.current as any).isTab;
+		const isActiveTab = (active.data.current as { isTab: boolean }).isTab;
 		setIsDraggingGroup(!isActiveTab);
 	};
 	const handleDragEnd = async (event: DragEndEvent) => {
@@ -60,8 +59,8 @@ export const NavigationContent = () => {
 		if (!over) return;
 		const activeID = active.id as Identifier;
 		const overID = over.id as Identifier;
-		const isActiveTab = (active.data.current as any).isTab;
-		const isOverTab = (over.data.current as any).isTab;
+		const isActiveTab = (active.data.current as { isTab: boolean }).isTab;
+		const isOverTab = (over.data.current as { isTab: boolean }).isTab;
 
 		if (isActiveTab) {
 			const selectedTabs = getSelectedTabs();
@@ -162,7 +161,7 @@ export const NavigationContent = () => {
 					sensors={sensors}
 					collisionDetection={closestCenter}
 					onDragStart={handleDragStart}
-					onDragEnd={handleDragEnd}
+					onDragEnd={(event) => void handleDragEnd(event)}
 				>
 					<SortableContext items={getGroupIDs()}>
 						{groupIDs.map((groupID) => (

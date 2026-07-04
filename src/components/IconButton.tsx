@@ -1,5 +1,5 @@
 import { setIcon, setTooltip } from "obsidian";
-import { useEffect, useRef } from "react";
+import { MouseEvent, useEffect, useRef } from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
 
 interface IconButtonProps {
@@ -9,7 +9,7 @@ interface IconButtonProps {
 	disabled?: boolean;
 	isNavAction?: boolean;
 	isActive?: boolean;
-	onClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+	onClick?: (event: MouseEvent<HTMLDivElement>) => void;
 }
 
 export const IconButton = (props: IconButtonProps) => {

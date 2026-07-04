@@ -23,7 +23,7 @@ export const GroupSlot = () => {
 			id={`slot-new`}
 			isTab={false}
 			isGroupSlot={true}
-			onClick={createLeafNewGroupAndOpen}
+			onClick={() => void createLeafNewGroupAndOpen()}
 		/>
 	);
 };

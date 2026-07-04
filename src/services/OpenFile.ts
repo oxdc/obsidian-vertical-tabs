@@ -31,7 +31,7 @@ export function addMenuItemsToFileContextMenu(
 				const title = groupTitles.get(group.id) || DEFAULT_GROUP_TITLE;
 				item.setTitle(title).onClick(() => {
 					const leaf = app.workspace.getLeaf("split");
-					leaf.openFile(file);
+					void leaf.openFile(file);
 					moveTabToEnd(app, leaf.id, group);
 				});
 			});
@@ -40,15 +40,15 @@ export function addMenuItemsToFileContextMenu(
 		submenu.addItem((item) => {
 			item.setTitle("New group").onClick(() => {
 				const leaf = app.workspace.getLeaf("split");
-				leaf.openFile(file);
+				void leaf.openFile(file);
 			});
 		});
 		submenu.addItem((item) => {
 			item.setTitle("New group with name...").onClick(() => {
 				new GroupNameModal(app, (groupName) => {
 					const leaf = app.workspace.getLeaf("split");
-					leaf.openFile(file);
-					setTimeout(() => {
+					void leaf.openFile(file);
+					window.setTimeout(() => {
 						const group = leaf.parent;
 						if (group) {
 							useViewState

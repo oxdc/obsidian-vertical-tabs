@@ -1,9 +1,10 @@
 import { NavigationTreeItem } from "./NavigationTreeItem";
+import { MouseEvent } from "react";
 
 interface LinkedGroupButtonProps {
 	title: string;
 	icon: string;
-	onClick?: (event?: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+	onClick?: (event?: MouseEvent<HTMLDivElement>) => void;
 }
 
 export const LinkedGroupButton = (props: LinkedGroupButtonProps) => {

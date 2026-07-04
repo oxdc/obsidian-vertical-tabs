@@ -1,3 +1,5 @@
+import { HistoryState } from "obsidian";
+
 export {};
 
 declare module "obsidian" {

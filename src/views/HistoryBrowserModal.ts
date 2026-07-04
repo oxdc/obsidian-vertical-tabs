@@ -36,8 +36,8 @@ export class HistoryBrowserModal extends SuggestModal<HistoryItem> {
 			});
 	}
 
-	onOpen(): void {
-		super.onOpen();
+	async onOpen(): Promise<void> {
+		await super.onOpen();
 		// Create a synthetic keyboard event for programmatic selection
 		const syntheticEvent = new KeyboardEvent("keydown");
 		this.chooser.setSelectedItem(
@@ -53,14 +53,14 @@ export class HistoryBrowserModal extends SuggestModal<HistoryItem> {
 	}
 
 	renderSuggestion(item: HistoryItem, el: HTMLElement): void {
-		const innerEl = el.createEl("div", { cls: "vt-suggestion-content" });
-		const iconEl = innerEl.createEl("div", { cls: "suggestion-icon" });
-		const titleEl = innerEl.createEl("div", {
+		const innerEl = el.createDiv({ cls: "vt-suggestion-content" });
+		const iconEl = innerEl.createDiv({ cls: "suggestion-icon" });
+		const titleEl = innerEl.createDiv({
 			cls: "suggestion-title",
 			text: item.title,
 		});
 		if (item.offset === 0) {
-			titleEl.style.fontWeight = "bold";
+			titleEl.setCssProps({ fontWeight: "bold" });
 			setIcon(iconEl, "check");
 		}
 	}

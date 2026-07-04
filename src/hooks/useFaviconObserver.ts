@@ -16,7 +16,7 @@ export const useFaviconObserver = (props: UseFaviconObserverProps) => {
 		props;
 
 	const observerRef = useRef<MutationObserver | null>(null);
-	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	const intervalRef = useRef<number | null>(null);
 
 	useEffect(() => {
 		const observeFavicon = () => {
@@ -31,7 +31,7 @@ export const useFaviconObserver = (props: UseFaviconObserverProps) => {
 			// Set up polling interval if favicon element isn't available yet
 			if (!view?.faviconImgEl?.children.length) {
 				if (!webviewIcon && intervalRef.current === null) {
-					intervalRef.current = setInterval(
+					intervalRef.current = window.setInterval(
 						observeFavicon,
 						REFRESH_TIMEOUT_LONG
 					);
@@ -44,7 +44,7 @@ export const useFaviconObserver = (props: UseFaviconObserverProps) => {
 				observerRef.current.disconnect();
 			}
 			if (intervalRef.current) {
-				clearInterval(intervalRef.current);
+				window.clearInterval(intervalRef.current);
 				intervalRef.current = null;
 			}
 
@@ -80,7 +80,7 @@ export const useFaviconObserver = (props: UseFaviconObserverProps) => {
 	useEffect(() => {
 		return () => {
 			if (observerRef.current) observerRef.current.disconnect();
-			if (intervalRef.current) clearInterval(intervalRef.current);
+			if (intervalRef.current) window.clearInterval(intervalRef.current);
 		};
 	}, []);
 };

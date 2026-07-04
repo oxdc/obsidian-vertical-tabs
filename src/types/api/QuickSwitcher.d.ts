@@ -4,7 +4,7 @@ export {};
 
 declare module "obsidian-typings" {
 	interface QuickSwitcherItem {
-		type: "file" | unknown;
+		type: "file";
 		file?: TFile;
 	}
 

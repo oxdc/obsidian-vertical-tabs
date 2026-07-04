@@ -20,7 +20,7 @@ function checkIfMenuIsAlreadyAdded(menu: Menu) {
 }
 
 export function getFilesInFolder(folder: TFolder): TFile[] {
-	return folder.children.filter((child) => child instanceof TFile) as TFile[];
+	return folder.children.filter((child) => child instanceof TFile);
 }
 
 export function getFilesRecursivelyInFolder(folder: TFolder): TFile[] {
@@ -28,7 +28,7 @@ export function getFilesRecursivelyInFolder(folder: TFolder): TFile[] {
 	const folders = folder.children.filter((child) => child instanceof TFolder);
 	return folders.reduce((acc, folder: TFolder) => {
 		return [...acc, ...getFilesRecursivelyInFolder(folder)];
-	}, files) as TFile[];
+	}, files);
 }
 
 export type FileCompareFn = (a: TFile, b: TFile) => number;
@@ -121,7 +121,9 @@ export class LinkedFolder {
 			? getFilesRecursivelyInFolder(folder)
 			: getFilesInFolder(folder);
 		const sortStrategyName = LinkedFolder.getSortStrategy();
-		const sortStrategy = linkedFolderSortStrategies[sortStrategyName];
+		const sortStrategy = linkedFolderSortStrategies[
+			sortStrategyName
+		] as FileSortStrategy;
 		sortFiles(this.files, sortStrategy);
 	}
 
@@ -146,17 +148,20 @@ export class LinkedFolder {
 		const files = this.files.slice(this.offset, this.offset + limit);
 		if (files.length === 0) return false;
 		this.offset += limit;
-		files.forEach(async (file, index) => {
-			let leaf = null;
-			const split = this.group as WorkspaceSplit;
-			const tabIndex = replace ? index : split.children.length;
-			leaf =
-				replace && split && split.children.length > index
-					? split.children[index]
-					: this.app.workspace.createLeafInParent(split, tabIndex);
-			makeLeafNonEphemeral(leaf);
-			leaf.isLinkedFile = true;
-			await leaf.openFile(file, { active: false });
+		files.forEach((file, index) => {
+			void (async () => {
+				let leaf = null;
+				const split = this.group as WorkspaceSplit;
+				const tabIndex = replace ? index : split.children.length;
+				leaf =
+					replace && split && split.children.length > index
+						? split.children[index]
+						: this.app.workspace.createLeafInParent(split, tabIndex);
+				if (!leaf) return;
+				makeLeafNonEphemeral(leaf);
+				leaf.isLinkedFile = true;
+				await leaf.openFile(file, { active: false });
+			})();
 		});
 		if (
 			replace &&
@@ -177,7 +182,7 @@ async function handleOpenFolder(app: App, folder: TFolder, recursive: boolean) {
 	const groupID = await linkedFolder.createNewGroup();
 	if (!groupID) return;
 	useViewState.getState().addLinkedGroup(groupID, linkedFolder);
-	linkedFolder.openNextFiles(false);
+	void linkedFolder.openNextFiles(false);
 }
 
 export function addMenuItemsToFolderContextMenu(

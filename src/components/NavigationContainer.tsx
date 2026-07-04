@@ -2,7 +2,7 @@ import { NavigationContent } from "./NavigationContent";
 import { NavigationHeader } from "./NavigationHeader";
 import { tabCacheStore } from "src/stores/TabCacheStore";
 import { usePlugin, useSettings } from "src/models/PluginContext";
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, MouseEvent, useEffect, useRef } from "react";
 import {
 	useViewState,
 	ALT_KEY_EFFECT_DURATION,
@@ -30,7 +30,10 @@ import {
 	makeTabNonEphemeralAutomatically,
 	uninstallTabHeaderHandlers,
 } from "src/services/EphemeralTabs";
-import { deduplicateExistingTabs, removeNewTabs } from "src/services/DeduplicateTab";
+import {
+	deduplicateExistingTabs,
+	removeNewTabs,
+} from "src/services/DeduplicateTab";
 import { iterateRootOrFloatingLeaves } from "src/services/GetTabs";
 import { SwipeDirection, useTouchSensor } from "src/services/TouchSeneor";
 import { getDrawer } from "src/services/MobileDrawer";
@@ -69,7 +72,7 @@ export const NavigationContainer = () => {
 	const draggedLeaf = useRef<Element | null>(null);
 
 	// Alt key timeout reference to allow cancellation
-	const altKeyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const altKeyTimeoutRef = useRef<number | null>(null);
 
 	// Native drag and drop service instance
 	const nativeDragTabsRef = useRef<NativeDragTabs | null>(null);
@@ -97,7 +100,7 @@ export const NavigationContainer = () => {
 	const handleDragEnd = (e: DragEvent) => {
 		if (dragInProgress.current) {
 			// Small delay to allow DOM updates to complete
-			setTimeout(() => {
+			window.setTimeout(() => {
 				dragInProgress.current = false;
 				draggedLeaf.current = null;
 			}, 0);
@@ -106,7 +109,7 @@ export const NavigationContainer = () => {
 
 	const handleDrop = () => {
 		// if (dragInProgress.current) {
-		setTimeout(autoRefresh, REFRESH_TIMEOUT_LONG);
+		window.setTimeout(autoRefresh, REFRESH_TIMEOUT_LONG);
 		// }
 	};
 
@@ -114,12 +117,12 @@ export const NavigationContainer = () => {
 		setLatestActiveLeaf(plugin);
 		ensureSelfIsOpen(app);
 		if (selfIsNotInTheSidebar(app)) {
-			moveSelfToDefaultLocation(app);
+			void moveSelfToDefaultLocation(app);
 		}
 		if (useSettings.getState().deduplicateTabs) {
 			app.workspace.trigger(EVENTS.DEDUPLICATE_TABS);
 		}
-		setTimeout(() => {
+		window.setTimeout(() => {
 			updateEphemeralTabs(app);
 			if (isSelfVisible(app) || Platform.isMobile) {
 				refresh(app);
@@ -130,7 +133,7 @@ export const NavigationContainer = () => {
 	};
 
 	const updateToggles = () => {
-		setTimeout(() => {
+		window.setTimeout(() => {
 			refreshToggleButtons(app);
 		}, REFRESH_TIMEOUT);
 	};
@@ -143,10 +146,10 @@ export const NavigationContainer = () => {
 
 	useEffect(() => {
 		const workspace = app.workspace;
-		loadSettings(plugin).then((settings) => {
+		void loadSettings(plugin).then((settings) => {
 			if (settings.ephemeralTabs) initEphemeralTabs(app);
 			if (settings.enhancedKeyboardTabSwitch) modifyViewCueCallback(app);
-			if (settings.backgroundMode) moveSelfToNewGroupAndHide(app);
+			if (settings.backgroundMode) void moveSelfToNewGroupAndHide(app);
 		});
 
 		// Initialize native drag and drop for tab rearrangement
@@ -240,10 +243,10 @@ export const NavigationContainer = () => {
 				setAltKeyState(true);
 				// Clear any existing timeout to prevent old resets
 				if (altKeyTimeoutRef.current) {
-					clearTimeout(altKeyTimeoutRef.current);
+					window.clearTimeout(altKeyTimeoutRef.current);
 				}
 				// Set new timeout and store reference
-				altKeyTimeoutRef.current = setTimeout(
+				altKeyTimeoutRef.current = window.setTimeout(
 					() => setAltKeyState(false),
 					ALT_KEY_EFFECT_DURATION
 				);
@@ -263,7 +266,7 @@ export const NavigationContainer = () => {
 				} else if (event.key === "ArrowLeft") {
 					decreaseViewCueOffset();
 				}
-				setTimeout(() => {
+				window.setTimeout(() => {
 					if (useViewState.getState().hasCtrlKeyPressed) {
 						ref.current?.toggleClass("tab-index-view-cue", true);
 						document.body.toggleClass(
@@ -273,7 +276,7 @@ export const NavigationContainer = () => {
 						scorllToViewCueFirstTab(app);
 					}
 				}, VIEW_CUE_DELAY);
-				setTimeout(() => {
+				window.setTimeout(() => {
 					if (ref.current?.hasClass("tab-index-view-cue")) {
 						scorllToViewCueFirstTab(app);
 					}
@@ -411,7 +414,7 @@ export const NavigationContainer = () => {
 		// Cleanup function to clear alt key timeout and native drag service on unmount
 		return () => {
 			if (altKeyTimeoutRef.current) {
-				clearTimeout(altKeyTimeoutRef.current);
+				window.clearTimeout(altKeyTimeoutRef.current);
 			}
 			if (nativeDragTabsRef.current) {
 				nativeDragTabsRef.current.cleanup();
@@ -420,7 +423,7 @@ export const NavigationContainer = () => {
 		};
 	}, []);
 
-	const disableMiddleClickScrolling = (event: React.MouseEvent) => {
+	const disableMiddleClickScrolling = (event: MouseEvent) => {
 		if (event.button === 1) event.preventDefault();
 	};
 
@@ -441,13 +444,19 @@ export const NavigationContainer = () => {
 					direction === SwipeDirection.Left
 				) {
 					disableEditingMode();
-					setTimeout(() => leftSplit.collapse(), REFRESH_TIMEOUT);
+					window.setTimeout(
+						() => leftSplit.collapse(),
+						REFRESH_TIMEOUT
+					);
 				} else if (
 					rightSplit === drawer.contained &&
 					direction === SwipeDirection.Right
 				) {
 					disableEditingMode();
-					setTimeout(() => rightSplit.collapse(), REFRESH_TIMEOUT);
+					window.setTimeout(
+						() => rightSplit.collapse(),
+						REFRESH_TIMEOUT
+					);
 				}
 			}
 		}),

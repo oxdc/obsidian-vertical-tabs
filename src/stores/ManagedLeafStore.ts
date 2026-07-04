@@ -14,8 +14,8 @@ type ManagedLeafState = {
 };
 
 type ManagedLeafActions = {
-	refresh(app: App): void;
-	isManagedLeaf(app: App, leaf: WorkspaceLeaf): boolean;
+	refresh: (app: App) => void;
+	isManagedLeaf: (app: App, leaf: WorkspaceLeaf) => boolean;
 };
 
 type ManagedLeafStore = ManagedLeafState & {

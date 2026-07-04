@@ -57,8 +57,12 @@ export class PersistenceManager<T = unknown> {
 		return deviceID;
 	}
 
-	private handleError(operation: string, key: string, error: Error): never {
-		const persistenceError = new PersistenceError(operation, key, error);
+	private handleError(operation: string, key: string, error: unknown): never {
+		const persistenceError = new PersistenceError(
+			operation,
+			key,
+			error as Error
+		);
 		console.error(persistenceError);
 		throw persistenceError;
 	}
@@ -139,14 +143,13 @@ export class PersistenceManager<T = unknown> {
 			return value ? (JSON.parse(value) as T) : null;
 		} catch (error) {
 			this.handleError("read", storageKey, error);
-			return null;
 		}
 	}
 
 	private hasLocalStorageItem(storageKey: string): boolean {
 		try {
 			return localStorage.getItem(storageKey) !== null;
-		} catch (error) {
+		} catch {
 			return false;
 		}
 	}

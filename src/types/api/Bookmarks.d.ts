@@ -1,3 +1,5 @@
+import { ViewState } from "obsidian";
+
 export {};
 
 declare module "obsidian" {

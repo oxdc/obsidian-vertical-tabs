@@ -1,5 +1,6 @@
 import { EVENTS } from "src/constants/Events";
 import { GroupViewType } from "src/models/VTGroupView";
+import { EventRef } from "obsidian";
 
 export {};
 

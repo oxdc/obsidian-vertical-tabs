@@ -22,12 +22,12 @@ export function getDrawer(app: App): MobileDrawers {
 	const parent = self.parent;
 	if (parent === leftSplit) {
 		return {
-			contained: leftSplit as WorkspaceMobileDrawer,
+			contained: leftSplit,
 			other: rightSplit as WorkspaceMobileDrawer,
 		};
 	} else if (parent === rightSplit) {
 		return {
-			contained: rightSplit as WorkspaceMobileDrawer,
+			contained: rightSplit,
 			other: leftSplit as WorkspaceMobileDrawer,
 		};
 	} else {
@@ -44,7 +44,7 @@ export function pinDrawer(app: App) {
 export function unpinDrawer(app: App) {
 	const drawer = getDrawer(app);
 	if (drawer.contained) drawer.contained.collapsed = false;
-	setTimeout(() => {
+	window.setTimeout(() => {
 		drawer.contained?.containerEl.toggleClass("is-hidden", false);
 		drawer.other?.containerEl.toggleClass("is-hidden", false);
 	}, DRAWER_ANIMATION_TIMEOUT);

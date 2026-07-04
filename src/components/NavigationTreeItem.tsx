@@ -1,5 +1,13 @@
 import { Platform, setIcon } from "obsidian";
-import { useEffect, useRef, useState } from "react";
+import {
+	MouseEvent,
+	TouchEvent,
+	ReactNode,
+	RefObject,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { CssClasses, toClassName } from "src/utils/CssClasses";
 import { useSortable } from "@dnd-kit/sortable";
 import { IconButton } from "./IconButton";
@@ -9,8 +17,8 @@ import { ViewCueIndex } from "src/models/ViewState";
 interface NavigationTreeItemProps {
 	id: Identifier | null;
 	index?: ViewCueIndex;
-	ref?: React.RefObject<HTMLDivElement>;
-	title: string | React.ReactNode;
+	ref?: RefObject<HTMLDivElement>;
+	title: string | ReactNode;
 	icon: string;
 	webviewIcon?: string;
 	isTab: boolean;
@@ -27,20 +35,16 @@ interface NavigationTreeItemProps {
 	isCollapsed?: boolean;
 	isSidebar?: boolean;
 	isHighlighted?: boolean;
-	children?: React.ReactNode;
-	toolbar?: React.ReactNode;
-	onClick?: (event?: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-	onTouchStart?: (event: React.TouchEvent<HTMLDivElement>) => void;
-	onTouchMove?: (event: React.TouchEvent<HTMLDivElement>) => void;
-	onTouchEnd?: (event: React.TouchEvent<HTMLDivElement>) => void;
-	onAuxClick?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-	onDoubleClick?: (
-		event: React.MouseEvent<HTMLDivElement, MouseEvent>
-	) => void;
-	onContextMenu?: (
-		event: React.MouseEvent<HTMLDivElement, MouseEvent>
-	) => void;
-	onMouseOver?: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+	children?: ReactNode;
+	toolbar?: ReactNode;
+	onClick?: (event?: MouseEvent<HTMLDivElement>) => void;
+	onTouchStart?: (event: TouchEvent<HTMLDivElement>) => void;
+	onTouchMove?: (event: TouchEvent<HTMLDivElement>) => void;
+	onTouchEnd?: (event: TouchEvent<HTMLDivElement>) => void;
+	onAuxClick?: (event: MouseEvent<HTMLDivElement>) => void;
+	onDoubleClick?: (event: MouseEvent<HTMLDivElement>) => void;
+	onContextMenu?: (event: MouseEvent<HTMLDivElement>) => void;
+	onMouseOver?: (event: MouseEvent<HTMLDivElement>) => void;
 	dataType?: string;
 	dataId?: string;
 	selectedCount?: number;

@@ -1,3 +1,5 @@
+import { WorkspaceLeaf } from "obsidian";
+
 export {};
 
 declare module "obsidian" {
