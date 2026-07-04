@@ -37,7 +37,7 @@ export const IconButton = (props: IconButtonProps) => {
 			ref={buttonEl}
 			onClick={(e) => {
 				e.stopPropagation();
-				!props.disabled && props.onClick && props.onClick(e);
+				if (!props.disabled && props.onClick) props.onClick(e);
 			}}
 		/>
 	);
