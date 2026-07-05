@@ -37,3 +37,8 @@
 	padding: 0 !important;
 	flex-direction: row !important;
 }
+
+.vt-dummy-group .setting-items,
+.vt-dummy-item {
+	display: none;
+}

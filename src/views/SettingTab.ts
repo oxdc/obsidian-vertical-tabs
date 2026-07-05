@@ -1,12 +1,15 @@
 import {
 	App,
+	DropdownComponent,
 	Notice,
 	Platform,
 	PluginSettingTab,
 	requireApiVersion,
 	setIcon,
 	Setting,
+	SettingDefinitionItem,
 	SettingGroup,
+	SliderComponent,
 } from "obsidian";
 import ObsidianVerticalTabs from "../main";
 import { DISABLE_KEY, useSettings } from "../models/PluginContext";
@@ -35,6 +38,16 @@ interface ToggleProps {
 	onChange: (value: boolean) => void;
 }
 
+interface SliderSpec {
+	value: {
+		currentValue: number;
+		defaultValue: number;
+		limits: { min: number; max: number; step: number };
+	};
+	onChange: (value: number) => void;
+	onReset?: () => void;
+}
+
 interface SliderProps {
 	name: string;
 	desc?: string;
@@ -44,6 +57,17 @@ interface SliderProps {
 		limits: { min: number; max: number; step: number };
 	};
 	onChange: (value: number) => void;
+	onReset?: () => void;
+}
+
+interface DropdownSpec {
+	options: Record<string, string>;
+	value: {
+		currentValue: string;
+		defaultValue: string;
+	};
+	disabled?: boolean;
+	onChange: (value: string) => void;
 	onReset?: () => void;
 }
 
@@ -63,6 +87,7 @@ interface WarningBannerProps {
 
 export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	plugin: ObsidianVerticalTabs;
+	currentNavigationPreset: string | null = null;
 
 	constructor(app: App, plugin: ObsidianVerticalTabs) {
 		super(app, plugin);
@@ -73,17 +98,25 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	}
 
 	private refresh() {
-		const scorllTop = this.containerEl.scrollTop;
-		this.display();
-		this.containerEl.scrollTop = scorllTop;
+		if (requireApiVersion("1.13.0")) {
+			this.update();
+		} else {
+			const scrollTop = this.containerEl.scrollTop;
+			this.display();
+			this.containerEl.scrollTop = scrollTop;
+		}
+	}
+
+	private loadDisableOnThisDevice(): boolean {
+		const store = this.plugin.persistenceManager.device;
+		return store.get<boolean>(DISABLE_KEY) ?? false;
 	}
 
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		const store = this.plugin.persistenceManager.device;
-		const disableOnThisDevice = store.get<boolean>(DISABLE_KEY) ?? false;
+		const disableOnThisDevice = this.loadDisableOnThisDevice();
 
 		this.displayUpdateIndicator(containerEl);
 
@@ -150,6 +183,32 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		return toggleEl;
 	}
 
+	private setSlider(setting: Setting, spec: SliderSpec) {
+		const { value, onChange, onReset } = spec;
+		const { currentValue, defaultValue, limits } = value;
+		const { min, max, step } = limits;
+		let sliderEl: SliderComponent | null = null;
+		const resetHandler = onReset ?? (() => onChange(defaultValue));
+		const resetHandlerWrapper = () => {
+			resetHandler();
+			sliderEl?.setValue(defaultValue);
+		};
+		setting.addExtraButton((button) => {
+			button
+				.setIcon("reset")
+				.setTooltip("Reset to default")
+				.onClick(resetHandlerWrapper);
+		});
+		setting.addSlider((slider) => {
+			sliderEl = slider;
+			slider
+				.setLimits(min, max, step)
+				.setValue(currentValue)
+				.setDynamicTooltip()
+				.onChange(onChange);
+		});
+	}
+
 	private createSlider(
 		parentEl: HTMLElement | SettingGroup,
 		props: SliderProps
@@ -179,6 +238,33 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		});
 		if (desc) sliderEl.setDesc(desc);
 		return sliderEl;
+	}
+
+	private setDropdown(setting: Setting, spec: DropdownSpec) {
+		const { options, value, disabled, onChange, onReset } = spec;
+		const { currentValue, defaultValue } = value;
+		let dropdownEl: DropdownComponent | null = null;
+		const resetHandler = onReset ?? (() => onChange(defaultValue));
+		const resetHandlerWrapper = () => {
+			resetHandler();
+			dropdownEl?.setValue(defaultValue);
+		};
+		setting.addExtraButton((button) => {
+			button
+				.setIcon("reset")
+				.setTooltip("Reset to default")
+				.setDisabled(!!disabled)
+				.onClick(resetHandlerWrapper);
+		});
+		setting.addDropdown((dropdown) => {
+			dropdownEl = dropdown;
+			dropdown
+				.addOptions(options)
+				.setValue(currentValue)
+				.setDisabled(!!disabled)
+				.onChange(onChange);
+		});
+		return dropdownEl;
 	}
 
 	private createDropdown(
@@ -215,6 +301,10 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		const entry = this.createSetting(group, (setting) => {
 			setting.setName("Updates");
 		});
+		void this.__displayUpdateIndicator(entry);
+	}
+
+	private async __displayUpdateIndicator(entry: Setting) {
 		if (this.isBetaVersion(this.plugin.manifest.version)) {
 			const betaVersionInfo = entry.descEl.createSpan({
 				cls: "vt-beta-version-info",
@@ -954,6 +1044,19 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		});
 	}
 
+	private async __displayUpdateCheckToggle(setting: Setting) {
+		setting.addToggle((toggle) =>
+			toggle
+				.setValue(this.plugin.settings.enableUpdateCheck ?? true)
+				.onChange((value) => {
+					useSettings
+						.getState()
+						.setSettings({ enableUpdateCheck: value });
+					this.refresh();
+				})
+		);
+	}
+
 	private async toggleDisableOnThisDevice(isDisabled: boolean) {
 		useSettings.getState().toggleDisableOnThisDevice(isDisabled);
 		// If the plugin is disabled, automatically close the main view
@@ -1190,5 +1293,546 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		} catch (error) {
 			console.error(error);
 		}
+	}
+
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		switch (key) {
+			case "navigationStrategy":
+				this.updateNavigationStrategy(value as TabNavigationStrategy);
+				break;
+			case "ephemeralTabs":
+				this.toggleEphemeralTabs(value as boolean);
+				break;
+			case "autoCloseEphemeralTabs":
+				this.updateEphemeralTabsOptions({
+					autoCloseEphemeralTabs: value as boolean,
+				});
+				break;
+			case "deduplicateTabs":
+				this.toggleTabDeduplication(value as boolean);
+				break;
+			case "deduplicateSameGroupTabs":
+				this.updateDeduplicationOptions({
+					deduplicateSameGroupTabs: value as boolean,
+				});
+				break;
+			case "deduplicateSidebarTabs":
+				this.updateDeduplicationOptions({
+					deduplicateSidebarTabs: value as boolean,
+				});
+				break;
+			case "deduplicatePopupTabs":
+				this.updateDeduplicationOptions({
+					deduplicatePopupTabs: value as boolean,
+				});
+				break;
+			case "continuousViewShowMetadata":
+			case "continuousViewShowBacklinks":
+				useSettings
+					.getState()
+					.setGroupViewOptions(this.app, { [key]: value as number });
+				break;
+			default:
+				useSettings.getState().setSettings({ [key]: value });
+		}
+	}
+
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		return [
+			// Update indicator
+			{
+				type: "group",
+				items: [
+					{
+						name: "Updates",
+						render: (setting) => {
+							void this.__displayUpdateIndicator(setting);
+						},
+					},
+				],
+			},
+
+			// Warning banners
+			{
+				type: "group",
+				visible: () =>
+					this.plugin.settings.backgroundMode ||
+					this.loadDisableOnThisDevice(),
+				items: [
+					{
+						name: "",
+						searchable: false,
+						render: (setting, group) => {
+							setting.settingEl.addClass("vt-dummy-item");
+							group.groupEl.addClass("vt-dummy-group");
+							if (this.plugin.settings.backgroundMode) {
+								this.displayBackgroundModeWarningBanner(
+									group.groupEl
+								);
+							}
+							if (this.loadDisableOnThisDevice()) {
+								this.displayPluginDisabledWarningBanner(
+									group.groupEl
+								);
+							}
+						},
+					},
+				],
+			},
+
+			// Basic settings
+			{
+				type: "group",
+				visible: () =>
+					!this.loadDisableOnThisDevice() &&
+					!this.plugin.settings.backgroundMode,
+				items: [
+					{
+						name: "Hide sidebar tabs",
+						desc: "Don't show sidebar tabs in Vertical Tabs.",
+						control: { type: "toggle", key: "hideSidebars" },
+					},
+					{
+						name: "Trim tab names",
+						desc: "Use ellipsis to fit tab names on a single line.",
+						control: { type: "toggle", key: "trimTabNames" },
+					},
+					{
+						name: "Auto uncollapse active group",
+						desc: "Automatically uncollapse the active groups when switching tabs.",
+						control: { type: "toggle", key: "autoUncollapseGroup" },
+					},
+					{
+						name: this.plugin.settings.alwaysOpenInNewTab
+							? "New note button placement"
+							: "New tab/note button placement",
+						desc: this.plugin.settings.alwaysOpenInNewTab
+							? "Choose where to show the new note button."
+							: "Choose where to show the new tab/note button.",
+						control: {
+							type: "dropdown",
+							key: "newTabButtonPlacement",
+							options: NewTabButtonPlacementOptions,
+						},
+					},
+					{
+						name: "Show more actions",
+						desc: "Show more control buttons in the toolbar.",
+						control: { type: "toggle", key: "showMoreButtons" },
+					},
+					{
+						name: "Enable tab zoom",
+						desc: "Enable per tab zooming.",
+						control: { type: "toggle", key: "enableTabZoom" },
+					},
+					{
+						name: "Mobile action preference",
+						desc: this.plugin.settings.useTabEditing
+							? "Enable tab editing mode to show control buttons on mobile."
+							: "Show control buttons such as new-tab buttons and close icons on mobile.",
+						visible: () => Platform.isMobile,
+						control: {
+							type: "dropdown",
+							key: "useTabEditing",
+							options: {
+								"show-all": "Show all buttons",
+								"tab-editing": "Enable tab editing mode",
+							},
+						},
+					},
+				],
+			},
+
+			// Horizontal tab control
+			{
+				type: "group",
+				heading: "Horizontal tab control",
+				items: [
+					{
+						name: "Show active tabs only",
+						desc: "Hide inactive horizontal tabs to make workspace cleaner.",
+						visible: () => !this.plugin.settings.backgroundMode,
+						control: { type: "toggle", key: "showActiveTabs" },
+					},
+					{
+						name: "Auto hide horizontal tabs",
+						desc: "Automatically hide horizontal tabs when the vertical tabs pane is visible and active in the sidebar",
+						visible: () => !this.plugin.settings.backgroundMode,
+						control: {
+							type: "toggle",
+							key: "autoHideHorizontalTabs",
+						},
+					},
+					{
+						name: "Hide inactive tabs in Zen Mode",
+						desc: "Hide inactive horizontal tabs when Zen Mode is enabled.",
+						visible: () => !this.plugin.settings.backgroundMode,
+						control: {
+							type: "toggle",
+							key: "showActiveTabsInZenMode",
+						},
+					},
+					{
+						name: "Enhanced keyboard tab switching",
+						desc: "Use Ctrl/Cmd + 1-9 to switch between tabs.",
+						visible: () => !this.plugin.settings.backgroundMode,
+						control: {
+							type: "toggle",
+							key: "enhancedKeyboardTabSwitch",
+						},
+					},
+					{
+						name: "Scrollable tabs",
+						desc: "Enable horizontal scrolling for tab headers when they exceed available width.",
+						visible: () => !this.plugin.settings.showActiveTabs,
+						control: { type: "toggle", key: "scrollableTabs" },
+					},
+					{
+						name: "Tab minimum width",
+						desc: "Minimum width of each tab header in pixels.",
+						visible: () =>
+							!this.plugin.settings.showActiveTabs &&
+							this.plugin.settings.scrollableTabs,
+						render: (setting) => {
+							this.setSlider(setting, {
+								value: {
+									currentValue:
+										this.plugin.settings
+											.scrollableTabsMinWidth,
+									defaultValue: 100,
+									limits: { min: 50, max: 300, step: 10 },
+								},
+								onChange: (value: number) =>
+									useSettings
+										.getState()
+										.setScrollableTabsMinWidth(value),
+							});
+						},
+					},
+				],
+			},
+
+			// Tab navigation
+			{
+				type: "group",
+				heading: "Tab navigation",
+				items: [
+					{
+						name: "Navigation strategy",
+						desc: "Controls the navigation behavior when new notes are opened.",
+						control: {
+							type: "dropdown",
+							key: "navigationStrategy",
+							options: TabNavigationStrategyOptions,
+						},
+					},
+					{
+						name: "Explanation",
+						searchable: false,
+						visible: () =>
+							this.plugin.settings.navigationStrategy !==
+							TabNavigationStrategy.Custom,
+						render: (setting) => {
+							setting.setDesc(
+								TabNavigationStrategyDescriptions[
+									this.plugin.settings.navigationStrategy
+								] as string
+							);
+							setting.addButton((botton) =>
+								botton
+									.setButtonText("Customize")
+									.onClick(() => {
+										this.currentNavigationPreset =
+											this.plugin.settings.navigationStrategy;
+										this.copyNavigationStrategy(
+											this.currentNavigationPreset
+										);
+									})
+							);
+						},
+					},
+					{
+						name: "Copy from existing strategy",
+						visible: () =>
+							this.plugin.settings.navigationStrategy ===
+							TabNavigationStrategy.Custom,
+						render: (setting) => {
+							this.setDropdown(setting, {
+								options: TabNavigationCopyOptions,
+								value: {
+									currentValue:
+										this.currentNavigationPreset ??
+										"--copy--",
+									defaultValue: "--copy--",
+								},
+								onChange: (value) =>
+									this.copyNavigationStrategy(value),
+								onReset: () =>
+									this.resetCustomNavigationStrategy(),
+							});
+							this.currentNavigationPreset = null;
+						},
+					},
+					{
+						name: "Always open in new tab",
+						visible: () =>
+							this.plugin.settings.navigationStrategy ===
+							TabNavigationStrategy.Custom,
+						control: { type: "toggle", key: "alwaysOpenInNewTab" },
+					},
+					{
+						name: "Smart navigation",
+						desc: "Ensures consistent and intuitive behavior when working with multiple tab groups.",
+						visible: () =>
+							this.plugin.settings.navigationStrategy ===
+								TabNavigationStrategy.Custom &&
+							!this.plugin.settings.alwaysOpenInNewTab,
+						control: { type: "toggle", key: "smartNavigation" },
+					},
+					{
+						name: "Enable ephemeral tabs",
+						desc: "Bring VSCode-like ephemeral tabs to Obsidian.",
+						visible: () =>
+							this.plugin.settings.navigationStrategy ===
+								TabNavigationStrategy.Custom &&
+							!this.plugin.settings.alwaysOpenInNewTab,
+						control: { type: "toggle", key: "ephemeralTabs" },
+					},
+					{
+						name: "Auto close ephemeral tabs",
+						desc: "Close inactive ephemeral tabs automatically and merge their history.",
+						visible: () =>
+							this.plugin.settings.navigationStrategy ===
+								TabNavigationStrategy.Custom &&
+							!this.plugin.settings.alwaysOpenInNewTab &&
+							this.plugin.settings.ephemeralTabs,
+						control: {
+							type: "toggle",
+							key: "autoCloseEphemeralTabs",
+						},
+					},
+					{
+						name: "Deduplicate tabs",
+						desc: "Prevent opening the same note in multiple tabs.",
+						visible: () =>
+							this.plugin.settings.navigationStrategy ===
+							TabNavigationStrategy.Custom,
+						control: { type: "toggle", key: "deduplicateTabs" },
+					},
+					{
+						name: "Deduplicate only same-group tabs",
+						desc: "Perform deduplication only within the same tab group.",
+						visible: () =>
+							this.plugin.settings.navigationStrategy ===
+								TabNavigationStrategy.Custom &&
+							this.plugin.settings.deduplicateTabs,
+						control: {
+							type: "toggle",
+							key: "deduplicateSameGroupTabs",
+						},
+					},
+					{
+						name: "Deduplicate sidebar tabs",
+						desc: "Prevent duplicated tabs in the sidebars.",
+						visible: () =>
+							this.plugin.settings.navigationStrategy ===
+								TabNavigationStrategy.Custom &&
+							this.plugin.settings.deduplicateTabs,
+						control: {
+							type: "toggle",
+							key: "deduplicateSidebarTabs",
+						},
+					},
+					{
+						name: "Deduplicate popup tabs",
+						desc: "Prevent duplicated tabs in popup windows.",
+						visible: () =>
+							this.plugin.settings.navigationStrategy ===
+								TabNavigationStrategy.Custom &&
+							this.plugin.settings.deduplicateTabs,
+						control: {
+							type: "toggle",
+							key: "deduplicatePopupTabs",
+						},
+					},
+				],
+			},
+
+			// Linked folder
+			{
+				type: "group",
+				heading: "Linked folder",
+				visible: () =>
+					!this.plugin.settings.backgroundMode &&
+					!this.loadDisableOnThisDevice(),
+				items: [
+					{
+						name: "Load order",
+						desc: "Determines the order in which files are loaded, such as by name or date.",
+						control: {
+							type: "dropdown",
+							key: "linkedFolderSortStrategy",
+							options: linkedFolderSortStrategyOptions,
+						},
+					},
+					{
+						name: "Files per load",
+						desc: "Files loaded per click when opening a folder as a group.",
+						render: (setting) => {
+							this.setSlider(setting, {
+								value: {
+									currentValue:
+										this.plugin.settings.linkedFolderLimit,
+									defaultValue: 5,
+									limits: { min: 5, max: 50, step: 1 },
+								},
+								onChange: (value: number) =>
+									useSettings.getState().setSettings({
+										linkedFolderLimit: value,
+									}),
+							});
+						},
+					},
+				],
+			},
+
+			// Group view
+			{
+				type: "group",
+				heading: "Group view",
+				visible: () => !this.loadDisableOnThisDevice(),
+				items: [
+					{
+						name: "Show metadata in continuous view",
+						control: {
+							type: "toggle",
+							key: "continuousViewShowMetadata",
+						},
+					},
+					{
+						name: "Show backlinks in continuous view",
+						control: {
+							type: "toggle",
+							key: "continuousViewShowBacklinks",
+						},
+					},
+					{
+						name: "Column view tab width",
+						desc: "Minimum width of each tab in the column view in pixels.",
+						render: (setting) => {
+							this.setSlider(setting, {
+								value: {
+									currentValue:
+										this.plugin.settings.columnViewMinWidth,
+									defaultValue: 300,
+									limits: { min: 200, max: 1000, step: 10 },
+								},
+								onChange: (value: number) =>
+									useSettings
+										.getState()
+										.setGroupViewOptions(this.app, {
+											columnViewMinWidth: value,
+										}),
+							});
+						},
+					},
+					{
+						name: "Show mission control toggle button",
+						desc: "Show a button in the tab bar to activate the mission control view.",
+						control: {
+							type: "toggle",
+							key: "enableMissionControlToggle",
+						},
+					},
+					{
+						name: "Zoom factor in mission control view",
+						desc: "Adjust the page size in mission control view.",
+						render: (setting) => {
+							this.setSlider(setting, {
+								value: {
+									currentValue:
+										this.plugin.settings
+											.missionControlViewZoomFactor,
+									defaultValue: 0.5,
+									limits: { min: 0.5, max: 1, step: 0.1 },
+								},
+								onChange: (value: number) =>
+									useSettings
+										.getState()
+										.setGroupViewOptions(this.app, {
+											missionControlViewZoomFactor: value,
+										}),
+							});
+						},
+					},
+					{
+						name: "Disable pointer in mission control view",
+						desc: "Prevents interaction with tab content when in mission control view, allowing easier navigation between tabs.",
+						control: {
+							type: "toggle",
+							key: "disablePointerInMissionControlView",
+						},
+					},
+				],
+			},
+
+			// Miscellaneous
+			{
+				type: "group",
+				heading: "Miscellaneous",
+				items: [
+					{
+						name: "Disable on this device",
+						desc: "Disable Vertical Tabs on this device only. The plugin will remain enabled on other devices. This setting is stored locally and will not sync across devices.",
+						render: (setting) => {
+							setting.addToggle((toggle) =>
+								toggle
+									.setValue(this.loadDisableOnThisDevice())
+									.onChange((value) =>
+										this.toggleDisableOnThisDevice(value)
+									)
+							);
+						},
+					},
+					{
+						name: "Background mode",
+						desc: "Enable to keep features like tab navigation without showing vertical tabs. This will disable Zen Mode and reset your workspace to the default layout.",
+						render: (setting) => {
+							setting.addToggle((toggle) =>
+								toggle
+									.setValue(
+										this.plugin.settings.backgroundMode
+									)
+									.onChange((value) =>
+										this.toggleBackgroundMode(value)
+									)
+							);
+						},
+					},
+					{
+						name: "Check for updates",
+						desc: "Automatically check for updates when opening the settings tab.",
+						render: (setting) => {
+							void this.__displayUpdateCheckToggle(setting);
+						},
+					},
+				],
+			},
+
+			// Support section
+			{
+				type: "group",
+				items: [
+					{
+						name: "",
+						searchable: false,
+						render: (setting, group) => {
+							setting.settingEl.addClass("vt-dummy-item");
+							this.displaySupportSection(group.groupEl);
+						},
+					},
+				],
+			},
+		];
 	}
 }
