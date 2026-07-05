@@ -212,7 +212,7 @@ export async function createBookmarkForLeafHistory(
 	bookmark.title = title;
 	const { backHistory, forwardHistory } = leaf.history;
 	backHistory.forEach((state) => {
-		const item = NewFileBookmarkForHistoryState(app, state);
+		const item = NewFileBookmarkForHistoryState(app, state as HistoryState);
 		if (item) bookmark.items.push(item);
 	});
 	const currentItem = NewBookmarkForView(
@@ -222,7 +222,7 @@ export async function createBookmarkForLeafHistory(
 	);
 	if (currentItem) bookmark.items.push(currentItem);
 	forwardHistory.forEach((state) => {
-		const item = NewFileBookmarkForHistoryState(app, state);
+		const item = NewFileBookmarkForHistoryState(app, state as HistoryState);
 		if (item) bookmark.items.push(item);
 	});
 	instance.addItem(bookmark);
@@ -236,10 +236,7 @@ export async function loadNameFromBookmark(
 ): Promise<string | undefined> {
 	const instance = getBookmarksPluginInstance(app);
 	if (!instance) return;
-	return await findNamesIteratively(
-		instance.items as unknown as BookmarkItem[],
-		group
-	);
+	return await findNamesIteratively(instance.items, group);
 }
 
 async function findNamesIteratively(

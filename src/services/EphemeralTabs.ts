@@ -1,6 +1,5 @@
 import {
 	App,
-	HistoryState,
 	MarkdownFileInfo,
 	MarkdownView,
 	SuggestModal,
@@ -9,7 +8,7 @@ import {
 	WorkspaceLeaf,
 	WorkspaceParent,
 } from "obsidian";
-import { QuickSwitcherItem } from "obsidian-typings";
+import { WorkspaceLeafHistoryState } from "obsidian-typings";
 import { around } from "monkey-around";
 import {
 	getOpenFileOfLeaf,
@@ -23,6 +22,11 @@ import { iterateLeavesControlledByHoverEditor } from "./HoverEditorTabs";
 import { safeDetach } from "./CloseTabs";
 import { EVENTS } from "src/constants/Events";
 import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
+
+interface QuickSwitcherItem {
+	type: "file";
+	file?: TFile;
+}
 
 export function makeLeafNonEphemeralByID(app: App, leafID: string) {
 	const leaf = app.workspace.getLeafById(leafID);
@@ -134,14 +138,17 @@ export function initEphemeralTabs(app: App) {
 }
 
 export function mergeHistory(from: WorkspaceLeaf[], to: WorkspaceLeaf) {
-	const mergedHistory = from.reduce<HistoryState[]>((acc, leaf) => {
-		return [
-			...acc,
-			...leaf.history.backHistory,
-			leaf.getHistoryState(),
-			...leaf.history.forwardHistory.slice().reverse(),
-		];
-	}, []);
+	const mergedHistory = from.reduce<WorkspaceLeafHistoryState[]>(
+		(acc, leaf) => {
+			return [
+				...acc,
+				...leaf.history.backHistory,
+				leaf.getHistoryState() as WorkspaceLeafHistoryState,
+				...leaf.history.forwardHistory.slice().reverse(),
+			];
+		},
+		[]
+	);
 	to.history.backHistory = [...mergedHistory, ...to.history.backHistory];
 }
 

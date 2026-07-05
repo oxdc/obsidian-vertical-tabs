@@ -1,4 +1,4 @@
-import { App, Menu, TFile } from "obsidian";
+import { App, Menu, MenuItem, TFile } from "obsidian";
 import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
 import { moveTabToEnd } from "./MoveTab";
 import { tabCacheStore } from "src/stores/TabCacheStore";
@@ -8,7 +8,9 @@ import { GroupNameModal } from "src/views/GroupNameModal";
 const MENU_SECTION = "file-navigation";
 
 function checkIfMenuIsAlreadyAdded(menu: Menu) {
-	return menu.items.map((item) => item.section).includes(MENU_SECTION);
+	return menu.items
+		.map((item) => (item instanceof MenuItem ? item.section : null))
+		.includes(MENU_SECTION);
 }
 
 export function addMenuItemsToFileContextMenu(

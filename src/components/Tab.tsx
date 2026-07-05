@@ -9,8 +9,15 @@ import {
 	useState,
 } from "react";
 import { usePlugin, useSettings } from "src/models/PluginContext";
-import { Menu, Platform, WorkspaceLeaf } from "obsidian";
-import { BrowserView } from "obsidian-typings";
+import {
+	Menu,
+	MenuItem,
+	Platform,
+	TFile,
+	ViewState,
+	WorkspaceLeaf,
+} from "obsidian";
+import { WebviewerView } from "obsidian-typings";
 import {
 	closeOthersInGroup,
 	closeTabsToBottomInGroup,
@@ -261,7 +268,7 @@ export const Tab = (props: TabProps) => {
 		let index = 0;
 		for (const state of backHistory) {
 			const leaf = workspace.createLeafInParent(group, index);
-			await leaf.setViewState(state.state);
+			await leaf.setViewState(state.state as ViewState);
 			await loadDeferredLeaf(leaf);
 			leaf.setEphemeralState(state.eState);
 			index += 1;
@@ -269,7 +276,7 @@ export const Tab = (props: TabProps) => {
 		index += 1; // Skip the current tab
 		for (const state of forwardHistory) {
 			const leaf = workspace.createLeafInParent(group, index);
-			await leaf.setViewState(state.state);
+			await leaf.setViewState(state.state as ViewState);
 			await loadDeferredLeaf(leaf);
 			leaf.setEphemeralState(state.eState);
 			index += 1;
@@ -284,7 +291,7 @@ export const Tab = (props: TabProps) => {
 
 	/* Commands - Zoom */
 	const addZoomOptionsToMenu = (
-		target: WorkspaceLeaf | BrowserView,
+		target: WorkspaceLeaf | WebviewerView,
 		menu: Menu
 	) => {
 		const _ZoomIn =
@@ -305,8 +312,8 @@ export const Tab = (props: TabProps) => {
 	};
 
 	/* Commands - Webview */
-	const saveAsMarkdown = async (view: BrowserView) => {
-		const file = await view.saveAsMarkdown();
+	const saveAsMarkdown = async (view: WebviewerView) => {
+		const file = (await view.saveAsMarkdown()) as TFile | null;
 		if (file) await workspace.getLeaf("tab").openFile(file);
 	};
 
@@ -624,7 +631,7 @@ export const Tab = (props: TabProps) => {
 					item.setSection("zoom").setTitle("Zoom");
 					const submenu = item.setSubmenu();
 					if (isWebViewer) {
-						const view = leaf.view as BrowserView;
+						const view = leaf.view as WebviewerView;
 						addZoomOptionsToMenu(view, submenu);
 					} else {
 						addZoomOptionsToMenu(leaf, submenu);
@@ -642,7 +649,7 @@ export const Tab = (props: TabProps) => {
 				item.setSection("more").setTitle("More options");
 				const submenu = item.setSubmenu();
 				if (isWebViewer) {
-					const webview = leaf.view as BrowserView;
+					const webview = leaf.view as WebviewerView;
 					submenu.addItem((item) => {
 						item.setSection("webview")
 							.setTitle("Toggle reader mode")
@@ -659,8 +666,9 @@ export const Tab = (props: TabProps) => {
 					const excludedSections = ["open", "find", "pane"];
 					submenu.items = submenu.items.filter(
 						(item) =>
-							item.section === undefined ||
-							!excludedSections.includes(item.section)
+							item instanceof MenuItem &&
+							(item.section === undefined ||
+								!excludedSections.includes(item.section))
 					);
 				}
 			});
@@ -682,7 +690,7 @@ export const Tab = (props: TabProps) => {
 		if (!isWebViewer) setVolatileTitle(null);
 		// If it's a webview, we update the volatile title whenever the page title is changed
 		if (Platform.isDesktop && isWebViewer) {
-			const view = leaf.view as BrowserView;
+			const view = leaf.view as WebviewerView;
 			view.webview?.addEventListener(
 				"page-title-updated",
 				(data: { title: string }) => setVolatileTitle(data.title)

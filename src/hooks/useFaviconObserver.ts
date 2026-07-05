@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { WorkspaceLeaf } from "obsidian";
-import { BrowserView } from "obsidian-typings";
+import { WebviewerView } from "obsidian-typings";
 import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 
 interface UseFaviconObserverProps {
@@ -20,7 +20,7 @@ export const useFaviconObserver = (props: UseFaviconObserverProps) => {
 
 	useEffect(() => {
 		const observeFavicon = () => {
-			const view = leaf.view as BrowserView;
+			const view = leaf.view as WebviewerView;
 
 			// Exit early if not in webview or blank mode
 			if (view?.mode !== "webview" && view?.mode !== "blank") {

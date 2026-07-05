@@ -1,5 +1,3 @@
-import { TFile } from "obsidian";
-
 export {};
 
 declare module "obsidian-typings" {
@@ -7,12 +5,9 @@ declare module "obsidian-typings" {
 		addEventListener: (type: string, listener: unknown) => void;
 	}
 
-	interface BrowserView {
+	interface WebviewerView {
 		mode?: string;
 		faviconImgEl?: HTMLDivElement;
-		faviconUrl?: string;
-		inProgressPageLoad?: object;
-		saveAsMarkdown(): Promise<TFile | null>;
 		webview: Webview;
 	}
 }

@@ -1,6 +1,7 @@
 import {
 	App,
 	Menu,
+	MenuItem,
 	TFile,
 	TFolder,
 	WorkspaceLeaf,
@@ -16,7 +17,9 @@ import { useSettings } from "src/models/PluginContext";
 const MENU_SECTION = "folder-navigation";
 
 function checkIfMenuIsAlreadyAdded(menu: Menu) {
-	return menu.items.map((item) => item.section).includes(MENU_SECTION);
+	return menu.items
+		.map((item) => (item instanceof MenuItem ? item.section : null))
+		.includes(MENU_SECTION);
 }
 
 export function getFilesInFolder(folder: TFolder): TFile[] {
@@ -156,7 +159,10 @@ export class LinkedFolder {
 				leaf =
 					replace && split && split.children.length > index
 						? split.children[index]
-						: this.app.workspace.createLeafInParent(split, tabIndex);
+						: this.app.workspace.createLeafInParent(
+								split,
+								tabIndex
+						  );
 				if (!leaf) return;
 				makeLeafNonEphemeral(leaf);
 				leaf.isLinkedFile = true;

@@ -4,9 +4,11 @@ import {
 	ItemView,
 	Keymap,
 	Menu,
+	MenuItem,
 	UserEvent,
 	WorkspaceLeaf,
 } from "obsidian";
+import { WorkspaceLeafHistoryState } from "obsidian-typings";
 
 export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 	// Get the original navigation buttons and their parent DOM element
@@ -58,7 +60,7 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 
 		// Without pressing the mod key, navigate in current leaf
 		if (!isModEvent) {
-			leaf.history.go(steps);
+			void leaf.history.go(steps);
 			return;
 		}
 
@@ -67,15 +69,14 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 		const currentState = leaf.getHistoryState();
 
 		// Use provided history state or get the recent state
-		const historyState =
-			targetHistoryState ||
+		const historyState = (targetHistoryState ||
 			(direction === "back"
 				? leaf.history.backHistory.last()
-				: leaf.history.forwardHistory.first());
+				: leaf.history.forwardHistory.first())) as WorkspaceLeafHistoryState;
 		if (!historyState) return;
 
 		// Set the target state
-		targetLeaf.history.updateState(historyState);
+		await targetLeaf.history.updateState(historyState);
 
 		// Update history arrays
 		const backHistoryItems = leaf.history.backHistory;
@@ -89,15 +90,17 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 			? forwardHistoryItems.indexOf(historyState)
 			: 0;
 
-		targetLeaf.history.backHistory =
+		targetLeaf.history.backHistory = (
 			direction === "back"
 				? backHistoryItems.slice(0, backSplitIndex)
-				: [...backHistoryItems, currentState];
+				: [...backHistoryItems, currentState]
+		) as WorkspaceLeafHistoryState[];
 
-		targetLeaf.history.forwardHistory =
+		targetLeaf.history.forwardHistory = (
 			direction === "forward"
 				? forwardHistoryItems.slice(forwardSplitIndex + 1)
-				: [currentState, ...forwardHistoryItems];
+				: [currentState, ...forwardHistoryItems]
+		) as WorkspaceLeafHistoryState[];
 
 		// Request to update the nav buttons
 		if (targetLeaf.view instanceof ItemView) {
@@ -139,7 +142,7 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 						await handleNavigation(
 							direction,
 							steps,
-							historyState,
+							historyState as HistoryState,
 							clickEvent
 						);
 					});
@@ -163,7 +166,10 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 				const targetNode = event.target as Node;
 				window.setTimeout(() => {
 					for (const menuItem of menu.items) {
-						if (menuItem.dom.contains(targetNode)) {
+						if (
+							menuItem instanceof MenuItem &&
+							menuItem.dom.contains(targetNode)
+						) {
 							menuItem.handleEvent?.(event);
 							return;
 						}
