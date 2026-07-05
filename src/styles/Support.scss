@@ -51,6 +51,34 @@
 		margin-top: var(--size-4-2);
 	}
 
+	.debugging-toggle {
+		display: flex;
+		align-items: center;
+		width: 100%;
+		margin-top: var(--size-4-10);
+		cursor: pointer;
+		user-select: none;
+
+		&::before,
+		&::after {
+			content: "";
+			flex: 1;
+			height: 1px;
+			background-color: var(--background-modifier-border);
+		}
+
+		&-label {
+			padding: 0 var(--size-4-3);
+			font-size: var(--font-ui-smallest);
+			color: var(--text-muted);
+			white-space: nowrap;
+		}
+
+		&:hover &-label {
+			color: var(--text-normal);
+		}
+	}
+
 	.debugging-helper {
 		display: flex;
 		flex-direction: row;
@@ -60,7 +88,12 @@
 		justify-content: center;
 		align-items: center;
 		font-size: var(--font-ui-small);
-		margin-top: var(--size-4-10);
+		margin-top: var(--size-4-5);
+		zoom: 0.9;
+
+		&.is-hidden {
+			display: none;
+		}
 
 		button {
 			display: flex;
@@ -98,6 +131,7 @@
 
 			svg {
 				vertical-align: middle;
+				--icon-size: var(--icon-xs);
 			}
 		}
 	}

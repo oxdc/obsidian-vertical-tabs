@@ -88,6 +88,7 @@ interface WarningBannerProps {
 export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	plugin: ObsidianVerticalTabs;
 	currentNavigationPreset: string | null = null;
+	debugToolsVisible = false;
 
 	constructor(app: App, plugin: ObsidianVerticalTabs) {
 		super(app, plugin);
@@ -1080,6 +1081,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	// Feedback and Bug Report
 
 	private displaySupportSection(parentEl: HTMLElement) {
+		if (parentEl.querySelector(".vt-support")) return;
 		const containerEl = parentEl.createDiv({ cls: "vt-support" });
 		this.displayFeedbackContent(containerEl);
 		this.displayBugReport(containerEl);
@@ -1141,9 +1143,31 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	// Debugging Tools
 
 	private displayDebugTools(parentEl: HTMLElement) {
+		const toggleEl = parentEl.createDiv({ cls: "debugging-toggle" });
+		const toggleLabelEl = toggleEl.createSpan({
+			cls: "debugging-toggle-label",
+		});
+		const updateToggleLabel = () =>
+			toggleLabelEl.setText(
+				this.debugToolsVisible
+					? "Hide debugging tools"
+					: "Show debugging tools"
+			);
+		updateToggleLabel();
+
 		const containerEl = parentEl.createDiv({
 			cls: "debugging-helper",
 		});
+		if (!this.debugToolsVisible) containerEl.addClass("is-hidden");
+
+		toggleEl.onclick = () => {
+			this.debugToolsVisible = !this.debugToolsVisible;
+			containerEl.toggleClass("is-hidden", !this.debugToolsVisible);
+			updateToggleLabel();
+			// scroll to the bottom of the container
+			this.containerEl.scrollTop =
+				this.containerEl.scrollHeight - this.containerEl.clientHeight;
+		};
 
 		this.createDebugButton(
 			containerEl,
