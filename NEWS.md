@@ -1,3 +1,98 @@
+# Vertical Tabs v0.17.5
+
+## 🎉 What's New:
+
+- Includes all new features and bug fixes up to v0.17.4-beta.
+- Adapted to Obsidian’s new searchable settings API (requires Obsidian v1.13+).
+
+## ✅ Improvements:
+
+- **Performance improvements**: Faster tab switching, smarter caching, and reduced UI re-renders.
+- Readded some debugging tools.
+- Updated the minimum required Obsidian version to 1.7.2.
+
+---
+
+# Vertical Tabs v0.17.4-beta-20251211
+
+## ✅ Improvements:
+
+- Updated styles to support Obsidian 1.11.0.
+- Updated dependencies.
+
+---
+
+# Vertical Tabs v0.17.3-beta-20251206
+
+## 🎉 What's New:
+
+- **Added an option for "new tab" button**: The "new tab" button can now appear at the end of each tab group (#179).
+
+## 🐛 Bug Fixes:
+
+- Resolved issue where enabling Scrollable Tabs made Stacked Tabs wider than expected (#192).
+- **Fixed Hover Editor compatibility**: Resolved issue where the editor pane would disappear when hovering over certain notes (#187).
+- Fixed issue where tabs would stay stacked on group view change.
+- Fixed crash when accessing parentSplit while activeLeaf.parent is detached.
+
+## ✅ Improvements:
+
+- Improved visibility of hidden groups by making them appear fainter, making the eye icon more intuitive (#183).
+
+---
+
+# Vertical Tabs v0.17.2-beta-20251125
+
+## 🎉 What's New:
+
+- **New commands**: Added "Bookmark current group" and "Bookmark and close current group" commands (#190).
+
+## 🐛 Bug Fixes:
+
+- Fixed block embed jumping failure when "Deduplicate tabs" or "Always open in new tab" is enabled (#188).
+- Fixed scrollable tabs changing width on hover (#189).
+
+---
+
+# Vertical Tabs v0.17.1-beta-20251101
+
+## ✅ Improvements:
+
+- Disable update check toggle (beta builds are already fully offline).
+
+---
+
+# Vertical Tabs v0.17.0-beta-20251016
+
+## 🎉 What's New:
+
+- **Scrollable Tabs**: Introducing a new, intuitive way to interact with horizontal tabs.
+- **Mission Control View, redesigned**: The Mission Control View has been completely redesigned with full feature support and can now be activated with a single click.
+- **Multi-selection in vertical tabs**: You can now select multiple tabs simultaneously using Ctrl/Cmd+click for individual selection or Shift+click for range selection (#32).
+- **Device-specific disable option**: Added a new setting that allows you to disable Vertical Tabs on specific devices (#177).
+- **Mobile workspace split support**: Workspace split view is now available on mobile devices, automatically adjusting to horizontal or vertical splits based on screen orientation.
+- **New option: auto-hide horizontal tabs** when the sidebar is open.
+- **New menu options**: Added convenient options to open files or move tabs to specific tab groups directly from the context menu.
+- **Support for tab deduplication for Bases.**
+- **Experimental support for a new, more efficient tab deduplication implementation.**
+
+## 🐛 Bug Fixes:
+
+- Improved tab sorting and organization algorithms.
+- Enhanced mobile compatibility with improved touch interactions and responsiveness.
+- Addressed various edge cases in tab selection and navigation behavior.
+- Resolved infinite loop issue that occurred when patching default commands.
+- Cleaned up mobile interface by hiding unavailable debugging tools.
+
+## ✅ Improvements:
+
+- Built-in security feature for beta build integrity verification.
+- Optimized performance and user experience for keyboard navigation workflows.
+- Improved compatibility with community themes.
+- Improved integration with the built-in Search plugin when tab deduplication is enabled.
+
+---
+
 # Vertical Tabs v0.16.10
 
 ## 🐛 Bug Fixes:
