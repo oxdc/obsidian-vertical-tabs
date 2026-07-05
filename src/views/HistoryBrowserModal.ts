@@ -37,7 +37,7 @@ export class HistoryBrowserModal extends SuggestModal<HistoryItem> {
 	}
 
 	async onOpen(): Promise<void> {
-		await super.onOpen();
+		super.onOpen();
 		// Create a synthetic keyboard event for programmatic selection
 		const syntheticEvent = new KeyboardEvent("keydown");
 		this.chooser.setSelectedItem(
@@ -65,12 +65,9 @@ export class HistoryBrowserModal extends SuggestModal<HistoryItem> {
 		}
 	}
 
-	onChooseSuggestion(
-		item: HistoryItem,
-		evt: MouseEvent | KeyboardEvent
-	): void {
+	onChooseSuggestion(item: HistoryItem, _: MouseEvent | KeyboardEvent): void {
 		if (item.offset !== 0) {
-			this.leaf.history.go(item.offset);
+			void this.leaf.history.go(item.offset);
 		}
 	}
 }
