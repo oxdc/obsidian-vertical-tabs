@@ -113,6 +113,13 @@ export const NavigationContainer = () => {
 		// }
 	};
 
+	const onActiveLeafChange = () => {
+		setLatestActiveLeaf(plugin);
+		window.setTimeout(() => {
+			updateEphemeralTabs(app);
+		});
+	};
+
 	const autoRefresh = () => {
 		setLatestActiveLeaf(plugin);
 		ensureSelfIsOpen(app);
@@ -159,7 +166,9 @@ export const NavigationContainer = () => {
 
 		autoRefresh();
 		plugin.registerEvent(workspace.on("layout-change", autoRefresh));
-		plugin.registerEvent(workspace.on("active-leaf-change", autoRefresh));
+		plugin.registerEvent(
+			workspace.on("active-leaf-change", onActiveLeafChange)
+		);
 		plugin.registerEvent(
 			workspace.on("layout-change", () => {
 				// Refresh native drag functionality when layout changes (new tabs added/removed)

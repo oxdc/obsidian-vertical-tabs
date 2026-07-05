@@ -3,6 +3,7 @@ import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import {
 	DragEvent,
+	memo,
 	type MouseEvent as ReactMouseEvent,
 	useEffect,
 	useRef,
@@ -78,7 +79,7 @@ interface TabProps {
 
 type DivMouseEvent = ReactMouseEvent<HTMLDivElement>;
 
-export const Tab = (props: TabProps) => {
+export const Tab = memo(function Tab(props: TabProps) {
 	const plugin = usePlugin();
 	const app = plugin.app;
 	const workspace = app.workspace;
@@ -752,15 +753,7 @@ export const Tab = (props: TabProps) => {
 		return () => {
 			leaf.containerEl.removeEventListener("contextmenu", showMenu);
 		};
-	}, [
-		leaf.id,
-		isPinned,
-		title,
-		isSingleGroup,
-		viewType,
-		alwaysOpenInNewTab,
-		enableTabZoom,
-	]);
+	}, [leaf.id, isPinned, title, isSingleGroup, viewType, alwaysOpenInNewTab, enableTabZoom]);
 
 	const { listeners } = useTouchSensor({
 		minDistance: 10,
@@ -815,8 +808,6 @@ export const Tab = (props: TabProps) => {
 		</Fragment>
 	);
 
-	const menu = buildMenu();
-
 	return (
 		<div
 			className="vt-tab-container"
@@ -837,7 +828,9 @@ export const Tab = (props: TabProps) => {
 				onClick={activeOrCloseTab}
 				onAuxClick={midClickCloseTab}
 				onDoubleClick={makeLeafNonEphemeralAndExitMissionControl}
-				onContextMenu={(e) => menu?.showAtMouseEvent(e.nativeEvent)}
+				onContextMenu={(e) =>
+					buildMenu()?.showAtMouseEvent(e.nativeEvent)
+				}
 				onMouseOver={previewTab}
 				dataType={leaf.getViewState().type}
 				dataId={leaf.id}
@@ -852,4 +845,4 @@ export const Tab = (props: TabProps) => {
 			{shouldShowHandle && handles}
 		</div>
 	);
-};
+});
