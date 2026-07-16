@@ -162,7 +162,6 @@ export const Tab = memo(function Tab(props: TabProps) {
 		if (Platform.isMobile && isEditingTabs) return;
 		// Signal the changes to Obsidian
 		const focus = viewType !== GroupViewType.MissionControlView;
-		leaf.parent.selectTabIndex(index);
 		workspace.setActiveLeaf(leaf, { focus });
 		// Automatically unhide the group containing the tab
 		toggleHiddenGroup(leaf.parent.id, false, app);
