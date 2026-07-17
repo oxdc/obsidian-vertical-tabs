@@ -1132,6 +1132,27 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			},
 		});
 		githubButton.createSpan({ text: "Star on GitHub" });
+		parentEl.createDiv({
+			cls: "title",
+			text: "Be first to what's next?",
+		});
+		const betaButtons = parentEl.createDiv({ cls: "buttons" });
+		const joinButton = betaButtons.createEl("a", {
+			href: "https://vertical-tabs-docs.oxdc.dev/Beta-Versions/beta-program",
+			attr: { id: "vt-support-btn-beta", target: "_blank" },
+		});
+		const betaIcon = joinButton.createSpan({ cls: "vt-support-btn-icon" });
+		setIcon(betaIcon, "sparkles");
+		joinButton.createSpan({ text: "Join the Beta Program" });
+		const roadmapButton = betaButtons.createEl("a", {
+			href: "https://vertical-tabs-docs.oxdc.dev/roadmap",
+			attr: { id: "vt-support-btn-roadmap", target: "_blank" },
+		});
+		const roadmapIcon = roadmapButton.createSpan({
+			cls: "vt-support-btn-icon",
+		});
+		setIcon(roadmapIcon, "map");
+		roadmapButton.createSpan({ text: "View roadmap" });
 	}
 
 	private displayBugReport(parentEl: HTMLElement) {

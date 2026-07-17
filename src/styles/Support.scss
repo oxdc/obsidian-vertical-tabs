@@ -7,7 +7,11 @@
 	font-size: var(--font-ui-medium);
 
 	.title {
-		margin: var(--size-4-4) 0;
+		margin: 0 0 var(--size-4-2);
+	}
+
+	.buttons + .title {
+		margin-top: var(--size-4-8);
 	}
 
 	.buttons {
@@ -40,6 +44,34 @@
 				background-color: #e3d5c6;
 			}
 
+			&#vt-support-btn-beta {
+				color: #3d2e1f;
+				background: linear-gradient(
+					135deg,
+					#f3e0c2 0%,
+					#ecd4a8 100%
+				);
+
+				.vt-support-btn-icon {
+					display: flex;
+					align-items: center;
+					--icon-size: var(--icon-s);
+					--icon-color: #3d2e1f;
+				}
+			}
+
+			&#vt-support-btn-roadmap {
+				color: #202020;
+				background-color: #e8e4de;
+
+				.vt-support-btn-icon {
+					display: flex;
+					align-items: center;
+					--icon-size: var(--icon-s);
+					--icon-color: #202020;
+				}
+			}
+
 			img {
 				margin: 0 !important;
 			}
@@ -48,7 +80,7 @@
 
 	.bug-report {
 		font-size: var(--font-ui-small);
-		margin-top: var(--size-4-2);
+		margin-top: var(--size-4-6);
 	}
 
 	.debugging-toggle {
