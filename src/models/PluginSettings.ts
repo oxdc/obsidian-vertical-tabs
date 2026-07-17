@@ -1,5 +1,6 @@
 import { TabNavigationStrategy } from "./TabNavigation";
 import { NewTabButtonPlacement } from "./NewTab";
+import { TabClosingBehavior } from "src/services/CloseTabs";
 
 interface ObsidianVerticalTabsSettings {
 	installationID?: string;
@@ -40,6 +41,7 @@ interface ObsidianVerticalTabsSettings {
 	allowWorkspaceSplitOnPhone: boolean;
 	enableUpdateCheck: boolean;
 	newTabButtonPlacement: NewTabButtonPlacement;
+	tabClosingBehavior: TabClosingBehavior;
 }
 
 export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
@@ -80,6 +82,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	allowWorkspaceSplitOnPhone: false,
 	enableUpdateCheck: true,
 	newTabButtonPlacement: NewTabButtonPlacement.GroupToolbar,
+	tabClosingBehavior: TabClosingBehavior.ActiveRight,
 };
 
 export type Settings = ObsidianVerticalTabsSettings;

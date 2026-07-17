@@ -26,7 +26,11 @@ import { nanoid } from "nanoid";
 import { patchQuickSwitcher } from "./services/EphemeralTabs";
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
-import { SAFE_DETACH_TIMEOUT, safeDetach } from "./services/CloseTabs";
+import {
+	SAFE_DETACH_TIMEOUT,
+	safeDetach,
+	TabClosingBehavior,
+} from "./services/CloseTabs";
 import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 import { PersistenceManager } from "./models/PersistenceManager";
 import { migrateAllData } from "./history/Migration";
@@ -327,6 +331,32 @@ export default class ObsidianVerticalTabs extends Plugin {
 			if (!found) return fallback(target, file, openState);
 		};
 
+		const modifyDetach = (target: WorkspaceLeaf) => {
+			const parent = target.parent;
+			switch (this.settings.tabClosingBehavior) {
+				case TabClosingBehavior.ActiveLeft:
+					parent.selectTabIndex(parent.currentTab - 1);
+					break;
+				case TabClosingBehavior.ActiveRight:
+					parent.selectTabIndex(parent.currentTab + 1);
+					break;
+				case TabClosingBehavior.ActiveRecent: {
+					let recentTabIndex = Math.max(0, parent.currentTab - 1);
+					let recentActiveTime = -1;
+					parent.children.forEach((leaf, index) => {
+						if (leaf === target) return;
+						const activeTime = leaf.activeTime ?? 0;
+						if (activeTime > recentActiveTime) {
+							recentTabIndex = index;
+							recentActiveTime = activeTime;
+						}
+					});
+					target.parent.selectTabIndex(recentTabIndex);
+					break;
+				}
+			}
+		};
+
 		this.register(
 			around(WorkspaceLeaf.prototype, {
 				canNavigate(old) {
@@ -372,6 +402,12 @@ export default class ObsidianVerticalTabs extends Plugin {
 							return fallback(this, file, openState);
 						}
 						return fallback(this, file, openState);
+					};
+				},
+				detach(old) {
+					return function (this: WorkspaceLeaf) {
+						modifyDetach(this);
+						old.call(this);
 					};
 				},
 			})

@@ -30,6 +30,10 @@ import { linkedFolderSortStrategyOptions } from "../services/OpenFolder";
 import { getLatestVersion } from "src/services/Version";
 import * as semver from "semver";
 import { VERTICAL_TABS_VIEW } from "./VerticalTabsView";
+import {
+	TabClosingBehavior,
+	TabClosingBehaviorOptions,
+} from "src/services/CloseTabs";
 
 interface ToggleProps {
 	name: string;
@@ -510,6 +514,17 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 					.getState()
 					.setSettings({ autoUncollapseGroup: value });
 			},
+		});
+
+		this.createDropdown(containerEl, {
+			name: "Tab closing behavior",
+			desc: "Choose which tab becomes active after closing the current tab.",
+			options: TabClosingBehaviorOptions,
+			value: this.plugin.settings.tabClosingBehavior,
+			onChange: (value) =>
+				useSettings.getState().setSettings({
+					tabClosingBehavior: value as TabClosingBehavior,
+				}),
 		});
 
 		this.createDropdown(containerEl, {
@@ -1425,6 +1440,15 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 						name: "Auto uncollapse active group",
 						desc: "Automatically uncollapse the active groups when switching tabs.",
 						control: { type: "toggle", key: "autoUncollapseGroup" },
+					},
+					{
+						name: "Tab closing behavior",
+						desc: "Choose which tab becomes active after closing the current tab.",
+						control: {
+							type: "dropdown",
+							key: "tabClosingBehavior",
+							options: TabClosingBehaviorOptions,
+						},
 					},
 					{
 						name: this.plugin.settings.alwaysOpenInNewTab

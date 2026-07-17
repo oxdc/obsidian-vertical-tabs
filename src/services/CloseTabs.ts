@@ -39,3 +39,15 @@ export function safeDetach(leaf: WorkspaceLeaf) {
 		// at this point.
 	}
 }
+
+export enum TabClosingBehavior {
+	ActiveLeft = "active-left",
+	ActiveRight = "active-right",
+	ActiveRecent = "active-recent",
+}
+
+export const TabClosingBehaviorOptions: Record<string, string> = {
+	[TabClosingBehavior.ActiveLeft]: "The tab on the left",
+	[TabClosingBehavior.ActiveRight]: "The tab on the right",
+	[TabClosingBehavior.ActiveRecent]: "The most recently active tab",
+};
