@@ -1,4 +1,4 @@
-import { type TouchEvent as ReactTouchEvent, useState } from "react";
+import { type TouchEvent as ReactTouchEvent, useRef } from "react";
 
 export enum SwipeDirection {
 	Up = "up",
@@ -10,46 +10,58 @@ export enum SwipeDirection {
 
 interface TouchSensorOptions {
 	minDistance: number;
-	callback: (
-		moved: boolean,
-		direction: SwipeDirection,
-		event: TouchEvent
-	) => void;
+	callback: (moved: boolean, direction: SwipeDirection, event: TouchEvent) => void;
+}
+
+interface TouchState {
+	startX: number;
+	startY: number;
+	moved: boolean;
+	direction: SwipeDirection;
 }
 
 export const useTouchSensor = (options: TouchSensorOptions) => {
 	const { minDistance, callback } = options;
 
-	const [startX, setStartX] = useState(0);
-	const [startY, setStartY] = useState(0);
-	const [moved, setMoved] = useState(false);
-	const [direction, setDirection] = useState(SwipeDirection.None);
+	const touchRef = useRef<TouchState>({
+		startX: 0,
+		startY: 0,
+		moved: false,
+		direction: SwipeDirection.None,
+	});
 
 	const onTouchStart = (event: ReactTouchEvent) => {
 		if (!event.touches[0]) return;
-		setStartX(event.touches[0].clientX);
-		setStartY(event.touches[0].clientY);
-		setMoved(false);
-		setDirection(SwipeDirection.None);
+		touchRef.current = {
+			startX: event.touches[0].clientX,
+			startY: event.touches[0].clientY,
+			moved: false,
+			direction: SwipeDirection.None,
+		};
 	};
 
 	const onTouchMove = (event: ReactTouchEvent) => {
 		if (!event.touches[0]) return;
-		const dx = event.touches[0].clientX - startX;
-		const dy = event.touches[0].clientY - startY;
+		const touch = touchRef.current;
+		const dx = event.touches[0].clientX - touch.startX;
+		const dy = event.touches[0].clientY - touch.startY;
 		if (Math.sqrt(dx * dx + dy * dy) > minDistance) {
-			setMoved(true);
+			touch.moved = true;
 		}
 		if (Math.abs(dx) < minDistance && Math.abs(dy) > minDistance) {
-			setDirection(dy > 0 ? SwipeDirection.Down : SwipeDirection.Up);
+			touch.direction = dy > 0 ? SwipeDirection.Down : SwipeDirection.Up;
 		} else if (Math.abs(dy) < minDistance && Math.abs(dx) > minDistance) {
-			setDirection(dx > 0 ? SwipeDirection.Right : SwipeDirection.Left);
+			touch.direction = dx > 0 ? SwipeDirection.Right : SwipeDirection.Left;
 		} else {
-			setDirection(SwipeDirection.None);
+			touch.direction = SwipeDirection.None;
 		}
 	};
 
 	const onTouchEnd = (event: ReactTouchEvent) => {
+		const { moved, direction } = touchRef.current;
+		// Suppress the ghost click that browsers fire after a touch that
+		// scrolled/dragged, so a scroll gesture never also triggers a tap action.
+		if (moved && event.cancelable) event.preventDefault();
 		callback(moved, direction, event.nativeEvent);
 	};
 
