@@ -33,7 +33,7 @@ import {
 } from "./services/CloseTabs";
 import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 import { PersistenceManager } from "./models/PersistenceManager";
-import { migrateAllData } from "./history/Migration";
+import { initializeMigrationContext } from "./history/Migration";
 import { VERTICAL_TABS_ICON } from "./icon";
 import { DISABLE_KEY } from "./models/PluginContext";
 import { scrollToActiveTab } from "./services/ScrollableTabs";
@@ -93,7 +93,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 			this.settings.installationID ?? "", // to be removed
 			this.manifest
 		);
-		migrateAllData(this);
+		initializeMigrationContext(this);
 	}
 
 	async registerEventsAndViews() {
