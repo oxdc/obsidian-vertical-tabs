@@ -1,7 +1,7 @@
 {
 	"id": "vertical-tabs",
 	"name": "Vertical Tabs",
-	"version": "0.17.5",
+	"version": "0.17.6",
 	"minAppVersion": "1.7.2",
 	"description": "Offer an alternative view that displays open tabs vertically, allowing users to group and organize tabs for a better navigation experience.",
 	"author": "oxdc",

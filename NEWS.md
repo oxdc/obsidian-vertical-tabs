@@ -1,3 +1,18 @@
+# Vertical Tabs v0.17.6
+
+## 🎉 What's New:
+
+- **Tab closing behavior**: New setting to choose which tab becomes active after closing the current tab: left, right, or most recently active (#228).
+
+## 🐛 Bug Fixes:
+
+- Fixed unexpected closure of mobile side panels when tab deduplication is enabled (#146).
+- Fixed accidental tab openings while scrolling through the tab list on mobile (#222).
+- Fixed incorrect tab activation when tapping on mobile tabs (#227).
+- Fixed duplicate support sections in the settings tab.
+
+---
+
 # Vertical Tabs v0.17.5
 
 ## 🎉 What's New:
