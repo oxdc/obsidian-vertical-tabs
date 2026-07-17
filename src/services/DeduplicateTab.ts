@@ -14,6 +14,7 @@ import { moveTab, reapplyEphemeralState } from "./MoveTab";
 import { safeDetach } from "./CloseTabs";
 import { linkTasksStore } from "src/stores/LinkTaskStore";
 import { tabCacheStore } from "src/stores/TabCacheStore";
+import { isMobileDrawerOpen } from "./MobileDrawer";
 
 const INCLUDE_LIST = new Set([
 	"markdown",
@@ -102,7 +103,13 @@ export function deduplicateForTargets(
 	// triggered by commands or other plugins. (#164)
 	// If Hover Editor is enabled, we let Hover Editor take care of the focus.
 	// Otherwise, Hover Editor will be closed when we set the focus.
-	if (focus && sortedLeaves.length > 0 && !isHoverEditorEnabled(app)) {
+	// Never steal focus while a mobile drawer is open. (#146)
+	if (
+		focus &&
+		sortedLeaves.length > 0 &&
+		!isHoverEditorEnabled(app) &&
+		!isMobileDrawerOpen(app)
+	) {
 		app.workspace.setActiveLeaf(leafToKeep, { focus: false });
 		return leafToKeep;
 	}
@@ -177,7 +184,8 @@ export function deduplicateExistingTabs(
 		const focus =
 			!!latestActiveLeaf &&
 			!hasLinkedLeaf &&
-			getOpenFileOfLeaf(app, latestActiveLeaf) === activeFile;
+			getOpenFileOfLeaf(app, latestActiveLeaf) === activeFile &&
+			!isMobileDrawerOpen(app);
 		const activeLeaf = deduplicateTab(
 			app,
 			activeFile,

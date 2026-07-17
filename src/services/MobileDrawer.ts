@@ -35,6 +35,11 @@ export function getDrawer(app: App): MobileDrawers {
 	}
 }
 
+export function isMobileDrawerOpen(app: App): boolean {
+	const drawer = getDrawer(app).contained;
+	return !!drawer && !drawer.collapsed;
+}
+
 export function pinDrawer(app: App) {
 	const drawer = getDrawer(app);
 	if (drawer.contained) drawer.contained.collapsed = true;
