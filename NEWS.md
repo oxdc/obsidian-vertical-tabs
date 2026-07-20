@@ -1,3 +1,16 @@
+# Vertical Tabs v0.17.7
+
+## 🐛 Bug Fixes:
+
+- Fixed incorrect tab activation when navigating with "Deduplicate tabs" enabled (#231).
+
+## ✅ Improvements:
+
+- Migrated device-local settings to use Obsidian's local storage API.
+- Updated the minimum required Obsidian version to 1.8.7.
+
+---
+
 # Vertical Tabs v0.17.6
 
 ## 🎉 What's New:
