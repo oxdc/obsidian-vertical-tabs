@@ -19,7 +19,8 @@ import {
 import { DEFAULT_SETTINGS, Settings } from "./models/PluginSettings";
 import { around } from "monkey-around";
 import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
-import { useViewState } from "./models/ViewState";
+import { hydrateViewState, useViewState } from "./models/ViewState";
+import { hydrateTabCacheStore } from "./stores/TabCacheStore";
 import { ObsidianVerticalTabsSettingTab } from "./views/SettingTab";
 import { useSettings } from "./models/PluginContext";
 import { nanoid } from "nanoid";
@@ -43,6 +44,7 @@ import { managedLeafStore } from "./stores/ManagedLeafStore";
 import { isHoverEditorEnabled } from "./services/HoverEditorTabs";
 import { removeAllTabControlButtons } from "./services/TabControlButtons";
 import { ViewEphemeralState } from "obsidian-typings";
+import { localStorageService } from "./stores/LocalStorageService";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -51,6 +53,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 	async onload() {
 		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
 		await this.loadSettings();
+		await this.setupLocalStorageService();
 		await this.setupPersistenceManager();
 		const disableOnThisDevice =
 			this.persistenceManager.device.get<boolean>(DISABLE_KEY) ?? false;
@@ -140,6 +143,12 @@ export default class ObsidianVerticalTabs extends Plugin {
 				useSettings.getState().toggleBackgroundMode(this.app, false);
 			},
 		});
+	}
+
+	async setupLocalStorageService() {
+		localStorageService.init(this.app);
+		hydrateViewState();
+		hydrateTabCacheStore();
 	}
 
 	async openVerticalTabs() {

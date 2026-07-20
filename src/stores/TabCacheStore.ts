@@ -4,6 +4,7 @@ import { getTabs } from "src/services/GetTabs";
 import { SortStrategy, sortTabs, sortStrategies } from "src/services/SortTabs";
 import { GroupType, Identifier } from "../models/VTWorkspace";
 import { useStoreWithActions } from "../models/StoreWithActions";
+import { localStorageService } from "./LocalStorageService";
 
 export type TabCacheEntry = {
 	groupType: GroupType;
@@ -49,28 +50,29 @@ const saveSortStrategy = (strategy: SortStrategy | null | undefined) => {
 		Object.keys(sortStrategies).find(
 			(key) => sortStrategies[key] === strategy
 		) ?? "none";
-	localStorage.setItem("sort-strategy", name);
+	localStorageService.save("sort-strategy", name);
 };
 
 const loadSortStrategy = (): SortStrategy | null => {
-	const name = localStorage.getItem("sort-strategy") ?? "none";
+	const name =
+		localStorageService.migrate("sort-strategy", (value) => value) ??
+		"none";
 	return sortStrategies[name] ?? null;
 };
 
 const saveGroupOrder = (groupIDs: Identifier[]) => {
-	localStorage.setItem("temp-group-order", JSON.stringify(groupIDs));
+	localStorageService.save("temp-group-order", groupIDs);
 };
 
 const loadGroupOrder = (): Identifier[] => {
-	const order = localStorage.getItem("temp-group-order");
-	return order ? (JSON.parse(order) as Identifier[]) : [];
+	return localStorageService.migrate<Identifier[]>("temp-group-order") ?? [];
 };
 
 export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 	content: createNewTabCache() as TabCache,
 	groupIDs: [],
 	leaveIDs: [],
-	sortStrategy: loadSortStrategy(),
+	sortStrategy: null,
 	actions: {
 		refresh: (app) => {
 			set((state) => {
@@ -154,3 +156,9 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 		},
 	},
 }));
+
+export const hydrateTabCacheStore = () => {
+	tabCacheStore.setState({
+		sortStrategy: loadSortStrategy(),
+	});
+};

@@ -41,6 +41,7 @@ import { getTabs } from "src/services/GetTabs";
 import { useSettings } from "./PluginContext";
 import { isHoverEditorEnabled } from "src/services/HoverEditorTabs";
 import { NativeDragTabs } from "src/services/NativeDragTabs";
+import { localStorageService } from "src/stores/LocalStorageService";
 export const DEFAULT_GROUP_TITLE = "Grouped tabs";
 const factory = () => DEFAULT_GROUP_TITLE;
 
@@ -198,60 +199,55 @@ interface ViewState {
 }
 
 const saveViewState = (titles: GroupTitles) => {
-	const data = Array.from(titles.entries());
-	localStorage.setItem("view-state", JSON.stringify(data));
+	localStorageService.save("view-state", Array.from(titles.entries()));
 };
 
 const loadViewState = (): GroupTitles | null => {
-	const data = localStorage.getItem("view-state");
-	if (!data) return null;
-	const entries = JSON.parse(data) as [Identifier, string][];
+	const entries =
+		localStorageService.migrate<[Identifier, string][]>("view-state");
+	if (!entries) return null;
 	return new DefaultRecord(factory, entries);
 };
 
 const saveHiddenGroups = (hiddenGroups: Array<Identifier>) => {
-	localStorage.setItem("hidden-groups", JSON.stringify(hiddenGroups));
+	localStorageService.save("hidden-groups", hiddenGroups);
 };
 
+// prettier-ignore
 const loadHiddenGroups = (): Array<Identifier> => {
-	const data = localStorage.getItem("hidden-groups");
-	if (!data) return [];
-	return JSON.parse(data) as Array<Identifier>;
+	return localStorageService.migrate<Array<Identifier>>("hidden-groups") ?? [];
 };
 
 const saveCollapsedGroups = (collapsedGroups: Array<Identifier>) => {
-	localStorage.setItem("collapsed-groups", JSON.stringify(collapsedGroups));
+	localStorageService.save("collapsed-groups", collapsedGroups);
 };
 
+// prettier-ignore
 const loadCollapsedGroups = (): Array<Identifier> => {
-	const data = localStorage.getItem("collapsed-groups");
-	if (!data) return [];
-	return JSON.parse(data) as Array<Identifier>;
+	return localStorageService.migrate<Array<Identifier>>("collapsed-groups") ?? [];
 };
 
 const saveNonEphemeralTabs = (tabs: Array<Identifier>) => {
-	localStorage.setItem("nonephemeral-tabs", JSON.stringify(Array.from(tabs)));
+	localStorageService.save("nonephemeral-tabs", Array.from(tabs));
 };
 
+// prettier-ignore
 const loadNonEphemeralTabs = (): Array<Identifier> => {
-	const data = localStorage.getItem("nonephemeral-tabs");
-	if (!data) return [];
-	return JSON.parse(data) as Array<Identifier>;
+	return localStorageService.migrate<Array<Identifier>>("nonephemeral-tabs") ?? [];
 };
 
 const clearNonEphemeralTabs = () => {
-	localStorage.removeItem("nonephemeral-tabs");
+	localStorageService.remove("nonephemeral-tabs");
 };
 
 const saveGroupUnhideTimes = (times: GroupUnhideTimes) => {
-	const data = Array.from(times.entries());
-	localStorage.setItem("group-unhide-times", JSON.stringify(data));
+	localStorageService.save("group-unhide-times", Array.from(times.entries()));
 };
 
+// prettier-ignore
 const loadGroupUnhideTimes = (): GroupUnhideTimes => {
-	const data = localStorage.getItem("group-unhide-times");
-	if (!data) return createNewGroupUnhideTimes() as GroupUnhideTimes;
-	const entries = JSON.parse(data) as [Identifier, number][];
+	const entries = localStorageService.migrate<[Identifier, number][]>("group-unhide-times");
+	if (!entries) return createNewGroupUnhideTimes() as GroupUnhideTimes;
 	return new DefaultRecord(() => 0, entries);
 };
 
@@ -289,11 +285,11 @@ const getCornerContainers = (tabContainers: Array<Element>) => {
 const callbackGuard = new Set<number>();
 
 export const useViewState = create<ViewState>()((set, get) => ({
-	groupTitles: loadViewState() ?? (createNewGroupTitles() as GroupTitles),
-	hiddenGroups: loadHiddenGroups(),
-	collapsedGroups: loadCollapsedGroups(),
-	nonEphemeralTabs: loadNonEphemeralTabs(),
-	groupUnhideTimes: loadGroupUnhideTimes(),
+	groupTitles: createNewGroupTitles() as GroupTitles,
+	hiddenGroups: [],
+	collapsedGroups: [],
+	nonEphemeralTabs: [],
+	groupUnhideTimes: createNewGroupUnhideTimes() as GroupUnhideTimes,
 	latestActiveLeaf: null,
 	latestActiveTab: null,
 	pinningEvents: createNewPinningEvents(),
@@ -999,3 +995,13 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		}
 	},
 }));
+
+export const hydrateViewState = () => {
+	useViewState.setState({
+		groupTitles: loadViewState() ?? (createNewGroupTitles() as GroupTitles),
+		hiddenGroups: loadHiddenGroups(),
+		collapsedGroups: loadCollapsedGroups(),
+		nonEphemeralTabs: loadNonEphemeralTabs(),
+		groupUnhideTimes: loadGroupUnhideTimes(),
+	});
+};
