@@ -12,7 +12,10 @@ import {
 	SliderComponent,
 } from "obsidian";
 import ObsidianVerticalTabs from "../main";
-import { DISABLE_KEY, useSettings } from "../models/PluginContext";
+import {
+	loadDisableOnThisDevice,
+	useSettings,
+} from "../models/PluginContext";
 import {
 	NewTabButtonPlacement,
 	NewTabButtonPlacementOptions,
@@ -112,16 +115,11 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		}
 	}
 
-	private loadDisableOnThisDevice(): boolean {
-		const store = this.plugin.persistenceManager.device;
-		return store.get<boolean>(DISABLE_KEY) ?? false;
-	}
-
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 
-		const disableOnThisDevice = this.loadDisableOnThisDevice();
+		const disableOnThisDevice = loadDisableOnThisDevice();
 
 		this.displayUpdateIndicator(containerEl);
 
@@ -1028,14 +1026,13 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	private displayMiscellaneousSection(parentEl: HTMLElement) {
 		const group = this.createSettingGroup(parentEl, "Miscellaneous");
 
-		const store = this.plugin.persistenceManager.device;
-		const disableOnThisDevice = store.get<boolean>(DISABLE_KEY);
+		const disableOnThisDevice = loadDisableOnThisDevice();
 		this.createToggle(group, {
 			name: "Disable on this device",
 			desc: `Disable Vertical Tabs on this device only.
 						 The plugin will remain enabled on other devices.
 						 This setting is stored locally and will not sync across devices.`,
-			value: disableOnThisDevice ?? false,
+			value: disableOnThisDevice,
 			onChange: (value) => void this.toggleDisableOnThisDevice(value),
 		});
 
@@ -1331,7 +1328,6 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 
 	private async copyPluginSettingsToClipboard() {
 		const settings = { ...this.plugin.settings };
-		settings.installationID = "[Redacted]";
 		const version = this.plugin.manifest.version;
 		const pluginInfo = { version, settings };
 		const json = JSON.stringify(pluginInfo, null, 2);
@@ -1417,7 +1413,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				type: "group",
 				visible: () =>
 					this.plugin.settings.backgroundMode ||
-					this.loadDisableOnThisDevice(),
+					loadDisableOnThisDevice(),
 				items: [
 					{
 						name: "",
@@ -1430,7 +1426,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 									group.groupEl
 								);
 							}
-							if (this.loadDisableOnThisDevice()) {
+							if (loadDisableOnThisDevice()) {
 								this.displayPluginDisabledWarningBanner(
 									group.groupEl
 								);
@@ -1444,7 +1440,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			{
 				type: "group",
 				visible: () =>
-					!this.loadDisableOnThisDevice() &&
+					!loadDisableOnThisDevice() &&
 					!this.plugin.settings.backgroundMode,
 				items: [
 					{
@@ -1733,7 +1729,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				heading: "Linked folder",
 				visible: () =>
 					!this.plugin.settings.backgroundMode &&
-					!this.loadDisableOnThisDevice(),
+					!loadDisableOnThisDevice(),
 				items: [
 					{
 						name: "Load order",
@@ -1769,7 +1765,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			{
 				type: "group",
 				heading: "Group view",
-				visible: () => !this.loadDisableOnThisDevice(),
+				visible: () => !loadDisableOnThisDevice(),
 				items: [
 					{
 						name: "Show metadata in continuous view",
@@ -1856,7 +1852,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 						render: (setting) => {
 							setting.addToggle((toggle) =>
 								toggle
-									.setValue(this.loadDisableOnThisDevice())
+									.setValue(loadDisableOnThisDevice())
 									.onChange((value) =>
 										this.toggleDisableOnThisDevice(value)
 									)

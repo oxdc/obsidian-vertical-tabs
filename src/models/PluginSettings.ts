@@ -3,7 +3,6 @@ import { NewTabButtonPlacement } from "./NewTab";
 import { TabClosingBehavior } from "src/services/CloseTabs";
 
 interface ObsidianVerticalTabsSettings {
-	installationID?: string;
 	showActiveTabs: boolean;
 	autoUncollapseGroup: boolean;
 	hideSidebars: boolean;

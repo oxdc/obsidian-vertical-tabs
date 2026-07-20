@@ -22,8 +22,7 @@ import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
 import { hydrateViewState, useViewState } from "./models/ViewState";
 import { hydrateTabCacheStore } from "./stores/TabCacheStore";
 import { ObsidianVerticalTabsSettingTab } from "./views/SettingTab";
-import { useSettings } from "./models/PluginContext";
-import { nanoid } from "nanoid";
+import { loadDisableOnThisDevice, useSettings } from "./models/PluginContext";
 import { patchQuickSwitcher } from "./services/EphemeralTabs";
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
@@ -33,10 +32,8 @@ import {
 	TabClosingBehavior,
 } from "./services/CloseTabs";
 import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
-import { PersistenceManager } from "./models/PersistenceManager";
-import { initializeMigrationContext } from "./history/Migration";
+import { runPersistenceMigrations } from "./history/Migration";
 import { VERTICAL_TABS_ICON } from "./icon";
-import { DISABLE_KEY } from "./models/PluginContext";
 import { scrollToActiveTab } from "./services/ScrollableTabs";
 import { updateOrientationLabel } from "./services/Orientation";
 import { getOpenFileOfLeaf } from "./services/GetTabs";
@@ -48,15 +45,12 @@ import { localStorageService } from "./stores/LocalStorageService";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
-	persistenceManager!: PersistenceManager;
 
 	async onload() {
 		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
 		await this.loadSettings();
 		await this.setupLocalStorageService();
-		await this.setupPersistenceManager();
-		const disableOnThisDevice =
-			this.persistenceManager.device.get<boolean>(DISABLE_KEY) ?? false;
+		const disableOnThisDevice = loadDisableOnThisDevice();
 		if (disableOnThisDevice) {
 			void useSettings.getState().loadSettings(this);
 			this.addSettingTab(
@@ -88,15 +82,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 				useViewState.getState().refreshToggleButtons(this.app);
 			}, REFRESH_TIMEOUT_LONG);
 		});
-	}
-
-	async setupPersistenceManager() {
-		this.persistenceManager = new PersistenceManager(
-			this.app,
-			this.settings.installationID ?? "", // to be removed
-			this.manifest
-		);
-		initializeMigrationContext(this);
 	}
 
 	async registerEventsAndViews() {
@@ -147,6 +132,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 
 	async setupLocalStorageService() {
 		localStorageService.init(this.app);
+		await runPersistenceMigrations(this);
 		hydrateViewState();
 		hydrateTabCacheStore();
 	}
@@ -177,9 +163,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 			DEFAULT_SETTINGS,
 			(await this.loadData()) as Settings
 		);
-		if (!this.settings.installationID) {
-			this.settings.installationID = nanoid();
-		}
 	}
 
 	async saveSettings() {

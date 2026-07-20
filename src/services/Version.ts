@@ -1,14 +1,24 @@
 import { requestUrl } from "obsidian";
 import ObsidianVerticalTabs from "src/main";
-import { PersistenceManager } from "src/models/PersistenceManager";
+import { STORAGE_KEYS } from "src/constants/StorageKeys";
+import { localStorageService } from "src/stores/LocalStorageService";
 
 interface CachedVersionData {
 	latestVersion: string;
 	timestamp: number;
 }
 
-const CACHE_KEY = "version-cache";
 const CACHE_DURATION = 60 * 1000; // 1 minute in milliseconds
+
+const saveVersionCache = (versionCache: CachedVersionData) => {
+	localStorageService.save(STORAGE_KEYS.VERSION_CACHE, versionCache);
+};
+
+const loadVersionCache = (): CachedVersionData | null => {
+	return localStorageService.load<CachedVersionData>(
+		STORAGE_KEYS.VERSION_CACHE
+	);
+};
 
 export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 	currentVersion: string;
@@ -24,24 +34,9 @@ export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 		};
 	}
 
-	// Ensure installationID is available
-	if (!plugin.settings.installationID) {
-		console.error("InstallationID not found in plugin settings");
-		return {
-			currentVersion,
-			latestVersion: null,
-		};
-	}
-
-	const persistence = new PersistenceManager<CachedVersionData>(
-		plugin.app,
-		plugin.settings.installationID,
-		plugin.manifest
-	);
-
 	// Check cache first
 	try {
-		const cachedData = persistence.device.get<CachedVersionData>(CACHE_KEY);
+		const cachedData = loadVersionCache();
 		if (cachedData) {
 			const now = Date.now();
 			// If cache is still valid (less than 6 hours old)
@@ -66,11 +61,10 @@ export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 
 		// Cache the result
 		try {
-			const cacheData: CachedVersionData = {
+			saveVersionCache({
 				latestVersion,
 				timestamp: Date.now(),
-			};
-			persistence.device.set(CACHE_KEY, cacheData);
+			});
 		} catch (error) {
 			console.error("Failed to cache version data:", error);
 		}
@@ -84,8 +78,7 @@ export async function getLatestVersion(plugin: ObsidianVerticalTabs): Promise<{
 
 		// Try to return cached data even if expired, as fallback
 		try {
-			const cachedData =
-				persistence.device.get<CachedVersionData>(CACHE_KEY);
+			const cachedData = loadVersionCache();
 			if (cachedData) {
 				return {
 					currentVersion,

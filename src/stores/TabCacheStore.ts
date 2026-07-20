@@ -5,6 +5,7 @@ import { SortStrategy, sortTabs, sortStrategies } from "src/services/SortTabs";
 import { GroupType, Identifier } from "../models/VTWorkspace";
 import { useStoreWithActions } from "../models/StoreWithActions";
 import { localStorageService } from "./LocalStorageService";
+import { STORAGE_KEYS } from "src/constants/StorageKeys";
 
 export type TabCacheEntry = {
 	groupType: GroupType;
@@ -50,22 +51,22 @@ const saveSortStrategy = (strategy: SortStrategy | null | undefined) => {
 		Object.keys(sortStrategies).find(
 			(key) => sortStrategies[key] === strategy
 		) ?? "none";
-	localStorageService.save("sort-strategy", name);
+	localStorageService.save(STORAGE_KEYS.SORT_STRATEGY, name);
 };
 
+// prettier-ignore
 const loadSortStrategy = (): SortStrategy | null => {
-	const name =
-		localStorageService.migrate("sort-strategy", (value) => value) ??
-		"none";
+	const name = localStorageService.load(STORAGE_KEYS.SORT_STRATEGY, (value) => value) ?? "none";
 	return sortStrategies[name] ?? null;
 };
 
 const saveGroupOrder = (groupIDs: Identifier[]) => {
-	localStorageService.save("temp-group-order", groupIDs);
+	localStorageService.save(STORAGE_KEYS.GROUP_ORDER, groupIDs);
 };
 
+// prettier-ignore
 const loadGroupOrder = (): Identifier[] => {
-	return localStorageService.migrate<Identifier[]>("temp-group-order") ?? [];
+	return localStorageService.load<Identifier[]>(STORAGE_KEYS.GROUP_ORDER) ?? [];
 };
 
 export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({

@@ -1,37 +1,52 @@
-import { PersistenceManager } from "src/models/PersistenceManager";
 import ObsidianVerticalTabs from "src/main";
+import { STORAGE_KEYS } from "src/constants/StorageKeys";
+import { localStorageService } from "src/stores/LocalStorageService";
 
-class MigrationContext {
-	private static persistenceManager: PersistenceManager | null = null;
+const DEVICE_ID_KEY = "vertical-tabs:device-id";
 
-	static initialize(plugin: ObsidianVerticalTabs) {
-		this.persistenceManager = plugin.persistenceManager;
-	}
-
-	static getPersistenceManager(): PersistenceManager {
-		if (!this.persistenceManager) {
-			throw new Error("MigrationContext not initialized");
-		}
-		return this.persistenceManager;
-	}
-}
-
-const SHOW_ACTIVE_TABS_KEY = "show-active-tabs";
-
-export function getShowActiveTabs(): boolean {
-	const persistenceManager = MigrationContext.getPersistenceManager();
-	return (
-		persistenceManager.instance.get<boolean>(SHOW_ACTIVE_TABS_KEY) ?? false
-	);
-}
-
-export function setShowActiveTabs(value: boolean): void {
-	const persistenceManager = MigrationContext.getPersistenceManager();
-	persistenceManager.instance.set(SHOW_ACTIVE_TABS_KEY, value);
-}
-
-export function initializeMigrationContext(
+export async function runPersistenceMigrations(
 	plugin: ObsidianVerticalTabs
-): void {
-	MigrationContext.initialize(plugin);
+): Promise<void> {
+	const legacySettings = plugin.settings as typeof plugin.settings & {
+		installationID?: string;
+	};
+	const installationID = legacySettings.installationID;
+	const deviceID = localStorage.getItem(DEVICE_ID_KEY);
+
+	const instancePrefix =
+		installationID && deviceID
+			? `vertical-tabs-${installationID}-${deviceID}`
+			: null;
+	const devicePrefix = deviceID ? `vertical-tabs-${deviceID}` : null;
+
+	localStorageService.migrateFrom<boolean>(STORAGE_KEYS.SHOW_ACTIVE_TABS, [
+		...(instancePrefix ? [`${instancePrefix}:show-active-tabs`] : []),
+		"show-active-tabs",
+	]);
+	localStorageService.migrateFrom<boolean>(
+		STORAGE_KEYS.DISABLE_ON_THIS_DEVICE,
+		[
+			...(devicePrefix ? [`${devicePrefix}:disable-on-this-device`] : []),
+			"disable-on-this-device",
+		]
+	);
+	localStorageService.migrateFrom(STORAGE_KEYS.VERSION_CACHE, [
+		...(devicePrefix ? [`${devicePrefix}:version-cache`] : []),
+		"version-cache",
+	]);
+	localStorageService.migrateFrom(STORAGE_KEYS.SORT_STRATEGY, [
+		"sort-strategy",
+	], (value) => value);
+	localStorageService.migrateFrom(STORAGE_KEYS.GROUP_ORDER, [
+		"temp-group-order",
+	]);
+
+	if (installationID !== undefined) {
+		delete legacySettings.installationID;
+		await plugin.saveSettings();
+	}
+
+	if (deviceID) {
+		localStorage.removeItem(DEVICE_ID_KEY);
+	}
 }

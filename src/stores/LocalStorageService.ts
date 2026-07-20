@@ -1,5 +1,6 @@
 import { App } from "obsidian";
 
+// prettier-ignore
 class LocalStorageService {
 	private app: App | null = null;
 
@@ -16,7 +17,6 @@ class LocalStorageService {
 	save<T>(key: string, value: T, encoder: (value: T) => string): void;
 	save<T>(key: string, value: T, encoder?: (value: T) => string): void {
 		const app = this.ensureInitialized();
-		// prettier-ignore
 		const serialized = encoder ? encoder(value) : typeof value === "string" ? value : JSON.stringify(value);
 		app.saveLocalStorage(key, serialized);
 	}
@@ -28,7 +28,6 @@ class LocalStorageService {
 		const stored = app.loadLocalStorage(key);
 		if (typeof stored !== "string") return null;
 		if (!stored) return null;
-		// prettier-ignore
 		try { return decoder ? decoder(stored) : (JSON.parse(stored) as T); }
     catch { return null; }
 	}
@@ -54,6 +53,30 @@ class LocalStorageService {
 		} catch {
 			return null;
 		}
+	}
+
+	migrateFrom<T>(key: string, legacyKeys: string[]): T | null;
+	migrateFrom<T>(key: string,legacyKeys: string[], decoder: (value: string) => T | null): T | null;
+	migrateFrom<T>(key: string, legacyKeys: string[], decoder?: (value: string) => T | null): T | null {
+		const existing = decoder ? this.load(key, decoder) : this.load<T>(key);
+		if (existing !== null) return existing;
+		const app = this.ensureInitialized();
+		for (const legacyKey of legacyKeys) {
+			const scoped = app.loadLocalStorage(legacyKey);
+			const legacy = typeof scoped === "string" && scoped ? scoped : localStorage.getItem(legacyKey);
+			if (!legacy) continue;
+			try {
+				const value = decoder ? decoder(legacy) : (JSON.parse(legacy) as T);
+				if (value === null) continue;
+				this.save(key, legacy);
+				this.remove(legacyKey);
+				localStorage.removeItem(legacyKey);
+				return value;
+			} catch {
+				continue;
+			}
+		}
+		return decoder ? this.migrate(key, decoder) : this.migrate<T>(key);
 	}
 }
 
