@@ -36,7 +36,6 @@ export default defineConfig(
 	{
 		rules: {
 			"obsidianmd/ui/sentence-case": "off",
-			"no-restricted-globals": "off",
 		},
 	}
 );

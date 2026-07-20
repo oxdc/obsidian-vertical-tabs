@@ -1,4 +1,5 @@
 import { App } from "obsidian";
+import { _rawLocalStorage } from "src/history/Migration";
 
 // prettier-ignore
 class LocalStorageService {
@@ -42,13 +43,13 @@ class LocalStorageService {
 	migrate<T>(key: string, decoder?: (value: string) => T | null): T | null {
 		const existing = decoder ? this.load(key, decoder) : this.load<T>(key);
 		if (existing !== null) return existing;
-		const legacy = localStorage.getItem(key);
+		const legacy = _rawLocalStorage("getItem", [key]);
 		if (!legacy) return null;
 		try {
 			const value = decoder ? decoder(legacy) : (JSON.parse(legacy) as T);
 			if (value === null) return null;
-			this.save(key, legacy);
-			localStorage.removeItem(key);
+			this.save(key, value);
+			_rawLocalStorage("removeItem", [key]);
 			return value;
 		} catch {
 			return null;
@@ -63,14 +64,14 @@ class LocalStorageService {
 		const app = this.ensureInitialized();
 		for (const legacyKey of legacyKeys) {
 			const scoped = app.loadLocalStorage(legacyKey);
-			const legacy = typeof scoped === "string" && scoped ? scoped : localStorage.getItem(legacyKey);
+			const legacy = typeof scoped === "string" && scoped ? scoped : _rawLocalStorage("getItem", [legacyKey]);
 			if (!legacy) continue;
 			try {
 				const value = decoder ? decoder(legacy) : (JSON.parse(legacy) as T);
 				if (value === null) continue;
 				this.save(key, legacy);
 				this.remove(legacyKey);
-				localStorage.removeItem(legacyKey);
+				_rawLocalStorage("removeItem", [legacyKey]);
 				return value;
 			} catch {
 				continue;

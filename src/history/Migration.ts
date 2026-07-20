@@ -2,6 +2,18 @@ import ObsidianVerticalTabs from "src/main";
 import { STORAGE_KEYS } from "src/constants/StorageKeys";
 import { localStorageService } from "src/stores/LocalStorageService";
 
+export function _rawLocalStorage(
+	method: "getItem" | "setItem" | "removeItem",
+	args: [string] | [string, string]
+) {
+	const target = localStorage;
+	if (method === "getItem" || method === "removeItem") {
+		return target[method](args[0]);
+	} else if (method === "setItem" && args[1] !== undefined) {
+		return target.setItem(args[0], args[1]);
+	}
+}
+
 const DEVICE_ID_KEY = "vertical-tabs:device-id";
 
 export async function runPersistenceMigrations(
@@ -11,7 +23,7 @@ export async function runPersistenceMigrations(
 		installationID?: string;
 	};
 	const installationID = legacySettings.installationID;
-	const deviceID = localStorage.getItem(DEVICE_ID_KEY);
+	const deviceID = _rawLocalStorage("getItem", [DEVICE_ID_KEY]);
 
 	const instancePrefix =
 		installationID && deviceID
@@ -34,9 +46,11 @@ export async function runPersistenceMigrations(
 		...(devicePrefix ? [`${devicePrefix}:version-cache`] : []),
 		"version-cache",
 	]);
-	localStorageService.migrateFrom(STORAGE_KEYS.SORT_STRATEGY, [
-		"sort-strategy",
-	], (value) => value);
+	localStorageService.migrateFrom(
+		STORAGE_KEYS.SORT_STRATEGY,
+		["sort-strategy"],
+		(value) => value
+	);
 	localStorageService.migrateFrom(STORAGE_KEYS.GROUP_ORDER, [
 		"temp-group-order",
 	]);
@@ -47,6 +61,6 @@ export async function runPersistenceMigrations(
 	}
 
 	if (deviceID) {
-		localStorage.removeItem(DEVICE_ID_KEY);
+		_rawLocalStorage("removeItem", [DEVICE_ID_KEY]);
 	}
 }
