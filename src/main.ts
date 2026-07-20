@@ -333,15 +333,29 @@ export default class ObsidianVerticalTabs extends Plugin {
 
 		const modifyDetach = (target: WorkspaceLeaf) => {
 			const parent = target.parent;
+			if (!parent?.children) return;
+			const targetIndex = parent.children.indexOf(target);
+			const count = parent.children.length;
+			// Only apply when closing the selected tab. Programmatic detaches
+			// (dedup, ephemeral cleanup, etc.) must not override selection. (#231)
+			if (targetIndex < 0 || parent.currentTab !== targetIndex) return;
+			if (count <= 1) return;
 			switch (this.settings.tabClosingBehavior) {
 				case TabClosingBehavior.ActiveLeft:
-					parent.selectTabIndex(parent.currentTab - 1);
+					parent.selectTabIndex(Math.max(0, targetIndex - 1));
 					break;
-				case TabClosingBehavior.ActiveRight:
-					parent.selectTabIndex(parent.currentTab + 1);
+				case TabClosingBehavior.ActiveRight: {
+					const rightTabIndex = targetIndex + 1;
+					const leftTabIndex = targetIndex - 1;
+					parent.selectTabIndex(
+						rightTabIndex < count
+							? rightTabIndex
+							: Math.max(0, leftTabIndex)
+					);
 					break;
+				}
 				case TabClosingBehavior.ActiveRecent: {
-					let recentTabIndex = Math.max(0, parent.currentTab - 1);
+					let recentTabIndex = Math.max(0, targetIndex - 1);
 					let recentActiveTime = -1;
 					parent.children.forEach((leaf, index) => {
 						if (leaf === target) return;
@@ -351,7 +365,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 							recentActiveTime = activeTime;
 						}
 					});
-					target.parent.selectTabIndex(recentTabIndex);
+					parent.selectTabIndex(recentTabIndex);
 					break;
 				}
 			}
