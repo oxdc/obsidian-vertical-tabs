@@ -41,6 +41,7 @@ import { managedLeafStore } from "./stores/ManagedLeafStore";
 import { isHoverEditorEnabled } from "./services/HoverEditorTabs";
 import { removeAllTabControlButtons } from "./services/TabControlButtons";
 import { ViewEphemeralState } from "obsidian-typings";
+import { applyTabTitle } from "./services/Customization";
 import { localStorageService } from "./stores/LocalStorageService";
 
 export default class ObsidianVerticalTabs extends Plugin {
@@ -414,6 +415,13 @@ export default class ObsidianVerticalTabs extends Plugin {
 					return function (this: WorkspaceLeaf) {
 						modifyDetach(this);
 						old.call(this);
+					};
+				},
+				updateHeader(old) {
+					return function (this: WorkspaceLeaf) {
+						const result = old.call(this);
+						applyTabTitle(this);
+						return result;
 					};
 				},
 			})

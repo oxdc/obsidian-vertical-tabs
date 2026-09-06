@@ -8,12 +8,13 @@ import {
 	useState,
 } from "react";
 import { IconButton } from "./IconButton";
-import { DEFAULT_GROUP_TITLE, useViewState } from "src/models/ViewState";
+import { useViewState } from "src/models/ViewState";
 import { useApp, useSettings } from "src/models/PluginContext";
 import { GroupType } from "src/models/VTWorkspace";
 import { moveTabToEnd } from "src/services/MoveTab";
 import { Menu, WorkspaceParent } from "obsidian";
 import { EVENTS } from "src/constants/Events";
+import { DEFAULT_GROUP_TITLE } from "src/constants/Predefined";
 import {
 	createBookmarkForGroup,
 	loadNameFromBookmark,
@@ -37,6 +38,12 @@ import {
 } from "src/services/WikiLinks";
 import { insertToEditor } from "src/services/InsertText";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
+import {
+	addColorOptionsToMenu,
+	applyColor,
+	removeColor,
+} from "src/services/Customization";
+import { IconSelectionModal } from "src/views/IconSelectionModal";
 
 interface GroupProps {
 	type: GroupType;
@@ -57,10 +64,9 @@ export const Group = (props: GroupProps) => {
 	const { type, children, group } = props;
 
 	/* Actions (for mutating the shared store) */
-	const { hasOnlyOneGroup } = tabCacheStore.getActions();
+	const { hasOnlyOneGroup, saveGroupMetadata } = tabCacheStore.getActions();
 	const {
 		toggleCollapsedGroup,
-		setGroupTitle,
 		toggleHiddenGroup,
 		bindGroupViewToggleEvent,
 		getLinkedFolder,
@@ -78,7 +84,15 @@ export const Group = (props: GroupProps) => {
 	);
 
 	/* Store states (managed by zustand, shared by components) */
-	const groupTitles = useViewState((state) => state.groupTitles);
+	const customColor = tabCacheStore((state) =>
+		group ? state.groupMetadata.get(group.id)?.color : undefined
+	);
+	const customIcon = tabCacheStore((state) =>
+		group ? state.groupMetadata.get(group.id)?.icon : undefined
+	);
+	const customTitle = tabCacheStore((state) =>
+		group ? state.groupMetadata.get(group.id)?.title : undefined
+	);
 	const collapsedGroups = useViewState((state) => state.collapsedGroups);
 	const isHidden = useViewState(
 		(state) => !!group && state.hiddenGroups.includes(group.id)
@@ -107,7 +121,7 @@ export const Group = (props: GroupProps) => {
 	const title =
 		isSidebar || !group
 			? titleMap[type]
-			: groupTitles.get(group.id) || DEFAULT_GROUP_TITLE;
+			: customTitle || DEFAULT_GROUP_TITLE;
 	const shouldShowNewTabButton =
 		newTabButtonPlacement === NewTabButtonPlacement.GroupToolbar ||
 		newTabButtonPlacement === NewTabButtonPlacement.Both;
@@ -138,8 +152,9 @@ export const Group = (props: GroupProps) => {
 	};
 	const commitTitle = () => {
 		if (!group || !isEditing) return;
-		const finalTitle = ephemeralTitle.trim() || DEFAULT_GROUP_TITLE;
-		setGroupTitle(group.id, finalTitle);
+		const trimmedTitle = ephemeralTitle.trim();
+		const finalTitle = trimmedTitle || undefined;
+		saveGroupMetadata(group.id, { title: finalTitle });
 		setIsEditing(false);
 	};
 	const cancelEditing = () => {
@@ -178,15 +193,32 @@ export const Group = (props: GroupProps) => {
 	const loadMore = () => {
 		if (linkedFolder) void linkedFolder.openNextFiles(false);
 	};
+	/* Commands - Customization */
+	const setColor = (color: string) =>
+		group && saveGroupMetadata(group.id, { color });
+	const resetColor = () =>
+		group && saveGroupMetadata(group.id, { color: undefined });
+	const setIcon = (icon: string) =>
+		group && saveGroupMetadata(group.id, { icon });
+	const resetIcon = () =>
+		group && saveGroupMetadata(group.id, { icon: undefined });
 
 	/* Effects */
+	// Apply the color to the group container
+	useEffect(() => {
+		if (customColor) {
+			applyColor(group?.containerEl, customColor);
+		} else {
+			removeColor(group?.containerEl);
+		}
+	}, [customColor]);
 	// Sync title from bookmark on mount and when group changes
 	useEffect(() => {
 		if (!group) return;
 		const syncTitleFromBookmark = async () => {
 			const titleFromBookmark = await loadNameFromBookmark(app, group);
 			if (titleFromBookmark && title === DEFAULT_GROUP_TITLE) {
-				setGroupTitle(group.id, titleFromBookmark);
+				saveGroupMetadata(group.id, { title: titleFromBookmark });
 				if (!isEditing) setEphemeralTitle(titleFromBookmark);
 			}
 		};
@@ -251,14 +283,26 @@ export const Group = (props: GroupProps) => {
 	const menu = new Menu();
 	// Customization
 	menu.addItem((item) => {
-		item.setSection("editing")
+		item.setSection("customization")
 			.setTitle(isHidden ? "Show" : "Hide")
 			.onClick(toggleHidden);
 	});
 	menu.addItem((item) => {
-		item.setSection("editing")
+		item.setSection("customization")
 			.setTitle("Rename")
 			.onClick(handleTitleEditToggle);
+	});
+	menu.addItem((item) => {
+		item.setSection("customization").setTitle("Change color");
+		const submenu = item.setSubmenu();
+		addColorOptionsToMenu(submenu, setColor, resetColor);
+	});
+	menu.addItem((item) => {
+		item.setSection("customization")
+			.setTitle("Change icon")
+			.onClick(() => {
+				new IconSelectionModal(app, setIcon, resetIcon).open();
+			});
 	});
 	// Group view
 	menu.addSeparator();
@@ -445,7 +489,7 @@ export const Group = (props: GroupProps) => {
 			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
 			dataType={type}
 			toolbar={toolbar}
-			icon="right-triangle"
+			icon={customIcon ?? "right-triangle"}
 			isCollapsed={isCollapsed && !isSingleGroupInView} // Single group should not be collapsed
 			isSidebar={isSidebar}
 			isSingleGroup={isSingleGroupInView}
@@ -454,6 +498,7 @@ export const Group = (props: GroupProps) => {
 				"is-hidden-group": isHidden,
 				"is-active-group": isActiveGroup,
 			}}
+			color={customColor}
 		>
 			{!!linkedFolder && (
 				<LinkedGroupButton

@@ -57,3 +57,18 @@ export const sortStrategies: Record<string, SortStrategy> = {
 	oldestOnTop: { compareFn: byFileCreationTime, reverse: false },
 	oldestOnBottom: { compareFn: byFileCreationTime, reverse: true },
 };
+
+export function serializeSortStrategy(
+	strategy: SortStrategy | null | undefined
+): string {
+	for (const [key, value] of Object.entries(sortStrategies)) {
+		if (value === strategy) return key;
+	}
+	return "none";
+}
+
+export function deserializeSortStrategy(name: string): SortStrategy | null {
+	return name in sortStrategies
+		? sortStrategies[name as keyof typeof sortStrategies] ?? null
+		: null;
+}

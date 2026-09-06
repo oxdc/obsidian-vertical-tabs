@@ -18,7 +18,8 @@ const MENU_SECTION = "folder-navigation";
 
 function checkIfMenuIsAlreadyAdded(menu: Menu) {
 	return menu.items
-		.map((item) => (item instanceof MenuItem ? item.section : null))
+		.filter((item) => item instanceof MenuItem)
+		.map((item) => item.section)
 		.includes(MENU_SECTION);
 }
 

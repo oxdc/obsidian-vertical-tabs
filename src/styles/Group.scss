@@ -10,12 +10,27 @@
 			width: 100%;
 		}
 
+		&.is-collapsed .tree-item-children {
+			display: none;
+		}
+
+		// default icon
+		.tree-item-icon svg.svg-icon.right-triangle {
+			width: 10px;
+			height: 10px;
+			stroke-width: 2px;
+			transition: transform 100ms ease-in-out;
+		}
+		&.is-collapsed .tree-item-icon svg.svg-icon.right-triangle {
+			transform: rotate(calc(var(--direction) * -1 * 90deg));
+		}
+
+		&.is-being-dragged > .tree-item-self {
+			margin-bottom: 0;
+		}
+
 		&.is-hidden-group {
 			opacity: 0.5;
 		}
-	}
-
-	.is-hidden {
-		opacity: 0.5;
 	}
 }

@@ -15,7 +15,7 @@ import {
 	ViewState,
 	Notice,
 } from "obsidian";
-import { DeduplicatedTitle } from "src/services/DeduplicateTitle";
+import { deduplicateTitle } from "src/services/DeduplicateTitle";
 import { loadDeferredLeaf } from "src/services/LoadDeferredLeaf";
 
 function getBookmarksPluginInstance(app: App) {
@@ -176,7 +176,7 @@ export async function createBookmarkForGroup(
 	for (const child of group.children) {
 		await loadDeferredLeaf(child);
 		const view = child.view;
-		const title = DeduplicatedTitle(app, child);
+		const title = deduplicateTitle(app, child);
 		const item = NewBookmarkForView(app, view, title);
 		if (item) bookmark.items.push(item);
 	}
@@ -207,7 +207,7 @@ export async function createBookmarkForLeafHistory(
 	if (!instance) return;
 	await loadDeferredLeaf(leaf);
 	const bookmark = NewBookmarkGroupItem();
-	const leafTitle = DeduplicatedTitle(app, leaf);
+	const leafTitle = deduplicateTitle(app, leaf);
 	const title = `History: ${leafTitle}`;
 	bookmark.title = title;
 	const { backHistory, forwardHistory } = leaf.history;

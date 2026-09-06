@@ -8,10 +8,10 @@ interface TabSelectionState {
 }
 
 interface TabSelectionActions {
-	toggleTabSelection: (tabId: Identifier, isMultiSelect: boolean) => void;
+	toggleTabSelection: (id: Identifier, isMultiSelect: boolean) => void;
+	selectTabRange: (from: Identifier, to: Identifier) => void;
 	clearTabSelection: () => void;
-	selectTabRange: (fromId: Identifier, toId: Identifier) => void;
-	isTabSelected: (tabId: Identifier) => boolean;
+	isTabSelected: (id: Identifier) => boolean;
 	getSelectedTabs: () => Identifier[];
 	hasSelectedTabs: () => boolean;
 }
@@ -21,73 +21,49 @@ type TabSelectionStore = TabSelectionState & TabSelectionActions;
 export const useTabSelection = create<TabSelectionStore>()((set, get) => ({
 	selectedTabs: new Set(),
 	lastSelectedTab: null,
-
-	toggleTabSelection: (tabId: Identifier, isMultiSelect: boolean) => {
+	toggleTabSelection: (id: Identifier, isMultiSelect: boolean) => {
 		set((state) => {
 			const newSelectedTabs = new Set(state.selectedTabs);
-
 			if (isMultiSelect) {
-				if (newSelectedTabs.has(tabId)) {
-					newSelectedTabs.delete(tabId);
+				if (newSelectedTabs.has(id)) {
+					newSelectedTabs.delete(id);
 				} else {
-					newSelectedTabs.add(tabId);
+					newSelectedTabs.add(id);
 				}
 			} else {
 				newSelectedTabs.clear();
-				newSelectedTabs.add(tabId);
+				newSelectedTabs.add(id);
 			}
-
 			return {
 				selectedTabs: newSelectedTabs,
-				lastSelectedTab: tabId,
+				lastSelectedTab: id,
 			};
 		});
 	},
-
-	clearTabSelection: () => {
-		set({ selectedTabs: new Set(), lastSelectedTab: null });
-	},
-
-	selectTabRange: (fromId: Identifier, toId: Identifier) => {
-		set((state) => {
+	selectTabRange: (from: Identifier, to: Identifier) => {
+		const allTabsInOrder = tabCacheStore.getState().leafIDs;
+		set(() => {
 			const newSelectedTabs = new Set<Identifier>();
-			const { content } = tabCacheStore.getState();
-
-			// Find all tabs in order across all groups
-			const allTabs: Identifier[] = [];
-			for (const entry of content.values()) {
-				allTabs.push(...entry.leafIDs);
-			}
-
-			const fromIndex = allTabs.indexOf(fromId);
-			const toIndex = allTabs.indexOf(toId);
-
+			const fromIndex = allTabsInOrder.indexOf(from);
+			const toIndex = allTabsInOrder.indexOf(to);
 			if (fromIndex !== -1 && toIndex !== -1) {
 				const start = Math.min(fromIndex, toIndex);
 				const end = Math.max(fromIndex, toIndex);
-
 				for (let i = start; i <= end; i++) {
-					const tab = allTabs[i];
+					const tab = allTabsInOrder[i];
 					if (tab !== undefined) newSelectedTabs.add(tab);
 				}
 			}
-
 			return {
 				selectedTabs: newSelectedTabs,
-				lastSelectedTab: toId,
+				lastSelectedTab: to,
 			};
 		});
 	},
-
-	isTabSelected: (tabId: Identifier) => {
-		return get().selectedTabs.has(tabId);
+	clearTabSelection: () => {
+		set({ selectedTabs: new Set(), lastSelectedTab: null });
 	},
-
-	getSelectedTabs: () => {
-		return Array.from(get().selectedTabs);
-	},
-
-	hasSelectedTabs: () => {
-		return get().selectedTabs.size > 0;
-	},
+	isTabSelected: (id: Identifier) => get().selectedTabs.has(id),
+	getSelectedTabs: () => Array.from(get().selectedTabs),
+	hasSelectedTabs: () => get().selectedTabs.size > 0,
 }));

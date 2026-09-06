@@ -1,4 +1,6 @@
 .obsidian-vertical-tabs-container .tree-item {
+	border: 1px solid transparent;
+
 	.tree-item-self {
 		align-items: stretch;
 	}
@@ -15,6 +17,12 @@
 		.action-button {
 			--icon-size: var(--icon-xs);
 			padding: var(--size-2-1);
+		}
+	}
+
+	&.is-being-dragged {
+		.tree-item-flair-outer {
+			visibility: hidden;
 		}
 	}
 }

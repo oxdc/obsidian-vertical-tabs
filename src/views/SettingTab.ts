@@ -308,12 +308,13 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	}
 
 	private async __displayUpdateIndicator(entry: Setting) {
-		if (this.isBetaVersion(this.plugin.manifest.version)) {
+		const currentVersion = this.plugin.manifest.version;
+		if (this.isBetaVersion(currentVersion)) {
 			const betaVersionInfo = entry.descEl.createSpan({
 				cls: "vt-beta-version-info",
 			});
 			betaVersionInfo.appendText(
-				`You are running beta version ${this.plugin.manifest.version}. Beta updates are managed by the `
+				`You are running beta version ${currentVersion}. Beta updates are managed by the `
 			);
 			betaVersionInfo.createEl("a", {
 				text: "Beta Helper",
@@ -335,7 +336,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				void this.checkForUpdates(entry, indicator);
 			} else {
 				entry.setDesc(
-					`Update checking is disabled. Current version: ${this.plugin.manifest.version}`
+					`Update checking is disabled. Current version: ${currentVersion}`
 				);
 			}
 		}
@@ -458,6 +459,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		const buttonText = buttonTextMatch ? buttonTextMatch[1] : "";
 		const [prefix, suffix] = template.split(/\{[^}]+\}/);
 		const warning = containerEl.createDiv({ cls: "vt-warning-banner" });
+		if (requireApiVersion("1.11.0")) warning.addClass("new-design");
 		warning.appendText(`* Warning: ${prefix}`);
 		const linkButton = warning.createEl("a", { text: buttonText });
 		warning.appendText(suffix ?? "");
@@ -1044,7 +1046,11 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			onChange: (value) => void this.toggleBackgroundMode(value),
 		});
 
-		this.createToggle(group, {
+		this.displayUpdateCheckToggle(group);
+	}
+
+	private displayUpdateCheckToggle(parentEl: HTMLElement | SettingGroup) {
+		const toggle = this.createToggle(parentEl, {
 			name: "Check for updates",
 			desc: "Automatically check for plugin updates when opening settings.",
 			value: this.plugin.settings.enableUpdateCheck ?? true,
@@ -1055,6 +1061,18 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				this.refresh();
 			},
 		});
+
+		if (this.isBetaVersion(this.plugin.manifest.version)) {
+			toggle
+				.setDisabled(true)
+				.setDesc(
+					`Update checking is managed by the Beta Helper for beta builds.
+					 If you don't have the Beta Helper plugin installed, you will
+					 need to check for updates manually.`
+				)
+				.clear();
+			useSettings.getState().setSettings({ enableUpdateCheck: true });
+		}
 	}
 
 	private async __displayUpdateCheckToggle(setting: Setting) {

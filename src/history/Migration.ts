@@ -1,6 +1,9 @@
 import ObsidianVerticalTabs from "src/main";
 import { STORAGE_KEYS } from "src/constants/StorageKeys";
 import { localStorageService } from "src/stores/LocalStorageService";
+import { metadataService } from "src/stores/TabMetadataService";
+import { DEFAULT_GROUP_TITLE } from "src/constants/Predefined";
+import { Identifier } from "src/models/VTWorkspace";
 
 export function _rawLocalStorage(
 	method: "getItem" | "setItem" | "removeItem",
@@ -62,5 +65,19 @@ export async function runPersistenceMigrations(
 
 	if (deviceID) {
 		_rawLocalStorage("removeItem", [DEVICE_ID_KEY]);
+	}
+
+	await migrateGroupTitles();
+}
+
+// Migrate old group titles from "view-state" in LocalStorageService to the metadata store.
+// This is temporary.
+async function migrateGroupTitles(): Promise<void> {
+	const entries =
+		localStorageService.migrate<[Identifier, string][]>("view-state");
+	if (!entries) return;
+	for (const [id, title] of entries) {
+		if (!title || title === DEFAULT_GROUP_TITLE) continue;
+		await metadataService.setGroupMetadata(id, { title });
 	}
 }
