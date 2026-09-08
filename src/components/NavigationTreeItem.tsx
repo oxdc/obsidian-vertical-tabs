@@ -1,5 +1,6 @@
 import { Platform, setIcon } from "obsidian";
 import {
+	CSSProperties,
 	MouseEvent,
 	TouchEvent,
 	ReactNode,
@@ -114,7 +115,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 	const style = {
 		minHeight: props.isCollapsed || isDragging ? 0 : height,
 		"--vt-custom-color": props.color,
-	} as React.CSSProperties;
+	} as CSSProperties;
 
 	if (Platform.isMobile) {
 		return (

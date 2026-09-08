@@ -1046,11 +1046,7 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			onChange: (value) => void this.toggleBackgroundMode(value),
 		});
 
-		this.displayUpdateCheckToggle(group);
-	}
-
-	private displayUpdateCheckToggle(parentEl: HTMLElement | SettingGroup) {
-		const toggle = this.createToggle(parentEl, {
+		this.createToggle(group, {
 			name: "Check for updates",
 			desc: "Automatically check for plugin updates when opening settings.",
 			value: this.plugin.settings.enableUpdateCheck ?? true,
@@ -1061,18 +1057,6 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				this.refresh();
 			},
 		});
-
-		if (this.isBetaVersion(this.plugin.manifest.version)) {
-			toggle
-				.setDisabled(true)
-				.setDesc(
-					`Update checking is managed by the Beta Helper for beta builds.
-					 If you don't have the Beta Helper plugin installed, you will
-					 need to check for updates manually.`
-				)
-				.clear();
-			useSettings.getState().setSettings({ enableUpdateCheck: true });
-		}
 	}
 
 	private async __displayUpdateCheckToggle(setting: Setting) {

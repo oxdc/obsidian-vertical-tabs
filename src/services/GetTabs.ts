@@ -22,7 +22,7 @@ function record(
 }
 
 export function getTabs(app: App): TabCache {
-	const content = createNewTabCache() as TabCache;
+	const content = createNewTabCache();
 	const workspace = app.workspace;
 	const { leftSplit, rightSplit, rootSplit, floatingSplit } = workspace;
 	managedLeafStore.getActions().refresh(app);

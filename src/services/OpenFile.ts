@@ -52,7 +52,7 @@ export function addMenuItemsToFileContextMenu(
 					void leaf.openFile(file);
 					window.setTimeout(() => {
 						const group = leaf.parent;
-						if (group) setGroupTitle(group.id, groupName);
+						if (group) void setGroupTitle(group.id, groupName);
 					});
 				}).open();
 			});

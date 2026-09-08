@@ -68,7 +68,5 @@ export function serializeSortStrategy(
 }
 
 export function deserializeSortStrategy(name: string): SortStrategy | null {
-	return name in sortStrategies
-		? sortStrategies[name as keyof typeof sortStrategies] ?? null
-		: null;
+	return name in sortStrategies ? (sortStrategies[name] as SortStrategy) : null;
 }

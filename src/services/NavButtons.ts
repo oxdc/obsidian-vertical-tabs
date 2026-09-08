@@ -66,15 +66,13 @@ export function cloneNavButtons(leaf: WorkspaceLeaf, app: App) {
 
 		// With pressing the mod key, open in new leaf and update its history
 		const targetLeaf = app.workspace.getLeaf("tab");
-		const currentState =
-			leaf.getHistoryState() as WorkspaceLeafHistoryState;
+		const currentState = leaf.getHistoryState();
 
 		// Use provided history state or get the recent state
-		const historyState =
-			(targetHistoryState as WorkspaceLeafHistoryState | null) ||
+		const historyState = (targetHistoryState ||
 			(direction === "back"
 				? leaf.history.backHistory.last()
-				: leaf.history.forwardHistory.first());
+				: leaf.history.forwardHistory.first())) as WorkspaceLeafHistoryState;
 		if (!historyState) return;
 
 		// Set the target state

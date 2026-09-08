@@ -154,7 +154,7 @@ export const Group = (props: GroupProps) => {
 		if (!group || !isEditing) return;
 		const trimmedTitle = ephemeralTitle.trim();
 		const finalTitle = trimmedTitle || undefined;
-		saveGroupMetadata(group.id, { title: finalTitle });
+		void saveGroupMetadata(group.id, { title: finalTitle });
 		setIsEditing(false);
 	};
 	const cancelEditing = () => {
@@ -195,13 +195,13 @@ export const Group = (props: GroupProps) => {
 	};
 	/* Commands - Customization */
 	const setColor = (color: string) =>
-		group && saveGroupMetadata(group.id, { color });
+		group && void saveGroupMetadata(group.id, { color });
 	const resetColor = () =>
-		group && saveGroupMetadata(group.id, { color: undefined });
+		group && void saveGroupMetadata(group.id, { color: undefined });
 	const setIcon = (icon: string) =>
-		group && saveGroupMetadata(group.id, { icon });
+		group && void saveGroupMetadata(group.id, { icon });
 	const resetIcon = () =>
-		group && saveGroupMetadata(group.id, { icon: undefined });
+		group && void saveGroupMetadata(group.id, { icon: undefined });
 
 	/* Effects */
 	// Apply the color to the group container
@@ -218,7 +218,7 @@ export const Group = (props: GroupProps) => {
 		const syncTitleFromBookmark = async () => {
 			const titleFromBookmark = await loadNameFromBookmark(app, group);
 			if (titleFromBookmark && title === DEFAULT_GROUP_TITLE) {
-				saveGroupMetadata(group.id, { title: titleFromBookmark });
+				void saveGroupMetadata(group.id, { title: titleFromBookmark });
 				if (!isEditing) setEphemeralTitle(titleFromBookmark);
 			}
 		};

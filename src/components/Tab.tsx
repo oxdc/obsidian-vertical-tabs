@@ -3,6 +3,7 @@ import { Fragment } from "react/jsx-runtime";
 import { IconButton } from "./IconButton";
 import {
 	DragEvent,
+	KeyboardEvent,
 	memo,
 	type MouseEvent as ReactMouseEvent,
 	useEffect,
@@ -294,7 +295,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 		}
 		// Set the group title
 		const historyTitle = deduplicateTitle(app, leaf);
-		setGroupTitle(group.id, `History: ${historyTitle}`);
+		void setGroupTitle(group.id, `History: ${historyTitle}`);
 		// Activate the new tab and lock the focus
 		workspace.setActiveLeaf(duplicatedLeaf, { focus: true });
 		lockFocusOnLeaf(app, duplicatedLeaf);
@@ -361,12 +362,13 @@ export const Tab = memo(function Tab(props: TabProps) {
 		});
 		menu.addItem((item) => {
 			item.setTitle("New group with name...").onClick(() => {
-				new GroupNameModal(app, async (groupName) => {
-					const movedLeaf = await moveTabToNewGroup(app, leaf.id);
-					if (!movedLeaf) return;
-					window.setTimeout(() => {
-						const group = movedLeaf.parent;
-						if (group) setGroupTitle(group.id, groupName);
+				new GroupNameModal(app, (groupName) => {
+					void moveTabToNewGroup(app, leaf.id).then((movedLeaf) => {
+						if (!movedLeaf) return;
+						window.setTimeout(() => {
+							const group = movedLeaf.parent;
+							if (group) void setGroupTitle(group.id, groupName);
+						});
 					});
 				}).open();
 			});
@@ -382,7 +384,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 		if (!isEditing) return;
 		const trimmedTitle = ephemeralTitle.trim();
 		const finalTitle = trimmedTitle || undefined;
-		saveTabMetadata(leaf.id, { title: finalTitle });
+		void saveTabMetadata(leaf.id, { title: finalTitle });
 		setIsEditing(false);
 	};
 	const cancelEditing = () => {
@@ -396,7 +398,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 			startEditing();
 		}
 	};
-	const handleTitleInputKeyDown = (e: React.KeyboardEvent) => {
+	const handleTitleInputKeyDown = (e: KeyboardEvent) => {
 		if (e.key === "Enter") {
 			commitTitle();
 		} else if (e.key === "Escape") {
@@ -405,10 +407,12 @@ export const Tab = memo(function Tab(props: TabProps) {
 	};
 
 	/* Commands - Customization */
-	const setColor = (color: string) => saveTabMetadata(leaf.id, { color });
-	const resetColor = () => saveTabMetadata(leaf.id, { color: undefined });
-	const setIcon = (icon: string) => saveTabMetadata(leaf.id, { icon });
-	const resetIcon = () => saveTabMetadata(leaf.id, { icon: undefined });
+	const setColor = (color: string) =>
+		void saveTabMetadata(leaf.id, { color });
+	const resetColor = () =>
+		void saveTabMetadata(leaf.id, { color: undefined });
+	const setIcon = (icon: string) => void saveTabMetadata(leaf.id, { icon });
+	const resetIcon = () => void saveTabMetadata(leaf.id, { icon: undefined });
 
 	/* Menu */
 	const buildMenu = (includeGroupViewControls = true) => {

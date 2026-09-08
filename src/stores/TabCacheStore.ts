@@ -36,7 +36,7 @@ export const createTabCacheEntry = (): TabCacheEntry => ({
 const factory = () => createTabCacheEntry();
 
 export type TabCache = DefaultRecord<Identifier, TabCacheEntry>;
-export const createNewTabCache = () => new DefaultRecord(factory) as TabCache;
+export const createNewTabCache = (): TabCache => new DefaultRecord(factory);
 
 interface TabCacheState {
 	content: TabCache;
@@ -140,7 +140,7 @@ export const tabCacheStore = useStoreWithActions<TabCacheStore>((set, get) => ({
 					sortStrategy,
 				};
 			});
-			get().actions.loadAllVisibleMetadata();
+			void get().actions.loadAllVisibleMetadata();
 		},
 		moveGroupBefore: (source, target) => {
 			if (source === target) return;
