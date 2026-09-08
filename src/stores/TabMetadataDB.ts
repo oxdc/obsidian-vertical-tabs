@@ -1,5 +1,6 @@
-import Dexie, { Table } from "dexie";
+import { Database, Table } from "src/stores/IndexedDBWrapper";
 import { Identifier } from "src/models/VTWorkspace";
+import { App } from "obsidian";
 
 export interface TabMetadata {
 	id: Identifier;
@@ -15,20 +16,25 @@ export interface GroupMetadata {
 	title?: string;
 }
 
-export class MetadataDatabase extends Dexie {
-	tabMetadata!: Table<TabMetadata, Identifier>;
-	groupMetadata!: Table<GroupMetadata, Identifier>;
+export const DB_STORE_NAMES = ["tabMetadata", "groupMetadata"] as const;
 
-	constructor() {
-		super("VerticalTabsMetadata");
-		this.version(1).stores({
-			tabMetadata: "id",
-			groupMetadata: "id",
-		});
-	}
+export function getDBName(app: App): string {
+	return `VerticalTabsMetadata-${app.appId}`;
 }
 
-export const db = new MetadataDatabase();
+export type VaultDB = Database & {
+	tabMetadata: Table<TabMetadata>;
+	groupMetadata: Table<GroupMetadata>;
+};
+
+export function createDB(app: App): VaultDB {
+	const dbInstance = new Database(getDBName(app));
+	dbInstance.version(1).stores({
+		tabMetadata: "id",
+		groupMetadata: "id",
+	});
+	return dbInstance as VaultDB;
+}
 
 export type Metadata = TabMetadata | GroupMetadata;
 export type PartialMetadata<T extends Metadata> = Partial<Omit<T, "id">>;

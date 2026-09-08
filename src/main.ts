@@ -43,6 +43,7 @@ import { removeAllTabControlButtons } from "./services/TabControlButtons";
 import { ViewEphemeralState } from "obsidian-typings";
 import { applyTabTitle } from "./services/Customization";
 import { localStorageService } from "./stores/LocalStorageService";
+import { metadataService } from "./stores/TabMetadataService";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -50,6 +51,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 	async onload() {
 		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
 		await this.loadSettings();
+		metadataService.setApp(this.app);
 		await this.setupLocalStorageService();
 		const disableOnThisDevice = loadDisableOnThisDevice();
 		if (disableOnThisDevice) {
