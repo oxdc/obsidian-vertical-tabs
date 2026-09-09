@@ -273,6 +273,24 @@ function getFilePathFromView(view: FileView): string | null {
 	}
 }
 
+async function findMatchingChild(
+	group: WorkspaceParent,
+	predicate: (child: WorkspaceLeaf) => boolean
+): Promise<WorkspaceLeaf | undefined> {
+	// intentionally a plain for-loop because the predicate needs loading the leaf beforehand.
+	for (const child of group.children) {
+		await loadDeferredLeaf(child);
+		if (predicate(child)) return child;
+	}
+	return undefined;
+}
+
+function matchPath(child: WorkspaceLeaf, item: BookmarkFileItem): boolean {
+	return (
+		isFileView(child.view) && getFilePathFromView(child.view) === item.path
+	);
+}
+
 async function checkContents(
 	items: BookmarkItem[],
 	group: WorkspaceParent
@@ -282,26 +300,15 @@ async function checkContents(
 	}
 	for (const item of items) {
 		if (item.type === "file") {
-			let matchLeaf = false;
-			for (const child of group.children) {
-				await loadDeferredLeaf(child);
-				const fileItem = item as BookmarkFileItem;
-				const viewPath = getFilePathFromView(child.view);
-				if (isFileView(child.view) && viewPath === fileItem.path) {
-					matchLeaf = true;
-					break;
-				}
-			}
+			const fileItem = item as BookmarkFileItem;
+			const matchLeaf = await findMatchingChild(group, (child) =>
+				matchPath(child, fileItem)
+			);
 			if (!matchLeaf) return false;
 		} else if (item.type === "graph") {
-			let matchLeaf = false;
-			for (const child of group.children) {
-				await loadDeferredLeaf(child);
-				if (isGraphView(child.view)) {
-					matchLeaf = true;
-					break;
-				}
-			}
+			const matchLeaf = await findMatchingChild(group, (child) =>
+				isGraphView(child.view)
+			);
 			if (!matchLeaf) return false;
 		} else {
 			return false;

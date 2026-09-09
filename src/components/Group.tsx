@@ -20,6 +20,7 @@ import {
 	loadNameFromBookmark,
 } from "src/models/VTBookmark";
 import { tabCacheStore } from "src/stores/TabCacheStore";
+import { metadataService } from "src/stores/TabMetadataService";
 import { LinkedFolder } from "src/services/OpenFolder";
 import { LinkedGroupButton } from "./LinkedGroupButton";
 import {
@@ -215,12 +216,17 @@ export const Group = (props: GroupProps) => {
 	// Sync title from bookmark on mount and when group changes
 	useEffect(() => {
 		if (!group) return;
+		const groupId = group.id;
+		// Always use metadataService directly for the latest group title.
+		const hasCustomTitle = async () =>
+			!!(await metadataService.getGroupMetadata(groupId))?.title;
 		const syncTitleFromBookmark = async () => {
+			if (await hasCustomTitle()) return;
 			const titleFromBookmark = await loadNameFromBookmark(app, group);
-			if (titleFromBookmark && title === DEFAULT_GROUP_TITLE) {
-				void saveGroupMetadata(group.id, { title: titleFromBookmark });
-				if (!isEditing) setEphemeralTitle(titleFromBookmark);
-			}
+			if (!titleFromBookmark) return;
+			if (await hasCustomTitle()) return;
+			void saveGroupMetadata(groupId, { title: titleFromBookmark });
+			if (!isEditing) setEphemeralTitle(titleFromBookmark);
 		};
 		const task = window.setTimeout(
 			() => void syncTitleFromBookmark(),
