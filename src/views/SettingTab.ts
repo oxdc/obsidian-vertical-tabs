@@ -12,6 +12,7 @@ import {
 	SliderComponent,
 } from "obsidian";
 import ObsidianVerticalTabs from "../main";
+import { ResetModal } from "./ResetModal";
 import {
 	loadDisableOnThisDevice,
 	useSettings,
@@ -37,6 +38,7 @@ import {
 	TabClosingBehavior,
 	TabClosingBehaviorOptions,
 } from "src/services/CloseTabs";
+import { runIndexedDBDiagnostic } from "src/services/IndexedDBDiagnostic";
 
 interface ToggleProps {
 	name: string;
@@ -96,6 +98,9 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	plugin: ObsidianVerticalTabs;
 	currentNavigationPreset: string | null = null;
 	debugToolsVisible = false;
+	idbDiagnosticLog = "";
+	idbDiagnosticOutputEl: HTMLTextAreaElement | null = null;
+	idbDiagnosticOutputContainer: HTMLElement | null = null;
 
 	constructor(app: App, plugin: ObsidianVerticalTabs) {
 		super(app, plugin);
@@ -1204,10 +1209,38 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				this.containerEl.scrollHeight - this.containerEl.clientHeight;
 		};
 
+		const diagnosticOutputEl = containerEl.createDiv({
+			cls: "idb-diagnostic-output is-hidden",
+		});
+		this.idbDiagnosticOutputContainer = diagnosticOutputEl;
+		this.idbDiagnosticOutputEl = diagnosticOutputEl.createEl("textarea", {
+			attr: { readonly: "true", spellcheck: "false" },
+			cls: "idb-diagnostic-log",
+		});
+		const diagnosticActionsEl = diagnosticOutputEl.createDiv({
+			cls: "idb-diagnostic-actions",
+		});
+		this.createDebugButton(
+			diagnosticActionsEl,
+			{ icon: "copy", text: "Copy diagnostic log" },
+			() => void this.copyIDBDiagnosticLog()
+		);
+		this.createDebugButton(
+			diagnosticActionsEl,
+			{ icon: "x", text: "Dismiss" },
+			() => this.dismissIDBDiagnostic()
+		);
+
 		this.createDebugButton(
 			containerEl,
 			{ icon: "copy", text: "Copy plugin settings" },
 			() => void this.copyPluginSettingsToClipboard()
+		);
+
+		this.createDebugButton(
+			containerEl,
+			{ icon: "database", text: "Diagnose IndexedDB" },
+			() => void this.runIndexedDBDiagnostic()
 		);
 
 		this.createDebugButton(
@@ -1242,6 +1275,17 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				countdownSeconds: 5,
 			},
 			() => this.app.commands.executeCommandById("app:reload")
+		);
+
+		this.createConfirmationButton(
+			containerEl,
+			{
+				icon: "eraser",
+				text: "Reset data and settings",
+				destructive: true,
+				countdownSeconds: 5,
+			},
+			() => new ResetModal(this.app, this.plugin).open()
 		);
 	}
 
@@ -1326,6 +1370,30 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 		};
 
 		return { buttonEl, iconEl, textEl };
+	}
+
+	private async runIndexedDBDiagnostic() {
+		const lines: string[] = [];
+		const log = (...args: unknown[]) =>
+			lines.push(args.map(String).join(" "));
+		await runIndexedDBDiagnostic(this.app, log);
+		this.idbDiagnosticLog = lines.join("\n");
+		if (this.idbDiagnosticOutputEl)
+			this.idbDiagnosticOutputEl.value = this.idbDiagnosticLog;
+		this.idbDiagnosticOutputContainer?.removeClass("is-hidden");
+		this.containerEl.scrollTop =
+			this.containerEl.scrollHeight - this.containerEl.clientHeight;
+	}
+
+	private dismissIDBDiagnostic() {
+		this.idbDiagnosticOutputContainer?.addClass("is-hidden");
+	}
+
+	private async copyIDBDiagnosticLog() {
+		if (!this.idbDiagnosticLog) return;
+		await navigator.clipboard.writeText(this.idbDiagnosticLog);
+		new Notice("Diagnostic log copied to clipboard");
+		this.idbDiagnosticOutputContainer?.addClass("is-hidden");
 	}
 
 	private async copyPluginSettingsToClipboard() {

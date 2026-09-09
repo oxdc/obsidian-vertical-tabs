@@ -127,6 +127,42 @@
 			display: none;
 		}
 
+		.idb-diagnostic-output {
+			display: flex;
+			flex-direction: column;
+			align-items: stretch;
+			width: 100%;
+			gap: var(--size-4-2);
+			margin-bottom: var(--size-4-4);
+
+			&.is-hidden {
+				display: none;
+			}
+
+			.idb-diagnostic-log {
+				width: 100%;
+				min-height: 12em;
+				max-height: 24em;
+				resize: vertical;
+				font-family: monospace;
+				font-size: var(--font-ui-smallest);
+				line-height: 1.4;
+				padding: var(--size-4-2);
+				border-radius: var(--radius-m);
+				border: 1px solid var(--background-modifier-border);
+				background-color: var(--background-primary);
+				color: var(--text-normal);
+			}
+
+			.idb-diagnostic-actions {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: var(--size-4-2);
+			}
+		}
+
 		button {
 			display: flex;
 			gap: var(--size-4-1) !important;
