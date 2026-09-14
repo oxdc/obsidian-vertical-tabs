@@ -1,6 +1,6 @@
 import { Identifier } from "src/models/VTWorkspace";
 import { Table } from "src/stores/IndexedDBWrapper";
-import { App } from "obsidian";
+import { App, Notice } from "obsidian";
 
 import {
 	createDB,
@@ -82,8 +82,18 @@ class MetadataService {
 		return this.db;
 	}
 
-	private handleError(operation: string, error: unknown) {
+	private hasNotifiedError = false;
+
+	private handleError(operation: string, error: unknown, isMutation = false) {
 		console.error(`[VerticalTabs] IndexedDB ${operation} failed:`, error);
+		if (isMutation && !this.hasNotifiedError) {
+			this.hasNotifiedError = true;
+			new Notice(
+				"Vertical Tabs: failed to save tab/group customization to the database. " +
+					"Changes may be lost after restart. See the developer console for details.",
+				0
+			);
+		}
 	}
 
 	private async get<T extends Metadata>(
@@ -143,7 +153,7 @@ class MetadataService {
 			await type.put(fullMetadata);
 			return fullMetadata;
 		} catch (error) {
-			this.handleError("write", error);
+			this.handleError("write", error, true);
 			return undefined;
 		}
 	}
@@ -157,7 +167,7 @@ class MetadataService {
 		try {
 			await type.delete(id);
 		} catch (error) {
-			this.handleError("delete", error);
+			this.handleError("delete", error, true);
 		}
 	}
 
