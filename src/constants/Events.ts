@@ -9,4 +9,10 @@ export const EVENTS = {
 	GROUP_VIEW_CHANGE: "vertical-tabs:group-view-change",
 	EPHEMERAL_TOGGLE: "vertical-tabs:ephemeral-toggle",
 	ALT_KEY_PRESSED: "vertical-tabs:alt-key-pressed",
+	RENDER_TAB_ICON: "vertical-tabs:render-tab-icon",
+	RENDER_GROUP_ICON: "vertical-tabs:render-group-icon",
+	REQUEST_ICON_REFRESH: "vertical-tabs:request-icon-refresh",
+	ON_TAB_MENU: "vertical-tabs:on-tab-menu",
+	ON_TABS_MENU: "vertical-tabs:on-tabs-menu",
+	ON_GROUP_MENU: "vertical-tabs:on-group-menu",
 } as const;

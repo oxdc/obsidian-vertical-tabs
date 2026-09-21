@@ -5,6 +5,7 @@ import {
 	MouseEvent,
 	ReactNode,
 	useEffect,
+	useRef,
 	useState,
 } from "react";
 import { IconButton } from "./IconButton";
@@ -12,7 +13,7 @@ import { useViewState } from "src/models/ViewState";
 import { useApp, useSettings } from "src/models/PluginContext";
 import { GroupType } from "src/models/VTWorkspace";
 import { moveTabToEnd } from "src/services/MoveTab";
-import { Menu, WorkspaceParent } from "obsidian";
+import { WorkspaceParent } from "obsidian";
 import { EVENTS } from "src/constants/Events";
 import { DEFAULT_GROUP_TITLE } from "src/constants/Predefined";
 import {
@@ -45,6 +46,7 @@ import {
 	removeColor,
 } from "src/services/Customization";
 import { IconSelectionModal } from "src/views/IconSelectionModal";
+import { createVTMenu } from "src/services/Menu";
 
 interface GroupProps {
 	type: GroupType;
@@ -99,6 +101,7 @@ export const Group = (props: GroupProps) => {
 		(state) => !!group && state.hiddenGroups.includes(group.id)
 	);
 	const lastActiveLeaf = useViewState((state) => state.latestActiveLeaf);
+	const activeFileTick = useViewState((state) => state.activeFileTick);
 
 	/* Internal states (managed by the component) */
 	const [isEditing, setIsEditing] = useState(false);
@@ -107,6 +110,7 @@ export const Group = (props: GroupProps) => {
 	const [viewType, setViewType] = useState<GroupViewType>(() =>
 		identifyGroupViewType(group)
 	);
+	const ref = useRef<HTMLDivElement>(null);
 
 	/* Derived states */
 	const isSidebar =
@@ -126,6 +130,15 @@ export const Group = (props: GroupProps) => {
 	const shouldShowNewTabButton =
 		newTabButtonPlacement === NewTabButtonPlacement.GroupToolbar ||
 		newTabButtonPlacement === NewTabButtonPlacement.Both;
+	// prettier-ignore
+	const iconRenderFn = (iconEl: HTMLElement) => {
+		try {
+			if (group && ref.current) workspace.trigger(EVENTS.RENDER_GROUP_ICON, group, iconEl, ref.current);
+		} catch (e) {
+			console.error(e);
+		}
+	};
+	const onIconRender = group && !customIcon ? iconRenderFn : undefined;
 
 	/* Commands */
 	/* Commands - Group control */
@@ -286,158 +299,182 @@ export const Group = (props: GroupProps) => {
 	}, [group]);
 
 	/* Menu */
-	const menu = new Menu();
-	// Customization
-	menu.addItem((item) => {
-		item.setSection("customization")
-			.setTitle(isHidden ? "Show" : "Hide")
-			.onClick(toggleHidden);
-	});
-	menu.addItem((item) => {
-		item.setSection("customization")
-			.setTitle("Rename")
-			.onClick(handleTitleEditToggle);
-	});
-	menu.addItem((item) => {
-		item.setSection("customization").setTitle("Change color");
-		const submenu = item.setSubmenu();
-		addColorOptionsToMenu(submenu, setColor, resetColor);
-	});
-	menu.addItem((item) => {
-		item.setSection("customization")
-			.setTitle("Change icon")
-			.onClick(() => {
-				new IconSelectionModal(app, setIcon, resetIcon).open();
-			});
-	});
-	// Group view
-	menu.addSeparator();
-	menu.addItem((item) => {
-		item.setSection("group-view")
-			.setTitle("Default view")
-			.setDisabled(viewType === GroupViewType.Default)
-			.onClick(() => setGroupViewType(group, GroupViewType.Default));
-	});
-	menu.addItem((item) => {
-		item.setSection("group-view")
-			.setTitle("Continuous view")
-			.setDisabled(viewType === GroupViewType.ContinuousView)
-			.onClick(() =>
-				setGroupViewType(group, GroupViewType.ContinuousView)
-			);
-	});
-	menu.addItem((item) => {
-		item.setSection("group-view")
-			.setTitle("Column view")
-			.setDisabled(viewType === GroupViewType.ColumnView)
-			.onClick(() => setGroupViewType(group, GroupViewType.ColumnView));
-	});
-	menu.addItem((item) => {
-		item.setSection("group-view")
-			.setTitle("Mission control view")
-			.setDisabled(viewType === GroupViewType.MissionControlView)
-			.onClick(() =>
-				setGroupViewType(group, GroupViewType.MissionControlView)
-			);
-	});
-	// Tab control
-	menu.addSeparator();
-	menu.addItem((item) => {
-		item.setSection("control")
-			.setTitle("Bookmark all")
-			.onClick(() => {
-				if (group) void createBookmarkForGroup(app, group, title);
-			});
-	});
-	menu.addItem((item) => {
-		item.setSection("control")
-			.setTitle("Bookmark and close all")
-			.onClick(async () => {
-				if (group) {
-					await createBookmarkForGroup(app, group, title);
-					group.detach();
-				}
-			});
-	});
-	menu.addItem((item) => {
-		item.setSection("control")
-			.setTitle("Close all")
-			.onClick(() => group?.detach());
-	});
-	// Wiki links
-	menu.addSeparator();
-	menu.addItem((item) => {
-		item.setSection("wiki-link")
-			.setTitle("Copy as internal links")
-			.onClick(() => {
-				if (!group) return;
-				const links = group.children.map((child) =>
-					getWikiLinkFromLeaf(app, child)
+	const buildMenu = () => {
+		const menu = createVTMenu("vt-group-menu");
+		// Customization
+		menu.addItem((item) => {
+			item.setSection("customization")
+				.setTitle(isHidden ? "Show" : "Hide")
+				.onClick(toggleHidden);
+			item.VTMenuAction = "hide";
+		});
+		menu.addItem((item) => {
+			item.setSection("customization")
+				.setTitle("Rename")
+				.onClick(handleTitleEditToggle);
+			item.VTMenuAction = "rename";
+		});
+		menu.addItem((item) => {
+			item.setSection("customization").setTitle("Change color");
+			const submenu = item.setSubmenu();
+			addColorOptionsToMenu(submenu, setColor, resetColor);
+			item.VTMenuAction = "set-color";
+		});
+		menu.addItem((item) => {
+			item.setSection("customization")
+				.setTitle("Change icon")
+				.onClick(() => {
+					new IconSelectionModal(app, setIcon, resetIcon).open();
+				});
+			item.VTMenuAction = "set-icon";
+		});
+		// Group view
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("group-view")
+				.setTitle("Default view")
+				.setDisabled(viewType === GroupViewType.Default)
+				.onClick(() => setGroupViewType(group, GroupViewType.Default));
+			item.VTMenuAction = "default-view";
+		});
+		menu.addItem((item) => {
+			item.setSection("group-view")
+				.setTitle("Continuous view")
+				.setDisabled(viewType === GroupViewType.ContinuousView)
+				.onClick(() =>
+					setGroupViewType(group, GroupViewType.ContinuousView)
 				);
-				if (links.length > 0)
-					void navigator.clipboard.writeText(links.join("\n"));
-			});
-	});
-	menu.addItem((item) => {
-		item.setSection("wiki-link")
-			.setTitle("Copy as list")
-			.onClick(() => {
-				if (!group) return;
-				const links = group.children.map(
-					(child) => "- " + getWikiLinkFromLeaf(app, child)
+			item.VTMenuAction = "continuous-view";
+		});
+		menu.addItem((item) => {
+			item.setSection("group-view")
+				.setTitle("Column view")
+				.setDisabled(viewType === GroupViewType.ColumnView)
+				.onClick(() =>
+					setGroupViewType(group, GroupViewType.ColumnView)
 				);
-				if (links.length > 0)
-					void navigator.clipboard.writeText(links.join("\n"));
-			});
-	});
-	menu.addItem((item) => {
-		item.setSection("wiki-link")
-			.setTitle("Copy as embeds")
-			.onClick(() => {
-				if (!group) return;
-				const links = group.children.map((child) =>
-					getEmbedLinkFromLeaf(app, child)
+			item.VTMenuAction = "column-view";
+		});
+		menu.addItem((item) => {
+			item.setSection("group-view")
+				.setTitle("Mission control view")
+				.setDisabled(viewType === GroupViewType.MissionControlView)
+				.onClick(() =>
+					setGroupViewType(group, GroupViewType.MissionControlView)
 				);
-				if (links.length > 0)
-					void navigator.clipboard.writeText(links.join("\n"));
-			});
-	});
-	menu.addItem((item) => {
-		item.setSection("wiki-link")
-			.setTitle("Insert as internal links")
-			.onClick(() => {
-				if (!group) return;
-				const links = group.children.map((child) =>
-					getWikiLinkFromLeaf(app, child)
-				);
-				if (links.length > 0 && lastActiveLeaf)
-					insertToEditor(app, links.join("\n"), lastActiveLeaf);
-			});
-	});
-	menu.addItem((item) => {
-		item.setSection("wiki-link")
-			.setTitle("Insert as list")
-			.onClick(() => {
-				if (!group) return;
-				const links = group.children.map(
-					(child) => "- " + getWikiLinkFromLeaf(app, child)
-				);
-				if (links.length > 0 && lastActiveLeaf)
-					insertToEditor(app, links.join("\n"), lastActiveLeaf);
-			});
-	});
-	menu.addItem((item) => {
-		item.setSection("wiki-link")
-			.setTitle("Insert as embeds")
-			.onClick(() => {
-				if (!group) return;
-				const links = group.children.map((child) =>
-					getEmbedLinkFromLeaf(app, child)
-				);
-				if (links.length > 0 && lastActiveLeaf)
-					insertToEditor(app, links.join("\n"), lastActiveLeaf);
-			});
-	});
+			item.VTMenuAction = "mission-control-view";
+		});
+		// Tab control
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("control")
+				.setTitle("Bookmark all")
+				.onClick(() => {
+					if (group) void createBookmarkForGroup(app, group, title);
+				});
+			item.VTMenuAction = "bookmark-all";
+		});
+		menu.addItem((item) => {
+			item.setSection("control")
+				.setTitle("Bookmark and close all")
+				.onClick(async () => {
+					if (group) {
+						await createBookmarkForGroup(app, group, title);
+						group.detach();
+					}
+				});
+			item.VTMenuAction = "bookmark-and-close-all";
+		});
+		menu.addItem((item) => {
+			item.setSection("control")
+				.setTitle("Close all")
+				.onClick(() => group?.detach());
+			item.VTMenuAction = "close-all";
+		});
+		// Wiki links
+		menu.addSeparator();
+		menu.addItem((item) => {
+			item.setSection("wiki-link")
+				.setTitle("Copy as internal links")
+				.onClick(() => {
+					if (!group) return;
+					const links = group.children.map((child) =>
+						getWikiLinkFromLeaf(app, child)
+					);
+					if (links.length > 0)
+						void navigator.clipboard.writeText(links.join("\n"));
+				});
+			item.VTMenuAction = "copy-as-internal-links";
+		});
+		menu.addItem((item) => {
+			item.setSection("wiki-link")
+				.setTitle("Copy as list")
+				.onClick(() => {
+					if (!group) return;
+					const links = group.children.map(
+						(child) => "- " + getWikiLinkFromLeaf(app, child)
+					);
+					if (links.length > 0)
+						void navigator.clipboard.writeText(links.join("\n"));
+				});
+			item.VTMenuAction = "copy-as-list";
+		});
+		menu.addItem((item) => {
+			item.setSection("wiki-link")
+				.setTitle("Copy as embeds")
+				.onClick(() => {
+					if (!group) return;
+					const links = group.children.map((child) =>
+						getEmbedLinkFromLeaf(app, child)
+					);
+					if (links.length > 0)
+						void navigator.clipboard.writeText(links.join("\n"));
+				});
+			item.VTMenuAction = "copy-as-embeds";
+		});
+		menu.addItem((item) => {
+			item.setSection("wiki-link")
+				.setTitle("Insert as internal links")
+				.onClick(() => {
+					if (!group) return;
+					const links = group.children.map((child) =>
+						getWikiLinkFromLeaf(app, child)
+					);
+					if (links.length > 0 && lastActiveLeaf)
+						insertToEditor(app, links.join("\n"), lastActiveLeaf);
+				});
+			item.VTMenuAction = "insert-as-internal-links";
+		});
+		menu.addItem((item) => {
+			item.setSection("wiki-link")
+				.setTitle("Insert as list")
+				.onClick(() => {
+					if (!group) return;
+					const links = group.children.map(
+						(child) => "- " + getWikiLinkFromLeaf(app, child)
+					);
+					if (links.length > 0 && lastActiveLeaf)
+						insertToEditor(app, links.join("\n"), lastActiveLeaf);
+				});
+			item.VTMenuAction = "insert-as-list";
+		});
+		menu.addItem((item) => {
+			item.setSection("wiki-link")
+				.setTitle("Insert as embeds")
+				.onClick(() => {
+					if (!group) return;
+					const links = group.children.map((child) =>
+						getEmbedLinkFromLeaf(app, child)
+					);
+					if (links.length > 0 && lastActiveLeaf)
+						insertToEditor(app, links.join("\n"), lastActiveLeaf);
+				});
+			item.VTMenuAction = "insert-as-embeds";
+		});
+
+		if (group) workspace.trigger(EVENTS.ON_GROUP_MENU, menu, group);
+		return menu;
+	};
 
 	const titleEditor = (
 		<input
@@ -486,16 +523,19 @@ export const Group = (props: GroupProps) => {
 
 	return (
 		<NavigationTreeItem
+			ref={ref}
 			id={isSidebar ? null : group?.id ?? null}
 			isTab={false}
 			isLinkedGroup={!!linkedFolder}
 			title={isEditing ? titleEditor : title}
 			isRenaming={isEditing}
 			onClick={toggleCollapsed}
-			onContextMenu={(e) => menu.showAtMouseEvent(e.nativeEvent)}
+			onContextMenu={(e) => buildMenu().showAtMouseEvent(e.nativeEvent)}
 			dataType={type}
 			toolbar={toolbar}
 			icon={customIcon ?? "right-triangle"}
+			iconRevision={activeFileTick}
+			onIconRender={onIconRender}
 			isCollapsed={isCollapsed && !isSingleGroupInView} // Single group should not be collapsed
 			isSidebar={isSidebar}
 			isSingleGroup={isSingleGroupInView}

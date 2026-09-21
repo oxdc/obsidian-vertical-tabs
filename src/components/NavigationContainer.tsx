@@ -50,6 +50,7 @@ export const NavigationContainer = () => {
 	const { refresh, sort } = tabCacheStore.getActions();
 	const {
 		setLatestActiveLeaf,
+		bumpActiveFileTick,
 		refreshToggleButtons,
 		lockFocus,
 		forgetNonephemeralTabs,
@@ -168,6 +169,14 @@ export const NavigationContainer = () => {
 		plugin.registerEvent(workspace.on("layout-change", autoRefresh));
 		plugin.registerEvent(
 			workspace.on("active-leaf-change", onActiveLeafChange)
+		);
+		plugin.registerEvent(
+			workspace.on("file-open", () => bumpActiveFileTick())
+		);
+		plugin.registerEvent(
+			workspace.on(EVENTS.REQUEST_ICON_REFRESH, () =>
+				bumpActiveFileTick()
+			)
 		);
 		plugin.registerEvent(
 			workspace.on("layout-change", () => {

@@ -1,10 +1,10 @@
 import { Platform, setIcon } from "obsidian";
 import {
 	CSSProperties,
+	forwardRef,
 	MouseEvent,
 	TouchEvent,
 	ReactNode,
-	RefObject,
 	useEffect,
 	useRef,
 	useState,
@@ -18,7 +18,6 @@ import { ViewCueIndex } from "src/models/ViewState";
 interface NavigationTreeItemProps {
 	id: Identifier | null;
 	index?: ViewCueIndex;
-	ref?: RefObject<HTMLDivElement>;
 	title: string | ReactNode;
 	icon: string;
 	webviewIcon?: string;
@@ -51,9 +50,14 @@ interface NavigationTreeItemProps {
 	selectedCount?: number;
 	classNames?: Record<string, boolean>;
 	color?: string;
+	onIconRender?: (iconEl: HTMLElement) => void;
+	iconRevision?: number;
 }
 
-export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
+export const NavigationTreeItem = forwardRef<
+	HTMLDivElement,
+	NavigationTreeItemProps
+>((props, ref) => {
 	const { attributes, listeners, setNodeRef, isDragging, isOver } =
 		useSortable({
 			id: props.id ?? "",
@@ -103,8 +107,9 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 			} else {
 				setIcon(iconEl.current, props.icon);
 			}
+			props.onIconRender?.(iconEl.current);
 		}
-	}, [props.icon, props?.webviewIcon]);
+	}, [props.icon, props?.webviewIcon, props.iconRevision]);
 
 	useEffect(() => {
 		if (props.children && props.children instanceof Array) {
@@ -126,7 +131,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				data-selected-count={props.selectedCount}
 				data-color={props.color}
 				style={style}
-				ref={props.ref}
+				ref={ref}
 			>
 				<div
 					className={toClassName(selfElClasses)}
@@ -176,7 +181,7 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 				data-selected-count={props.selectedCount}
 				data-color={props.color}
 				style={style}
-				ref={props.ref}
+				ref={ref}
 			>
 				<div
 					className={toClassName(selfElClasses)}
@@ -209,4 +214,4 @@ export const NavigationTreeItem = (props: NavigationTreeItemProps) => {
 			</div>
 		);
 	}
-};
+});

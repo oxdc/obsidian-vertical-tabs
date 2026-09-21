@@ -74,6 +74,8 @@ import {
 	removeIcon,
 } from "src/services/Customization";
 import { getGroupTitle, setGroupTitle } from "src/services/Customization";
+import { EVENTS } from "src/constants/Events";
+import { createVTMenu } from "src/services/Menu";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -141,6 +143,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 	} = useTabSelection();
 	const isSelected = isTabSelected(leaf.id);
 	const hasAnySelectedTabs = hasSelectedTabs();
+	const activeFileTick = useViewState((state) => state.activeFileTick);
 
 	/* Derived states */
 	const isActiveTab = lastActiveLeaf?.id === leaf.id;
@@ -149,6 +152,16 @@ export const Tab = memo(function Tab(props: TabProps) {
 	const displayTitle = customTitle || volatileTitle || deduplicatedTitle;
 	const title = isEditing ? ephemeralTitle : displayTitle;
 	const shouldShowHandle = isHovered && hasAltKeyPressed;
+	// prettier-ignore
+	const iconRenderFn = (iconEl: HTMLElement) => {
+		try {
+			if (ref.current) workspace.trigger(EVENTS.RENDER_TAB_ICON, leaf, iconEl, ref.current);
+		} catch (e) {
+			console.error(e);
+		}
+	};
+	// prettier-ignore
+	const onIconRender = !customIcon && !shouldShowHandle && !webviewIcon ? iconRenderFn : undefined;
 
 	/* Commands */
 	/* Commands - Tab control */
@@ -318,9 +331,18 @@ export const Tab = memo(function Tab(props: TabProps) {
 			target instanceof WorkspaceLeaf
 				? () => resetZoom(target.view)
 				: () => target.zoomReset();
-		menu.addItem((item) => item.setTitle("Zoom in").onClick(_ZoomIn));
-		menu.addItem((item) => item.setTitle("Zoom out").onClick(_ZoomOut));
-		menu.addItem((item) => item.setTitle("Reset zoom").onClick(_ResetZoom));
+		menu.addItem((item) => {
+			item.setTitle("Zoom in").onClick(_ZoomIn);
+			item.VTMenuAction = "zoom-in";
+		});
+		menu.addItem((item) => {
+			item.setTitle("Zoom out").onClick(_ZoomOut);
+			item.VTMenuAction = "zoom-out";
+		});
+		menu.addItem((item) => {
+			item.setTitle("Reset zoom").onClick(_ResetZoom);
+			item.VTMenuAction = "reset-zoom";
+		});
 	};
 
 	/* Commands - Webview */
@@ -359,6 +381,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 			item.setTitle("New group").onClick(() =>
 				moveTabToNewGroup(app, leaf.id)
 			);
+			item.VTMenuAction = "new-group";
 		});
 		menu.addItem((item) => {
 			item.setTitle("New group with name...").onClick(() => {
@@ -372,6 +395,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 					});
 				}).open();
 			});
+			item.VTMenuAction = "new-group-with-name";
 		});
 	};
 
@@ -418,13 +442,14 @@ export const Tab = memo(function Tab(props: TabProps) {
 	const buildMenu = (includeGroupViewControls = true) => {
 		if (hasAnySelectedTabs) return; // TODO: multi-select menu
 		/* Menu */
-		const menu = new Menu();
+		const menu = createVTMenu("vt-tab-menu");
 		// Bookmark
 		// TODO: Add customizable title support for bookmarks
 		menu.addItem((item) => {
 			item.setSection("bookmark")
 				.setTitle("Bookmark")
 				.onClick(() => createBookmarkForLeaf(app, leaf, title));
+			item.VTMenuAction = "bookmark";
 		});
 		menu.addItem((item) => {
 			item.setSection("bookmark")
@@ -433,6 +458,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 					await createBookmarkForLeaf(app, leaf, title);
 					leaf.detach();
 				});
+			item.VTMenuAction = "bookmark-and-close";
 		});
 		// Show group view options when there's a single group with visible tabs
 		// and group view controls are enabled
@@ -445,6 +471,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 					.onClick(() =>
 						setGroupViewType(leaf.parent, GroupViewType.Default)
 					);
+				item.VTMenuAction = "default-view";
 			});
 			menu.addItem((item) => {
 				item.setSection("group-view")
@@ -456,6 +483,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 							GroupViewType.ContinuousView
 						)
 					);
+				item.VTMenuAction = "continuous-view";
 			});
 			menu.addItem((item) => {
 				item.setSection("group-view")
@@ -464,6 +492,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 					.onClick(() =>
 						setGroupViewType(leaf.parent, GroupViewType.ColumnView)
 					);
+				item.VTMenuAction = "column-view";
 			});
 			menu.addItem((item) => {
 				item.setSection("group-view")
@@ -475,6 +504,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 							GroupViewType.MissionControlView
 						)
 					);
+				item.VTMenuAction = "mission-control-view";
 			});
 		}
 		// Tab control
@@ -484,6 +514,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 				.setTitle("Close")
 				.setDisabled(isPinned)
 				.onClick(() => leaf.detach());
+			item.VTMenuAction = "close";
 		});
 		menu.addItem((item) => {
 			item.setSection("close")
@@ -492,22 +523,26 @@ export const Tab = memo(function Tab(props: TabProps) {
 					closeOthersInGroup(app, leaf);
 					makeLeafNonEphemeral(leaf);
 				});
+			item.VTMenuAction = "close-others";
 		});
 		menu.addItem((item) => {
 			item.setSection("close")
 				.setTitle("Close tabs to the top")
 				.onClick(() => closeTabsToTopInGroup(app, leaf));
+			item.VTMenuAction = "close-tabs-to-top";
 		});
 		menu.addItem((item) => {
 			item.setSection("close")
 				.setTitle("Close tabs to the bottom")
 				.onClick(() => closeTabsToBottomInGroup(app, leaf));
+			item.VTMenuAction = "close-tabs-to-bottom";
 		});
 		menu.addItem((item) => {
 			item.setSection("close")
 				.setTitle("Close all")
 				.setDisabled(isPinned)
 				.onClick(() => leaf.parent.detach());
+			item.VTMenuAction = "close-all";
 		});
 		// Pinning
 		menu.addSeparator();
@@ -515,6 +550,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 			item.setSection("pin")
 				.setTitle(isPinned ? "Unpin" : "Pin")
 				.onClick(togglePinned);
+			item.VTMenuAction = "pin";
 		});
 		// Customization
 		menu.addSeparator();
@@ -522,11 +558,13 @@ export const Tab = memo(function Tab(props: TabProps) {
 			item.setSection("customization")
 				.setTitle("Rename")
 				.onClick(handleTitleEditToggle);
+			item.VTMenuAction = "rename";
 		});
 		menu.addItem((item) => {
 			item.setSection("customization").setTitle("Change color");
 			const submenu = item.setSubmenu();
 			addColorOptionsToMenu(submenu, setColor, resetColor);
+			item.VTMenuAction = "set-color";
 		});
 		menu.addItem((item) => {
 			item.setSection("customization")
@@ -534,6 +572,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 				.onClick(() => {
 					new IconSelectionModal(app, setIcon, resetIcon).open();
 				});
+			item.VTMenuAction = "set-icon";
 		});
 		// Workspace control
 		menu.addSeparator();
@@ -544,6 +583,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 					await workspace.duplicateLeaf(leaf, "window");
 					leaf.detach();
 				});
+			item.VTMenuAction = "move-to-new-window";
 		});
 		menu.addItem((item) => {
 			item.setSection("leaf")
@@ -552,6 +592,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 					() =>
 						void workspace.duplicateLeaf(leaf, "split", "vertical")
 				);
+			item.VTMenuAction = "split-right";
 		});
 		menu.addItem((item) => {
 			item.setSection("leaf")
@@ -564,6 +605,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 							"horizontal"
 						)
 				);
+			item.VTMenuAction = "split-down";
 		});
 		menu.addItem((item) => {
 			item.setSection("leaf")
@@ -571,12 +613,14 @@ export const Tab = memo(function Tab(props: TabProps) {
 				.onClick(() => {
 					void workspace.duplicateLeaf(leaf, "window");
 				});
+			item.VTMenuAction = "open-in-new-window";
 		});
 		if (Platform.isDesktop) {
 			menu.addItem((item) => {
 				item.setSection("leaf").setTitle("Move this tab to...");
 				const submenu = item.setSubmenu();
 				addMoveOptionsToMenu(submenu);
+				item.VTMenuAction = "move-tab";
 			});
 		} else {
 			menu.addSeparator();
@@ -591,6 +635,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 					const link = getWikiLinkFromLeaf(app, leaf);
 					if (link) void navigator.clipboard.writeText(link);
 				});
+			item.VTMenuAction = "copy-as-internal-link";
 		});
 		menu.addItem((item) => {
 			item.setSection("wiki-link")
@@ -599,6 +644,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 					const link = getEmbedLinkFromLeaf(app, leaf);
 					if (link) void navigator.clipboard.writeText(link);
 				});
+			item.VTMenuAction = "copy-as-embed";
 		});
 		menu.addItem((item) => {
 			item.setSection("wiki-link")
@@ -608,6 +654,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 					if (link && lastActiveLeaf)
 						insertToEditor(app, link, lastActiveLeaf);
 				});
+			item.VTMenuAction = "insert-as-internal-link";
 		});
 		menu.addItem((item) => {
 			item.setSection("wiki-link")
@@ -617,6 +664,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 					if (link && lastActiveLeaf)
 						insertToEditor(app, link, lastActiveLeaf);
 				});
+			item.VTMenuAction = "insert-as-embed";
 		});
 		// If the tab is navigatable, show history options
 		if (leaf.view.navigation && !alwaysOpenInNewTab) {
@@ -629,12 +677,14 @@ export const Tab = memo(function Tab(props: TabProps) {
 					.setTitle(`Back`)
 					.setDisabled(leaf.history.backHistory.length === 0)
 					.onClick(() => leaf.history.back());
+				item.VTMenuAction = "back";
 			});
 			menu.addItem((item) => {
 				item.setSection("history")
 					.setTitle("Forward")
 					.setDisabled(leaf.history.forwardHistory.length === 0)
 					.onClick(() => leaf.history.forward());
+				item.VTMenuAction = "forward";
 			});
 			menu.addItem((item) => {
 				item.setSection("history").setTitle("Browse history");
@@ -649,18 +699,21 @@ export const Tab = memo(function Tab(props: TabProps) {
 						new HistoryBrowserModal(app, leaf).open()
 					);
 				}
+				item.VTMenuAction = "browse-history";
 			});
 			menu.addItem((item) => {
 				item.setSection("history")
 					.setTitle("Bookmark history")
 					.setDisabled(historyLength === 0)
 					.onClick(() => createBookmarkForLeafHistory(app, leaf));
+				item.VTMenuAction = "bookmark-history";
 			});
 			menu.addItem((item) => {
 				item.setSection("history")
 					.setTitle("Open history in new group")
 					.setDisabled(historyLength === 0)
 					.onClick(openHistoryInNewGroup);
+				item.VTMenuAction = "open-history-in-new-group";
 			});
 			menu.addItem((item) => {
 				item.setSection("history")
@@ -671,6 +724,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 						leaf.history.forwardHistory = [];
 						window.setTimeout(() => refresh(app), REFRESH_TIMEOUT);
 					});
+				item.VTMenuAction = "clear-history";
 			});
 		}
 		// Placeholder for deferred (inactive) tabs
@@ -680,11 +734,13 @@ export const Tab = memo(function Tab(props: TabProps) {
 				item.setSection("history")
 					.setTitle("(Inactive)")
 					.setDisabled(true);
+				item.VTMenuAction = "inactive";
 			});
 			menu.addItem((item) => {
 				item.setSection("history")
 					.setTitle("Load history")
 					.onClick(async () => await loadDeferredLeaf(leaf));
+				item.VTMenuAction = "load-history";
 			});
 		}
 		// Per-tab zoom
@@ -701,6 +757,7 @@ export const Tab = memo(function Tab(props: TabProps) {
 					} else {
 						addZoomOptionsToMenu(leaf, submenu);
 					}
+					item.VTMenuAction = "zoom";
 				});
 			} else {
 				// On mobile, we add them directly to the parent menu (submenus are not supported)
@@ -719,14 +776,17 @@ export const Tab = memo(function Tab(props: TabProps) {
 						item.setSection("webview")
 							.setTitle("Toggle reader mode")
 							.onClick(() => webview.toggleReaderMode());
+						item.VTMenuAction = "toggle-reader-mode";
 					});
 					submenu.addItem((item) => {
 						item.setSection("webview")
 							.setTitle("Save to vault")
 							.onClick(() => saveAsMarkdown(webview));
+						item.VTMenuAction = "save-to-vault";
 					});
 				} else {
 					// For non-webview tabs, we copy those provided by Obsidian
+					submenu.isVTMenu = true;
 					leaf.view.onPaneMenu(submenu, "more-options");
 					const excludedSections = ["open", "find", "pane"];
 					submenu.items = submenu.items.filter(
@@ -736,9 +796,11 @@ export const Tab = memo(function Tab(props: TabProps) {
 								!excludedSections.includes(item.section))
 					);
 				}
+				item.VTMenuAction = "more-options";
 			});
 		}
 
+		workspace.trigger(EVENTS.ON_TAB_MENU, menu, leaf);
 		return menu;
 	};
 
@@ -943,6 +1005,8 @@ export const Tab = memo(function Tab(props: TabProps) {
 				dataId={leaf.id}
 				webviewIcon={webviewIcon}
 				icon={shouldShowHandle ? "grip" : customIcon ?? leaf.getIcon()}
+				iconRevision={activeFileTick}
+				onIconRender={onIconRender}
 				isActive={leaf.tabHeaderEl?.classList.contains("is-active")}
 				selectedCount={
 					isSelected ? getSelectedTabs().length : undefined

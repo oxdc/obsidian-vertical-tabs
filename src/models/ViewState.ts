@@ -87,6 +87,7 @@ interface ViewState {
 	groupUnhideTimes: GroupUnhideTimes;
 	latestActiveLeaf: WorkspaceLeaf | null;
 	latestActiveTab: HTMLElement | null;
+	activeFileTick: number;
 	pinningEvents: PinningEvents;
 	ephermalToggleEvents: EphermalToggleEvents;
 	groupViewToggleEvents: GroupViewToggleEvents;
@@ -106,6 +107,7 @@ interface ViewState {
 		plugin: ObsidianVerticalTabs,
 		leaf?: WorkspaceLeaf | null
 	) => void;
+	bumpActiveFileTick: () => void;
 	lockFocus: (plugin: ObsidianVerticalTabs) => void;
 	lockFocusOnLeaf: (app: App, leaf: WorkspaceLeaf) => void;
 	linkedGroups: LinkedGroups;
@@ -273,6 +275,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	groupUnhideTimes: createNewGroupUnhideTimes() as GroupUnhideTimes,
 	latestActiveLeaf: null,
 	latestActiveTab: null,
+	activeFileTick: 0,
 	pinningEvents: createNewPinningEvents(),
 	ephermalToggleEvents: createNewEphermalToggleEvents(),
 	groupViewToggleEvents: createNewGroupViewToggleEvents(),
@@ -339,6 +342,9 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	forgetNonephemeralTabs() {
 		clearNonEphemeralTabs();
 		set({ nonEphemeralTabs: [] });
+	},
+	bumpActiveFileTick() {
+		set((state) => ({ activeFileTick: state.activeFileTick + 1 }));
 	},
 	setLatestActiveLeaf(plugin: ObsidianVerticalTabs) {
 		const { refresh, isManagedLeaf } = managedLeafStore.getActions();
