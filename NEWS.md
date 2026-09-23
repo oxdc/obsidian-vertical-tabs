@@ -1,3 +1,11 @@
+# Vertical Tabs v0.18.5
+
+## ✅ Improvements:
+
+- Removed disablePlugin and enablePlugin calls in the reset modal to comply with Obsidian's policy.
+
+---
+
 # Vertical Tabs v0.18.4
 
 ## 🎉 What's New:
