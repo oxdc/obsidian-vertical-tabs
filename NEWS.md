@@ -1,3 +1,54 @@
+# Vertical Tabs v0.18.3-beta-20251219
+
+## 🐛 Bug Fixes:
+
+- Fixed issue where settings were not being saved properly.
+- Resolved drag-and-drop behavior issues for tab groups.
+
+## ✅ Improvements:
+
+- Cleaned up obsolete settings and dependencies.
+- Improved drag-and-drop visual feedback for tree items.
+- Polished workspace customization and Mission Control View styling.
+- Updated warning banners to match Obsidian's new design language.
+
+---
+
+# Vertical Tabs v0.18.2-beta-20251216
+
+## ✅ Improvements:
+
+- Added filtering and sorting capabilities to the icon selector.
+- Migrated from `PersistenceManager` to `LocalStorageService`, simplifying the codebase and improving data persistence reliability.
+
+## 🐛 Bug Fixes:
+
+- Fixed tab group order and sorting preferences not persisting after restart.
+
+---
+
+# Vertical Tabs v0.18.1-beta-20251214
+
+## ✅ Improvements:
+
+- Improved Icon Selection Modal with better search functionality and sorting algorithms.
+- Refined Mission Control View styling with custom color support.
+- Added full compatibility with Obsidian v1.11.0+ design updates.
+
+---
+
+# Vertical Tabs v0.18.0-beta-20251214
+
+## 🎉 What's New:
+
+- **Tab and group customization**: Personalize your workspace by customizing tabs and groups with custom titles, icons, and colors.
+
+## ✅ Improvements:
+
+- Refactored and improved cache stores for better performance and maintainability.
+
+---
+
 # Vertical Tabs v0.17.7
 
 ## 🐛 Bug Fixes:
