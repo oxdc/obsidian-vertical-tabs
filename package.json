@@ -7,7 +7,7 @@
 		"build:dev": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs dev && cp manifest.json dist/manifest.json",
 		"build:beta": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs beta && cp manifest.json dist/manifest.json",
 		"build:production": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && cp manifest.json dist/manifest.json",
-		"build": "npm run build:production",
+		"build": "npm run build:production && cp dist/main.js dist/styles.css .",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"version:beta": "node version-beta-bump.mjs && git add manifest.json versions.json",
 		"lint": "eslint ."
