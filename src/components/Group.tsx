@@ -13,6 +13,7 @@ import { useViewState } from "src/models/ViewState";
 import { useApp, useSettings } from "src/models/PluginContext";
 import { GroupType } from "src/models/VTWorkspace";
 import { moveTabToEnd } from "src/services/MoveTab";
+import { runWithCanSplit } from "src/services/PlatformCanSplit";
 import { WorkspaceParent } from "obsidian";
 import { EVENTS } from "src/constants/Events";
 import { DEFAULT_GROUP_TITLE } from "src/constants/Predefined";
@@ -193,7 +194,7 @@ export const Group = (props: GroupProps) => {
 	const createLeafNewTabAndOpen = (e: MouseEvent) => {
 		e.stopPropagation();
 		if (!group) return;
-		const leaf = workspace.getLeaf("split");
+		const leaf = runWithCanSplit(() => workspace.getLeaf("split"));
 		moveTabToEnd(app, leaf.id, group);
 		workspace.setActiveLeaf(leaf, { focus: true });
 	};

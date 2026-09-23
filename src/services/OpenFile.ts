@@ -4,6 +4,7 @@ import { tabCacheStore } from "src/stores/TabCacheStore";
 import { GroupType } from "src/models/VTWorkspace";
 import { GroupNameModal } from "src/views/GroupNameModal";
 import { getGroupTitle, setGroupTitle } from "./Customization";
+import { runWithCanSplit } from "./PlatformCanSplit";
 
 const MENU_SECTION = "file-navigation";
 
@@ -32,7 +33,9 @@ export function addMenuItemsToFileContextMenu(
 			submenu.addItem((item) => {
 				const title = getGroupTitle(group.id);
 				item.setTitle(title).onClick(() => {
-					const leaf = app.workspace.getLeaf("split");
+					const leaf = runWithCanSplit(() =>
+						app.workspace.getLeaf("split")
+					);
 					void leaf.openFile(file);
 					moveTabToEnd(app, leaf.id, group);
 				});
@@ -41,14 +44,18 @@ export function addMenuItemsToFileContextMenu(
 		submenu.addSeparator();
 		submenu.addItem((item) => {
 			item.setTitle("New group").onClick(() => {
-				const leaf = app.workspace.getLeaf("split");
+				const leaf = runWithCanSplit(() =>
+					app.workspace.getLeaf("split")
+				);
 				void leaf.openFile(file);
 			});
 		});
 		submenu.addItem((item) => {
 			item.setTitle("New group with name...").onClick(() => {
 				new GroupNameModal(app, (groupName) => {
-					const leaf = app.workspace.getLeaf("split");
+					const leaf = runWithCanSplit(() =>
+						app.workspace.getLeaf("split")
+					);
 					void leaf.openFile(file);
 					window.setTimeout(() => {
 						const group = leaf.parent;

@@ -76,6 +76,7 @@ import {
 import { getGroupTitle, setGroupTitle } from "src/services/Customization";
 import { EVENTS } from "src/constants/Events";
 import { createVTMenu } from "src/services/Menu";
+import { runWithCanSplit } from "src/services/PlatformCanSplit";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -281,7 +282,9 @@ export const Tab = memo(function Tab(props: TabProps) {
 	};
 	const openHistoryInNewGroup = async () => {
 		// Make a copy of the current tab in a new group
-		const duplicatedLeaf = await workspace.duplicateLeaf(leaf, "split");
+		const duplicatedLeaf = await runWithCanSplit(() =>
+			workspace.duplicateLeaf(leaf, "split")
+		);
 		// Force it to be loaded
 		await loadDeferredLeaf(duplicatedLeaf);
 		// Reset the new tab's history
@@ -590,7 +593,9 @@ export const Tab = memo(function Tab(props: TabProps) {
 				.setTitle("Split right")
 				.onClick(
 					() =>
-						void workspace.duplicateLeaf(leaf, "split", "vertical")
+						void runWithCanSplit(() =>
+							workspace.duplicateLeaf(leaf, "split", "vertical")
+						)
 				);
 			item.VTMenuAction = "split-right";
 		});
@@ -599,10 +604,8 @@ export const Tab = memo(function Tab(props: TabProps) {
 				.setTitle("Split down")
 				.onClick(
 					() =>
-						void workspace.duplicateLeaf(
-							leaf,
-							"split",
-							"horizontal"
+						void runWithCanSplit(() =>
+							workspace.duplicateLeaf(leaf, "split", "horizontal")
 						)
 				);
 			item.VTMenuAction = "split-down";

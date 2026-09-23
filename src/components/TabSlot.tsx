@@ -2,6 +2,7 @@ import { Identifier } from "src/models/VTWorkspace";
 import { NavigationTreeItem } from "./NavigationTreeItem";
 import { useApp, useSettings } from "src/models/PluginContext";
 import { moveTabToEnd } from "src/services/MoveTab";
+import { runWithCanSplit } from "src/services/PlatformCanSplit";
 import { WorkspaceParent } from "obsidian";
 import { tabCacheStore } from "src/stores/TabCacheStore";
 import { NewTabButtonPlacement } from "src/models/NewTab";
@@ -30,7 +31,7 @@ export const TabSlot = ({ group, groupID }: TabSlotProps) => {
 
 	const onClick = () => {
 		if (asNewTabButton) {
-			const leaf = workspace.getLeaf("split");
+			const leaf = runWithCanSplit(() => workspace.getLeaf("split"));
 			moveTabToEnd(app, leaf.id, group);
 			workspace.setActiveLeaf(leaf, { focus: true });
 		}

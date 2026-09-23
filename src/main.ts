@@ -44,18 +44,25 @@ import { ViewEphemeralState } from "obsidian-typings";
 import { applyTabTitle } from "./services/Customization";
 import { localStorageService } from "./stores/LocalStorageService";
 import { metadataService } from "./stores/TabMetadataService";
+import {
+	disableUniversalCanSplit,
+	enableUniversalCanSplit,
+	patchPlatformCanSplit,
+} from "./services/PlatformCanSplit";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
 
 	async onload() {
-		this.patchPlatformCanSplit();
+		this.register(patchPlatformCanSplit());
+		enableUniversalCanSplit();
 		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
 		await this.loadSettings();
 		metadataService.setApp(this.app);
 		await this.setupLocalStorageService();
 		const disableOnThisDevice = loadDisableOnThisDevice();
 		if (disableOnThisDevice) {
+			disableUniversalCanSplit();
 			void useSettings.getState().loadSettings(this);
 			this.addSettingTab(
 				new ObsidianVerticalTabsSettingTab(this.app, this)
@@ -68,6 +75,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		await this.patchViews();
 		this.addSettingTab(new ObsidianVerticalTabsSettingTab(this.app, this));
 		this.app.workspace.onLayoutReady(() => {
+			disableUniversalCanSplit();
 			const isPhone = Platform.isPhone;
 			const isUnknownMobile = Platform.isMobile && !Platform.isTablet;
 			const tabletOrDesktop = Platform.isTablet || Platform.isDesktop;
@@ -85,18 +93,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 			window.setTimeout(() => {
 				useViewState.getState().refreshToggleButtons(this.app);
 			}, REFRESH_TIMEOUT_LONG);
-		});
-	}
-
-	private patchPlatformCanSplit() {
-		const desc = Object.getOwnPropertyDescriptor(Platform, "canSplit");
-		Object.defineProperty(Platform, "canSplit", {
-			configurable: true,
-			enumerable: desc?.enumerable ?? true,
-			get: (): boolean => true,
-		});
-		this.register(() => {
-			if (desc) Object.defineProperty(Platform, "canSplit", desc);
 		});
 	}
 

@@ -10,6 +10,7 @@ import { Identifier } from "src/models/VTWorkspace";
 import { VERTICAL_TABS_VIEW } from "src/views/VerticalTabsView";
 import { REFRESH_TIMEOUT_LONG } from "src/constants/Timeouts";
 import { tabCacheStore } from "src/stores/TabCacheStore";
+import { runWithCanSplit } from "./PlatformCanSplit";
 
 export function reapplyEphemeralState(
 	leaf: WorkspaceLeaf,
@@ -100,10 +101,8 @@ export async function moveTabToNewGroup(
 	const height = sourceParent.containerEl.clientHeight;
 	const width = sourceParent.containerEl.clientWidth;
 	const preferredDirection = height > width ? "horizontal" : "vertical";
-	const targetLeaf = await app.workspace.duplicateLeaf(
-		sourceLeaf,
-		"split",
-		preferredDirection
+	const targetLeaf = await runWithCanSplit(() =>
+		app.workspace.duplicateLeaf(sourceLeaf, "split", preferredDirection)
 	);
 	targetLeaf.setPinned(!!sourceLeaf.getViewState().pinned);
 	reapplyEphemeralState(targetLeaf, sourceLeaf.getEphemeralState());
@@ -304,10 +303,12 @@ export async function moveMultipleTabsToNewGroup(
 	const preferredDirection = height > width ? "horizontal" : "vertical";
 
 	// Create new group with first tab
-	const firstTargetLeaf = await app.workspace.duplicateLeaf(
-		firstSourceLeaf,
-		"split",
-		preferredDirection
+	const firstTargetLeaf = await runWithCanSplit(() =>
+		app.workspace.duplicateLeaf(
+			firstSourceLeaf,
+			"split",
+			preferredDirection
+		)
 	);
 	firstTargetLeaf.setPinned(!!firstSourceLeaf.getViewState().pinned);
 	reapplyEphemeralState(firstTargetLeaf, firstSourceLeaf.getEphemeralState());
