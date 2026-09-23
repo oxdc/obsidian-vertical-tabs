@@ -13,10 +13,7 @@ import {
 } from "obsidian";
 import ObsidianVerticalTabs from "../main";
 import { ResetModal } from "./ResetModal";
-import {
-	loadDisableOnThisDevice,
-	useSettings,
-} from "../models/PluginContext";
+import { loadDisableOnThisDevice, useSettings } from "../models/PluginContext";
 import {
 	NewTabButtonPlacement,
 	NewTabButtonPlacementOptions,
@@ -1086,14 +1083,16 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				.forEach((leaf) => leaf.detach());
 		}
 		new Notice(
-			"Vertical Tabs has been disabled on this device. Please reopen Obsidian for the changes to take effect."
+			"Vertical Tabs has been disabled on this device. Please reopen Obsidian for the changes to take effect.",
+			0
 		);
 	}
 
 	private async toggleBackgroundMode(isBackgroundMode: boolean) {
 		useSettings.getState().toggleBackgroundMode(this.app, isBackgroundMode);
 		new Notice(
-			"Background mode has been enabled. Please reopen Obsidian for the changes to take effect."
+			"Background mode has been enabled. Please reopen Obsidian for the changes to take effect.",
+			0
 		);
 	}
 

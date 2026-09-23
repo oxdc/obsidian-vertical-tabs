@@ -26,9 +26,7 @@ const RESET_OPTIONS: Record<ResetScope, ResetOption> = {
 	},
 	db: {
 		label: "Reset customization",
-		erases: [
-			"Custom titles, colors, and icons for groups and tabs",
-		],
+		erases: ["Custom titles, colors, and icons for groups and tabs"],
 		keeps: "All plugin settings and preferences will be kept.",
 	},
 	all: {
@@ -106,7 +104,9 @@ export class ResetModal extends Modal {
 			cls: "vt-reset-selected",
 		});
 
-		const erasesHeader = el.createEl("p", { cls: "vt-reset-detail-header" });
+		const erasesHeader = el.createEl("p", {
+			cls: "vt-reset-detail-header",
+		});
 		const iconEl = erasesHeader.createSpan();
 		setIcon(iconEl, "trash-2");
 		erasesHeader.createSpan({ text: " The following will be erased:" });
@@ -136,11 +136,7 @@ export class ResetModal extends Modal {
 		this.close();
 		try {
 			if (selected === "db" || selected === "all") {
-				try {
-					await plugin.app.plugins.disablePlugin(plugin.manifest.id);
-				} catch {
-					// continue even if disable fails
-				}
+				// We cannot disable the plugin here due to Obsidian's policy
 				await resetDatabase(getDBName(plugin.app), [...DB_STORE_NAMES]);
 			}
 			if (selected === "settings" || selected === "all") {
@@ -149,13 +145,14 @@ export class ResetModal extends Modal {
 				localStorageService.remove(STORAGE_KEYS.SORT_STRATEGY);
 				localStorageService.remove(STORAGE_KEYS.GROUP_ORDER);
 			}
-			new Notice("Vertical Tabs has been reset. Reloading...");
-			await plugin.app.plugins.enablePlugin(plugin.manifest.id);
+			new Notice(
+				"The selected data has been reset. Please reopen Obsidian for the changes to take effect.",
+				0
+			);
 		} catch (e) {
 			console.error("[VerticalTabs] Reset failed:", e);
 			new Notice(
-				"Reset failed: " +
-					(e instanceof Error ? e.message : String(e))
+				"Reset failed: " + (e instanceof Error ? e.message : String(e))
 			);
 		}
 	}
