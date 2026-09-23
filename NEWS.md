@@ -1,3 +1,23 @@
+# Vertical Tabs v0.18.4
+
+## 🎉 What's New:
+
+- Includes all new features and bug fixes up to v0.18.3-beta.
+- **Mobile tab groups are back**: You can now create tab groups on mobile again. This brings back the feature that was disabled in Obsidian 1.13.6, while still keeping Obsidian’s normal behavior (#239).
+- Introduced an event-based API for icon rendering and menu customization, making it possible to **integrate with third-party plugins** like [Iconic](https://github.com/oxdc/iconic) and [Iconize](https://github.com/oxdc/obsidian-iconize).
+
+## 🐛 Bug Fixes:
+
+- Fixed the issue where the open tab list may not update when Vertical Tabs is hidden (#240).
+- Fixed custom group titles being lost after reloading.
+
+## ✅ Improvements:
+
+- Added a warning message if saving tab or group customizations does not work.
+- Added new tools for debugging, diagnosing IndexedDB, and resetting plugin settings or customization data.
+
+---
+
 # Vertical Tabs v0.18.3-beta-20251219
 
 ## 🐛 Bug Fixes:
