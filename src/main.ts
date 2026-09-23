@@ -49,6 +49,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
 
 	async onload() {
+		this.patchPlatformCanSplit();
 		addIcon("vertical-tabs", VERTICAL_TABS_ICON);
 		await this.loadSettings();
 		metadataService.setApp(this.app);
@@ -84,6 +85,18 @@ export default class ObsidianVerticalTabs extends Plugin {
 			window.setTimeout(() => {
 				useViewState.getState().refreshToggleButtons(this.app);
 			}, REFRESH_TIMEOUT_LONG);
+		});
+	}
+
+	private patchPlatformCanSplit() {
+		const desc = Object.getOwnPropertyDescriptor(Platform, "canSplit");
+		Object.defineProperty(Platform, "canSplit", {
+			configurable: true,
+			enumerable: desc?.enumerable ?? true,
+			get: (): boolean => true,
+		});
+		this.register(() => {
+			if (desc) Object.defineProperty(Platform, "canSplit", desc);
 		});
 	}
 
