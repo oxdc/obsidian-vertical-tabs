@@ -132,11 +132,9 @@ export const NavigationContainer = () => {
 		}
 		window.setTimeout(() => {
 			updateEphemeralTabs(app);
-			if (isSelfVisible(app) || Platform.isMobile) {
-				refresh(app);
-				removeNewTabs();
-				sort();
-			}
+			refresh(app);
+			removeNewTabs();
+			sort();
 		});
 	};
 
