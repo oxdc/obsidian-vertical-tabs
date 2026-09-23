@@ -2,9 +2,9 @@
 
 [Subscribe to the Beta Program](https://ko-fi.com/oxdcq) for exclusive early access to the latest updates!
 
-**Subscription ($1.99/m) is only required to download beta versions. Once installed, you may use it as long as you want.**
+**Subscription ($2.99/m) is only required to download beta versions. Once installed, you may use it as long as you want.**
 
-<video src="https://github.com/user-attachments/assets/caf6bc43-2ed9-4cb8-887d-a205b2f5fe6a" width="500" autoplay></video>
+<video src="https://github.com/user-attachments/assets/caf6bc43-2ed9-4cb8-887d-a205b2f5fe6a" width="500"></video>
 
 ---
 
