@@ -37,5 +37,15 @@ export default defineConfig(
 		rules: {
 			"obsidianmd/ui/sentence-case": "off",
 		},
+	},
+	{
+		files: ["tests/*.mjs"],
+		languageOptions: {
+			parserOptions: { projectService: false },
+		},
+		rules: {
+			// Tests run in Node and are never bundled into the mobile plugin.
+			"obsidianmd/no-nodejs-modules": "off",
+		},
 	}
 );

@@ -34,7 +34,7 @@ import {
 import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 import { runPersistenceMigrations } from "./history/Migration";
 import { VERTICAL_TABS_ICON } from "./icon";
-import { scrollToActiveTab } from "./services/ScrollableTabs";
+import { createActiveTabScroller } from "./services/ScrollableTabs";
 import { updateOrientationLabel } from "./services/Orientation";
 import { getOpenFileOfLeaf } from "./services/GetTabs";
 import { managedLeafStore } from "./stores/ManagedLeafStore";
@@ -110,16 +110,11 @@ export default class ObsidianVerticalTabs extends Plugin {
 	}
 
 	registerScrollableTabsEvents() {
+		const scroller = createActiveTabScroller();
+		this.register(scroller.cancel);
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", (leaf) => {
-				scrollToActiveTab(leaf);
-			})
-		);
-		this.registerEvent(
-			this.app.workspace.on("editor-change", (_, info) => {
-				if (info instanceof MarkdownView) {
-					scrollToActiveTab(info.leaf);
-				}
+				scroller.scrollToActiveTab(leaf);
 			})
 		);
 	}
