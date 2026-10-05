@@ -3,6 +3,8 @@ body.vt-scrollable-tabs.is-popout-window {
 	.workspace-split.mod-root .workspace-tabs:not(.mod-stacked) {
 		.workspace-tab-header-container-inner {
 			margin-right: var(--size-4-2);
+			overflow-x: auto;
+			overflow-y: hidden;
 		}
 
 		// Some themes (e.g., Cupertino) make scrollable tabs too wide and completely unusable
