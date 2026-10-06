@@ -495,7 +495,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		if (!Platform.isDesktop && !Platform.isTablet) return;
 		const isFrameHidden = getFrameStyle() === WindowFrameStyle.Hidden;
 		if (
-			!isRibbonVisible() ||
+			Platform.isTablet || !isRibbonVisible() ||
 			(hasControlButtonsOnTheLeft() && isFrameHidden)
 		) {
 			const { topLeftContainer, leftButtonClone } = get();
