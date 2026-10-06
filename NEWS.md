@@ -1,3 +1,12 @@
+# Vertical Tabs v0.18.6
+
+## 🐛 Bug Fixes:
+
+- Fixed scrollable tabs in Obsidian 1.14.0+ (#246, #249).
+- Fixed an issue where the left sidebar button would disappear on tablets when the first tab group was hidden (#234).
+
+---
+
 # Vertical Tabs v0.18.5
 
 ## ✅ Improvements:
