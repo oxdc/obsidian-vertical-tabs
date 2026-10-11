@@ -10,8 +10,7 @@
 		"build": "npm run build:production && cp dist/main.js dist/styles.css .",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"version:beta": "node version-beta-bump.mjs && git add manifest.json versions.json",
-		"lint": "eslint .",
-		"test": "node tests/typing-performance.test.mjs"
+		"lint": "eslint ."
 	},
 	"keywords": [],
 	"author": "",
