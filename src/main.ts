@@ -115,7 +115,18 @@ export default class ObsidianVerticalTabs extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", (leaf) => {
 				scroller.scrollToActiveTab(leaf);
-			})
+				useViewState.getState().markScrollableState(null);
+			}),
+		);
+		this.registerEvent(
+			this.app.workspace.on("editor-change", (_, info) => {
+				if (
+					info instanceof MarkdownView &&
+					useViewState.getState().scrollableState === info.leaf.id
+				) {
+					scroller.scrollToActiveTab(info.leaf);
+				}
+			}),
 		);
 	}
 

@@ -4,6 +4,7 @@ import {
 	REFRESH_TIMEOUT_LONGER,
 } from "src/constants/Timeouts";
 import { useSettings } from "src/models/PluginContext";
+import { useViewState } from "src/models/ViewState";
 
 export const setScrollableTabsMinWidth = debounce((value: number) => {
 	activeDocument.body.style.setProperty(
@@ -60,6 +61,7 @@ export const createActiveTabScroller = () => {
 					block: "center",
 					inline: "center",
 				});
+				useViewState.getState().markScrollableState(leaf.id);
 			});
 		}, REFRESH_TIMEOUT_LONGER);
 	};
