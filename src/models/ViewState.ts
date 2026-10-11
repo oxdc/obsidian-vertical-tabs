@@ -191,6 +191,8 @@ interface ViewState {
 	disableDraggingForGroup: (group: WorkspaceParent) => void;
 	limitVisibleGroupsOnPhone: (app: App) => void;
 	getMostRecentActivityTime: (group: WorkspaceParent) => number;
+	scrollableState: Identifier | null;
+	markScrollableState: (target: Identifier | null) => void;
 }
 
 const saveHiddenGroups = (hiddenGroups: Array<Identifier>) => {
@@ -294,6 +296,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	topRightContainer: null,
 	topRightMainContainer: null,
 	allTopContainers: [],
+	scrollableState: null,
 	toggleHiddenGroup: (id: Identifier, isHidden: boolean, app?: App) => {
 		if (isHidden) {
 			set((state) => ({ hiddenGroups: [...state.hiddenGroups, id] }));
@@ -974,6 +977,9 @@ export const useViewState = create<ViewState>()((set, get) => ({
 				get().toggleHiddenGroup(group.id, true);
 			});
 		}
+	},
+	markScrollableState(target: Identifier | null = null) {
+		set({ scrollableState: target });
 	},
 }));
 
