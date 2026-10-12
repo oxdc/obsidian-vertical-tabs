@@ -1,5 +1,5 @@
 import { StrictMode } from "react";
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import { View, WorkspaceLeaf } from "obsidian";
 import { Root, createRoot } from "react-dom/client";
 import { NavigationContainer } from "../components/NavigationContainer";
 import { PluginContext } from "../models/PluginContext";
@@ -7,7 +7,7 @@ import ObsidianVerticalTabs from "../main";
 
 export const VERTICAL_TABS_VIEW = "vertical-tabs";
 
-export class VerticalTabsView extends ItemView {
+export class VerticalTabsView extends View {
 	root: Root | null = null;
 	plugin: ObsidianVerticalTabs;
 
