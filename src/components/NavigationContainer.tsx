@@ -251,6 +251,15 @@ export const NavigationContainer = () => {
 				resetViewCueCallback(app);
 			})
 		);
+		let viewCueWindow: Window | null = null;
+		const resetTabIndexViewCue = () => {
+			setCtrlKeyState(false);
+			ref.current?.toggleClass("tab-index-view-cue", false);
+			viewCueWindow?.document.body.toggleClass("vt-tab-index-view-cue", false);
+			viewCueWindow?.removeEventListener("blur", resetTabIndexViewCue);
+			viewCueWindow = null;
+		};
+		plugin.register(resetTabIndexViewCue);
 		plugin.registerDomEvent(window, "keydown", (event) => {
 			if (event.key === "Escape") {
 				exitMissionControlForCurrentGroup();
@@ -276,6 +285,8 @@ export const NavigationContainer = () => {
 					event.key === "ArrowRight" ||
 					event.key === "ArrowLeft")
 			) {
+				viewCueWindow = activeWindow;
+				viewCueWindow.addEventListener("blur", resetTabIndexViewCue);
 				setCtrlKeyState(true);
 				if (event.key === "ArrowRight") {
 					increaseViewCueOffset();
@@ -285,7 +296,7 @@ export const NavigationContainer = () => {
 				window.setTimeout(() => {
 					if (useViewState.getState().hasCtrlKeyPressed) {
 						ref.current?.toggleClass("tab-index-view-cue", true);
-						activeDocument.body.toggleClass(
+						viewCueWindow?.document.body.toggleClass(
 							"vt-tab-index-view-cue",
 							true
 						);
@@ -301,9 +312,7 @@ export const NavigationContainer = () => {
 		});
 		plugin.registerDomEvent(window, "keyup", (event) => {
 			if (event.key === "Control" || event.key === "Meta") {
-				setCtrlKeyState(false);
-				ref.current?.toggleClass("tab-index-view-cue", false);
-				activeDocument.body.toggleClass("vt-tab-index-view-cue", false);
+				resetTabIndexViewCue();
 			}
 		});
 		plugin.registerDomEvent(activeDocument, "dblclick", (event) => {
