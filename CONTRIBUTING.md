@@ -10,6 +10,14 @@ Please search existing [issues](https://github.com/oxdc/obsidian-vertical-tabs/i
 
 Use one of the [issue forms](https://github.com/oxdc/obsidian-vertical-tabs/issues/new/choose) and fill in what it asks for. Please check that the bug still happens with other plugins disabled and on the latest version. You can find **Show debug info** and **Copy plugin settings** under *Settings → Vertical Tabs → Show debugging tools*. If group names, colors or other customizations are not being saved, run **Diagnose IndexedDB** in the same place and paste the log into your report.
 
+## AI-assisted contributions
+
+You can use AI to help write your code, as long as you fully understand the code and the context around it. PRs generated purely by AI will be closed. In your PR, say whether you used AI, what it helped with, and how you reviewed and tested the result.
+
+Large or complex changes need to be discussed and agreed on first, and they should fit the design and goals of Vertical Tabs. Otherwise they will be closed.
+
+Whoever submits a PR is responsible for it, so please don't list an AI as an author or co-author anywhere in your commits.
+
 ## Development setup
 
 You will need Git, Node.js 20 or newer, and a separate vault for development. Please don't use your main vault.
