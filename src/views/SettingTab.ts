@@ -112,12 +112,16 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			this.update();
 		} else {
 			const scrollTop = this.containerEl.scrollTop;
-			this.display();
+			this.render();
 			this.containerEl.scrollTop = scrollTop;
 		}
 	}
 
 	display(): void {
+		this.render();
+	}
+
+	render(): void {
 		const { containerEl } = this;
 		containerEl.empty();
 
