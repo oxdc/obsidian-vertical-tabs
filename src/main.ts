@@ -412,7 +412,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 							openState?: OpenViewState
 						) => old.call(target, file, openState);
 						if (isHoverEditorEnabled(this.app)) {
-							if (!this.parent.parentSplit)
+							if (!this.parent?.parentSplit)
 								return fallback(this, file, openState);
 						}
 						if (openState) {
