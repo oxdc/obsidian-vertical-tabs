@@ -5,6 +5,15 @@ import {
 	setGroupViewType,
 } from "src/models/VTGroupView";
 
+export function toggleMissionControlView(group: WorkspaceParent) {
+	const viewType = identifyGroupViewType(group);
+	if (viewType === GroupViewType.MissionControlView) {
+		setGroupViewType(group, GroupViewType.Default);
+	} else {
+		setGroupViewType(group, GroupViewType.MissionControlView);
+	}
+}
+
 export function addMissionControlToggle(group: WorkspaceParent | null) {
 	if (!group || !group.tabHeaderContainerEl) return;
 
@@ -28,14 +37,7 @@ export function addMissionControlToggle(group: WorkspaceParent | null) {
 	spacer.after(toggleBtn);
 
 	// Add the handler
-	toggleBtn.addEventListener("click", () => {
-		const viewType = identifyGroupViewType(group);
-		if (viewType === GroupViewType.MissionControlView) {
-			setGroupViewType(group, GroupViewType.Default);
-		} else {
-			setGroupViewType(group, GroupViewType.MissionControlView);
-		}
-	});
+	toggleBtn.addEventListener("click", () => toggleMissionControlView(group));
 }
 
 export function removeMissionControlToggle(group: WorkspaceParent | null) {

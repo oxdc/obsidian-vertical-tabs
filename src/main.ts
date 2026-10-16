@@ -46,6 +46,10 @@ import { getOpenFileOfLeaf } from "./services/GetTabs";
 import { managedLeafStore } from "./stores/ManagedLeafStore";
 import { isHoverEditorEnabled } from "./services/HoverEditorTabs";
 import { removeAllTabControlButtons } from "./services/TabControlButtons";
+import {
+	refreshExtraHeaderButtons,
+	removeAllExtraHeaderButtons,
+} from "./services/ExtraHeaderButtons";
 import { ViewEphemeralState } from "obsidian-typings";
 import { applyTabTitle } from "./services/Customization";
 import { localStorageService } from "./stores/LocalStorageService";
@@ -141,6 +145,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 			useViewState.getState().resetViewCueCallback(this.app);
 		}
 		removeAllTabControlButtons(this.app);
+		removeAllExtraHeaderButtons(this.app);
 		if (this.dragDetectionService) {
 			this.dragDetectionService.cleanup();
 			this.dragDetectionService = null;
@@ -186,6 +191,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 			"vt-allow-workspace-split",
 			this.settings.allowWorkspaceSplitOnPhone
 		);
+		refreshExtraHeaderButtons(this.app, this);
 
 		// Limit visible groups to 2 when allowWorkspaceSplitOnPhone is enabled on mobile
 		if (Platform.isMobile && this.settings.allowWorkspaceSplitOnPhone) {

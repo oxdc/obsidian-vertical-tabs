@@ -52,6 +52,10 @@ import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 import { byPinned } from "src/services/SortTabs";
 import { cloneNavButtons } from "src/services/NavButtons";
 import {
+	addExtraHeaderButtons,
+	removeExtraHeaderButtons,
+} from "src/services/ExtraHeaderButtons";
+import {
 	addPinnedIndicator,
 	addCloseIndicator,
 	removeTabControlButtons,
@@ -110,6 +114,12 @@ export const Tab = memo(function Tab(props: TabProps) {
 	/* Relevant settings */
 	const enableTabZoom = useSettings((state) => state.enableTabZoom);
 	const alwaysOpenInNewTab = useSettings((state) => state.alwaysOpenInNewTab);
+	const autoHideHorizontalTabs = useSettings(
+		(state) => state.autoHideHorizontalTabs,
+	);
+	const showMissionControlToggle = useSettings(
+		(state) => state.showMissionControlToggle,
+	);
 	const isEditingTabs = useViewState((state) => state.isEditingTabs);
 	const sortStrategy = tabCacheStore((state) => state.sortStrategy);
 
@@ -895,6 +905,11 @@ export const Tab = memo(function Tab(props: TabProps) {
 	}, [viewCueIndex, ref, hasAnySelectedTabs]);
 	// Replace the default navigation buttons with our own
 	useEffect(() => cloneNavButtons(leaf, app), [leaf.id, leaf.view]);
+	// Relocate tab-header buttons into the view header when auto-hiding horizontal tabs (#194)
+	useEffect(() => {
+		if (autoHideHorizontalTabs) addExtraHeaderButtons(leaf, app, plugin);
+		else removeExtraHeaderButtons(leaf);
+	}, [leaf.id, leaf.view, autoHideHorizontalTabs, showMissionControlToggle]);
 	// Add pinned indicator and close indicator for mission control view
 	useEffect(() => {
 		addPinnedIndicator(leaf, isPinned, unPin);

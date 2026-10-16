@@ -1,6 +1,11 @@
 // Hide horizontal tabs in the root split when left sidebar is open and
 // the vertical tabs pane is the active sidebar tab (#176, #206)
 body.vt-auto-hide-horizontal-tabs {
+	.vt-header-buttons {
+		display: none;
+		align-items: center;
+	}
+
 	.mod-sidedock.mod-left-split:not(.is-sidedock-collapsed):has(
 			> .workspace-tabs
 				> .workspace-tab-header-container
@@ -9,6 +14,16 @@ body.vt-auto-hide-horizontal-tabs {
 		)
 		~ .workspace-split.mod-root {
 		.workspace-tabs > .workspace-tab-header-container {
+			display: none;
+		}
+
+		.vt-header-buttons {
+			display: flex;
+		}
+	}
+
+	&:has(.mod-sidedock.mod-right-split:not(.is-sidedock-collapsed)) {
+		.vt-extra-sidebar-toggle {
 			display: none;
 		}
 	}
