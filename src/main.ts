@@ -98,20 +98,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 		await this.initialize();
 		this.app.workspace.onLayoutReady(() => {
 			disableUniversalCanSplit();
-			const isPhone = Platform.isPhone;
-			const isUnknownMobile = Platform.isMobile && !Platform.isTablet;
-			const tabletOrDesktop = Platform.isTablet || Platform.isDesktop;
-			const sidebarCollapse = this.app.workspace.leftSplit.collapsed;
-			const shouldCollapse =
-				isPhone ||
-				isUnknownMobile ||
-				(tabletOrDesktop && sidebarCollapse);
 			void this.openVerticalTabs();
-			if (shouldCollapse) {
-				window.setTimeout(() =>
-					this.app.workspace.leftSplit.collapse()
-				);
-			}
 			window.setTimeout(() => {
 				useViewState.getState().refreshToggleButtons(this.app);
 			}, REFRESH_TIMEOUT_LONG);
@@ -142,9 +129,8 @@ export default class ObsidianVerticalTabs extends Plugin {
 				this.app.workspace.getLeavesOfType(VERTICAL_TABS_VIEW)[0] ??
 				this.app.workspace.getLeftLeaf(false);
 			if (!leaf) return;
-			await leaf.setViewState({ type: VERTICAL_TABS_VIEW, active: true });
+			void leaf.setViewState({ type: VERTICAL_TABS_VIEW, active: false });
 			if (requireApiVersion("1.7.2")) await leaf.loadIfDeferred();
-			await this.app.workspace.revealLeaf(leaf);
 		} catch {
 			// do nothing
 		}
