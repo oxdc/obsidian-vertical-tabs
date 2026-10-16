@@ -90,17 +90,41 @@ export function uninstallTabHeaderHandlers(app: App) {
 	});
 }
 
+// Tabs created within this window are considered part of the same "burst"
+// (e.g., opening a bookmark group, restoring a workspace on reload). Bursts
+// must not be auto-closed, otherwise the user would lose newly opened tabs.
+const FRESH_LEAF_WINDOW_MS = 1000;
+
+function isFreshLeaf(leaf: WorkspaceLeaf, now: number): boolean {
+	if (!leaf.guessedCreationTime) return false;
+	return now - leaf.guessedCreationTime < FRESH_LEAF_WINDOW_MS;
+}
+
+// A burst is a group with multiple ephemeral tabs that were all just created
+// within the fresh window (bookmark group, session restore, etc.).
+function isEphemeralBurst(ephemerals: WorkspaceLeaf[], now: number): boolean {
+	if (ephemerals.length <= 1) return false;
+	return ephemerals.every((leaf) => isFreshLeaf(leaf, now));
+}
+
 export function makeTabNonEphemeralAutomatically(app: App) {
 	const processedGroups = new Set<Identifier>();
+	const now = Date.now();
 	iterateRootOrFloatingLeaves(app, (leaf) => {
 		const group = leaf.parent;
 		const groupID = group.id;
 		if (processedGroups.has(groupID)) return;
 		processedGroups.add(groupID);
 		const children = group.children;
-		// If there are only one ephemeral tab, we skip this group
-		const count = children.filter((child) => child.isEphemeral);
-		if (count.length <= 1) return;
+		const ephemerals = children.filter((child) => child.isEphemeral);
+		// If there is only one ephemeral tab, we skip this group
+		if (ephemerals.length <= 1) return;
+		// Burst (e.g., bookmark group, session restore): the user just opened
+		// these together, so promote all of them to non-ephemeral.
+		if (isEphemeralBurst(ephemerals, now)) {
+			ephemerals.forEach((child) => makeLeafNonEphemeral(child));
+			return;
+		}
 		// Otherwise, we keep the latest active tab ephemeral and make the rest non-ephemeral
 		const activeTimes = children.map((child) => child.activeTime ?? 0);
 		const latestActiveTime = Math.max(...activeTimes);
@@ -155,6 +179,9 @@ export function mergeHistory(from: WorkspaceLeaf[], to: WorkspaceLeaf) {
 export function autoCloseOldEphemeralTabsForGroup(group: WorkspaceParent) {
 	const ephemeralTabs = group.children.filter((child) => child.isEphemeral);
 	if (ephemeralTabs.length <= 1) return;
+	// A burst of fresh tabs (bookmark group, session restore) must not be
+	// auto-closed; makeTabNonEphemeralAutomatically promotes them instead.
+	if (isEphemeralBurst(ephemeralTabs, Date.now())) return;
 	const activeTimes = ephemeralTabs.map((tab) => tab.activeTime ?? 0);
 	const earliestActiveTime = Math.min(...activeTimes);
 	const latestActiveTime = Math.max(...activeTimes);
