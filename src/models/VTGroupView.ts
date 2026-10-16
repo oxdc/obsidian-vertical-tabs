@@ -68,6 +68,8 @@ export function setGroupViewType(
 		const leafEl = targetEl.matchParent(".workspace-leaf");
 		if (!leafEl) return;
 		normalizeGroupViewType(group?.containerEl, GroupViewType.Default);
+		group.trigger(EVENTS.GROUP_VIEW_CHANGE, GroupViewType.Default);
+		group.setStacked(false);
 	};
 	const scrollToActiveLeaf = () => {
 		if (!group) return;

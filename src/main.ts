@@ -11,19 +11,27 @@ import {
 	WorkspaceLeaf,
 	WorkspaceParent,
 	addIcon,
+	requireApiVersion,
 } from "obsidian";
 import {
 	VerticalTabsView,
 	VERTICAL_TABS_VIEW,
 } from "src/views/VerticalTabsView";
-import { DEFAULT_SETTINGS, Settings } from "./models/PluginSettings";
+import {
+	DEFAULT_SETTINGS,
+	Settings,
+	validateAndNormalizeSettings,
+} from "./models/PluginSettings";
 import { around } from "monkey-around";
 import { ZOOM_FACTOR_TOLERANCE } from "./services/TabZoom";
 import { hydrateViewState, useViewState } from "./models/ViewState";
 import { hydrateTabCacheStore } from "./stores/TabCacheStore";
 import { ObsidianVerticalTabsSettingTab } from "./views/SettingTab";
 import { loadDisableOnThisDevice, useSettings } from "./models/PluginContext";
-import { patchQuickSwitcher } from "./services/EphemeralTabs";
+import {
+	patchQuickSwitcher,
+	initEphemeralTabs,
+} from "./services/EphemeralTabs";
 import { linkTasksStore } from "./stores/LinkTaskStore";
 import { parseLink } from "./services/ParseLink";
 import {
@@ -34,8 +42,6 @@ import {
 import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
 import { runPersistenceMigrations } from "./history/Migration";
 import { VERTICAL_TABS_ICON } from "./icon";
-import { createActiveTabScroller } from "./services/ScrollableTabs";
-import { updateOrientationLabel } from "./services/Orientation";
 import { getOpenFileOfLeaf } from "./services/GetTabs";
 import { managedLeafStore } from "./stores/ManagedLeafStore";
 import { isHoverEditorEnabled } from "./services/HoverEditorTabs";
@@ -49,9 +55,16 @@ import {
 	enableUniversalCanSplit,
 	patchPlatformCanSplit,
 } from "./services/PlatformCanSplit";
+import { registerCommands } from "./commands";
+import { registerEvents } from "./events";
+import { moveSelfToNewGroupAndHide } from "src/services/MoveTab";
+import { autoRefresh } from "src/services/Refresh";
+import { eventBindingService } from "./stores/EventBindingService";
+import { DragDetectionService } from "./services/DragDetection";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
+	dragDetectionService: DragDetectionService | null = null;
 
 	async onload() {
 		this.register(patchPlatformCanSplit());
@@ -69,11 +82,20 @@ export default class ObsidianVerticalTabs extends Plugin {
 			);
 			return;
 		}
-		await this.registerEventsAndViews();
-		await this.setupCommands();
+		this.registerView(
+			VERTICAL_TABS_VIEW,
+			(leaf) => new VerticalTabsView(leaf, this)
+		);
+		this.registerHoverLinkSource("vertical-tabs", {
+			defaultMod: true,
+			display: "Vertical Tabs",
+		});
+		registerEvents(this);
+		registerCommands(this);
 		await this.updateViewStates();
 		await this.patchViews();
 		this.addSettingTab(new ObsidianVerticalTabsSettingTab(this.app, this));
+		await this.initialize();
 		this.app.workspace.onLayoutReady(() => {
 			disableUniversalCanSplit();
 			const isPhone = Platform.isPhone;
@@ -96,56 +118,15 @@ export default class ObsidianVerticalTabs extends Plugin {
 		});
 	}
 
-	async registerEventsAndViews() {
-		this.registerView(
-			VERTICAL_TABS_VIEW,
-			(leaf) => new VerticalTabsView(leaf, this)
-		);
-		this.registerEvents();
-	}
-
-	registerEvents() {
-		this.registerScrollableTabsEvents();
-		this.registerOrientationEvents();
-	}
-
-	registerScrollableTabsEvents() {
-		const scroller = createActiveTabScroller();
-		this.register(scroller.cancel);
-		this.registerEvent(
-			this.app.workspace.on("active-leaf-change", (leaf) => {
-				scroller.scrollToActiveTab(leaf);
-				useViewState.getState().markScrollableState(null);
-			}),
-		);
-		this.registerEvent(
-			this.app.workspace.on("editor-change", (_, info) => {
-				if (
-					info instanceof MarkdownView &&
-					useViewState.getState().scrollableState === info.leaf.id
-				) {
-					scroller.scrollToActiveTab(info.leaf);
-				}
-			}),
-		);
-	}
-
-	registerOrientationEvents() {
-		if (Platform.isPhone) {
-			updateOrientationLabel();
-			this.registerDomEvent(window, "resize", updateOrientationLabel);
-		}
-	}
-
-	async setupCommands() {
-		this.addCommand({
-			id: "open",
-			name: "Open",
-			callback: () => {
-				void this.openVerticalTabs();
-				useSettings.getState().toggleBackgroundMode(this.app, false);
-			},
-		});
+	async initialize() {
+		const { modifyViewCueCallback } = useViewState.getState();
+		const settings = await useSettings.getState().loadSettings(this);
+		if (settings.ephemeralTabs) initEphemeralTabs(this.app);
+		if (settings.enhancedKeyboardTabSwitch) modifyViewCueCallback(this.app);
+		if (settings.backgroundMode) void moveSelfToNewGroupAndHide(this.app);
+		this.dragDetectionService = new DragDetectionService(this.app, this);
+		this.dragDetectionService.initialize();
+		autoRefresh(this);
 	}
 
 	async setupLocalStorageService() {
@@ -162,6 +143,7 @@ export default class ObsidianVerticalTabs extends Plugin {
 				this.app.workspace.getLeftLeaf(false);
 			if (!leaf) return;
 			await leaf.setViewState({ type: VERTICAL_TABS_VIEW, active: true });
+			if (requireApiVersion("1.7.2")) await leaf.loadIfDeferred();
 			await this.app.workspace.revealLeaf(leaf);
 		} catch {
 			// do nothing
@@ -173,14 +155,15 @@ export default class ObsidianVerticalTabs extends Plugin {
 			useViewState.getState().resetViewCueCallback(this.app);
 		}
 		removeAllTabControlButtons(this.app);
+		if (this.dragDetectionService) {
+			this.dragDetectionService.cleanup();
+			this.dragDetectionService = null;
+		}
+		eventBindingService.unbindAll();
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			(await this.loadData()) as Settings
-		);
+		this.settings = validateAndNormalizeSettings(await this.loadData());
 	}
 
 	async saveSettings() {

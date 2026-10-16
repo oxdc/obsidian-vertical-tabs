@@ -33,26 +33,25 @@ import { useTabSelection } from "src/stores/TabSelectionStore";
 
 export const NavigationContent = () => {
 	const groupIDs = tabCacheStore((state) => state.groupIDs);
-	const content = tabCacheStore((state) => state.content);
+	const groups = tabCacheStore((state) => state.groups);
+	const leaves = tabCacheStore((state) => state.leaves);
 	const { moveGroupBefore, moveGroupToEnd } = tabCacheStore.getActions();
 	const { getSelectedTabs, isTabSelected, clearTabSelection } =
 		useTabSelection();
 	const app = useApp();
 	const sensors = useSensors(
-		useSensor(PointerSensor, {
-			activationConstraint: {
-				distance: 8,
-			},
-		})
+		useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
 	);
 	const [isDragging, setIsDragging] = useState(false);
 	const [isDraggingGroup, setIsDraggingGroup] = useState(false);
+
 	const handleDragStart = (event: DragStartEvent) => {
 		setIsDragging(true);
 		const { active } = event;
 		const isActiveTab = (active.data.current as { isTab: boolean }).isTab;
 		setIsDraggingGroup(!isActiveTab);
 	};
+
 	const handleDragEnd = async (event: DragEndEvent) => {
 		setIsDragging(false);
 		setIsDraggingGroup(false);
@@ -63,6 +62,7 @@ export const NavigationContent = () => {
 		const isActiveTab = (active.data.current as { isTab: boolean }).isTab;
 		const isOverTab = (over.data.current as { isTab: boolean }).isTab;
 
+		// prettier-ignore
 		if (isActiveTab) {
 			const selectedTabs = getSelectedTabs();
 			const hasMultipleSelection =
@@ -75,22 +75,12 @@ export const NavigationContent = () => {
 				if (isOverTab) {
 					movedTabs = moveMultipleTabs(app, selectedTabs, overID);
 				} else {
-					const groupID = overID.startsWith("slot")
-						? overID.slice(5)
-						: overID;
+					const groupID = overID.startsWith("slot") ? overID.slice(5) : overID;
 					if (groupID === "new") {
-						movedTabs = await moveMultipleTabsToNewGroup(
-							app,
-							selectedTabs
-						);
+						movedTabs = await moveMultipleTabsToNewGroup(app, selectedTabs);
 					} else {
-						const parent = content.get(groupID).group;
-						if (parent)
-							movedTabs = moveMultipleTabsToEnd(
-								app,
-								selectedTabs,
-								parent
-							);
+						const parent = groups.get(groupID)?.group;
+						if (parent) movedTabs = moveMultipleTabsToEnd(app, selectedTabs, parent);
 					}
 				}
 				clearTabSelection();
@@ -100,15 +90,12 @@ export const NavigationContent = () => {
 				if (isOverTab) {
 					movedTab = moveTab(app, activeID, overID);
 				} else {
-					const groupID = overID.startsWith("slot")
-						? overID.slice(5)
-						: overID;
+					const groupID = overID.startsWith("slot") ? overID.slice(5) : overID;
 					if (groupID === "new") {
 						movedTab = await moveTabToNewGroup(app, activeID);
 					} else {
-						const parent = content.get(groupID).group;
-						if (parent)
-							movedTab = moveTabToEnd(app, activeID, parent);
+						const parent = groups.get(groupID)?.group;
+						if (parent) movedTab = moveTabToEnd(app, activeID, parent);
 					}
 				}
 				if (movedTab) movedTabs = [movedTab];
@@ -144,17 +131,7 @@ export const NavigationContent = () => {
 		"is-dragging": isDragging,
 	};
 
-	const getGroupIDs = () => [...groupIDs, "slot-new"];
-
-	const getLeaveIDs = (groupID: Identifier) => {
-		const group = content.get(groupID);
-		return [...group.leafIDs, `slot-${groupID}`];
-	};
-
-	const entryOf = (groupID: Identifier) => {
-		return content.get(groupID);
-	};
-
+	// prettier-ignore
 	return (
 		<div className={toClassName(rootContainerClasses)}>
 			<div className={toClassName(containerClasses)}>
@@ -164,43 +141,36 @@ export const NavigationContent = () => {
 					onDragStart={handleDragStart}
 					onDragEnd={(event) => void handleDragEnd(event)}
 				>
-					<SortableContext items={getGroupIDs()}>
-						{groupIDs.map((groupID) => (
-							<Group
-								key={groupID}
-								type={entryOf(groupID).groupType}
-								group={entryOf(groupID).group}
-							>
-								{(isSingleGroup, viewType) => (
-									<SortableContext
-										items={getLeaveIDs(groupID)}
-									>
-										{entryOf(groupID).leaves.map(
-											(leaf, index, array) => {
-												const isLast =
-													index === array.length - 1;
+					<SortableContext items={[...groupIDs, "slot-new"]}>
+						{groupIDs.map((groupID) => {
+							const groupEntry = groups.get(groupID);
+							if (!groupEntry) return null;
+							const { group, groupType, leafIDs } = groupEntry;
+							return (
+								<Group key={groupID} type={groupType} group={group}>
+									{(isSingleGroup, viewType) => (
+										<SortableContext items={[...leafIDs, `slot-${groupID}`]}>
+											{leafIDs.map((leafID, index, array) => {
+												const isLast = index === array.length - 1;
+												const leaf = leaves.get(leafID)?.leaf;
+												if (!leaf) return null;
 												return (
 													<Tab
-														key={leaf.id}
+														key={leafID}
 														leaf={leaf}
 														index={index + 1}
 														isLast={isLast}
-														isSingleGroup={
-															isSingleGroup
-														}
+														isSingleGroup={isSingleGroup}
 														viewType={viewType}
 													/>
-												);
-											}
-										)}
-										<TabSlot
-											group={entryOf(groupID).group}
-											groupID={groupID}
-										/>
-									</SortableContext>
-								)}
-							</Group>
-						))}
+												)}
+											)}
+											<TabSlot group={groupEntry.group} groupID={groupID} />
+										</SortableContext>
+									)}
+								</Group>
+							);
+						})}
 						<GroupSlot />
 					</SortableContext>
 					{createPortal(<DragOverlay />, activeDocument.body)}

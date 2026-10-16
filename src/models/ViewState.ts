@@ -3,7 +3,6 @@ import { DefaultRecord } from "src/utils/DefaultRecord";
 import {
 	App,
 	debounce,
-	EventRef,
 	Platform,
 	View,
 	Workspace,
@@ -43,21 +42,6 @@ import { isHoverEditorEnabled } from "src/services/HoverEditorTabs";
 import { NativeDragTabs } from "src/services/NativeDragTabs";
 import { localStorageService } from "src/stores/LocalStorageService";
 
-export type PinningEvents = DefaultRecord<Identifier, EventRef | null>;
-export type PinningEventCallback = (pinned: boolean) => void;
-export const createNewPinningEvents = () =>
-	new DefaultRecord(() => null) as PinningEvents;
-
-export type EphermalToggleEvents = DefaultRecord<Identifier, EventRef | null>;
-export type EphermalToggleEventCallback = (isEphemeral: boolean) => void;
-export const createNewEphermalToggleEvents = () =>
-	new DefaultRecord(() => null) as EphermalToggleEvents;
-
-export type GroupViewToggleEvents = DefaultRecord<Identifier, EventRef | null>;
-export type GroupViewToggleEventCallback = (viewType: GroupViewType) => void;
-export const createNewGroupViewToggleEvents = () =>
-	new DefaultRecord(() => null) as GroupViewToggleEvents;
-
 export type GroupUnhideTimes = DefaultRecord<Identifier, number>;
 export const createNewGroupUnhideTimes = () => new DefaultRecord(() => 0);
 
@@ -88,9 +72,6 @@ interface ViewState {
 	latestActiveLeaf: WorkspaceLeaf | null;
 	latestActiveTab: HTMLElement | null;
 	activeFileTick: number;
-	pinningEvents: PinningEvents;
-	ephermalToggleEvents: EphermalToggleEvents;
-	groupViewToggleEvents: GroupViewToggleEvents;
 	globalCollapseState: boolean;
 	isEditingTabs: boolean;
 	hasCtrlKeyPressed: boolean;
@@ -125,22 +106,6 @@ interface ViewState {
 	insertCloneButtons: () => void;
 	updatePositionLabels: () => void;
 	refreshToggleButtons: (app: App) => void;
-	bindPinningEvent: (
-		leaf: WorkspaceLeaf,
-		callback: PinningEventCallback
-	) => void;
-	unbindPinningEvent: (leaf: WorkspaceLeaf) => void;
-	bindEphemeralToggleEvent: (
-		app: App,
-		leaf: WorkspaceLeaf,
-		callback: EphermalToggleEventCallback
-	) => void;
-	unbindEphemeralToggleEvent: (leaf: WorkspaceLeaf) => void;
-	bindGroupViewToggleEvent: (
-		group: WorkspaceParent | null,
-		callback: GroupViewToggleEventCallback
-	) => void;
-	unbindGroupViewToggleEvent: (group: WorkspaceParent | null) => void;
 	setAllCollapsed: () => void;
 	setAllExpanded: () => void;
 	uncollapseActiveGroup: (app: App) => void;
@@ -278,9 +243,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	latestActiveLeaf: null,
 	latestActiveTab: null,
 	activeFileTick: 0,
-	pinningEvents: createNewPinningEvents(),
-	ephermalToggleEvents: createNewEphermalToggleEvents(),
-	groupViewToggleEvents: createNewGroupViewToggleEvents(),
 	globalCollapseState: false,
 	isEditingTabs: false,
 	hasCtrlKeyPressed: false,
@@ -551,69 +513,6 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		if (!leftButtonClone || !rightButtonClone)
 			get().cloneToggleButtons(app);
 		get().insertCloneButtons();
-	},
-	bindPinningEvent(leaf: WorkspaceLeaf, callback: (pinned: boolean) => void) {
-		const { pinningEvents } = get();
-		const event = pinningEvents.get(leaf.id);
-		if (event) return;
-		const newEvent = leaf.on("pinned-change", callback);
-		pinningEvents.set(leaf.id, newEvent);
-		set({ pinningEvents });
-	},
-	unbindPinningEvent(leaf: WorkspaceLeaf) {
-		const { pinningEvents } = get();
-		const event = pinningEvents.get(leaf.id);
-		if (event) {
-			leaf.offref(event);
-			pinningEvents.set(leaf.id, null);
-			set({ pinningEvents });
-		}
-	},
-	bindEphemeralToggleEvent(
-		app: App,
-		leaf: WorkspaceLeaf,
-		callback: EphermalToggleEventCallback
-	) {
-		const { ephermalToggleEvents } = get();
-		const event = ephermalToggleEvents.get(leaf.id);
-		if (event) return;
-		const newEvent = leaf.on(EVENTS.EPHEMERAL_TOGGLE, (isEphemeral) => {
-			if (!isEphemeral) get().rememberNonephemeralTab(app, leaf.id);
-			callback(isEphemeral);
-		});
-		ephermalToggleEvents.set(leaf.id, newEvent);
-		set({ ephermalToggleEvents });
-	},
-	unbindEphemeralToggleEvent(leaf: WorkspaceLeaf) {
-		const { ephermalToggleEvents } = get();
-		const event = ephermalToggleEvents.get(leaf.id);
-		if (event) {
-			leaf.offref(event);
-			ephermalToggleEvents.set(leaf.id, null);
-			set({ ephermalToggleEvents });
-		}
-	},
-	bindGroupViewToggleEvent(group, callback) {
-		if (!group) return;
-		const { groupViewToggleEvents } = get();
-		const event = groupViewToggleEvents.get(group.id);
-		if (event) return;
-		const newEvent = group.on(
-			EVENTS.GROUP_VIEW_CHANGE,
-			(viewType: GroupViewType) => callback(viewType)
-		);
-		groupViewToggleEvents.set(group.id, newEvent);
-		set({ groupViewToggleEvents });
-	},
-	unbindGroupViewToggleEvent(group) {
-		if (!group) return;
-		const { groupViewToggleEvents } = get();
-		const event = groupViewToggleEvents.get(group.id);
-		if (event) {
-			group.offref(event);
-			groupViewToggleEvents.set(group.id, null);
-			set({ groupViewToggleEvents });
-		}
 	},
 	setAllCollapsed() {
 		const ids = tabCacheStore.getState().groupIDs;
@@ -891,8 +790,8 @@ export const useViewState = create<ViewState>()((set, get) => ({
 	makeAllMissionControlGroupsDraggable() {
 		const { nativeDragTabs, makeLeavesDraggableForGroup } = get();
 		if (!nativeDragTabs) return;
-		const { content } = tabCacheStore.getState();
-		for (const entry of content.values()) {
+		const { groups } = tabCacheStore.getState();
+		for (const entry of groups.values()) {
 			const group = entry.group;
 			if (
 				!group?.containerEl?.classList.contains(
@@ -936,17 +835,17 @@ export const useViewState = create<ViewState>()((set, get) => ({
 			return;
 		}
 		const { hiddenGroups } = get();
-		const tabCache = getTabs(app);
+		const { groups, groupIDs } = getTabs(app);
 		const visibleRootGroups: Array<{
 			id: Identifier;
 			lastActivity: number;
 			tabCacheIndex: number;
 		}> = [];
-		const groupIDs = Array.from(tabCache.keys());
 		for (let index = 0; index < groupIDs.length; index++) {
 			const groupID = groupIDs[index];
 			if (!groupID) continue;
-			const entry = tabCache.get(groupID);
+			const entry = groups.get(groupID);
+			if (!entry) continue;
 			if (entry.groupType !== GroupType.RootSplit) continue;
 			if (hiddenGroups.includes(groupID)) continue;
 			if (!entry.group) continue;

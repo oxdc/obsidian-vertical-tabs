@@ -48,6 +48,7 @@ import {
 } from "src/services/Customization";
 import { IconSelectionModal } from "src/views/IconSelectionModal";
 import { createVTMenu } from "src/services/Menu";
+import { eventBindingService } from "src/stores/EventBindingService";
 
 interface GroupProps {
 	type: GroupType;
@@ -72,7 +73,6 @@ export const Group = (props: GroupProps) => {
 	const {
 		toggleCollapsedGroup,
 		toggleHiddenGroup,
-		bindGroupViewToggleEvent,
 		getLinkedFolder,
 		removeLinkedGroup,
 	} = useViewState();
@@ -258,7 +258,11 @@ export const Group = (props: GroupProps) => {
 	// Bind and track the events that used for syncing with Obsidian,
 	// when the states are changed outside of the component.
 	useEffect(() => {
-		bindGroupViewToggleEvent(group, setViewType);
+		if (!group) return;
+		eventBindingService.bind("group-view-toggle", group, setViewType, {
+			scope: "group-component",
+			once: true,
+		});
 	}, [group]);
 	// Sync the linked folder state from the global view state store
 	useEffect(() => {

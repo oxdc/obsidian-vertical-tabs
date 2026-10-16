@@ -25,7 +25,7 @@ import {
 	closeTabsToBottomInGroup,
 	closeTabsToTopInGroup,
 } from "src/services/CloseTabs";
-import { tabCacheStore } from "src/stores/TabCacheStore";
+import { GroupCacheEntry, tabCacheStore } from "src/stores/TabCacheStore";
 import { useViewState, VIEW_CUE_PREV } from "src/models/ViewState";
 import { useTabSelection } from "src/stores/TabSelectionStore";
 import { deduplicateTitle } from "src/services/DeduplicateTitle";
@@ -77,6 +77,7 @@ import { getGroupTitle, setGroupTitle } from "src/services/Customization";
 import { EVENTS } from "src/constants/Events";
 import { createVTMenu } from "src/services/Menu";
 import { runWithCanSplit } from "src/services/PlatformCanSplit";
+import { eventBindingService } from "src/stores/EventBindingService";
 
 interface TabProps {
 	leaf: WorkspaceLeaf;
@@ -98,13 +99,12 @@ export const Tab = memo(function Tab(props: TabProps) {
 	/* Actions (for mutating the shared store) */
 	const { refresh, sort, saveTabMetadata } = tabCacheStore.getActions();
 	const {
-		bindPinningEvent,
-		bindEphemeralToggleEvent,
 		lockFocusOnLeaf,
 		toggleHiddenGroup,
 		hookLatestActiveTab,
 		mapViewCueIndex,
 		registerViewCueTab,
+		rememberNonephemeralTab,
 	} = useViewState();
 
 	/* Relevant settings */
@@ -236,6 +236,11 @@ export const Tab = memo(function Tab(props: TabProps) {
 			setGroupViewType(leaf.parent, GroupViewType.Default);
 		}
 	};
+	// Update and remember the ephemeral state
+	const setEphemeralState = (isEphemeral: boolean) => {
+		if (!isEphemeral) rememberNonephemeralTab(app, leaf.id);
+		setIsEphemeral(isEphemeral);
+	};
 
 	/* Commands - Pinning */
 	// setPinnedStates updates the states managed by the plugin,
@@ -362,13 +367,11 @@ export const Tab = memo(function Tab(props: TabProps) {
 
 	/* Commands - Move */
 	const addMoveOptionsToMenu = (menu: Menu) => {
-		const entries = Array.from(tabCacheStore.getState().content.values());
-		const groups = entries
-			.filter(
-				(entry) =>
-					entry.groupType === GroupType.RootSplit &&
-					entry.group !== leaf.parent
-			)
+		const isOtherRootGroup = (entry: GroupCacheEntry) =>
+			entry.groupType === GroupType.RootSplit &&
+			entry.group !== leaf.parent;
+		const groups = Array.from(tabCacheStore.getState().groups.values())
+			.filter(isOtherRootGroup)
 			.map((entry) => entry.group)
 			.filter((group) => group !== null);
 		groups.forEach((group) => {
@@ -833,8 +836,14 @@ export const Tab = memo(function Tab(props: TabProps) {
 	// Bind and track the events that used for syncing with Obsidian,
 	// when the states are changed outside of the component.
 	useEffect(() => {
-		bindPinningEvent(leaf, setPinnedStates);
-		bindEphemeralToggleEvent(app, leaf, setIsEphemeral);
+		eventBindingService.bind("tab-pinning", leaf, setPinnedStates, {
+			scope: "tab-component",
+			once: true,
+		});
+		eventBindingService.bind("ephemeral-toggle", leaf, setEphemeralState, {
+			scope: "tab-component",
+			once: true,
+		});
 	}, [leaf.id]);
 	// volatileTitle is used for syncing with the webview title.
 	useEffect(() => {

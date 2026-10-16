@@ -200,7 +200,7 @@ export function deduplicateExistingTabs(
 
 export function removeNewTabs() {
 	if (!useSettings.getState().alwaysOpenInNewTab) return;
-	tabCacheStore.getState().content.forEach((entry) => {
+	tabCacheStore.getState().groups.forEach((entry) => {
 		if (entry.group && entry.group.children.length > 1) {
 			entry.group.children.forEach((child) => {
 				if (child.view.getViewType() === "empty") {

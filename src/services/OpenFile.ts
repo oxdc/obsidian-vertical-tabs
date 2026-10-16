@@ -21,8 +21,7 @@ export function addMenuItemsToFileContextMenu(
 	file: TFile
 ) {
 	if (checkIfMenuIsAlreadyAdded(menu)) return;
-	const entries = Array.from(tabCacheStore.getState().content.values());
-	const groups = entries
+	const groups = Array.from(tabCacheStore.getState().groups.values())
 		.filter((entry) => entry.groupType === GroupType.RootSplit)
 		.map((entry) => entry.group)
 		.filter((group) => group !== null);

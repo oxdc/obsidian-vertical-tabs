@@ -36,6 +36,11 @@ import {
 	TabClosingBehaviorOptions,
 } from "src/services/CloseTabs";
 import { runIndexedDBDiagnostic } from "src/services/IndexedDBDiagnostic";
+import { tabCacheStore } from "../stores/TabCacheStore";
+import {
+	serializeSortStrategy,
+	deserializeSortStrategy,
+} from "../services/SortTabs";
 
 interface ToggleProps {
 	name: string;
@@ -137,11 +142,18 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			this.displayPluginDisabledWarningBanner(containerEl);
 		}
 
-		if (!disableOnThisDevice && !this.plugin.settings.backgroundMode) {
-			this.displayBasicSettingsSection(containerEl);
+		if (!disableOnThisDevice) {
+			if (!this.plugin.settings.backgroundMode) {
+				this.displayBasicSettingsSection(containerEl);
+			}
+
 			this.displayHorizontalTabControlSection(containerEl);
 			this.displayNavigationStrategySection(containerEl);
-			this.displayLinkedFolderSection(containerEl);
+
+			if (!this.plugin.settings.backgroundMode) {
+				this.displayLinkedFolderSection(containerEl);
+			}
+
 			this.displayGroupViewSection(containerEl);
 		}
 
@@ -597,8 +609,12 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 			"Horizontal tab control"
 		);
 
-		this.displayHorizontalTabsOptions(group);
-		this.displayEnhancedKeyboardTabSwitchToggle(group);
+		if (!this.plugin.settings.backgroundMode) {
+			this.displayHorizontalTabsOptions(group);
+			this.displayEnhancedKeyboardTabSwitchToggle(group);
+		}
+
+		this.displayTabSortingOptions(group);
 
 		if (!this.plugin.settings.showActiveTabs) {
 			this.displayScrollableTabsToggle(group);
@@ -657,6 +673,39 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 				useSettings
 					.getState()
 					.toggleEnhancedKeyboardTabSwitch(this.app, value),
+		});
+	}
+
+	private displayTabSortingOptions(containerEl: HTMLElement | SettingGroup) {
+		const sortStrategy = tabCacheStore.getState().sortStrategy;
+		const currentValue = sortStrategy
+			? serializeSortStrategy(sortStrategy)
+			: "none";
+		const sortStrategyOptions: Record<string, string> = {
+			none: "Disable",
+			titleAToZ: "Title name (A to Z)",
+			titleZToA: "Title name (Z to A)",
+			pinnedAtTop: "Pinned at top/left",
+			pinnedAtBottom: "Pinned at bottom/right",
+			recentOnTop: "Recent on top/left",
+			recentOnBottom: "Recent on bottom/right",
+			oldestOnTop: "Oldest on top/left",
+			oldestOnBottom: "Oldest on bottom/right",
+		};
+		this.createDropdown(containerEl, {
+			name: "Tab sorting",
+			desc: "Sort tabs within each group using the selected strategy.",
+			options: sortStrategyOptions,
+			value: currentValue,
+			onChange: (value) => {
+				const strategy =
+					value === "none" ? null : deserializeSortStrategy(value);
+				tabCacheStore.getActions().setSortStrategy(strategy);
+			},
+			onReset: () => {
+				tabCacheStore.getActions().setSortStrategy(null);
+				this.refresh();
+			},
 		});
 	}
 

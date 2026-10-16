@@ -119,20 +119,6 @@ export async function moveSelfToNewGroupAndHide(app: App) {
 	newSelf.parent.containerEl.addClass("is-hidden");
 }
 
-export function selfIsClosed(app: App) {
-	const workspace = app.workspace;
-	const self = workspace.getLeavesOfType(VERTICAL_TABS_VIEW).first();
-	return !self;
-}
-
-export function ensureSelfIsOpen(app: App) {
-	if (selfIsClosed(app)) {
-		const leaf: WorkspaceLeaf | null = app.workspace.getLeftLeaf(false);
-		if (leaf)
-			void leaf.setViewState({ type: VERTICAL_TABS_VIEW, active: true });
-	}
-}
-
 export function selfIsNotInTheSidebar(app: App) {
 	const workspace = app.workspace;
 	const self = workspace.getLeavesOfType(VERTICAL_TABS_VIEW).first();
