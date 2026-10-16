@@ -40,7 +40,6 @@ import {
 	TabClosingBehavior,
 } from "./services/CloseTabs";
 import { REFRESH_TIMEOUT_LONG } from "./constants/Timeouts";
-import { runPersistenceMigrations } from "./history/Migration";
 import { VERTICAL_TABS_ICON } from "./icon";
 import { getOpenFileOfLeaf } from "./services/GetTabs";
 import { managedLeafStore } from "./stores/ManagedLeafStore";
@@ -122,7 +121,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 
 	async setupLocalStorageService() {
 		localStorageService.init(this.app);
-		await runPersistenceMigrations(this);
 		hydrateViewState();
 		hydrateTabCacheStore();
 	}

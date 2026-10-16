@@ -166,7 +166,7 @@ const saveHiddenGroups = (hiddenGroups: Array<Identifier>) => {
 
 // prettier-ignore
 const loadHiddenGroups = (): Array<Identifier> => {
-	return localStorageService.migrate<Array<Identifier>>("hidden-groups") ?? [];
+	return localStorageService.load<Array<Identifier>>("hidden-groups") ?? [];
 };
 
 const saveCollapsedGroups = (collapsedGroups: Array<Identifier>) => {
@@ -175,7 +175,7 @@ const saveCollapsedGroups = (collapsedGroups: Array<Identifier>) => {
 
 // prettier-ignore
 const loadCollapsedGroups = (): Array<Identifier> => {
-	return localStorageService.migrate<Array<Identifier>>("collapsed-groups") ?? [];
+	return localStorageService.load<Array<Identifier>>("collapsed-groups") ?? [];
 };
 
 const saveNonEphemeralTabs = (tabs: Array<Identifier>) => {
@@ -184,7 +184,7 @@ const saveNonEphemeralTabs = (tabs: Array<Identifier>) => {
 
 // prettier-ignore
 const loadNonEphemeralTabs = (): Array<Identifier> => {
-	return localStorageService.migrate<Array<Identifier>>("nonephemeral-tabs") ?? [];
+	return localStorageService.load<Array<Identifier>>("nonephemeral-tabs") ?? [];
 };
 
 const clearNonEphemeralTabs = () => {
@@ -197,7 +197,7 @@ const saveGroupUnhideTimes = (times: GroupUnhideTimes) => {
 
 // prettier-ignore
 const loadGroupUnhideTimes = (): GroupUnhideTimes => {
-	const entries = localStorageService.migrate<[Identifier, number][]>("group-unhide-times");
+	const entries = localStorageService.load<[Identifier, number][]>("group-unhide-times");
 	if (!entries) return createNewGroupUnhideTimes() as GroupUnhideTimes;
 	return new DefaultRecord(() => 0, entries);
 };
