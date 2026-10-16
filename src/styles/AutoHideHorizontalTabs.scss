@@ -1,11 +1,6 @@
 // Hide horizontal tabs in the root split when a sidebar is open and
 // the vertical tabs pane is the active sidebar tab (#176, #206, #247)
-body.vt-auto-hide-horizontal-tabs {
-	.vt-header-buttons {
-		display: none;
-		align-items: center;
-	}
-
+@mixin when-left-sidebar-vt {
 	.mod-sidedock.mod-left-split:not(.is-sidedock-collapsed):has(
 			> .workspace-tabs
 				> .workspace-tab-header-container
@@ -13,6 +8,35 @@ body.vt-auto-hide-horizontal-tabs {
 				> .workspace-tab-header.is-active.obsidian-vertical-tabs-tab-header
 		)
 		~ .workspace-split.mod-root {
+		@content;
+	}
+}
+
+// The right sidebar comes after the root split, so `~` can't reach it
+@mixin when-right-sidebar-vt {
+	.workspace:has(
+		> .mod-sidedock.mod-right-split:not(.is-sidedock-collapsed)
+			> .workspace-tabs
+			> .workspace-tab-header-container
+			> .workspace-tab-header-container-inner
+			> .workspace-tab-header.is-active.obsidian-vertical-tabs-tab-header
+	) {
+		@content;
+	}
+}
+
+body.vt-auto-hide-horizontal-tabs {
+	.vt-header-buttons,
+	.vt-extra-left-sidebar-toggle,
+	.vt-extra-sidebar-toggle {
+		display: none;
+	}
+
+	.vt-header-buttons {
+		align-items: center;
+	}
+
+	@include when-left-sidebar-vt {
 		.workspace-tabs > .workspace-tab-header-container {
 			display: none;
 		}
@@ -22,23 +46,40 @@ body.vt-auto-hide-horizontal-tabs {
 		}
 	}
 
-	&:has(.mod-sidedock.mod-right-split:not(.is-sidedock-collapsed)) {
-		.vt-extra-sidebar-toggle {
-			display: none;
+	@include when-right-sidebar-vt {
+		> .workspace-split.mod-root {
+			.workspace-tabs > .workspace-tab-header-container {
+				display: none;
+			}
+
+			.vt-header-buttons {
+				display: flex;
+			}
+		}
+
+		&:not(.is-left-sidedock-open)
+			> .workspace-split.mod-root
+			.workspace-tabs:is(.mod-top-left-space, .vt-mod-top-left-space)
+			.vt-extra-left-sidebar-toggle {
+			display: flex;
 		}
 	}
 
-	// The right sidebar comes after the root split, so `~` can't reach it
-	.workspace:has(
-			> .mod-sidedock.mod-right-split:not(.is-sidedock-collapsed)
-				> .workspace-tabs
-				> .workspace-tab-header-container
-				> .workspace-tab-header-container-inner
-				> .workspace-tab-header.is-active.obsidian-vertical-tabs-tab-header
-		)
-		> .workspace-split.mod-root {
-		.workspace-tabs > .workspace-tab-header-container {
-			display: none;
+	.workspace:not(.is-right-sidedock-open)
+		.workspace-split.mod-root
+		.workspace-tabs:is(.mod-top-right-space, .vt-mod-top-right-space)
+		.vt-extra-sidebar-toggle {
+		display: flex;
+	}
+}
+
+body.mod-macos.vt-auto-hide-horizontal-tabs.is-hidden-frameless:not(.is-fullscreen) {
+	@include when-right-sidebar-vt {
+		&:not(.is-left-sidedock-open)
+			> .workspace-split.mod-root
+			.workspace-tabs:is(.mod-top-left-space, .vt-mod-top-left-space)
+			.view-header {
+			padding-left: calc(var(--size-4-2) + var(--frame-left-space));
 		}
 	}
 }

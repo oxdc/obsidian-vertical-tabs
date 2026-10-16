@@ -47,7 +47,9 @@ function triggerNativeTabList(group: WorkspaceParent, event: MouseEvent) {
 
 export function removeExtraHeaderButtons(leaf: WorkspaceLeaf) {
 	if (!(leaf.view instanceof ItemView)) return;
-	leaf.view.headerEl?.querySelector(".vt-header-buttons")?.remove();
+	const { headerEl } = leaf.view;
+	headerEl?.querySelector(".vt-header-buttons")?.remove();
+	headerEl?.querySelector(".vt-extra-left-sidebar-toggle")?.remove();
 }
 
 export function addExtraHeaderButtons(
@@ -56,7 +58,7 @@ export function addExtraHeaderButtons(
 	plugin: ObsidianVerticalTabs,
 ) {
 	removeExtraHeaderButtons(leaf);
-	const { rootSplit, rightSplit } = app.workspace;
+	const { rootSplit, leftSplit, rightSplit } = app.workspace;
 	if (!plugin.settings.autoHideHorizontalTabs) return;
 	if (leaf.getRoot() !== rootSplit) return;
 	if (!(leaf.view instanceof ItemView)) return;
@@ -64,6 +66,19 @@ export function addExtraHeaderButtons(
 	if (!headerEl || !actionsEl) return;
 	const group = leaf.parent;
 	if (!group) return;
+	if (!Platform.isPhone) {
+		const navButtons =
+			headerEl.querySelector(".view-header-nav-buttons") ??
+			headerEl.querySelector(".view-header-left");
+		navButtons?.prepend(
+			createActionButton({
+				icon: "sidebar-toggle-button-icon",
+				title: "Toggle left sidebar",
+				cls: "vt-extra-left-sidebar-toggle",
+				onClick: () => leftSplit.toggle(),
+			}),
+		);
+	}
 	const container = headerEl.createDiv({ cls: "vt-header-buttons" });
 	actionsEl.after(container);
 	if (plugin.settings.showMissionControlToggle) {
