@@ -483,7 +483,8 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		tabContainers.forEach((tabContainer) => {
 			tabContainer.classList.remove(
 				"vt-mod-top-left-space",
-				"vt-mod-top-right-space"
+				"vt-mod-top-right-space",
+				"vt-mod-top-right-main"
 			);
 		});
 		const { topLeftContainer, topRightContainer, allTopContainers } =
@@ -496,6 +497,7 @@ export const useViewState = create<ViewState>()((set, get) => ({
 		);
 		const topRightMainContainer =
 			getCornerContainers(excludedRightSidebar).topRightContainer;
+		topRightMainContainer?.classList.add("vt-mod-top-right-main");
 		allTopContainers.forEach((container) => {
 			container.classList.add("vt-mod-top-space");
 		});

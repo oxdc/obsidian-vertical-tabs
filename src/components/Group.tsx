@@ -253,6 +253,7 @@ export const Group = (props: GroupProps) => {
 		// Automatically unhide the group if it's the only one in the root split (#175)
 		if (isSingleGroupInRoot) unhideGroup();
 		group?.containerEl.toggleClass("is-hidden", isHidden);
+		workspace.trigger(EVENTS.UPDATE_TOGGLE);
 		return () => group?.containerEl.removeClass("is-hidden");
 	}, [isHidden, isSingleGroupInRoot]);
 	// Bind and track the events that used for syncing with Obsidian,

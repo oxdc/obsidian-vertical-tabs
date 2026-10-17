@@ -1,5 +1,6 @@
 // Hide horizontal tabs in the root split when a sidebar is open and
-// the vertical tabs pane is the active sidebar tab (#176, #206, #247)
+// Vertical Tabs is the active sidebar tab (#176, #206, #247)
+
 @mixin when-left-sidebar-vt {
 	.mod-sidedock.mod-left-split:not(.is-sidedock-collapsed):has(
 			> .workspace-tabs
@@ -15,12 +16,38 @@
 // The right sidebar comes after the root split, so `~` can't reach it
 @mixin when-right-sidebar-vt {
 	.workspace:has(
-		> .mod-sidedock.mod-right-split:not(.is-sidedock-collapsed)
-			> .workspace-tabs
-			> .workspace-tab-header-container
-			> .workspace-tab-header-container-inner
-			> .workspace-tab-header.is-active.obsidian-vertical-tabs-tab-header
-	) {
+			> .mod-sidedock.mod-right-split:not(.is-sidedock-collapsed)
+				> .workspace-tabs
+				> .workspace-tab-header-container
+				> .workspace-tab-header-container-inner
+				> .workspace-tab-header.is-active.obsidian-vertical-tabs-tab-header
+		)
+		> .workspace-split.mod-root {
+		@content;
+	}
+}
+
+@mixin when-pinned-drawer-vt {
+	.workspace:is(.is-left-sidedock-open, .is-right-sidedock-open):has(
+			> .workspace-drawer.is-pinned:is(.mod-left, .mod-right)
+				.workspace-drawer-tab-options-list
+				> .workspace-tab-header.is-active.obsidian-vertical-tabs-tab-header
+		)
+		> .workspace-split.mod-root {
+		@content;
+	}
+}
+
+@mixin when-tabs-hidden {
+	@include when-left-sidebar-vt {
+		@content;
+	}
+
+	@include when-right-sidebar-vt {
+		@content;
+	}
+
+	@include when-pinned-drawer-vt {
 		@content;
 	}
 }
@@ -36,7 +63,7 @@ body.vt-auto-hide-horizontal-tabs {
 		align-items: center;
 	}
 
-	@include when-left-sidebar-vt {
+	@include when-tabs-hidden {
 		.workspace-tabs > .workspace-tab-header-container {
 			display: none;
 		}
@@ -44,42 +71,61 @@ body.vt-auto-hide-horizontal-tabs {
 		.vt-header-buttons {
 			display: flex;
 		}
-	}
 
-	@include when-right-sidebar-vt {
-		> .workspace-split.mod-root {
-			.workspace-tabs > .workspace-tab-header-container {
-				display: none;
-			}
-
-			.vt-header-buttons {
-				display: flex;
-			}
+		.workspace-tabs.vt-mod-top-left-space .vt-extra-left-sidebar-toggle {
+			display: var(--vt-extra-left-toggle-display, none);
 		}
 
-		&:not(.is-left-sidedock-open)
-			> .workspace-split.mod-root
-			.workspace-tabs:is(.mod-top-left-space, .vt-mod-top-left-space)
-			.vt-extra-left-sidebar-toggle {
-			display: flex;
+		.workspace-tabs.vt-mod-top-right-main .vt-extra-sidebar-toggle {
+			display: var(--vt-extra-right-toggle-display, none);
 		}
 	}
 
-	.workspace:not(.is-right-sidedock-open)
-		.workspace-split.mod-root
-		.workspace-tabs:is(.mod-top-right-space, .vt-mod-top-right-space)
-		.vt-extra-sidebar-toggle {
-		display: flex;
+	// On desktop, the left toggle normally lives in the ribbon.
+	// It lives in the tab bar either when:
+	//  - The ribbon is hidden;
+	//  - The window is frameless on macOS.
+	&:is(:not(.show-ribbon), .mod-macos.is-hidden-frameless) .workspace:not(.is-left-sidedock-open) {
+		--vt-extra-left-toggle-display: flex;
+	}
+
+	// On desktop, the right toggle lives in the tab bar either when:
+	//  - The right sidebar is collapsed;
+	//  - The window is frameless on Linux and Windows.
+	.workspace:not(.is-right-sidedock-open),
+	&.is-hidden-frameless:not(.mod-macos, .is-fullscreen) .workspace {
+		--vt-extra-right-toggle-display: flex;
+	}
+
+	// On tablets, both toggles always live in the tab bar.
+	&.is-tablet .workspace {
+		--vt-extra-left-toggle-display: flex;
+		--vt-extra-right-toggle-display: flex;
 	}
 }
 
-body.mod-macos.vt-auto-hide-horizontal-tabs.is-hidden-frameless:not(.is-fullscreen) {
+body.vt-auto-hide-horizontal-tabs.is-hidden-frameless:not(.is-fullscreen) {
 	@include when-right-sidebar-vt {
-		&:not(.is-left-sidedock-open)
-			> .workspace-split.mod-root
-			.workspace-tabs:is(.mod-top-left-space, .vt-mod-top-left-space)
-			.view-header {
+		.workspace-tabs.vt-mod-top-left-space .view-header {
 			padding-left: calc(var(--size-4-2) + var(--frame-left-space));
+		}
+	}
+
+	.workspace:not(.is-right-sidedock-open) {
+		@include when-tabs-hidden {
+			.workspace-tabs.vt-mod-top-right-main .view-header {
+				padding-right: calc(var(--size-4-2) + var(--frame-right-space));
+			}
+		}
+	}
+
+	@include when-tabs-hidden {
+		.workspace-tabs.vt-mod-top-space .view-header {
+			-webkit-app-region: drag;
+
+			:is(.clickable-icon, .view-header-title-container > *) {
+				-webkit-app-region: no-drag;
+			}
 		}
 	}
 }
