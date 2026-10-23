@@ -7,8 +7,6 @@ import { byActiveTime } from "src/services/SortTabs";
 import { isSelfVisible } from "src/services/Visibility";
 import { tabCacheStore } from "src/stores/TabCacheStore";
 
-// Switching to an already open tab does not change the layout,
-// so recency-based sorting has to be refreshed here.
 const sortIfByActiveTime = () => {
 	if (tabCacheStore.getState().sortStrategy?.compareFn === byActiveTime) {
 		tabCacheStore.getActions().sort();
