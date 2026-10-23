@@ -3,7 +3,15 @@ import ObsidianVerticalTabs from "src/main";
 import { useSettings } from "src/models/PluginContext";
 import { useViewState } from "src/models/ViewState";
 import { autoRefresh } from "src/services/Refresh";
+import { byActiveTime } from "src/services/SortTabs";
 import { isSelfVisible } from "src/services/Visibility";
+import { tabCacheStore } from "src/stores/TabCacheStore";
+
+const sortIfByActiveTime = () => {
+	if (tabCacheStore.getState().sortStrategy?.compareFn === byActiveTime) {
+		tabCacheStore.getActions().sort();
+	}
+};
 
 export function registerVerticalTabsEvents(plugin: ObsidianVerticalTabs) {
 	const app = plugin.app;
@@ -19,6 +27,7 @@ export function registerVerticalTabsEvents(plugin: ObsidianVerticalTabs) {
 			useViewState.getState().setLatestActiveLeaf(plugin);
 			window.setTimeout(() => {
 				useSettings.getState().updateEphemeralTabs(app);
+				sortIfByActiveTime();
 			});
 		})
 	);
