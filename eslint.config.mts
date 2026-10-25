@@ -7,6 +7,7 @@ export default defineConfig(
 		"node_modules",
 		"dist",
 		"esbuild.config.mjs",
+		"tests/build-horizontal-tab-visibility.mjs",
 		"mangle.mjs",
 		"update-manifest.mjs",
 		"version-bump.mjs",
@@ -34,6 +35,13 @@ export default defineConfig(
 		},
 	},
 	...obsidianmd.configs.recommended,
+	{
+		files: ["tests/**/*.browser.ts"],
+		rules: {
+			// Standalone browser fixtures do not have Obsidian's DOM extensions.
+			"obsidianmd/prefer-create-el": "off",
+		},
+	},
 	{
 		rules: {
 			"obsidianmd/ui/sentence-case": "off",

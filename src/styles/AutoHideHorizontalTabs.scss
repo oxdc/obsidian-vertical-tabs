@@ -1,53 +1,14 @@
 // Hide horizontal tabs in the root split when a sidebar is open and
 // Vertical Tabs is the active sidebar tab (#176, #206, #247)
 
-@mixin when-left-sidebar-vt {
-	.mod-sidedock.mod-left-split:not(.is-sidedock-collapsed):has(
-			> .workspace-tabs
-				> .workspace-tab-header-container
-				> .workspace-tab-header-container-inner
-				> .workspace-tab-header.is-active.obsidian-vertical-tabs-tab-header
-		)
-		~ .workspace-split.mod-root {
-		@content;
-	}
-}
-
-// The right sidebar comes after the root split, so `~` can't reach it
 @mixin when-right-sidebar-vt {
-	.workspace:has(
-			> .mod-sidedock.mod-right-split:not(.is-sidedock-collapsed)
-				> .workspace-tabs
-				> .workspace-tab-header-container
-				> .workspace-tab-header-container-inner
-				> .workspace-tab-header.is-active.obsidian-vertical-tabs-tab-header
-		)
-		> .workspace-split.mod-root {
-		@content;
-	}
-}
-
-@mixin when-pinned-drawer-vt {
-	.workspace:is(.is-left-sidedock-open, .is-right-sidedock-open):has(
-			> .workspace-drawer.is-pinned:is(.mod-left, .mod-right)
-				.workspace-drawer-tab-options-list
-				> .workspace-tab-header.is-active.obsidian-vertical-tabs-tab-header
-		)
-		> .workspace-split.mod-root {
+	.workspace.vt-horizontal-tabs-right-sidebar > .workspace-split.mod-root {
 		@content;
 	}
 }
 
 @mixin when-tabs-hidden {
-	@include when-left-sidebar-vt {
-		@content;
-	}
-
-	@include when-right-sidebar-vt {
-		@content;
-	}
-
-	@include when-pinned-drawer-vt {
+	.workspace.vt-horizontal-tabs-hidden > .workspace-split.mod-root {
 		@content;
 	}
 }

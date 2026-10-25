@@ -5,6 +5,30 @@ import { EVENTS } from "src/constants/Events";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 import { useViewState } from "src/models/ViewState";
 import { refreshExtraHeaderButtons } from "src/services/ExtraHeaderButtons";
+import {
+	clearHorizontalTabVisibility,
+	observeHorizontalTabVisibility,
+	refreshHorizontalTabVisibility,
+} from "src/services/HorizontalTabVisibility";
+
+function registerHorizontalTabVisibilityEvents(plugin: ObsidianVerticalTabs) {
+	const workspace = plugin.app.workspace;
+	const refresh = () =>
+		refreshHorizontalTabVisibility(plugin.app, plugin.settings.autoHideHorizontalTabs);
+	const observer = observeHorizontalTabVisibility(plugin.app, refresh);
+	const layoutChanged = () => {
+		observer.refreshTargets();
+		refresh();
+	};
+	plugin.registerEvent(workspace.on("layout-change", layoutChanged));
+	plugin.registerEvent(workspace.on("active-leaf-change", refresh));
+	plugin.registerEvent(workspace.on("resize", refresh));
+	workspace.onLayoutReady(layoutChanged);
+	plugin.register(() => {
+		observer.disconnect();
+		clearHorizontalTabVisibility(plugin.app);
+	});
+}
 
 function registerOrientationEvents(plugin: ObsidianVerticalTabs) {
 	if (Platform.isPhone) {
@@ -32,6 +56,7 @@ function registerExtraHeaderButtonEvents(plugin: ObsidianVerticalTabs) {
 }
 
 export function registerReactiveUIEvents(plugin: ObsidianVerticalTabs) {
+	registerHorizontalTabVisibilityEvents(plugin);
 	registerOrientationEvents(plugin);
 	registerUILabelingEvents(plugin);
 	registerExtraHeaderButtonEvents(plugin);
