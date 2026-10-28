@@ -1,18 +1,6 @@
 // Hide horizontal tabs in the root split when a sidebar is open and
 // Vertical Tabs is the active sidebar tab (#176, #206, #247)
 
-@mixin when-right-sidebar-vt {
-	.workspace.vt-horizontal-tabs-right-sidebar > .workspace-split.mod-root {
-		@content;
-	}
-}
-
-@mixin when-tabs-hidden {
-	.workspace.vt-horizontal-tabs-hidden > .workspace-split.mod-root {
-		@content;
-	}
-}
-
 body.vt-auto-hide-horizontal-tabs {
 	.vt-header-buttons,
 	.vt-extra-left-sidebar-toggle,
@@ -24,7 +12,7 @@ body.vt-auto-hide-horizontal-tabs {
 		align-items: center;
 	}
 
-	@include when-tabs-hidden {
+	.workspace.vt-horizontal-tabs-hidden > .workspace-split.mod-root {
 		.workspace-tabs > .workspace-tab-header-container {
 			display: none;
 		}
@@ -66,21 +54,19 @@ body.vt-auto-hide-horizontal-tabs {
 }
 
 body.vt-auto-hide-horizontal-tabs.is-hidden-frameless:not(.is-fullscreen) {
-	@include when-right-sidebar-vt {
+	.workspace.vt-horizontal-tabs-right-sidebar > .workspace-split.mod-root {
 		.workspace-tabs.vt-mod-top-left-space .view-header {
 			padding-left: calc(var(--size-4-2) + var(--frame-left-space));
 		}
 	}
 
-	.workspace:not(.is-right-sidedock-open) {
-		@include when-tabs-hidden {
-			.workspace-tabs.vt-mod-top-right-main .view-header {
-				padding-right: calc(var(--size-4-2) + var(--frame-right-space));
-			}
+	.workspace.vt-horizontal-tabs-hidden:not(.is-right-sidedock-open) > .workspace-split.mod-root {
+		.workspace-tabs.vt-mod-top-right-main .view-header {
+			padding-right: calc(var(--size-4-2) + var(--frame-right-space));
 		}
 	}
 
-	@include when-tabs-hidden {
+	.workspace.vt-horizontal-tabs-hidden > .workspace-split.mod-root {
 		.workspace-tabs.vt-mod-top-space .view-header {
 			-webkit-app-region: drag;
 

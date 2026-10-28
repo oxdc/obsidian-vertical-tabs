@@ -172,7 +172,6 @@ export default class ObsidianVerticalTabs extends Plugin {
 			"vt-auto-hide-horizontal-tabs",
 			this.settings.autoHideHorizontalTabs
 		);
-		refreshHorizontalTabVisibility(this.app, this.settings.autoHideHorizontalTabs);
 		this.toggle("vt-exclude-self", this.settings.sidebarExcludeSelf);
 		this.toggle("vt-trim-tab-names", this.settings.trimTabNames);
 		this.toggle("vt-show-more-buttons", this.settings.showMoreButtons);
@@ -191,6 +190,8 @@ export default class ObsidianVerticalTabs extends Plugin {
 			"vt-allow-workspace-split",
 			this.settings.allowWorkspaceSplitOnPhone
 		);
+
+		refreshHorizontalTabVisibility(this.app, this.settings.autoHideHorizontalTabs);
 		refreshExtraHeaderButtons(this.app, this);
 
 		// Limit visible groups to 2 when allowWorkspaceSplitOnPhone is enabled on mobile

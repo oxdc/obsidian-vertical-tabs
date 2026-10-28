@@ -7,7 +7,6 @@ import { useViewState } from "src/models/ViewState";
 import { refreshExtraHeaderButtons } from "src/services/ExtraHeaderButtons";
 import {
 	clearHorizontalTabVisibility,
-	observeHorizontalTabVisibility,
 	refreshHorizontalTabVisibility,
 } from "src/services/HorizontalTabVisibility";
 
@@ -15,9 +14,16 @@ function registerHorizontalTabVisibilityEvents(plugin: ObsidianVerticalTabs) {
 	const workspace = plugin.app.workspace;
 	const refresh = () =>
 		refreshHorizontalTabVisibility(plugin.app, plugin.settings.autoHideHorizontalTabs);
-	const observer = observeHorizontalTabVisibility(plugin.app, refresh);
+	// Sidedock resize events arrive after the collapse animation finishes.
+	const observer = new MutationObserver(refresh);
 	const layoutChanged = () => {
-		observer.refreshTargets();
+		observer.disconnect();
+		for (const sidebar of [workspace.leftSplit, workspace.rightSplit]) {
+			observer.observe(sidebar.containerEl, {
+				attributes: true,
+				attributeFilter: ["class"],
+			});
+		}
 		refresh();
 	};
 	plugin.registerEvent(workspace.on("layout-change", layoutChanged));
