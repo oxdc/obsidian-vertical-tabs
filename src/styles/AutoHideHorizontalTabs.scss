@@ -54,7 +54,7 @@ body.vt-auto-hide-horizontal-tabs {
 }
 
 body.vt-auto-hide-horizontal-tabs.is-hidden-frameless:not(.is-fullscreen) {
-	.workspace.vt-horizontal-tabs-right-sidebar > .workspace-split.mod-root {
+	.workspace.vt-in-right-sidebar > .workspace-split.mod-root {
 		.workspace-tabs.vt-mod-top-left-space .view-header {
 			padding-left: calc(var(--size-4-2) + var(--frame-left-space));
 		}

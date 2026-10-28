@@ -5,24 +5,16 @@ import { EVENTS } from "src/constants/Events";
 import { REFRESH_TIMEOUT } from "src/constants/Timeouts";
 import { useViewState } from "src/models/ViewState";
 import { refreshExtraHeaderButtons } from "src/services/ExtraHeaderButtons";
-import {
-	clearHorizontalTabVisibility,
-	refreshHorizontalTabVisibility,
-} from "src/services/HorizontalTabVisibility";
+import { clearSelfVisibilityLabels, refreshSelfVisibilityLabels } from "src/services/HorizontalTabVisibility";
 
 function registerHorizontalTabVisibilityEvents(plugin: ObsidianVerticalTabs) {
 	const workspace = plugin.app.workspace;
-	const refresh = () =>
-		refreshHorizontalTabVisibility(plugin.app, plugin.settings.autoHideHorizontalTabs);
-	// Sidedock resize events arrive after the collapse animation finishes.
+	const refresh = () => refreshSelfVisibilityLabels(plugin.app, plugin.settings.autoHideHorizontalTabs);
 	const observer = new MutationObserver(refresh);
 	const layoutChanged = () => {
 		observer.disconnect();
 		for (const sidebar of [workspace.leftSplit, workspace.rightSplit]) {
-			observer.observe(sidebar.containerEl, {
-				attributes: true,
-				attributeFilter: ["class"],
-			});
+			observer.observe(sidebar.containerEl, { attributes: true, attributeFilter: ["class"] });
 		}
 		refresh();
 	};
@@ -32,7 +24,7 @@ function registerHorizontalTabVisibilityEvents(plugin: ObsidianVerticalTabs) {
 	workspace.onLayoutReady(layoutChanged);
 	plugin.register(() => {
 		observer.disconnect();
-		clearHorizontalTabVisibility(plugin.app);
+		clearSelfVisibilityLabels(plugin.app);
 	});
 }
 
