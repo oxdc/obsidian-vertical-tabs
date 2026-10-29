@@ -64,6 +64,7 @@ import { moveSelfToNewGroupAndHide } from "src/services/MoveTab";
 import { autoRefresh } from "src/services/Refresh";
 import { eventBindingService } from "./stores/EventBindingService";
 import { DragDetectionService } from "./services/DragDetection";
+import { refreshSelfVisibilityLabels } from "./services/HorizontalTabVisibility";
 
 export default class ObsidianVerticalTabs extends Plugin {
 	settings: Settings = DEFAULT_SETTINGS;
@@ -189,7 +190,9 @@ export default class ObsidianVerticalTabs extends Plugin {
 			"vt-allow-workspace-split",
 			this.settings.allowWorkspaceSplitOnPhone
 		);
+
 		refreshExtraHeaderButtons(this.app, this);
+		refreshSelfVisibilityLabels(this.app, this.settings.autoHideHorizontalTabs);
 
 		// Limit visible groups to 2 when allowWorkspaceSplitOnPhone is enabled on mobile
 		if (Platform.isMobile && this.settings.allowWorkspaceSplitOnPhone) {
