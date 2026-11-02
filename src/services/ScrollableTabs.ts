@@ -30,7 +30,8 @@ export const createActiveTabScroller = () => {
 		cancel();
 
 		if (!leaf || !leaf.parent || leaf.parent.isStacked) return;
-		if (!useSettings.getState().scrollableTabs) return;
+		const { scrollableTabs, autoCenterActiveTab } = useSettings.getState();
+		if (!scrollableTabs || !autoCenterActiveTab) return;
 		const ownerWindow = leaf.tabHeaderEl.ownerDocument.defaultView;
 		if (!ownerWindow) return;
 		pendingWindow = ownerWindow;

@@ -33,6 +33,7 @@ interface ObsidianVerticalTabsSettings {
 	showMissionControlToggle: boolean;
 	backgroundMode: boolean;
 	scrollableTabs: boolean;
+	autoCenterActiveTab: boolean;
 	scrollableTabsMinWidth: number;
 	autoHideHorizontalTabs: boolean;
 	disableOnThisDevice: boolean;
@@ -73,6 +74,7 @@ export const DEFAULT_SETTINGS: ObsidianVerticalTabsSettings = {
 	showMissionControlToggle: true,
 	backgroundMode: false,
 	scrollableTabs: true,
+	autoCenterActiveTab: true,
 	scrollableTabsMinWidth: 100,
 	autoHideHorizontalTabs: false,
 	disableOnThisDevice: false,
@@ -168,6 +170,9 @@ export function validateAndNormalizeSettings(settings: unknown): Settings {
 	}
 	if ("scrollableTabs" in input && typeof input.scrollableTabs === "boolean") {
 		normalized.scrollableTabs = input.scrollableTabs;
+	}
+	if ("autoCenterActiveTab" in input && typeof input.autoCenterActiveTab === "boolean") {
+		normalized.autoCenterActiveTab = input.autoCenterActiveTab;
 	}
 	if ("autoHideHorizontalTabs" in input && typeof input.autoHideHorizontalTabs === "boolean") {
 		normalized.autoHideHorizontalTabs = input.autoHideHorizontalTabs;

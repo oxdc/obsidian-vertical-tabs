@@ -726,6 +726,16 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 	private displayScrollableTabsOptions(
 		containerEl: HTMLElement | SettingGroup
 	) {
+		this.createToggle(containerEl, {
+			name: "Auto-center active tab",
+			desc: "Scroll the active tab to the center when it is not fully visible.",
+			value: this.plugin.settings.autoCenterActiveTab,
+			onChange: (value) =>
+				useSettings
+					.getState()
+					.setSettings({ autoCenterActiveTab: value }),
+		});
+
 		this.createSlider(containerEl, {
 			name: "Tab minimum width",
 			desc: "Minimum width of each tab header in pixels.",
@@ -1673,6 +1683,14 @@ export class ObsidianVerticalTabsSettingTab extends PluginSettingTab {
 						desc: "Enable horizontal scrolling for tab headers when they exceed available width.",
 						visible: () => !this.plugin.settings.showActiveTabs,
 						control: { type: "toggle", key: "scrollableTabs" },
+					},
+					{
+						name: "Auto-center active tab",
+						desc: "Scroll the active tab to the center when it is not fully visible.",
+						visible: () =>
+							!this.plugin.settings.showActiveTabs &&
+							this.plugin.settings.scrollableTabs,
+						control: { type: "toggle", key: "autoCenterActiveTab" },
 					},
 					{
 						name: "Tab minimum width",
