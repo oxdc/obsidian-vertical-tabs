@@ -1,6 +1,6 @@
 import { useApp } from "src/models/PluginContext";
 import { NavigationTreeItem } from "./NavigationTreeItem";
-import { moveTabToNewGroup } from "src/services/MoveTab";
+import { runWithCanSplit } from "src/services/PlatformCanSplit";
 import { useViewState } from "src/models/ViewState";
 
 export const GroupSlot = () => {
@@ -8,12 +8,17 @@ export const GroupSlot = () => {
 	const workspace = app.workspace;
 	const { lockFocusOnLeaf } = useViewState();
 
-	const createLeafNewGroupAndOpen = async () => {
-		const leaf = workspace.getLeaf("tab");
-		const movedLeaf = await moveTabToNewGroup(app, leaf.id);
-		if (!movedLeaf) return;
-		workspace.setActiveLeaf(movedLeaf, { focus: true });
-		lockFocusOnLeaf(app, movedLeaf);
+	const createLeafNewGroupAndOpen = () => {
+		const source = workspace.getMostRecentLeaf();
+		if (!source) return;
+		const { clientHeight, clientWidth } = source.parent.containerEl;
+		const direction =
+			clientHeight > clientWidth ? "horizontal" : "vertical";
+		const leaf = runWithCanSplit(() =>
+			workspace.createLeafBySplit(source, direction),
+		);
+		workspace.setActiveLeaf(leaf, { focus: true });
+		lockFocusOnLeaf(app, leaf);
 	};
 
 	return (
@@ -23,7 +28,7 @@ export const GroupSlot = () => {
 			id={`slot-new`}
 			isTab={false}
 			isGroupSlot={true}
-			onClick={() => void createLeafNewGroupAndOpen()}
+			onClick={createLeafNewGroupAndOpen}
 		/>
 	);
 };
